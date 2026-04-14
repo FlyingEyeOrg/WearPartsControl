@@ -1,13 +1,13 @@
-﻿using System;
-using System.Windows;
-using Autofac;
+﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using System.Windows;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.Exceptions;
+using WearPartsControl.Views;
 
 namespace WearPartsControl;
 

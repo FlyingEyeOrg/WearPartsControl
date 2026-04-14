@@ -1,12 +1,12 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using System;
-using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
-using WearPartsControl.Exceptions;
 using WearPartsControl.ApplicationServices.SaveInfoService;
+using WearPartsControl.Exceptions;
+using WearPartsControl.Views;
 
 namespace WearPartsControl;
 
