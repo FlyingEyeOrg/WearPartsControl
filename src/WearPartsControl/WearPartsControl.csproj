@@ -27,6 +27,10 @@
 		</None>
 	</ItemGroup>
 
+	<ItemGroup>
+		<Resource Include="Assets\catl.ico" />
+	</ItemGroup>
+
 	<!-- Release symbol settings moved to root Directory.Build.props -->
 
 </Project>

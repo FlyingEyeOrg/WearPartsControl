@@ -4,11 +4,74 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WearPartsControl.Views"
+        xmlns:uc="clr-namespace:WearPartsControl.UserControls"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
         mc:Ignorable="d"
         Title="{Binding Title}"
-        Height="450"
-        Width="800">
+        Height="600"
+        MinWidth="980"
+        Width="980"
+        Background="AliceBlue">
     <Grid>
-
+        <Grid.RowDefinitions>
+            <RowDefinition  Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel>
+            <Grid x:Name="TitleBarGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="1" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="1" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel x:Name="LogoPanel"
+                            Background="White"
+                            Orientation="Horizontal">
+                    <Image x:Name="LogoImage"
+                           Source="pack://application:,,,/Assets/catl.ico"
+                           Width="200" />
+                </StackPanel>
+                <Border Grid.Column="1"
+                        Width="1"
+                        Background="{StaticResource PrimaryBrush}" />
+                <Label x:Name="TitleLabel"
+                       Margin="8 0 8 0"
+                       Style="{StaticResource BaseStyle}"
+                       VerticalContentAlignment="Center"
+                       HorizontalAlignment="Center"
+                       Grid.Column="2"
+                       FontSize="40"
+                       FontWeight="Bold">易损件防呆管控系统</Label>
+                <Border Grid.Column="3"
+                        Width="1"
+                        Background="{StaticResource PrimaryBrush}" />
+                <uc:LoginBox x:Name="LoginBoxControl"
+                             Margin="8"
+                             Width="300"
+                             Grid.Column="4" />
+            </Grid>
+            <Grid Height="1"
+                  Background="{StaticResource PrimaryBrush}"></Grid>
+        </StackPanel>
+        <TabControl Grid.Row="1"
+                    TabStripPlacement="Left">
+            <TabItem Header="易损件更换"
+                     FontSize="16"
+                     Padding="8"></TabItem>
+            <TabItem Header="设备基础信息"
+                     FontSize="16"
+                     Padding="8"></TabItem>
+            <TabItem Header="易损件管理"
+                     FontSize="16"
+                     Padding="8"></TabItem>
+            <TabItem Header="易损件更换历史"
+                     FontSize="16"
+                     Padding="8"></TabItem>
+            <TabItem Header="用户配置"
+                     FontSize="16"
+                     Padding="8"></TabItem>
+        </TabControl>
     </Grid>
 </Window>
