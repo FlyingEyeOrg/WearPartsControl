@@ -7,6 +7,7 @@ using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.Exceptions;
 using WearPartsControl.Views;
+using WearPartsControl.ViewModels;
 
 namespace WearPartsControl;
 
@@ -33,6 +34,7 @@ public static class ServiceRegistration
             })
             .SingleInstance();
         builder.RegisterType<HttpJsonService>().As<IHttpJsonService>().SingleInstance();
+        builder.RegisterType<MainWindowViewModel>().AsSelf().InstancePerDependency();
         // Add other services as needed
     }
 }

@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using WearPartsControl.ViewModels;
 
 namespace WearPartsControl.Views
 {
@@ -19,8 +20,9 @@ namespace WearPartsControl.Views
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        public MainWindow(MainWindowViewModel viewModel)
         {
+            DataContext = viewModel;
             InitializeComponent();
         }
     }
