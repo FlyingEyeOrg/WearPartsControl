@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices.Localization;
 
 namespace WearPartsControl.ViewModels
 {
-    public class MainWindowViewModel : INotifyPropertyChanged
+    public class MainWindowViewModel : ObservableObject
     {
         private int _selectedTabIndex;
         private string? _selectedTabHeader;
@@ -17,7 +18,7 @@ namespace WearPartsControl.ViewModels
         {
             Title = localizationService["MainWindow.Title"];
             TabChangedCommand = new RelayCommand<string?>(OnTabChanged);
-            _selectedTabIndex = 0;
+            _selectedTabIndex = 10;
         }
 
         public string Title { get; set; }
@@ -63,16 +64,9 @@ namespace WearPartsControl.ViewModels
 
         public ICommand TabChangedCommand { get; }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
         private void OnTabChanged(string? header)
         {
             SelectedTabHeader = header;
-        }
-
-        private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

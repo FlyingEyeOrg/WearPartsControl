@@ -111,6 +111,12 @@ namespace WearPartsControl.UserControls
                 return;
             }
 
+            if (index < 0)
+            {
+                ClearSelection();
+                return;
+            }
+
             var normalizedIndex = NormalizeIndex(index, headers.Count);
             var selectedButton = FindButtonByIndex(normalizedIndex);
             if (selectedButton == null)
@@ -140,6 +146,23 @@ namespace WearPartsControl.UserControls
             }
         }
 
+        private void ClearSelection()
+        {
+            _isUpdatingSelection = true;
+            try
+            {
+                if (_selectedButton != null)
+                {
+                    _selectedButton.IsChecked = false;
+                    _selectedButton = null;
+                }
+            }
+            finally
+            {
+                _isUpdatingSelection = false;
+            }
+        }
+
         private void ExecuteCommand(string header)
         {
             if (Command is null)
@@ -158,11 +181,6 @@ namespace WearPartsControl.UserControls
             if (count <= 0)
             {
                 return -1;
-            }
-
-            if (index < 0)
-            {
-                return 0;
             }
 
             if (index >= count)
