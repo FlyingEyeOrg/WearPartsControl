@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET Launch (WPF WearPartsControl)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build WearPartsControl",
+      "program": "${workspaceFolder}/src/WearPartsControl/bin/Debug/net8.0-windows/WearPartsControl.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/WearPartsControl",
+      "stopAtEntry": false,
+      "console": "internalConsole",
+      "windows": {
+        "program": "${workspaceFolder}/src/WearPartsControl/bin/Debug/net8.0-windows/WearPartsControl.exe"
+      }
+    }
+  ]
+}
