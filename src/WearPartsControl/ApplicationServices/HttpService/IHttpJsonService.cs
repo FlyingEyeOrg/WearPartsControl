@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace WearPartsControl.ApplicationServices.HttpService;
 
-public interface IHttpJsonClient
+public interface IHttpJsonService
 {
     ValueTask<TResponse> GetAsync<TResponse>(string requestUri, CancellationToken cancellationToken = default);
 

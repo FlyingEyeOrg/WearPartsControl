@@ -4,11 +4,11 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using WearPartsControl.ApplicationServices.Exceptions;
+using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices.HttpService;
 
-public sealed class HttpJsonClient : IHttpJsonClient
+public sealed class HttpJsonService : IHttpJsonService
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -17,7 +17,7 @@ public sealed class HttpJsonClient : IHttpJsonClient
 
     private readonly HttpClient _httpClient;
 
-    public HttpJsonClient(HttpClient httpClient)
+    public HttpJsonService(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }
@@ -49,16 +49,16 @@ public sealed class HttpJsonClient : IHttpJsonClient
                 : await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             var message = string.IsNullOrWhiteSpace(body)
-                ? $"HTTP 请求失败: {(int)response.StatusCode} {response.ReasonPhrase}"
+                ? $"HTTP request failed: {(int)response.StatusCode} {response.ReasonPhrase}"
                 : body;
 
-            throw new FriendlyException(message);
+            throw new UserFriendlyException(message, code: $"Http:{(int)response.StatusCode}");
         }
 
         var payload = await response.Content.ReadFromJsonAsync<TResponse>(JsonOptions, cancellationToken).ConfigureAwait(false);
         if (payload is null)
         {
-            throw new FriendlyException("HTTP 响应内容为空或 JSON 反序列化失败。");
+            throw new UserFriendlyException("HTTP response is empty or JSON deserialization failed.", code: "Http:EmptyPayload");
         }
 
         return payload;

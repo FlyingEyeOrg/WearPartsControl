@@ -5,8 +5,9 @@ using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using WearPartsControl.ApplicationServices.Exceptions;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
+using WearPartsControl.Exceptions;
 
 namespace WearPartsControl;
 
@@ -16,6 +17,7 @@ namespace WearPartsControl;
 public partial class App : Application
 {
     private IHost? _host;
+    private ILocalizationService? _localizationService;
 
     public App()
     {
@@ -36,11 +38,19 @@ public partial class App : Application
         };
     }
 
-    private static void HandleFriendlyException(Exception exception)
+    private void HandleFriendlyException(Exception exception)
     {
-        if (exception is FriendlyException friendlyException)
+        var title = _localizationService?["FriendlyErrorTitle"] ?? "提示";
+
+        if (exception is UserFriendlyException userFriendlyException)
         {
-            MessageBox.Show(friendlyException.Message, "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(userFriendlyException.Message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        if (exception is BusinessException businessException)
+        {
+            MessageBox.Show(businessException.Message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -72,6 +82,9 @@ public partial class App : Application
 
             var saveInfoStore = _host.Services.GetRequiredService<ISaveInfoStore>();
             SaveInfo.SetStore(saveInfoStore);
+
+            _localizationService = _host.Services.GetRequiredService<ILocalizationService>();
+            _localizationService.InitializeAsync().GetAwaiter().GetResult();
 
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             mainWindow.Show();
