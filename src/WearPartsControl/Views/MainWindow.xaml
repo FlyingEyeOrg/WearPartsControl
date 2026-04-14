@@ -58,6 +58,8 @@
                   Background="{StaticResource PrimaryBrush}"></Grid>
         </StackPanel>
         <uc:UserTabControl Grid.Row="1"
-                           Headers="{Binding Values}"></uc:UserTabControl>
+                           Headers="{Binding Values}"
+                           TabIndex="{Binding SelectedTabIndex, Mode=TwoWay}"
+                           Command="{Binding TabChangedCommand}" />
     </Grid>
 </Window>
