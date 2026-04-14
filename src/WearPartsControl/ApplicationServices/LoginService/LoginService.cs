@@ -9,7 +9,7 @@ namespace WearPartsControl.ApplicationServices.LoginService;
 public sealed class LoginService : ILoginService
 {
     private readonly IHttpJsonService _httpJsonService;
-    private readonly string _configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings", "mhrinfo.json");
+    private readonly string _configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "saveinfo", "settings", "mhrinfo.json");
 
     public LoginService(IHttpJsonService httpJsonService)
     {
