@@ -5,6 +5,7 @@ using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.Exceptions;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 
 namespace WearPartsControl;
@@ -21,6 +22,7 @@ public static class ServiceRegistration
         builder.RegisterType<MainWindow>().SingleInstance();
         builder.RegisterType<TypeJsonSaveInfoStore>().As<ISaveInfoStore>().SingleInstance();
         builder.RegisterType<LocalizationService>().As<ILocalizationService>().SingleInstance();
+        builder.RegisterType<ExceptionToStatusCodeMapper>().As<WearPartsControl.Exceptions.IExceptionToStatusCodeMapper>().SingleInstance();
         builder.Register(_ =>
             {
                 var client = new HttpClient

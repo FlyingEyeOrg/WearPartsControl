@@ -2,7 +2,7 @@ using System;
 
 namespace WearPartsControl.Exceptions;
 
-public class UserFriendlyException : BusinessException
+public class UserFriendlyException : BusinessException, IUserFriendlyException
 {
     public UserFriendlyException(
         string message,
@@ -12,4 +12,9 @@ public class UserFriendlyException : BusinessException
         : base(message, code, details, innerException)
     {
     }
+
+    // Message/Code/Details are provided by base class properties and interfaces
+    string IUserFriendlyException.Message => Message!;
+    string? IUserFriendlyException.Code => Code;
+    string? IUserFriendlyException.Details => Details;
 }
