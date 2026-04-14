@@ -1,0 +1,116 @@
+{
+    "LoginName": "u_tom",
+    "Password": "MonkeyKing",
+    "LoginInfos": [
+        {
+            "site": "HJ",
+            "loginUrl": "http://ddm.catl.com/login",
+            "getUsersUrl": "http://ddm.catl.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "HD",
+            "loginUrl": "http://ddm.catl.com/login",
+            "getUsersUrl": "http://ddm.catl.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "HX",
+            "loginUrl": "http://ddm.catl.com/login",
+            "getUsersUrl": "http://ddm.catl.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "HZ",
+            "loginUrl": "http://ddm.catl.com/login",
+            "getUsersUrl": "http://ddm.catl.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "FD",
+            "loginUrl": "http://fddm.catl.com/login",
+            "getUsersUrl": "http://fddm.catl.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "XM",
+            "loginUrl": "http://caxmddm.catl.com/login",
+            "getUsersUrl": "http://caxmddm.catl.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "CC",
+            "loginUrl": "http://DDMAPI.CATL-CA.COM/login",
+            "getUsersUrl": "http://DDMAPI.CATL-CA.COM/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "GY",
+            "loginUrl": "https://gzddmapi.catlbattery.com/login",
+            "getUsersUrl": "https://gzddmapi.catlbattery.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "CF",
+            "loginUrl": "http://cfddm.catfw.com/login",
+            "getUsersUrl": "http://cfddm.catfw.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "CS",
+            "loginUrl": "http://csddm.uabcbattery.com/login",
+            "getUsersUrl": "http://csddm.uabcbattery.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "JC",
+            "loginUrl": "http://jcddm.catl.com/login",
+            "getUsersUrl": "http://jcddm.catl.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "YC",
+            "loginUrl": "https://ycddm.catlbattery.com/login",
+            "getUsersUrl": "https://ycddm.catlbattery.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "RQ",
+            "loginUrl": "http://rqddm.catl.com/login",
+            "getUsersUrl": "https://mhrcatl.com/api/MHR/LeanManHour/GetClinkPermissions"
+        },
+        {
+            "site": "LY",
+            "loginUrl": "http://lyddm.catl.com/login",
+            "getUsersUrl": "http://lyddm.catl.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "CG",
+            "loginUrl": "http://cabddm.catlacn.com/login",
+            "getUsersUrl": "http://cabddm.catlacn.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "YB",
+            "loginUrl": "http://scddm.catl.com/login",
+            "getUsersUrl": "http://scddm.catl.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "QH",
+            "loginUrl": "http://qhddm.catl.com/login",
+            "getUsersUrl": "https://mhrcatl.com/api/MHR/LeanManHour/GetClinkPermissions"
+        },
+        {
+            "site": "XJ",
+            "loginUrl": "http://xjddm.catl.com/login",
+            "getUsersUrl": "http://xjddm.catl.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "CL",
+            "loginUrl": "http://ddmcatl-geely.com/login",
+            "getUsersUrl": "http://ddmcatl-geely.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "RT",
+            "loginUrl": "http://rddmcatl.com/login",
+            "getUsersUrl": "http://rddmcatl.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "LJ",
+            "loginUrl": "https://ljddm.catl.com/login",
+            "getUsersUrl": "https://ljddm.catl.com/LeanManHour/ClinkGetPermissions"
+        },
+        {
+            "site": "ZZ",
+            "loginUrl": "https://ljddm.catl.com/login",
+            "getUsersUrl": "https://ljddm.catl.com/LeanManHour/ClinkGetPermissions"
+        }
+    ]
+}
