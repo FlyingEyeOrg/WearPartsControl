@@ -57,6 +57,7 @@
             <Grid Height="1"
                   Background="{StaticResource PrimaryBrush}"></Grid>
         </StackPanel>
-        <!--<uc:UCTabControl Grid.Row="1" />-->
+        <uc:UserTabControl Grid.Row="1"
+                           Headers="{Binding Values}"></uc:UserTabControl>
     </Grid>
 </Window>
