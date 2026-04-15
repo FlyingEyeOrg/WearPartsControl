@@ -4,6 +4,7 @@ using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.PlcService;
+using WearPartsControl.ApplicationServices.SpacerManagement;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.Exceptions;
@@ -34,6 +35,7 @@ public static class ServiceRegistration
         builder.RegisterType<HttpJsonService>().As<IHttpJsonService>().SingleInstance();
         builder.RegisterType<LoginService>().As<ILoginService>().SingleInstance();
         builder.RegisterType<ComNotificationService>().As<IComNotificationService>().SingleInstance();
+        builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<PlcService>().As<IPlcService>().SingleInstance();
         builder.RegisterType<MainWindowViewModel>().AsSelf().InstancePerDependency();
         // Add other services as needed

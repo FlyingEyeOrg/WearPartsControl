@@ -31,5 +31,29 @@
       "OperationRetryFailed": "PLC 操作失败。",
       "RetryStillFailed": "重试后仍然失败。"
     }
+  },
+  "ComNotification": {
+    "GroupTokenMissing": "COM 群消息配置缺少 AccessToken 或 Secret。",
+    "PushUrlEmpty": "COM 推送地址不能为空。",
+    "AuthKeyMissing": "COM 推送缺少 deipaaskeyauth 配置。",
+    "UserTypeMissing": "COM 推送缺少 UserType 配置。",
+    "TimeoutInvalid": "COM TimeoutMilliseconds 必须大于 0。",
+    "HttpFailed": "COM {0}发送失败: HTTP {1}",
+    "ResponseParseFailed": "COM {0}发送失败: 响应内容无法解析。",
+    "PushFailedWithCode": "COM {0}发送失败，code={1}",
+    "PushFailedWithError": "COM {0}发送失败，code={1}，error={2}",
+    "Timeout": "COM {0}发送超时",
+    "Unhandled": "COM {0}发送失败: {1}"
+  },
+  "SpacerManagement": {
+    "CodeEmpty": "垫片条码为空。",
+    "CodeSegmentCountInvalid": "垫片条码数据段数量错误，期望={0}，实际={1}",
+    "ValidationUrlEmpty": "垫片验证接口地址为空。",
+    "TimeoutInvalid": "垫片验证超时时间必须大于 0。",
+    "ValidationFailed": "垫片验证失败。",
+    "HttpFailed": "垫片验证请求失败: HTTP {0}",
+    "Timeout": "垫片验证请求超时。",
+    "NetworkFailed": "垫片验证网络请求失败: {0}",
+    "Unknown": "垫片验证未知错误: {0}"
   }
 }

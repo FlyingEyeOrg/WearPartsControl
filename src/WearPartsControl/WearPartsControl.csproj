@@ -27,6 +27,9 @@
 		<None Update="SaveInfo\Settings\com-notification.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="SaveInfo\Settings\spacer-validation.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="SaveInfo\Settings\mhrinfo.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

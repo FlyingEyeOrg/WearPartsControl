@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.Exceptions;
 
@@ -20,11 +21,13 @@ public sealed class ComNotificationService : IComNotificationService
         PropertyNameCaseInsensitive = true
     };
 
+    private readonly ILocalizationService _localizationService;
     private readonly ISaveInfoStore _saveInfoStore;
 
-    public ComNotificationService(ISaveInfoStore saveInfoStore)
+    public ComNotificationService(ISaveInfoStore saveInfoStore, ILocalizationService localizationService)
     {
         _saveInfoStore = saveInfoStore;
+        _localizationService = localizationService;
     }
 
     public async ValueTask NotifyGroupAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default)
@@ -44,7 +47,7 @@ public sealed class ComNotificationService : IComNotificationService
 
         if (string.IsNullOrWhiteSpace(options.AccessToken) || string.IsNullOrWhiteSpace(options.Secret))
         {
-            throw new UserFriendlyException("COM 群消息配置缺少 AccessToken 或 Secret");
+            throw new UserFriendlyException(L("ComNotification.GroupTokenMissing"));
         }
 
         var request = new ComPushRequest
@@ -118,30 +121,30 @@ public sealed class ComNotificationService : IComNotificationService
         return new List<string> { options.DefaultUserWorkId.Trim() };
     }
 
-    private static void ValidateBaseSettings(ComNotificationOptionsSaveInfo options)
+    private void ValidateBaseSettings(ComNotificationOptionsSaveInfo options)
     {
         if (string.IsNullOrWhiteSpace(options.PushUrl))
         {
-            throw new UserFriendlyException("COM 推送地址不能为空");
+            throw new UserFriendlyException(L("ComNotification.PushUrlEmpty"));
         }
 
         if (string.IsNullOrWhiteSpace(options.DeIpaasKeyAuth))
         {
-            throw new UserFriendlyException("COM 推送缺少 deipaaskeyauth 配置");
+            throw new UserFriendlyException(L("ComNotification.AuthKeyMissing"));
         }
 
         if (string.IsNullOrWhiteSpace(options.UserType))
         {
-            throw new UserFriendlyException("COM 推送缺少 UserType 配置");
+            throw new UserFriendlyException(L("ComNotification.UserTypeMissing"));
         }
 
         if (options.TimeoutMilliseconds <= 0)
         {
-            throw new UserFriendlyException("COM 推送 TimeoutMilliseconds 必须大于 0");
+            throw new UserFriendlyException(L("ComNotification.TimeoutInvalid"));
         }
     }
 
-    private static async ValueTask SendAsync(ComPushRequest request, ComNotificationOptionsSaveInfo options, string scene, CancellationToken cancellationToken)
+    private async ValueTask SendAsync(ComPushRequest request, ComNotificationOptionsSaveInfo options, string scene, CancellationToken cancellationToken)
     {
         using var handler = new HttpClientHandler
         {
@@ -176,18 +179,18 @@ public sealed class ComNotificationService : IComNotificationService
             {
                 if (!response.IsSuccessStatusCode)
                 {
-                    throw new UserFriendlyException($"COM {scene}发送失败: HTTP {(int)response.StatusCode}");
+                    throw new UserFriendlyException(string.Format(L("ComNotification.HttpFailed"), scene, (int)response.StatusCode));
                 }
 
-                throw new UserFriendlyException($"COM {scene}发送失败: 响应内容无法解析");
+                throw new UserFriendlyException(string.Format(L("ComNotification.ResponseParseFailed"), scene));
             }
 
             if (!result.Success)
             {
                 var error = result.Data?.ErrMessage;
                 var message = string.IsNullOrWhiteSpace(error)
-                    ? $"COM {scene}发送失败，code={result.Code}"
-                    : $"COM {scene}发送失败，code={result.Code}，error={error}";
+                    ? string.Format(L("ComNotification.PushFailedWithCode"), scene, result.Code)
+                    : string.Format(L("ComNotification.PushFailedWithError"), scene, result.Code, error);
 
                 throw new UserFriendlyException(message);
             }
@@ -199,12 +202,14 @@ public sealed class ComNotificationService : IComNotificationService
         catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
             Log.Error(ex, "COM {Scene}发送超时", scene);
-            throw new UserFriendlyException($"COM {scene}发送超时");
+            throw new UserFriendlyException(string.Format(L("ComNotification.Timeout"), scene));
         }
         catch (Exception ex)
         {
             Log.Error(ex, "COM {Scene}发送异常", scene);
-            throw new UserFriendlyException($"COM {scene}发送失败: {ex.Message}");
+            throw new UserFriendlyException(string.Format(L("ComNotification.Unhandled"), scene, ex.Message));
         }
     }
+
+    private string L(string key) => _localizationService[key];
 }
