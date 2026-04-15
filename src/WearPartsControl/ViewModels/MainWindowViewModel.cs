@@ -60,6 +60,9 @@ namespace WearPartsControl.ViewModels
                 case 1:
                     SelectedContent = _serviceProvider.GetRequiredService<DeviceInfoUserControl>();
                     break;
+                case 4:
+                    SelectedContent = _serviceProvider.GetRequiredService<UserConfigUserControl>();
+                    break;
                 default:
                     SelectedContent = _serviceProvider.GetRequiredService<ReplacePartUserControl>();
                     break;
