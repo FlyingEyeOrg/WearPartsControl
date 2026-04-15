@@ -84,7 +84,7 @@ namespace WearPartsControl.UserControls
             }
             else if (_isLoaded)
             {
-                ExecuteCommand(GetHeader(index));
+                ExecuteCommand(GetHeader(index), index);
             }
         }
 
@@ -142,7 +142,7 @@ namespace WearPartsControl.UserControls
 
             if (invokeCommand)
             {
-                ExecuteCommand(headers[normalizedIndex]);
+                ExecuteCommand(headers[normalizedIndex], normalizedIndex);
             }
         }
 
@@ -163,10 +163,18 @@ namespace WearPartsControl.UserControls
             }
         }
 
-        private void ExecuteCommand(string header)
+        private void ExecuteCommand(string header, int index)
         {
             if (Command is null)
             {
+                return;
+            }
+
+            // 优先尝试传递当前的 TabIndex（整数索引），以符合默认行为；
+            // 若命令不接受索引参数，则回退到使用 header 字符串。
+            if (Command.CanExecute(index))
+            {
+                Command.Execute(index);
                 return;
             }
 
