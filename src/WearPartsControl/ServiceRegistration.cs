@@ -2,6 +2,7 @@ using Autofac;
 using System.Net.Http;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.LoginService;
@@ -32,6 +33,7 @@ public static class ServiceRegistration
             .SingleInstance();
         builder.RegisterType<HttpJsonService>().As<IHttpJsonService>().SingleInstance();
         builder.RegisterType<LoginService>().As<ILoginService>().SingleInstance();
+        builder.RegisterType<ComNotificationService>().As<IComNotificationService>().SingleInstance();
         builder.RegisterType<PlcService>().As<IPlcService>().SingleInstance();
         builder.RegisterType<MainWindowViewModel>().AsSelf().InstancePerDependency();
         // Add other services as needed

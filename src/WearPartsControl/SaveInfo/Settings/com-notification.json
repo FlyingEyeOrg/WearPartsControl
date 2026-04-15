@@ -1,0 +1,13 @@
+{
+  "Enabled": false,
+  "PushUrl": "https://ipaas.catl.com/gateway/office/ipaas/MSG/office_MSG_push",
+  "DeIpaasKeyAuth": "",
+  "AgentId": 1642112457,
+  "GroupTemplateId": 303686603505665,
+  "WorkTemplateId": 303717003821057,
+  "UserType": "ding",
+  "AccessToken": "",
+  "Secret": "",
+  "DefaultUserWorkId": "",
+  "TimeoutMilliseconds": 10000
+}
