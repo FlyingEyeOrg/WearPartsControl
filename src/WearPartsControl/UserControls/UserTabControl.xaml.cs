@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace WearPartsControl.UserControls
 {
@@ -74,7 +75,15 @@ namespace WearPartsControl.UserControls
             }
 
             control.ClearSelection();
-            control.ApplySelection(control.TabIndex, invokeCommand: control._isLoaded);
+
+            if (!control._isLoaded)
+            {
+                return;
+            }
+
+            control.Dispatcher.BeginInvoke(
+                DispatcherPriority.Loaded,
+                new Action(() => control.ApplySelection(control.TabIndex, invokeCommand: true)));
         }
 
         private void OnTabIndexChanged(object? sender, EventArgs e)
@@ -247,34 +256,14 @@ namespace WearPartsControl.UserControls
 
         private ToggleButton? FindButtonByIndex(int index)
         {
-            var container = TabItemsControl.ItemContainerGenerator.ContainerFromIndex(index) as DependencyObject;
+            var container = TabItemsControl.ItemContainerGenerator.ContainerFromIndex(index) as ContentPresenter;
             if (container is null)
             {
                 return null;
             }
 
-            return FindDescendant<ToggleButton>(container);
-        }
-
-        private static T? FindDescendant<T>(DependencyObject root) where T : DependencyObject
-        {
-            var childCount = VisualTreeHelper.GetChildrenCount(root);
-            for (var i = 0; i < childCount; i++)
-            {
-                var child = VisualTreeHelper.GetChild(root, i);
-                if (child is T match)
-                {
-                    return match;
-                }
-
-                var descendant = FindDescendant<T>(child);
-                if (descendant != null)
-                {
-                    return descendant;
-                }
-            }
-
-            return null;
+            container.ApplyTemplate();
+            return container.ContentTemplate?.FindName("TabButton", container) as ToggleButton;
         }
     }
 }

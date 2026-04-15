@@ -38,7 +38,7 @@
                                 <Setter TargetName="RootBorder" Property="Background" Value="{StaticResource TabHoverBrush}" />
                             </MultiTrigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="RootBorder" Property="Background" Value="{StaticResource PrimaryBrush}" />
+                                <Setter TargetName="RootBorder" Property="Background" Value="{DynamicResource PrimaryBrush}" />
                                 <Setter Property="Foreground" Value="White" />
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -62,7 +62,8 @@
                           ItemsSource="{Binding Headers, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:UserTabControl}}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ToggleButton Checked="TabItemButton_Checked"
+                        <ToggleButton x:Name="TabButton"
+                                      Checked="TabItemButton_Checked"
                                       Tag="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex)}"
                                       Unchecked="TabItemButton_Unchecked"
                                       Style="{StaticResource TabItemButtonStyle}">
@@ -80,7 +81,7 @@
 
         <Grid Grid.Column="1"
               Width="1"
-              Background="{StaticResource PrimaryBrush}" />
+              Background="{DynamicResource PrimaryBrush}" />
 
         <Border Grid.Column="2"
                 Background="AliceBlue">
