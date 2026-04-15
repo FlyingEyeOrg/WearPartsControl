@@ -4,10 +4,186 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:WearPartsControl.UserControls"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="800">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="AUto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <StackPanel>
+            <Border Background="#FF365082"
+                    Padding="0 4">
+                <TextBlock HorizontalAlignment="Center"
+                           FontWeight="Bold"
+                           FontSize="16"
+                           Foreground="White">易损件更换</TextBlock>
+            </Border>
+            <Grid Margin="8 8 8 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">PLC连接状态：</TextBlock>
+                        <TextBox IsReadOnly="True"
+                                 Grid.Column="1"
+                                 Background="Red">未连接</TextBox>
+                    </Grid>
+                    <Grid Margin="0 8 0 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">当前易损件：</TextBlock>
+                        <ComboBox Grid.Column="1"
+                                  Style="{StaticResource ComboBoxExtend}"
+                                  hc:InfoElement.Placeholder="请选择易损件"></ComboBox>
+                    </Grid>
+                    <Grid Margin="0 8 0 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">数据模式：</TextBlock>
+                        <TextBox IsReadOnly="True"
+                                 Grid.Column="1">本地模式</TextBox>
+                    </Grid>
+                </StackPanel>
+                <StackPanel Grid.Column="1"
+                            Margin="8 0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">当前寿命：</TextBlock>
+                        <TextBox IsReadOnly="True"
+                                 Grid.Column="1"></TextBox>
+                    </Grid>
+                    <Grid Margin="0 8 0 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">预警寿命：</TextBlock>
+                        <TextBox IsReadOnly="True"
+                                 Grid.Column="1"></TextBox>
+                    </Grid>
+                    <Grid Margin="0 8 0 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">停机寿命：</TextBlock>
+                        <TextBox IsReadOnly="True"
+                                 Grid.Column="1"></TextBox>
+                    </Grid>
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">条码输入模式：</TextBlock>
+                        <ComboBox Grid.Column="1"
+                                  Style="{StaticResource ComboBoxExtend}"
+                                  hc:InfoElement.Placeholder="请选择输入模式"></ComboBox>
+                    </Grid>
+                    <Grid Margin="0 8 0 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">条码最小长度：</TextBlock>
+                        <ComboBox Grid.Column="1"
+                                  IsEditable="True"
+                                  Style="{StaticResource ComboBoxExtend}"
+                                  hc:InfoElement.Placeholder="请选择最小长度"></ComboBox>
+                    </Grid>
+                    <Grid Margin="0 8 0 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">条码最大长度：</TextBlock>
+                        <ComboBox IsEditable="True"
+                                  Grid.Column="1"
+                                  Style="{StaticResource ComboBoxExtend}"
+                                  hc:InfoElement.Placeholder="请选择最大长度"></ComboBox>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+            <Grid Margin="8 8 8 8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.2*" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">条码：</TextBlock>
+                    <TextBox Style="{StaticResource TextBoxExtend}"
+                             hc:InfoElement.Placeholder="请输入条码"
+                             Grid.Column="1"></TextBox>
+                </Grid>
+                <Grid Grid.Column="1"
+                      Margin="8 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">更换原因：</TextBlock>
+                    <ComboBox Grid.Column="1"></ComboBox>
+                </Grid>
+                <Button Grid.Column="2"
+                        Width="80"
+                        Style="{StaticResource ButtonPrimary}">更换</Button>
+            </Grid>
+        </StackPanel>
+        <DataGrid Grid.Row="1"
+                  Style="{StaticResource DataGridBaseStyle}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="名称"
+                                    Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="更换原因"
+                                    Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="旧编码"
+                                    Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="新编码"
+                                    Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="当前寿命"
+                                    Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="停机寿命"
+                                    Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="更换时间"
+                                    Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="操作员"
+                                    Width="*"></DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </UserControl>
