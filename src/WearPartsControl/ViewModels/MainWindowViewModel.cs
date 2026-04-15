@@ -14,14 +14,14 @@ namespace WearPartsControl.ViewModels
         public MainWindowViewModel(ILocalizationService localizationService)
         {
             Title = localizationService["MainWindow.Title"];
-            Values = localizationService.Catalog.MainWindow.Tabs;
-            TabChangedCommand = new RelayCommand<string?>(OnTabChanged);
+            Tabs = localizationService.Catalog.MainWindow.Tabs;
+            TabChangedCommand = new RelayCommand<int>(OnTabChanged);
             _selectedTabIndex = -1;
         }
 
         public string Title { get; set; }
 
-        public IEnumerable<string> Values { get; }
+        public IEnumerable<string> Tabs { get; }
 
         public int SelectedTabIndex
         {
@@ -55,9 +55,8 @@ namespace WearPartsControl.ViewModels
 
         public ICommand TabChangedCommand { get; }
 
-        private void OnTabChanged(string? header)
+        private void OnTabChanged(int index)
         {
-            SelectedTabHeader = header;
         }
     }
 }
