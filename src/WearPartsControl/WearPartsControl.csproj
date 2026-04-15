@@ -24,6 +24,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="SaveInfo\Settings\base-factory.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="SaveInfo\Settings\com-notification.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
