@@ -145,7 +145,7 @@
                 </Grid>
             </StackPanel>
         </Grid>
-        <Grid    Margin="8">
+        <Grid    Margin="8 16 8 8">
             <Button Width="80"
                     Style="{StaticResource ButtonPrimary}">保存信息</Button>
             <Button Width="100"
