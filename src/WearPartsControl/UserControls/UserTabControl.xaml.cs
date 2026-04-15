@@ -17,6 +17,7 @@ namespace WearPartsControl.UserControls
     {
         private readonly DependencyPropertyDescriptor _tabIndexDescriptor;
         private bool _isLoaded;
+        private bool _isTabIndexChangedSubscribed;
         private bool _isUpdatingSelection;
         private ToggleButton? _selectedButton;
 
@@ -25,7 +26,6 @@ namespace WearPartsControl.UserControls
             InitializeComponent();
 
             _tabIndexDescriptor = DependencyPropertyDescriptor.FromProperty(Control.TabIndexProperty, typeof(UserTabControl));
-            _tabIndexDescriptor.AddValueChanged(this, OnTabIndexChanged);
 
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
@@ -38,7 +38,11 @@ namespace WearPartsControl.UserControls
         }
 
         public static readonly DependencyProperty HeadersProperty =
-            DependencyProperty.Register(nameof(Headers), typeof(IEnumerable<string>), typeof(UserTabControl), new PropertyMetadata(new List<string>()));
+            DependencyProperty.Register(
+                nameof(Headers),
+                typeof(IEnumerable<string>),
+                typeof(UserTabControl),
+                new PropertyMetadata(new List<string>(), OnHeadersChanged));
 
         public ICommand? Command
         {
@@ -52,12 +56,25 @@ namespace WearPartsControl.UserControls
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             _isLoaded = true;
+            SubscribeToTabIndexChanged();
             ApplySelection(TabIndex, invokeCommand: true);
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
             _isLoaded = false;
+            UnsubscribeFromTabIndexChanged();
+        }
+
+        private static void OnHeadersChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+        {
+            if (dependencyObject is not UserTabControl control)
+            {
+                return;
+            }
+
+            control.ClearSelection();
+            control.ApplySelection(control.TabIndex, invokeCommand: control._isLoaded);
         }
 
         private void OnTabIndexChanged(object? sender, EventArgs e)
@@ -176,6 +193,33 @@ namespace WearPartsControl.UserControls
             }
         }
 
+        private void SubscribeToTabIndexChanged()
+        {
+            if (_isTabIndexChangedSubscribed)
+            {
+                return;
+            }
+
+            _tabIndexDescriptor.AddValueChanged(this, OnTabIndexChanged);
+            _isTabIndexChangedSubscribed = true;
+        }
+
+        private void UnsubscribeToTabIndexChangedCore()
+        {
+            _tabIndexDescriptor.RemoveValueChanged(this, OnTabIndexChanged);
+            _isTabIndexChangedSubscribed = false;
+        }
+
+        private void UnsubscribeFromTabIndexChanged()
+        {
+            if (!_isTabIndexChangedSubscribed)
+            {
+                return;
+            }
+
+            UnsubscribeToTabIndexChangedCore();
+        }
+
         private int NormalizeIndex(int index, int count)
         {
             if (count <= 0)
@@ -193,23 +237,9 @@ namespace WearPartsControl.UserControls
 
         private int GetItemIndex(DependencyObject element)
         {
-            var current = element;
-            while (current != null)
+            if (element is FrameworkElement frameworkElement && frameworkElement.Tag is int index)
             {
-                try
-                {
-                    var index = TabItemsControl.ItemContainerGenerator.IndexFromContainer(current);
-                    if (index >= 0)
-                    {
-                        return index;
-                    }
-                }
-                catch
-                {
-                    // Ignore and continue walking up the tree
-                }
-
-                current = VisualTreeHelper.GetParent(current);
+                return index;
             }
 
             return -1;
