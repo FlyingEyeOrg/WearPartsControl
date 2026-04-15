@@ -35,5 +35,6 @@ public static class ServiceRegistration
         // Add other services as needed
 
         builder.RegisterType<ReplacePartUserControl>().AsSelf();
+        builder.RegisterType<DeviceInfoUserControl>().AsSelf();
     }
 }
