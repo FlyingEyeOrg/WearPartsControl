@@ -1,0 +1,49 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <!-- Computed per importing project -->
+    <GeneratedLocalizationDir>$(MSBuildProjectDirectory)\obj\$(Configuration)\GeneratedLocalization</GeneratedLocalizationDir>
+    <GeneratedLocalizationResxDir>$(GeneratedLocalizationDir)\Resources</GeneratedLocalizationResxDir>
+    <GeneratedLocalizationCodeFile>$(GeneratedLocalizationDir)\LocalizationCatalog.g.cs</GeneratedLocalizationCodeFile>
+    <GeneratedLocalizationStampFile>$(GeneratedLocalizationDir)\LocalizationResourceGenerator.stamp</GeneratedLocalizationStampFile>
+    <GeneratedLocalizationOutputsExist>$([System.IO.File]::Exists('$(GeneratedLocalizationCodeFile)'))</GeneratedLocalizationOutputsExist>
+    <LocalizationSourceDir>$(MSBuildProjectDirectory)\Resources\Localization</LocalizationSourceDir>
+    <LocalizationGeneratorProject>$(MSBuildProjectDirectory)\..\..\tools\LocalizationResourceGenerator\LocalizationResourceGenerator.csproj</LocalizationGeneratorProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <LocalizationJsonFiles Include="$(LocalizationSourceDir)\LocalizationResource*.json" />
+    <LocalizationGeneratorInputs Include="$(LocalizationGeneratorProject)" />
+    <LocalizationGeneratorInputs Include="$(MSBuildProjectDirectory)\..\..\tools\LocalizationResourceGenerator\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- If outputs already exist, include them in compile/embedded lists so builds referencing this project from IDE work -->
+    <Compile Include="$(GeneratedLocalizationCodeFile)" Visible="false" AutoGen="true" Condition="'$(GeneratedLocalizationOutputsExist)' == 'true'" />
+    <EmbeddedResource Include="$(GeneratedLocalizationResxDir)\LocalizationResource.resx" Visible="false" Condition="'$(GeneratedLocalizationOutputsExist)' == 'true'">
+      <Link>Resources\LocalizationResource.resx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(GeneratedLocalizationResxDir)\LocalizationResource.*.resx" Exclude="$(GeneratedLocalizationResxDir)\LocalizationResource.resx" Visible="false" Condition="'$(GeneratedLocalizationOutputsExist)' == 'true'">
+      <Link>Resources\%(Filename)%(Extension)</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <Target Name="GenerateLocalizationArtifacts" BeforeTargets="PrepareResourceNames;CoreCompile"
+          Inputs="@(LocalizationJsonFiles);@(LocalizationGeneratorInputs);$(MSBuildProjectFullPath)"
+          Outputs="$(GeneratedLocalizationStampFile)">
+    <MakeDir Directories="$(GeneratedLocalizationDir);$(GeneratedLocalizationResxDir)" />
+    <Exec Command="dotnet run --project &quot;$(LocalizationGeneratorProject)&quot; -- &quot;$(LocalizationSourceDir)&quot; &quot;$(GeneratedLocalizationResxDir)&quot; &quot;$(GeneratedLocalizationCodeFile)&quot;" />
+    <WriteLinesToFile File="$(GeneratedLocalizationStampFile)" Lines="$([System.DateTime]::UtcNow.ToString('O'))" Overwrite="true" />
+
+    <ItemGroup Condition="'$(GeneratedLocalizationOutputsExist)' != 'true'">
+      <Compile Include="$(GeneratedLocalizationCodeFile)" Visible="false" AutoGen="true" />
+      <EmbeddedResource Include="$(GeneratedLocalizationResxDir)\LocalizationResource.resx" Visible="false">
+        <Link>Resources\LocalizationResource.resx</Link>
+      </EmbeddedResource>
+      <EmbeddedResource Include="$(GeneratedLocalizationResxDir)\LocalizationResource.*.resx" Exclude="$(GeneratedLocalizationResxDir)\LocalizationResource.resx" Visible="false">
+        <Link>Resources\%(Filename)%(Extension)</Link>
+      </EmbeddedResource>
+    </ItemGroup>
+  </Target>
+
+</Project>
