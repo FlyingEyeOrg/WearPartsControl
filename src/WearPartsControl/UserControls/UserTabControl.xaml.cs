@@ -226,11 +226,6 @@ namespace WearPartsControl.UserControls
             return FindDescendant<ToggleButton>(container);
         }
 
-        private string GetHeader(int index)
-        {
-            return Headers.ElementAt(index);
-        }
-
         private static T? FindDescendant<T>(DependencyObject root) where T : DependencyObject
         {
             var childCount = VisualTreeHelper.GetChildrenCount(root);
