@@ -5,11 +5,6 @@
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<UseWPF>true</UseWPF>
 		<ApplicationIcon>assets/app.ico</ApplicationIcon>
-		<GeneratedLocalizationDir>$(MSBuildThisFileDirectory)obj\$(Configuration)\GeneratedLocalization</GeneratedLocalizationDir>
-		<GeneratedLocalizationCodeFile>$(GeneratedLocalizationDir)\LocalizationCatalog.g.cs</GeneratedLocalizationCodeFile>
-		<GeneratedLocalizationResxDir>$(GeneratedLocalizationDir)\Resources</GeneratedLocalizationResxDir>
-		<GeneratedLocalizationStampFile>$(GeneratedLocalizationDir)\LocalizationResourceGenerator.stamp</GeneratedLocalizationStampFile>
-		<GeneratedLocalizationOutputsExist>$([System.IO.File]::Exists('$(GeneratedLocalizationCodeFile)'))</GeneratedLocalizationOutputsExist>
 	</PropertyGroup>
 
 	<ItemGroup>

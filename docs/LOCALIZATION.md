@@ -1,0 +1,49 @@
+本项目的本地化生成器与使用说明
+
+概述
+
+本项目采用 JSON 作为翻译源（可表达对象、数组、嵌套等结构）。构建期间运行一个生成器，将 JSON 展平成 `.resx` 并生成强类型访问代码 `LocalizationCatalog.g.cs`，然后将这些文件作为编译产物与嵌入资源处理。生成产物只存在于 `obj` 目录，不应提交到版本控制。
+
+位置
+
+- 生成器工具：tools/LocalizationResourceGenerator
+- 构建期 targets：build/Localization.targets
+- JSON 源目录：src/WearPartsControl/Resources/Localization
+- 生成输出：src/WearPartsControl/obj/<Configuration>/GeneratedLocalization/
+
+如何工作（简要）
+
+- MSBuild 在编译前会调用 `GenerateLocalizationArtifacts` 目标（由 `build/Localization.targets` 提供）。
+- 目标以 JSON 源作为输入（Items），并以一个 `stamp` 文件作为输出标记，从而支持增量构建。
+- 生成器会写出 `.resx` 文件到 `obj/.../GeneratedLocalization/Resources/`，并生成 `LocalizationCatalog.g.cs` 到 `obj/.../GeneratedLocalization/`。
+- 构建目标会将生成的 `.resx` 作为 `EmbeddedResource`（通过 `Link` 指向 `Resources/` 路径）并把生成的 `.g.cs` 包含到编译中。
+
+手动运行生成器（调试）
+
+在项目根目录下运行：
+
+```powershell
+# 以 Debug 配置为例，手动生成到 obj/Debug 路径
+dotnet run --project tools/LocalizationResourceGenerator/LocalizationResourceGenerator.csproj -- src/WearPartsControl/Resources/Localization src/WearPartsControl/obj/Debug/GeneratedLocalization/Resources src/WearPartsControl/obj/Debug/GeneratedLocalization/LocalizationCatalog.g.cs
+```
+
+增量构建注意事项
+
+- 生成目标使用 `Inputs`（JSON 文件 + 生成器代码）和 `Outputs`（stamp 文件）判断是否需要重新执行。如果 JSON 没有变化，生成器不会再次运行。
+- 如需强制重新生成，删除 `src/WearPartsControl/obj/<Configuration>/GeneratedLocalization/LocalizationResourceGenerator.stamp`，或直接删除整个 `GeneratedLocalization` 目录，然后重新构建。
+
+提交策略
+
+- 不要提交 `obj/*/GeneratedLocalization` 下生成的 `.resx` 或 `.g.cs` 文件。
+- 仓库中保留 JSON 源文件（`src/WearPartsControl/Resources/Localization/*.json`）和生成器源码（`tools/LocalizationResourceGenerator`）。
+
+故障排查
+
+- 若构建时报 MissingManifestResourceException，请先确保生成器成功运行并生成了 `.resx` 到 obj 目录，再检查生成的 `EmbeddedResource` 是否被正确包含。
+- 若生成器报编码错误，确认环境支持 UTF-8，或手动运行生成器查看详细错误。
+
+维护建议
+
+- 若需要进一步拆分或增强生成器逻辑（例如支持更多数据类型或生成不同格式），在 `tools/LocalizationResourceGenerator` 中扩展 `LocalizationArtifactGenerator` 的实现并补充对应单元测试。
+
+如需我把这段内容合并回根 README.md，我可以替你把这部分追加进去并提交。
