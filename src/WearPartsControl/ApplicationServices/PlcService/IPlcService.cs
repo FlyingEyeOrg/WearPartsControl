@@ -8,7 +8,7 @@ public interface IPlcService
 
     void Disconnect();
 
-    string ReadAsString(string address, PlcDataType dataType, int retryCount = 1);
+    TValue Read<TValue>(string address, int retryCount = 1);
 
-    void WriteFromString(string address, PlcDataType dataType, string value, int retryCount = 1);
+    void Write<TValue>(string address, TValue value, int retryCount = 1);
 }

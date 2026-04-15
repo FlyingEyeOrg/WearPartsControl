@@ -10,5 +10,26 @@
       "易损件更换历史",
       "用户配置"
     ]
+  },
+  "PlcService": {
+    "Errors": {
+      "ReadAddressEmpty": "读取地址不能为空。",
+      "WriteAddressEmpty": "写入地址不能为空。",
+      "WriteValueNull": "写入值不能为空。",
+      "ProtocolNotSupported": "不支持的 PLC 协议类型",
+      "BeckhoffAmsNetIdMissing": "倍福连接需要配置 BeckhoffAmsNetId。",
+      "TargetIpInvalid": "PLC 目标 IP 地址格式错误。",
+      "HostIpInvalid": "主机 IP 地址格式错误。",
+      "HostIpNotFoundInSubnet": "未找到与 PLC 同网段的本机网卡，请配置 HostIpAddress。",
+      "ClientNotInitialized": "PLC 客户端尚未初始化。",
+      "ConnectFailed": "连接失败",
+      "ReconnectWithoutOptions": "缺少 PLC 连接参数，无法重连。",
+      "ReadFailed": "读取失败",
+      "WriteFailed": "写入失败",
+      "ReadDataTypeNotSupported": "不支持的读取数据类型",
+      "WriteDataTypeNotSupported": "不支持的写入数据类型",
+      "OperationRetryFailed": "PLC 操作失败。",
+      "RetryStillFailed": "重试后仍然失败。"
+    }
   }
 }

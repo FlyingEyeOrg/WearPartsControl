@@ -16,14 +16,3 @@ public enum PlcProtocolType
     Keyence,
     ModbusTcp
 }
-
-public enum PlcDataType
-{
-    Int,
-    DInt,
-    UDInt,
-    Bool,
-    Real,
-    LReal,
-    String
-}

@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Net;
 using HslCommunication;
 using HslCommunication.Core.Device;
@@ -13,6 +12,7 @@ using PlcGateway.Core;
 using PlcGateway.Drivers.Beckhoff;
 using PlcGateway.Drivers.Inovance;
 using TwinCAT.Ads;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices.PlcService;
@@ -20,11 +20,17 @@ namespace WearPartsControl.ApplicationServices.PlcService;
 public sealed class PlcService : IPlcService, IDisposable
 {
     private readonly object _syncRoot = new();
+    private readonly ILocalizationService _localizationService;
     private DeviceTcpNet? _deviceTcpNet;
     private InovanceEIPDriver? _inovanceEipDriver;
     private BeckhoffAdsSymbolDriver? _beckhoffAdsSymbolDriver;
     private PlcConnectionOptions? _currentOptions;
     private bool _isDisposed;
+
+    public PlcService(ILocalizationService localizationService)
+    {
+        _localizationService = localizationService;
+    }
 
     public bool IsConnected { get; private set; }
 
@@ -67,40 +73,40 @@ public sealed class PlcService : IPlcService, IDisposable
         }
     }
 
-    public string ReadAsString(string address, PlcDataType dataType, int retryCount = 1)
+    public TValue Read<TValue>(string address, int retryCount = 1)
     {
         lock (_syncRoot)
         {
             ThrowIfDisposed();
             if (string.IsNullOrWhiteSpace(address))
             {
-                throw new ArgumentException("读取地址为空", nameof(address));
+                throw new ArgumentException(L("PlcService.Errors.ReadAddressEmpty"), nameof(address));
             }
 
             EnsureConnected();
-            return ExecuteWithReconnectRetry(retryCount, () => ReadCore(address, dataType));
+            return ExecuteWithReconnectRetry(retryCount, () => ReadCore<TValue>(address));
         }
     }
 
-    public void WriteFromString(string address, PlcDataType dataType, string value, int retryCount = 1)
+    public void Write<TValue>(string address, TValue value, int retryCount = 1)
     {
         lock (_syncRoot)
         {
             ThrowIfDisposed();
             if (string.IsNullOrWhiteSpace(address))
             {
-                throw new ArgumentException("写入地址为空", nameof(address));
+                throw new ArgumentException(L("PlcService.Errors.WriteAddressEmpty"), nameof(address));
             }
 
-            if (string.IsNullOrWhiteSpace(value))
+            if (value is null)
             {
-                throw new ArgumentException("写入数据为空", nameof(value));
+                throw new ArgumentNullException(nameof(value), L("PlcService.Errors.WriteValueNull"));
             }
 
             EnsureConnected();
             ExecuteWithReconnectRetry(retryCount, () =>
             {
-                WriteCore(address, dataType, value);
+                WriteCore(address, value);
                 return true;
             });
         }
@@ -170,15 +176,15 @@ public sealed class PlcService : IPlcService, IDisposable
                 };
                 break;
             default:
-                throw new NotSupportedException($"不支持的 PLC 类型: {options.PlcType}");
+                throw new NotSupportedException($"{L("PlcService.Errors.ProtocolNotSupported")} : {options.PlcType}");
         }
     }
 
-    private static BeckhoffAdsSymbolDriver BuildBeckhoffSymbolDriver(PlcConnectionOptions options)
+    private BeckhoffAdsSymbolDriver BuildBeckhoffSymbolDriver(PlcConnectionOptions options)
     {
         if (string.IsNullOrWhiteSpace(options.BeckhoffAmsNetId))
         {
-            throw new BusinessException("倍福 PLC 连接缺少 BeckhoffAmsNetId");
+            throw new BusinessException(L("PlcService.Errors.BeckhoffAmsNetIdMissing"));
         }
 
         var amsNetId = new AmsNetId(options.BeckhoffAmsNetId);
@@ -203,18 +209,18 @@ public sealed class PlcService : IPlcService, IDisposable
         return client;
     }
 
-    private static InovanceEIPDriver BuildInovanceEipClient(PlcConnectionOptions options)
+    private InovanceEIPDriver BuildInovanceEipClient(PlcConnectionOptions options)
     {
         if (!IPAddress.TryParse(options.IpAddress, out var targetIpAddress))
         {
-            throw new BusinessException("PLC 目标 IP 地址格式错误");
+            throw new BusinessException(L("PlcService.Errors.TargetIpInvalid"));
         }
 
         var hostIpAddress = ResolveHostIpAddress(options.HostIpAddress, targetIpAddress);
         return new InovanceEIPDriver(hostIpAddress, targetIpAddress);
     }
 
-    private static IPAddress ResolveHostIpAddress(string? configuredHostIp, IPAddress targetIpAddress)
+    private IPAddress ResolveHostIpAddress(string? configuredHostIp, IPAddress targetIpAddress)
     {
         if (!string.IsNullOrWhiteSpace(configuredHostIp))
         {
@@ -223,13 +229,13 @@ public sealed class PlcService : IPlcService, IDisposable
                 return configuredAddress;
             }
 
-            throw new BusinessException("主机 IP 地址格式错误");
+            throw new BusinessException(L("PlcService.Errors.HostIpInvalid"));
         }
 
         var scannedAddress = NetworkAddressScanner.TryScanAsync(targetIpAddress).GetAwaiter().GetResult();
         if (scannedAddress is null)
         {
-            throw new BusinessException("未找到与 PLC 同网段的本地网卡地址，请配置 HostIpAddress");
+            throw new BusinessException(L("PlcService.Errors.HostIpNotFoundInSubnet"));
         }
 
         return scannedAddress;
@@ -254,7 +260,7 @@ public sealed class PlcService : IPlcService, IDisposable
         if (_deviceTcpNet is null)
         {
             IsConnected = false;
-            throw new InvalidOperationException("PLC 客户端未初始化");
+            throw new InvalidOperationException(L("PlcService.Errors.ClientNotInitialized"));
         }
 
         _deviceTcpNet.ConnectTimeOut = timeoutMilliseconds;
@@ -262,7 +268,7 @@ public sealed class PlcService : IPlcService, IDisposable
         if (!result.IsSuccess)
         {
             IsConnected = false;
-            throw new BusinessException($"连接失败: {result.Message}", details: $"ErrorCode={result.ErrorCode}");
+            throw new BusinessException($"{L("PlcService.Errors.ConnectFailed")}: {result.Message}", details: $"ErrorCode={result.ErrorCode}");
         }
 
         IsConnected = true;
@@ -282,7 +288,7 @@ public sealed class PlcService : IPlcService, IDisposable
     {
         if (_currentOptions is null)
         {
-            throw new InvalidOperationException("PLC 尚未配置连接参数，无法重连");
+            throw new InvalidOperationException(L("PlcService.Errors.ReconnectWithoutOptions"));
         }
 
         DisconnectInternal();
@@ -319,109 +325,147 @@ public sealed class PlcService : IPlcService, IDisposable
         }
     }
 
-    private string ReadCore(string address, PlcDataType dataType)
+    private TValue ReadCore<TValue>(string address)
     {
         if (_inovanceEipDriver is not null)
         {
-            return _inovanceEipDriver.ReadByType(address, dataType);
+            return _inovanceEipDriver.Read<TValue>(address);
         }
 
         if (_beckhoffAdsSymbolDriver is not null)
         {
-            return dataType switch
-            {
-                PlcDataType.Int => PlcTypeConversion.ToInvariantString(_beckhoffAdsSymbolDriver.Read<short>(address)),
-                PlcDataType.DInt => PlcTypeConversion.ToInvariantString(_beckhoffAdsSymbolDriver.Read<int>(address)),
-                PlcDataType.UDInt => PlcTypeConversion.ToInvariantString(_beckhoffAdsSymbolDriver.Read<uint>(address)),
-                PlcDataType.Bool => PlcTypeConversion.ToInvariantString(_beckhoffAdsSymbolDriver.Read<bool>(address)),
-                PlcDataType.Real => PlcTypeConversion.ToInvariantString(_beckhoffAdsSymbolDriver.Read<float>(address)),
-                PlcDataType.LReal => PlcTypeConversion.ToInvariantString(_beckhoffAdsSymbolDriver.Read<double>(address)),
-                PlcDataType.String => _beckhoffAdsSymbolDriver.Read<string>(address),
-                _ => throw new NotSupportedException($"不支持读取的数据类型: {dataType}")
-            };
+            return _beckhoffAdsSymbolDriver.Read<TValue>(address);
         }
 
         if (_deviceTcpNet is null)
         {
-            throw new InvalidOperationException("PLC 客户端未初始化");
+            throw new InvalidOperationException(L("PlcService.Errors.ClientNotInitialized"));
         }
 
-        var stringLength = (ushort)Math.Clamp(_currentOptions?.StringReadLength ?? 99, 1, ushort.MaxValue);
-        return dataType switch
+        if (typeof(TValue) == typeof(string))
         {
-            PlcDataType.Int => ReadAndConvert(_deviceTcpNet.ReadInt16(address)),
-            PlcDataType.DInt => ReadAndConvert(_deviceTcpNet.ReadInt32(address)),
-            PlcDataType.UDInt => ReadAndConvert(_deviceTcpNet.ReadUInt32(address)),
-            PlcDataType.Bool => ReadAndConvert(_deviceTcpNet.ReadBool(address)),
-            PlcDataType.Real => ReadAndConvert(_deviceTcpNet.ReadFloat(address)),
-            PlcDataType.LReal => ReadAndConvert(_deviceTcpNet.ReadDouble(address)),
-            PlcDataType.String => ReadAndConvert(_deviceTcpNet.ReadString(address, stringLength)),
-            _ => throw new NotSupportedException($"不支持读取的数据类型: {dataType}")
-        };
+            var stringLength = (ushort)Math.Clamp(_currentOptions?.StringReadLength ?? 99, 1, ushort.MaxValue);
+            var result = _deviceTcpNet.ReadString(address, stringLength);
+            EnsureOperateSuccess(result, L("PlcService.Errors.ReadFailed"));
+            return (TValue)(object)(result.Content ?? string.Empty);
+        }
+
+        if (typeof(TValue) == typeof(bool))
+        {
+            var result = _deviceTcpNet.ReadBool(address);
+            EnsureOperateSuccess(result, L("PlcService.Errors.ReadFailed"));
+            return (TValue)(object)result.Content;
+        }
+
+        if (typeof(TValue) == typeof(short))
+        {
+            var result = _deviceTcpNet.ReadInt16(address);
+            EnsureOperateSuccess(result, L("PlcService.Errors.ReadFailed"));
+            return (TValue)(object)result.Content;
+        }
+
+        if (typeof(TValue) == typeof(int))
+        {
+            var result = _deviceTcpNet.ReadInt32(address);
+            EnsureOperateSuccess(result, L("PlcService.Errors.ReadFailed"));
+            return (TValue)(object)result.Content;
+        }
+
+        if (typeof(TValue) == typeof(uint))
+        {
+            var result = _deviceTcpNet.ReadUInt32(address);
+            EnsureOperateSuccess(result, L("PlcService.Errors.ReadFailed"));
+            return (TValue)(object)result.Content;
+        }
+
+        if (typeof(TValue) == typeof(float))
+        {
+            var result = _deviceTcpNet.ReadFloat(address);
+            EnsureOperateSuccess(result, L("PlcService.Errors.ReadFailed"));
+            return (TValue)(object)result.Content;
+        }
+
+        if (typeof(TValue) == typeof(double))
+        {
+            var result = _deviceTcpNet.ReadDouble(address);
+            EnsureOperateSuccess(result, L("PlcService.Errors.ReadFailed"));
+            return (TValue)(object)result.Content;
+        }
+
+        throw new NotSupportedException($"{L("PlcService.Errors.ReadDataTypeNotSupported")}: {typeof(TValue).Name}");
     }
 
-    private void WriteCore(string address, PlcDataType dataType, string value)
+    private void WriteCore<TValue>(string address, TValue value)
     {
         if (_inovanceEipDriver is not null)
         {
-            _inovanceEipDriver.WriteByType(address, dataType, value);
+            _inovanceEipDriver.Write(address, value);
             return;
         }
 
         if (_beckhoffAdsSymbolDriver is not null)
         {
-            switch (dataType)
-            {
-                case PlcDataType.Int:
-                    _beckhoffAdsSymbolDriver.Write(address, PlcTypeConversion.ParseInt16(value));
-                    return;
-                case PlcDataType.DInt:
-                    _beckhoffAdsSymbolDriver.Write(address, PlcTypeConversion.ParseInt32(value));
-                    return;
-                case PlcDataType.UDInt:
-                    _beckhoffAdsSymbolDriver.Write(address, PlcTypeConversion.ParseUInt32(value));
-                    return;
-                case PlcDataType.Bool:
-                    _beckhoffAdsSymbolDriver.Write(address, PlcTypeConversion.ParseBool(value));
-                    return;
-                case PlcDataType.Real:
-                    _beckhoffAdsSymbolDriver.Write(address, PlcTypeConversion.ParseFloat(value));
-                    return;
-                case PlcDataType.LReal:
-                    _beckhoffAdsSymbolDriver.Write(address, PlcTypeConversion.ParseDouble(value));
-                    return;
-                case PlcDataType.String:
-                    _beckhoffAdsSymbolDriver.Write(address, value);
-                    return;
-                default:
-                    throw new NotSupportedException($"不支持写入的数据类型: {dataType}");
-            }
+            _beckhoffAdsSymbolDriver.Write(address, value);
+            return;
         }
 
         if (_deviceTcpNet is null)
         {
-            throw new InvalidOperationException("PLC 客户端未初始化");
+            throw new InvalidOperationException(L("PlcService.Errors.ClientNotInitialized"));
         }
 
-        var writeResult = dataType switch
+        OperateResult writeResult;
+
+        if (value is bool boolValue)
         {
-            PlcDataType.Int => _deviceTcpNet.Write(address, PlcTypeConversion.ParseInt16(value)),
-            PlcDataType.DInt => _deviceTcpNet.Write(address, PlcTypeConversion.ParseInt32(value)),
-            PlcDataType.UDInt => _deviceTcpNet.Write(address, PlcTypeConversion.ParseUInt32(value)),
-            PlcDataType.Bool => _deviceTcpNet.Write(address, PlcTypeConversion.ParseBool(value)),
-            PlcDataType.Real => _deviceTcpNet.Write(address, PlcTypeConversion.ParseFloat(value)),
-            PlcDataType.LReal => _deviceTcpNet.Write(address, PlcTypeConversion.ParseDouble(value)),
-            PlcDataType.String => _deviceTcpNet.Write(address, value),
-            _ => throw new NotSupportedException($"不支持写入的数据类型: {dataType}")
-        };
+            writeResult = _deviceTcpNet.Write(address, boolValue);
+            EnsureOperateSuccess(writeResult, L("PlcService.Errors.WriteFailed"));
+            return;
+        }
 
-        EnsureOperateSuccess(writeResult, "写入失败");
-    }
+        if (value is short shortValue)
+        {
+            writeResult = _deviceTcpNet.Write(address, shortValue);
+            EnsureOperateSuccess(writeResult, L("PlcService.Errors.WriteFailed"));
+            return;
+        }
 
-    private static string ReadAndConvert<T>(OperateResult<T> result)
-    {
-        EnsureOperateSuccess(result, "读取失败");
-        return PlcTypeConversion.ToInvariantString(result.Content);
+        if (value is int intValue)
+        {
+            writeResult = _deviceTcpNet.Write(address, intValue);
+            EnsureOperateSuccess(writeResult, L("PlcService.Errors.WriteFailed"));
+            return;
+        }
+
+        if (value is uint uintValue)
+        {
+            writeResult = _deviceTcpNet.Write(address, uintValue);
+            EnsureOperateSuccess(writeResult, L("PlcService.Errors.WriteFailed"));
+            return;
+        }
+
+        if (value is float floatValue)
+        {
+            writeResult = _deviceTcpNet.Write(address, floatValue);
+            EnsureOperateSuccess(writeResult, L("PlcService.Errors.WriteFailed"));
+            return;
+        }
+
+        if (value is double doubleValue)
+        {
+            writeResult = _deviceTcpNet.Write(address, doubleValue);
+            EnsureOperateSuccess(writeResult, L("PlcService.Errors.WriteFailed"));
+            return;
+        }
+
+        if (value is string stringValue)
+        {
+            writeResult = _deviceTcpNet.Write(address, stringValue);
+            EnsureOperateSuccess(writeResult, L("PlcService.Errors.WriteFailed"));
+            return;
+        }
+
+        throw new NotSupportedException($"{L("PlcService.Errors.WriteDataTypeNotSupported")}: {typeof(TValue).Name}");
     }
 
     private static void EnsureOperateSuccess(OperateResult result, string action)
@@ -455,11 +499,13 @@ public sealed class PlcService : IPlcService, IDisposable
             }
         }
 
-        throw new BusinessException("PLC 操作失败", details: "重试后仍失败", innerException: lastException);
+        throw new BusinessException(L("PlcService.Errors.OperationRetryFailed"), details: L("PlcService.Errors.RetryStillFailed"), innerException: lastException);
     }
 
     private void ThrowIfDisposed()
     {
         ObjectDisposedException.ThrowIf(_isDisposed, this);
     }
+
+    private string L(string key) => _localizationService[key];
 }

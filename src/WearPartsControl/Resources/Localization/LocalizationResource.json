@@ -10,5 +10,26 @@
       "Replacement History",
       "User Settings"
     ]
+  },
+  "PlcService": {
+    "Errors": {
+      "ReadAddressEmpty": "Read address cannot be empty.",
+      "WriteAddressEmpty": "Write address cannot be empty.",
+      "WriteValueNull": "Write value cannot be null.",
+      "ProtocolNotSupported": "Unsupported PLC protocol type",
+      "BeckhoffAmsNetIdMissing": "BeckhoffAmsNetId is required.",
+      "TargetIpInvalid": "PLC target IP address is invalid.",
+      "HostIpInvalid": "Host IP address is invalid.",
+      "HostIpNotFoundInSubnet": "No local NIC found in the same subnet as PLC, please configure HostIpAddress.",
+      "ClientNotInitialized": "PLC client is not initialized.",
+      "ConnectFailed": "Connect failed",
+      "ReconnectWithoutOptions": "Cannot reconnect because PLC connection options are missing.",
+      "ReadFailed": "Read failed",
+      "WriteFailed": "Write failed",
+      "ReadDataTypeNotSupported": "Read data type is not supported",
+      "WriteDataTypeNotSupported": "Write data type is not supported",
+      "OperationRetryFailed": "PLC operation failed.",
+      "RetryStillFailed": "Operation still failed after retries."
+    }
   }
 }
