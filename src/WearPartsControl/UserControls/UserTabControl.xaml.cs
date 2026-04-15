@@ -62,6 +62,15 @@ namespace WearPartsControl.UserControls
         public static readonly DependencyProperty CommandProperty =
             DependencyProperty.Register(nameof(Command), typeof(ICommand), typeof(UserTabControl), new PropertyMetadata(null));
 
+        public object? SelectedContent
+        {
+            get => GetValue(SelectedContentProperty);
+            set => SetValue(SelectedContentProperty, value);
+        }
+
+        public static readonly DependencyProperty SelectedContentProperty =
+            DependencyProperty.Register(nameof(SelectedContent), typeof(object), typeof(UserTabControl), new PropertyMetadata(null));
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             _isLoaded = true;

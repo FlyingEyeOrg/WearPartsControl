@@ -60,6 +60,7 @@
         <uc:UserTabControl Grid.Row="1"
                            Headers="{Binding Tabs}"
                            TabIndex="0"
+                           SelectedContent="{Binding SelectedContent}"
                            Command="{Binding TabChangedCommand}" />
     </Grid>
 </Window>

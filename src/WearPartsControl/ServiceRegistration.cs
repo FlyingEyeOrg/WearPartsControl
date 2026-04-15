@@ -7,6 +7,7 @@ using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.Exceptions;
 using WearPartsControl.Views;
 using WearPartsControl.ViewModels;
+using WearPartsControl.UserControls;
 
 namespace WearPartsControl;
 
@@ -32,5 +33,7 @@ public static class ServiceRegistration
         builder.RegisterType<LoginService>().As<ILoginService>().SingleInstance();
         builder.RegisterType<MainWindowViewModel>().AsSelf().InstancePerDependency();
         // Add other services as needed
+
+        builder.RegisterType<ReplacePartUserControl>().AsSelf();
     }
 }

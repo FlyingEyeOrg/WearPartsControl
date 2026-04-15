@@ -9,18 +9,29 @@
              d:DesignHeight="450"
              d:DesignWidth="800">
     <UserControl.Resources>
-        <SolidColorBrush x:Key="TabHoverBrush" Color="#FFB7D3EA" />
-        <SolidColorBrush x:Key="TabTextBrush" Color="#FF1F2D3D" />
+        <SolidColorBrush x:Key="TabHoverBrush"
+                         Color="#FFB7D3EA" />
+        <SolidColorBrush x:Key="TabTextBrush"
+                         Color="#FF1F2D3D" />
 
-        <Style x:Key="TabItemButtonStyle" TargetType="ToggleButton">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="VerticalContentAlignment" Value="Stretch" />
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Foreground" Value="{StaticResource TabTextBrush}" />
+        <Style x:Key="TabItemButtonStyle"
+               TargetType="ToggleButton">
+            <Setter Property="Background"
+                    Value="Transparent" />
+            <Setter Property="BorderThickness"
+                    Value="0" />
+            <Setter Property="Padding"
+                    Value="0" />
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Stretch" />
+            <Setter Property="VerticalContentAlignment"
+                    Value="Stretch" />
+            <Setter Property="HorizontalAlignment"
+                    Value="Stretch" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="Foreground"
+                    Value="{StaticResource TabTextBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
@@ -32,14 +43,22 @@
                         <ControlTemplate.Triggers>
                             <MultiTrigger>
                                 <MultiTrigger.Conditions>
-                                    <Condition Property="IsMouseOver" Value="True" />
-                                    <Condition Property="IsChecked" Value="False" />
+                                    <Condition Property="IsMouseOver"
+                                               Value="True" />
+                                    <Condition Property="IsChecked"
+                                               Value="False" />
                                 </MultiTrigger.Conditions>
-                                <Setter TargetName="RootBorder" Property="Background" Value="{StaticResource TabHoverBrush}" />
+                                <Setter TargetName="RootBorder"
+                                        Property="Background"
+                                        Value="{StaticResource TabHoverBrush}" />
                             </MultiTrigger>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="RootBorder" Property="Background" Value="{DynamicResource PrimaryBrush}" />
-                                <Setter Property="Foreground" Value="White" />
+                            <Trigger Property="IsChecked"
+                                     Value="True">
+                                <Setter TargetName="RootBorder"
+                                        Property="Background"
+                                        Value="{DynamicResource PrimaryBrush}" />
+                                <Setter Property="Foreground"
+                                        Value="White" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -55,9 +74,9 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-                <ScrollViewer Width="200"
-                                            VerticalScrollBarVisibility="Auto">
-                        <!--
+        <ScrollViewer Width="200"
+                      VerticalScrollBarVisibility="Auto">
+            <!--
                                 说明：
                                 - 使用 AlternationCount + AlternationIndex 的技巧来在 DataTemplate 内获取当前项的索引。
                                     将 AlternationCount 设为一个足够大的值（如 Int32.MaxValue）使 AlternationIndex 在项数远小于该值时
@@ -65,18 +84,18 @@
                                 - 模板内的按钮命名为 TabButton，代码通过 ContentPresenter.ContentTemplate.FindName("TabButton", presenter)
                                     精确获取对应按钮实例，代替通用的视觉树递归。
                         -->
-                        <ItemsControl x:Name="TabItemsControl"
-                                                    AlternationCount="{x:Static sys:Int32.MaxValue}"
-                                                    ItemsSource="{Binding Headers, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:UserTabControl}}">
+            <ItemsControl x:Name="TabItemsControl"
+                          AlternationCount="{x:Static sys:Int32.MaxValue}"
+                          ItemsSource="{Binding Headers, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:UserTabControl}}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                            <!-- ToggleButton: Tag 绑定为容器的 AlternationIndex（即项索引），
+                        <!-- ToggleButton: Tag 绑定为容器的 AlternationIndex（即项索引），
                                 Name 为 TabButton 以便代码直接从 ContentPresenter.ContentTemplate.FindName 获取实例 -->
-                            <ToggleButton x:Name="TabButton"
-                                       Checked="TabItemButton_Checked"
-                                       Tag="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex)}"
-                                       Unchecked="TabItemButton_Unchecked"
-                                       Style="{StaticResource TabItemButtonStyle}">
+                        <ToggleButton x:Name="TabButton"
+                                      Checked="TabItemButton_Checked"
+                                      Tag="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex)}"
+                                      Unchecked="TabItemButton_Unchecked"
+                                      Style="{StaticResource TabItemButtonStyle}">
                             <Border Padding="12,10">
                                 <TextBlock FontSize="16"
                                            HorizontalAlignment="Center"
@@ -95,7 +114,7 @@
 
         <Border Grid.Column="2"
                 Background="AliceBlue">
-            <ContentPresenter />
+            <ContentPresenter Content="{Binding SelectedContent, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:UserTabControl}}" />
         </Border>
     </Grid>
 </UserControl>
