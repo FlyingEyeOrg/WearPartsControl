@@ -1,9 +1,10 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Resources;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Localization;
+using WearPartsControl.ApplicationServices.Localization.Generated;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 
 namespace WearPartsControl.ApplicationServices.Localization;
@@ -11,17 +12,20 @@ namespace WearPartsControl.ApplicationServices.Localization;
 public sealed class LocalizationService : ILocalizationService
 {
     private static readonly string[] SupportedCultures = ["zh-CN", "en-US"];
+    private static readonly ResourceManager ResourceManager = new("WearPartsControl.Resources.LocalizationResource", typeof(LocalizationService).Assembly);
 
-    private readonly IStringLocalizer<LocalizationResource> _localizer;
     private readonly ISaveInfoStore _saveInfoStore;
+    private readonly LocalizationCatalog _catalog;
 
-    public LocalizationService(IStringLocalizer<LocalizationResource> localizer, ISaveInfoStore saveInfoStore)
+    public LocalizationService(ISaveInfoStore saveInfoStore)
     {
-        _localizer = localizer;
         _saveInfoStore = saveInfoStore;
+        _catalog = new LocalizationCatalog(GetString);
     }
 
-    public string this[string name] => _localizer[name];
+    public string this[string name] => GetString(name);
+
+    public LocalizationCatalog Catalog => _catalog;
 
     public CultureInfo CurrentCulture => CultureInfo.CurrentUICulture;
 
@@ -46,5 +50,10 @@ public sealed class LocalizationService : ILocalizationService
 
         var config = new LocalizationOptionsSaveInfo { CultureName = culture.Name };
         await _saveInfoStore.WriteAsync(config, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static string GetString(string name)
+    {
+        return ResourceManager.GetString(name, CultureInfo.CurrentUICulture) ?? name;
     }
 }

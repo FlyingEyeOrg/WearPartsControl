@@ -1,0 +1,14 @@
+{
+  "FriendlyErrorTitle": "Notice",
+  "UnexpectedError": "An unexpected error occurred.",
+  "MainWindow": {
+    "Title": "WearPartsControl",
+    "Tabs": [
+      "Wear Part Replacement",
+      "Equipment Information",
+      "Wear Part Management",
+      "Replacement History",
+      "User Settings"
+    ]
+  }
+}

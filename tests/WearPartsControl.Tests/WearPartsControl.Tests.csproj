@@ -16,5 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\WearPartsControl\WearPartsControl.csproj" />
+    <ProjectReference Include="..\..\tools\LocalizationResourceGenerator\LocalizationResourceGenerator.csproj" />
   </ItemGroup>
 </Project>

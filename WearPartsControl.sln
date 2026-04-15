@@ -9,6 +9,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WearPartsControl", "WearPar
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WearPartsControl", "src\WearPartsControl\WearPartsControl.csproj", "{9FC0404B-5E4C-4144-B37D-25C140719B26}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{04DE0C0D-DCBE-4010-8848-3BF25A64011F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{6377F68F-3EE4-4B98-B926-D6577A5DB058}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WearPartsControl.Tests", "tests\WearPartsControl.Tests\WearPartsControl.Tests.csproj", "{00C3A844-F998-F118-0CC7-1158056435FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalizationResourceGenerator", "tools\LocalizationResourceGenerator\LocalizationResourceGenerator.csproj", "{BA93437D-BD90-445E-1EAC-98F0CEEC081A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +27,14 @@ Global
 		{9FC0404B-5E4C-4144-B37D-25C140719B26}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9FC0404B-5E4C-4144-B37D-25C140719B26}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9FC0404B-5E4C-4144-B37D-25C140719B26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00C3A844-F998-F118-0CC7-1158056435FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00C3A844-F998-F118-0CC7-1158056435FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00C3A844-F998-F118-0CC7-1158056435FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00C3A844-F998-F118-0CC7-1158056435FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA93437D-BD90-445E-1EAC-98F0CEEC081A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA93437D-BD90-445E-1EAC-98F0CEEC081A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA93437D-BD90-445E-1EAC-98F0CEEC081A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA93437D-BD90-445E-1EAC-98F0CEEC081A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -26,6 +42,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{3861E59C-A431-46D7-860A-267C105BFE93} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{9FC0404B-5E4C-4144-B37D-25C140719B26} = {3861E59C-A431-46D7-860A-267C105BFE93}
+		{00C3A844-F998-F118-0CC7-1158056435FB} = {04DE0C0D-DCBE-4010-8848-3BF25A64011F}
+		{BA93437D-BD90-445E-1EAC-98F0CEEC081A} = {6377F68F-3EE4-4B98-B926-D6577A5DB058}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AFB6738E-22C5-4591-BF74-2442DAE92677}

@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -17,20 +14,14 @@ namespace WearPartsControl.ViewModels
         public MainWindowViewModel(ILocalizationService localizationService)
         {
             Title = localizationService["MainWindow.Title"];
+            Values = localizationService.Catalog.MainWindow.Tabs;
             TabChangedCommand = new RelayCommand<string?>(OnTabChanged);
-            _selectedTabIndex = 10;
+            _selectedTabIndex = -1;
         }
 
         public string Title { get; set; }
 
-        public IEnumerable<string> Values { get; set; } = new List<string>()
-        {
-            "易损件更换",
-            "设备基础信息",
-            "易损件管理",
-            "易损件更换历史",
-            "用户配置"
-        };
+        public IEnumerable<string> Values { get; }
 
         public int SelectedTabIndex
         {

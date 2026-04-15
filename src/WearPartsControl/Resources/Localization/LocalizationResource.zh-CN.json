@@ -1,0 +1,14 @@
+{
+  "FriendlyErrorTitle": "提示",
+  "UnexpectedError": "发生了未处理的异常。",
+  "MainWindow": {
+    "Title": "易损件防呆管控系统",
+    "Tabs": [
+      "易损件更换",
+      "设备基础信息",
+      "易损件管理",
+      "易损件更换历史",
+      "用户配置"
+    ]
+  }
+}
