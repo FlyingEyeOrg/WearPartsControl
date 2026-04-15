@@ -1,11 +1,11 @@
 using System;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
+using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.Exceptions;
@@ -20,12 +20,14 @@ public sealed class SpacerManagementService : ISpacerManagementService
     };
 
     private readonly ILocalizationService _localizationService;
+    private readonly IHttpJsonService _httpJsonService;
     private readonly ISaveInfoStore _saveInfoStore;
 
-    public SpacerManagementService(ILocalizationService localizationService, ISaveInfoStore saveInfoStore)
+    public SpacerManagementService(ILocalizationService localizationService, ISaveInfoStore saveInfoStore, IHttpJsonService httpJsonService)
     {
         _localizationService = localizationService;
         _saveInfoStore = saveInfoStore;
+        _httpJsonService = httpJsonService;
     }
 
     public SpacerInfo ParseCode(string code, string site, string resourceId, string cardId)
@@ -81,33 +83,32 @@ public sealed class SpacerManagementService : ISpacerManagementService
             throw new UserFriendlyException(L("SpacerManagement.TimeoutInvalid"));
         }
 
-        using var handler = new HttpClientHandler();
-        if (options.IgnoreServerCertificateErrors)
+        using var request = new HttpRequestMessage(HttpMethod.Post, options.ValidationUrl)
         {
-            handler.ServerCertificateCustomValidationCallback = static (_, _, _, _) => true;
-        }
-
-        using var httpClient = new HttpClient(handler)
-        {
-            Timeout = TimeSpan.FromMilliseconds(options.TimeoutMilliseconds)
+            Content = JsonContent.Create(info)
         };
-
-        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
         try
         {
-            using var response = await httpClient.PostAsync(options.ValidationUrl, JsonContent.Create(info), cancellationToken).ConfigureAwait(false);
+            var response = await _httpJsonService.SendRawAsync(
+                request,
+                new HttpRequestExecutionOptions
+                {
+                    TimeoutMilliseconds = options.TimeoutMilliseconds,
+                    IgnoreServerCertificateErrors = options.IgnoreServerCertificateErrors
+                },
+                cancellationToken).ConfigureAwait(false);
 
             if (response.IsSuccessStatusCode)
             {
                 return;
             }
 
-            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             SpacerApiErrorResponse? apiError = null;
             try
             {
-                apiError = JsonSerializer.Deserialize<SpacerApiErrorResponse>(content, JsonOptions);
+                apiError = JsonSerializer.Deserialize<SpacerApiErrorResponse>(response.Body, JsonOptions);
             }
             catch (JsonException)
             {
@@ -122,7 +123,7 @@ public sealed class SpacerManagementService : ISpacerManagementService
                     apiError.Error.Details);
             }
 
-                    throw new UserFriendlyException(string.Format(L("SpacerManagement.HttpFailed"), (int)response.StatusCode));
+                    throw new UserFriendlyException(string.Format(L("SpacerManagement.HttpFailed"), response.StatusCode));
         }
         catch (UserFriendlyException)
         {

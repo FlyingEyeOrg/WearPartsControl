@@ -55,5 +55,10 @@
     "Timeout": "垫片验证请求超时。",
     "NetworkFailed": "垫片验证网络请求失败: {0}",
     "Unknown": "垫片验证未知错误: {0}"
+  },
+  "HttpService": {
+    "HttpRequestFailed": "HTTP 请求失败: {0} {1}",
+    "EmptyPayload": "HTTP 响应为空或 JSON 反序列化失败。",
+    "InvalidTimeout": "HTTP 超时时间必须大于 0。"
   }
 }

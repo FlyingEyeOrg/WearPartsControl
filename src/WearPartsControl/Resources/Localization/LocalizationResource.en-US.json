@@ -55,5 +55,10 @@
     "Timeout": "Spacer validation timeout.",
     "NetworkFailed": "Spacer validation network request failed: {0}",
     "Unknown": "Spacer validation unknown error: {0}"
+  },
+  "HttpService": {
+    "HttpRequestFailed": "HTTP request failed: {0} {1}",
+    "EmptyPayload": "HTTP response is empty or JSON deserialization failed.",
+    "InvalidTimeout": "HTTP timeout must be greater than 0."
   }
 }

@@ -8,5 +8,5 @@ public interface IComNotificationService
 {
     ValueTask NotifyGroupAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default);
 
-    ValueTask NotifyWorkAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, bool isAt = false, CancellationToken cancellationToken = default);
+    ValueTask NotifyWorkAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default);
 }

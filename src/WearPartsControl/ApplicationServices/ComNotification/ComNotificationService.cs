@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
+using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.Exceptions;
@@ -22,12 +23,14 @@ public sealed class ComNotificationService : IComNotificationService
     };
 
     private readonly ILocalizationService _localizationService;
+    private readonly IHttpJsonService _httpJsonService;
     private readonly ISaveInfoStore _saveInfoStore;
 
-    public ComNotificationService(ISaveInfoStore saveInfoStore, ILocalizationService localizationService)
+    public ComNotificationService(ISaveInfoStore saveInfoStore, ILocalizationService localizationService, IHttpJsonService httpJsonService)
     {
         _saveInfoStore = saveInfoStore;
         _localizationService = localizationService;
+        _httpJsonService = httpJsonService;
     }
 
     public async ValueTask NotifyGroupAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default)
@@ -69,7 +72,7 @@ public sealed class ComNotificationService : IComNotificationService
         await SendAsync(request, options, "群消息", cancellationToken).ConfigureAwait(false);
     }
 
-    public async ValueTask NotifyWorkAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, bool isAt = false, CancellationToken cancellationToken = default)
+    public async ValueTask NotifyWorkAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default)
     {
         var options = await _saveInfoStore.ReadAsync<ComNotificationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
         if (!options.Enabled)
@@ -91,7 +94,7 @@ public sealed class ComNotificationService : IComNotificationService
             ToAll = false,
             ToUser = users,
             UserType = options.UserType,
-            IsAt = isAt,
+            IsAt = false,
             TemplateData = new ComPushTemplateData
             {
                 Title = title,
@@ -146,29 +149,29 @@ public sealed class ComNotificationService : IComNotificationService
 
     private async ValueTask SendAsync(ComPushRequest request, ComNotificationOptionsSaveInfo options, string scene, CancellationToken cancellationToken)
     {
-        using var handler = new HttpClientHandler
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, options.PushUrl)
         {
-            ServerCertificateCustomValidationCallback = static (_, _, _, _) => true
+            Content = JsonContent.Create(request)
         };
-
-        using var httpClient = new HttpClient(handler)
-        {
-            Timeout = TimeSpan.FromMilliseconds(options.TimeoutMilliseconds)
-        };
-
-        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        httpClient.DefaultRequestHeaders.Remove("deipaaskeyauth");
-        httpClient.DefaultRequestHeaders.Add("deipaaskeyauth", options.DeIpaasKeyAuth);
+        httpRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        httpRequest.Headers.Remove("deipaaskeyauth");
+        httpRequest.Headers.Add("deipaaskeyauth", options.DeIpaasKeyAuth);
 
         try
         {
-            using var response = await httpClient.PostAsync(options.PushUrl, JsonContent.Create(request), cancellationToken).ConfigureAwait(false);
-            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var response = await _httpJsonService.SendRawAsync(
+                httpRequest,
+                new HttpRequestExecutionOptions
+                {
+                    TimeoutMilliseconds = options.TimeoutMilliseconds,
+                    IgnoreServerCertificateErrors = true
+                },
+                cancellationToken).ConfigureAwait(false);
 
             ComPushResponse? result = null;
             try
             {
-                result = JsonSerializer.Deserialize<ComPushResponse>(content, JsonOptions);
+                result = JsonSerializer.Deserialize<ComPushResponse>(response.Body, JsonOptions);
             }
             catch (JsonException)
             {
@@ -179,7 +182,7 @@ public sealed class ComNotificationService : IComNotificationService
             {
                 if (!response.IsSuccessStatusCode)
                 {
-                    throw new UserFriendlyException(string.Format(L("ComNotification.HttpFailed"), scene, (int)response.StatusCode));
+                    throw new UserFriendlyException(string.Format(L("ComNotification.HttpFailed"), scene, response.StatusCode));
                 }
 
                 throw new UserFriendlyException(string.Format(L("ComNotification.ResponseParseFailed"), scene));
