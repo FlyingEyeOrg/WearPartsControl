@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="WearPartsControl.UserControls.PartsManagementUserControl"
+﻿<UserControl x:Class="WearPartsControl.UserControls.PartUpdateRecordUserControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -46,7 +46,26 @@
             </StackPanel>
         </StackPanel>
         <DataGrid Grid.Row="1"
-                  Margin="0 8 0 0"></DataGrid>
+                  Margin="0 8 0 0">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="名称"
+                                    Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="旧编码"
+                                    Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="新编码"
+                                    Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="当前寿命"
+                                    Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="预警寿命"
+                                    Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="停机寿命"
+                                    Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="更换时间"
+                                    Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="操作员"
+                                    Width="*"></DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
         <StackPanel Margin="8 8 8 8"
                     Grid.Row="2"
                     Orientation="Horizontal">

@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace WearPartsControl.UserControls
 {
     /// <summary>
-    /// PartsManagementUserControl.xaml 的交互逻辑
+    /// PartUpdateRecordUserControl.xaml 的交互逻辑
     /// </summary>
-    public partial class PartsManagementUserControl : UserControl
+    public partial class PartUpdateRecordUserControl : UserControl
     {
-        public PartsManagementUserControl()
+        public PartUpdateRecordUserControl()
         {
             InitializeComponent();
         }
