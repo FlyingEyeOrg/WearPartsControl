@@ -16,6 +16,14 @@ namespace WearPartsControl.UserControls
     /// </summary>
     public partial class UserTabControl : UserControl
     {
+        // 说明 (简要):
+        // - 在模板中我们通过 ItemsControl.AlternationIndex 将容器索引暴露到模板内的控件(Tag)，
+        //   这样可以在点击时 O(1) 读取项索引，避免运行时遍历视觉树或依赖 header 唯一性。
+        // - 当外部替换 `Headers` 时，容器需要时间重新生成；因此我们在 Headers 变更时
+        //   延迟到 DispatcherPriority.Loaded 再执行 ApplySelection，以确保容器已经可用。
+        // - 将 PrimaryBrush 使用 DynamicResource 而非 StaticResource，降低对宿主资源初始化顺序的耦合，
+        //   这也让控件更容易在测试环境中加载。
+
         private readonly DependencyPropertyDescriptor _tabIndexDescriptor;
         private bool _isLoaded;
         private bool _isTabIndexChangedSubscribed;

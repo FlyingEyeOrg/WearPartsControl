@@ -55,18 +55,28 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <ScrollViewer Width="200"
-                      VerticalScrollBarVisibility="Auto">
-            <ItemsControl x:Name="TabItemsControl"
-                          AlternationCount="{x:Static sys:Int32.MaxValue}"
-                          ItemsSource="{Binding Headers, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:UserTabControl}}">
+                <ScrollViewer Width="200"
+                                            VerticalScrollBarVisibility="Auto">
+                        <!--
+                                说明：
+                                - 使用 AlternationCount + AlternationIndex 的技巧来在 DataTemplate 内获取当前项的索引。
+                                    将 AlternationCount 设为一个足够大的值（如 Int32.MaxValue）使 AlternationIndex 在项数远小于该值时
+                                    等同于序号（index），从而可以在模板中把索引绑定到控件的 Tag 上，避免运行时遍历视觉树。
+                                - 模板内的按钮命名为 TabButton，代码通过 ContentPresenter.ContentTemplate.FindName("TabButton", presenter)
+                                    精确获取对应按钮实例，代替通用的视觉树递归。
+                        -->
+                        <ItemsControl x:Name="TabItemsControl"
+                                                    AlternationCount="{x:Static sys:Int32.MaxValue}"
+                                                    ItemsSource="{Binding Headers, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:UserTabControl}}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ToggleButton x:Name="TabButton"
-                                      Checked="TabItemButton_Checked"
-                                      Tag="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex)}"
-                                      Unchecked="TabItemButton_Unchecked"
-                                      Style="{StaticResource TabItemButtonStyle}">
+                            <!-- ToggleButton: Tag 绑定为容器的 AlternationIndex（即项索引），
+                                Name 为 TabButton 以便代码直接从 ContentPresenter.ContentTemplate.FindName 获取实例 -->
+                            <ToggleButton x:Name="TabButton"
+                                       Checked="TabItemButton_Checked"
+                                       Tag="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex)}"
+                                       Unchecked="TabItemButton_Unchecked"
+                                       Style="{StaticResource TabItemButtonStyle}">
                             <Border Padding="12,10">
                                 <TextBlock FontSize="16"
                                            HorizontalAlignment="Center"
