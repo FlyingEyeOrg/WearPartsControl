@@ -55,6 +55,15 @@ namespace WearPartsControl.ViewModels
 
         private void OnTabChanged(int index)
         {
+            switch (index)
+            {
+                case 1:
+                    SelectedContent = _serviceProvider.GetRequiredService<DeviceInfoUserControl>();
+                    break;
+                default:
+                    SelectedContent = _serviceProvider.GetRequiredService<ReplacePartUserControl>();
+                    break;
+            }
         }
     }
 }
