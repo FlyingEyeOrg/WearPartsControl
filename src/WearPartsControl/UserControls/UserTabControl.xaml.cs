@@ -84,7 +84,7 @@ namespace WearPartsControl.UserControls
             }
             else if (_isLoaded)
             {
-                ExecuteCommand(GetHeader(index), index);
+                ExecuteCommand(index);
             }
         }
 
@@ -142,7 +142,7 @@ namespace WearPartsControl.UserControls
 
             if (invokeCommand)
             {
-                ExecuteCommand(headers[normalizedIndex], normalizedIndex);
+                ExecuteCommand(normalizedIndex);
             }
         }
 
@@ -163,24 +163,16 @@ namespace WearPartsControl.UserControls
             }
         }
 
-        private void ExecuteCommand(string header, int index)
+        private void ExecuteCommand(int index)
         {
             if (Command is null)
             {
                 return;
             }
 
-            // 优先尝试传递当前的 TabIndex（整数索引），以符合默认行为；
-            // 若命令不接受索引参数，则回退到使用 header 字符串。
             if (Command.CanExecute(index))
             {
                 Command.Execute(index);
-                return;
-            }
-
-            if (Command.CanExecute(header))
-            {
-                Command.Execute(header);
             }
         }
 
@@ -201,13 +193,26 @@ namespace WearPartsControl.UserControls
 
         private int GetItemIndex(DependencyObject element)
         {
-            var container = ItemsControl.ContainerFromElement(TabItemsControl, element);
-            if (container is null)
+            var current = element;
+            while (current != null)
             {
-                return -1;
+                try
+                {
+                    var index = TabItemsControl.ItemContainerGenerator.IndexFromContainer(current);
+                    if (index >= 0)
+                    {
+                        return index;
+                    }
+                }
+                catch
+                {
+                    // Ignore and continue walking up the tree
+                }
+
+                current = VisualTreeHelper.GetParent(current);
             }
 
-            return TabItemsControl.ItemContainerGenerator.IndexFromContainer(container);
+            return -1;
         }
 
         private ToggleButton? FindButtonByIndex(int index)
