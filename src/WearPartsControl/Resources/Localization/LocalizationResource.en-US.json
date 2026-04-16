@@ -60,5 +60,15 @@
     "HttpRequestFailed": "HTTP request failed: {0} {1}",
     "EmptyPayload": "HTTP response is empty or JSON deserialization failed.",
     "InvalidTimeout": "HTTP timeout must be greater than 0."
+  },
+  "LoginService": {
+    "FactoryConfigNotFound": "No MHR config item for site {0} in configuration file.",
+    "PasswordEmpty": "MHR password is empty for site {0}.",
+    "LoginNameEmpty": "MHR login name is empty for site {0}.",
+    "GetUsersUrlEmpty": "MHR get-users URL is empty for site {0}.",
+    "LoginUrlEmpty": "MHR login URL is empty for site {0}.",
+    "UserListEmpty": "No user list data found for current resource ID.",
+    "ConfigFileNotFound": "MHR configuration file not found: {0}",
+    "ConfigDeserializeFailed": "Failed to parse MHR configuration file."
   }
 }

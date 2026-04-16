@@ -11,10 +11,10 @@ public class MhrConfig
     public string Password { get; set; } = string.Empty;
 
     [JsonPropertyName("LoginInfos")]
-    public List<MhrLoginInfo> LoginInfos { get; set; } = new();
+    public List<MhrSiteLoginInfo> LoginInfos { get; set; } = new();
 }
 
-public class MhrLoginInfo
+public class MhrSiteLoginInfo
 {
     [JsonPropertyName("site")]
     public string Site { get; set; } = string.Empty;

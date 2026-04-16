@@ -60,5 +60,15 @@
     "HttpRequestFailed": "HTTP 请求失败: {0} {1}",
     "EmptyPayload": "HTTP 响应为空或 JSON 反序列化失败。",
     "InvalidTimeout": "HTTP 超时时间必须大于 0。"
+  },
+  "LoginService": {
+    "FactoryConfigNotFound": "配置文件中不存在基地 {0} 的 MHR 配置项。",
+    "PasswordEmpty": "基地 {0} 的 MHR 认证密码为空。",
+    "LoginNameEmpty": "基地 {0} 的 MHR 登录名为空。",
+    "GetUsersUrlEmpty": "基地 {0} 的 MHR 用户认证 URL 为空。",
+    "LoginUrlEmpty": "基地 {0} 的 MHR 用户登录 URL 为空。",
+    "UserListEmpty": "未获取到当前资源号的用户列表信息。",
+    "ConfigFileNotFound": "未找到 MHR 配置文件: {0}",
+    "ConfigDeserializeFailed": "MHR 配置文件解析失败。"
   }
 }
