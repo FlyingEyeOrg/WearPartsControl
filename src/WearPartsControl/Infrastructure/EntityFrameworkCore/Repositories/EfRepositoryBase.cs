@@ -5,10 +5,10 @@ using WearPartsControl.Domain.Repositories;
 
 namespace WearPartsControl.Infrastructure.EntityFrameworkCore.Repositories;
 
-public abstract class EfRepositoryBase<TEntity, TId, TDbContext> : IRepository<TEntity, TId>
+public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<TEntity, TId>
+    where TDbContext : DbContextBase
     where TEntity : class, IEntity<TId>
     where TId : notnull
-    where TDbContext : DbContextBase
 {
     protected EfRepositoryBase(TDbContext dbContext)
     {
@@ -91,32 +91,35 @@ public abstract class EfRepositoryBase<TEntity, TId, TDbContext> : IRepository<T
             }
         }
 
-        if (entity is IHasCreationTime creationTime && creationTime.CreatedAt == default)
+        if (entity is IHasAuditTime auditTime)
         {
-            creationTime.CreatedAt = now;
+            if (auditTime.CreatedAt == default)
+            {
+                auditTime.CreatedAt = now;
+            }
+
+            auditTime.UpdatedAt = now;
         }
 
-        if (entity is IHasModificationTime modificationTime)
+        if (entity is IHasAuditUser auditUser)
         {
-            modificationTime.UpdatedAt = now;
-        }
+            if (string.IsNullOrWhiteSpace(auditUser.CreatedBy))
+            {
+                auditUser.CreatedBy = "system";
+            }
 
-        if (entity is IHasCreator creator && string.IsNullOrWhiteSpace(creator.CreatedBy))
-        {
-            creator.CreatedBy = "system";
-        }
-
-        if (entity is IHasModifier modifier && string.IsNullOrWhiteSpace(modifier.UpdatedBy))
-        {
-            modifier.UpdatedBy = entity is IHasCreator c ? c.CreatedBy : "system";
+            if (string.IsNullOrWhiteSpace(auditUser.UpdatedBy))
+            {
+                auditUser.UpdatedBy = auditUser.CreatedBy;
+            }
         }
     }
 
     protected virtual void SetUpdateDefaults(TEntity entity)
     {
-        if (entity is IHasModificationTime modificationTime)
+        if (entity is IHasAuditTime auditTime)
         {
-            modificationTime.UpdatedAt = DateTime.UtcNow;
+            auditTime.UpdatedAt = DateTime.UtcNow;
         }
 
         if (entity is ISoftDelete softDelete)
@@ -125,9 +128,9 @@ public abstract class EfRepositoryBase<TEntity, TId, TDbContext> : IRepository<T
             softDelete.DeletedAt = null;
         }
 
-        if (entity is IHasModifier modifier && string.IsNullOrWhiteSpace(modifier.UpdatedBy))
+        if (entity is IHasAuditUser auditUser && string.IsNullOrWhiteSpace(auditUser.UpdatedBy))
         {
-            modifier.UpdatedBy = "system";
+            auditUser.UpdatedBy = "system";
         }
     }
 
@@ -138,15 +141,15 @@ public abstract class EfRepositoryBase<TEntity, TId, TDbContext> : IRepository<T
             softDelete.IsDeleted = true;
             softDelete.DeletedAt = DateTime.UtcNow;
 
-            if (entity is IHasModificationTime modificationTime)
+            if (entity is IHasAuditTime auditTime)
             {
-                modificationTime.UpdatedAt = softDelete.DeletedAt.Value;
+                auditTime.UpdatedAt = softDelete.DeletedAt.Value;
             }
         }
 
-        if (entity is IHasModifier modifier && string.IsNullOrWhiteSpace(modifier.UpdatedBy))
+        if (entity is IHasAuditUser auditUser && string.IsNullOrWhiteSpace(auditUser.UpdatedBy))
         {
-            modifier.UpdatedBy = "system";
+            auditUser.UpdatedBy = "system";
         }
     }
 

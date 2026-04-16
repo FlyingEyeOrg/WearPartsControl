@@ -8,10 +8,8 @@ namespace WearPartsControl.Domain.Entities;
 
 public sealed class BasicConfigurationEntity :
     IEntity<Guid>,
-    IHasCreationTime,
-    IHasModificationTime,
-    IHasCreator,
-    IHasModifier,
+    IHasAuditTime,
+    IHasAuditUser,
     ISoftDelete,
     IHasRemark
 {

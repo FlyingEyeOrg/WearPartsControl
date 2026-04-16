@@ -1,6 +1,8 @@
 namespace WearPartsControl.Domain.Entities.Interfaces;
 
-public interface IHasModifier
+public interface IHasAuditUser
 {
+    string CreatedBy { get; set; }
+
     string UpdatedBy { get; set; }
 }

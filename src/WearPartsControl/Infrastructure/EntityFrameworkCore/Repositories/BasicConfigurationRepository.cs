@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace WearPartsControl.Infrastructure.EntityFrameworkCore.Repositories;
 
-public sealed class BasicConfigurationRepository : EfRepositoryBase<BasicConfigurationEntity, Guid, DbContextBase>, IBasicConfigurationRepository
+public sealed class BasicConfigurationRepository : EfRepositoryBase<DbContextBase, BasicConfigurationEntity, Guid>, IBasicConfigurationRepository
 {
     public BasicConfigurationRepository(DbContextBase dbContext)
         : base(dbContext)

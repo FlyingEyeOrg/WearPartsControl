@@ -6,10 +6,8 @@ namespace WearPartsControl.Domain.Entities;
 
 public sealed class WearPartDefinitionEntity :
     IEntity<Guid>,
-    IHasCreationTime,
-    IHasModificationTime,
-    IHasCreator,
-    IHasModifier,
+    IHasAuditTime,
+    IHasAuditUser,
     ISoftDelete,
     IHasRemark
 {
