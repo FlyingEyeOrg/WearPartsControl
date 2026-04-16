@@ -11,7 +11,7 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
     private const string WarningSeverity = "Warning";
     private const string ShutdownSeverity = "Shutdown";
 
-    private readonly IBasicConfigurationRepository _basicConfigurationRepository;
+    private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
     private readonly IWearPartRepository _wearPartRepository;
     private readonly IExceedLimitRecordRepository _exceedLimitRecordRepository;
     private readonly IPlcService _plcService;
@@ -19,14 +19,14 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
 
     public WearPartMonitorService(
         ICurrentUserAccessor currentUserAccessor,
-        IBasicConfigurationRepository basicConfigurationRepository,
+        IClientAppConfigurationRepository clientAppConfigurationRepository,
         IWearPartRepository wearPartRepository,
         IExceedLimitRecordRepository exceedLimitRecordRepository,
         IPlcService plcService,
         IComNotificationService notificationService)
         : base(currentUserAccessor)
     {
-        _basicConfigurationRepository = basicConfigurationRepository;
+        _clientAppConfigurationRepository = clientAppConfigurationRepository;
         _wearPartRepository = wearPartRepository;
         _exceedLimitRecordRepository = exceedLimitRecordRepository;
         _plcService = plcService;
@@ -36,16 +36,16 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
     public async Task<IReadOnlyList<WearPartMonitorResult>> MonitorByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
     {
         var normalizedResourceNumber = NormalizeRequired(resourceNumber, "资源号不能为空。");
-        var basicConfiguration = await _basicConfigurationRepository.GetByResourceNumberAsync(normalizedResourceNumber, cancellationToken).ConfigureAwait(false)
-            ?? throw new EntityNotFoundException($"未找到资源号为 {normalizedResourceNumber} 的基础配置。");
+        var clientAppConfiguration = await _clientAppConfigurationRepository.GetByResourceNumberAsync(normalizedResourceNumber, cancellationToken).ConfigureAwait(false)
+            ?? throw new EntityNotFoundException($"未找到资源号为 {normalizedResourceNumber} 的客户端配置。");
 
-        var definitions = await _wearPartRepository.ListByBasicConfigurationAsync(basicConfiguration.Id, cancellationToken).ConfigureAwait(false);
+        var definitions = await _wearPartRepository.ListByClientAppConfigurationAsync(clientAppConfiguration.Id, cancellationToken).ConfigureAwait(false);
         if (definitions.Count == 0)
         {
             return [];
         }
 
-        _plcService.Connect(WearPartPlcAccessor.BuildConnectionOptions(basicConfiguration));
+        _plcService.Connect(WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration));
 
         var now = DateTime.UtcNow;
         var shouldSaveChanges = false;
@@ -62,21 +62,21 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
 
             if (status == WearPartMonitorStatus.Warning)
             {
-                notificationTriggered = await HandleEventAsync(basicConfiguration, definition, currentValue, warningValue, shutdownValue, now, WarningSeverity, cancellationToken).ConfigureAwait(false);
+                notificationTriggered = await HandleEventAsync(clientAppConfiguration, definition, currentValue, warningValue, shutdownValue, now, WarningSeverity, cancellationToken).ConfigureAwait(false);
                 shouldSaveChanges |= notificationTriggered;
             }
             else if (status == WearPartMonitorStatus.Shutdown)
             {
-                notificationTriggered = await HandleEventAsync(basicConfiguration, definition, currentValue, warningValue, shutdownValue, now, ShutdownSeverity, cancellationToken).ConfigureAwait(false);
+                notificationTriggered = await HandleEventAsync(clientAppConfiguration, definition, currentValue, warningValue, shutdownValue, now, ShutdownSeverity, cancellationToken).ConfigureAwait(false);
                 shouldSaveChanges |= notificationTriggered;
-                WearPartPlcAccessor.WriteShutdownSignal(_plcService, basicConfiguration.ShutdownPointAddress, shutdown: definition.IsShutdown);
+                WearPartPlcAccessor.WriteShutdownSignal(_plcService, clientAppConfiguration.ShutdownPointAddress, shutdown: definition.IsShutdown);
             }
 
             results.Add(new WearPartMonitorResult
             {
                 WearPartDefinitionId = definition.Id,
-                BasicConfigurationId = basicConfiguration.Id,
-                ResourceNumber = basicConfiguration.ResourceNumber,
+                ClientAppConfigurationId = clientAppConfiguration.Id,
+                ResourceNumber = clientAppConfiguration.ResourceNumber,
                 PartName = definition.PartName,
                 CurrentValue = currentValue,
                 WarningValue = warningValue,
@@ -94,14 +94,14 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
         return results;
     }
 
-    public async Task<IReadOnlyList<ExceedLimitRecord>> GetExceedLimitRecordsAsync(Guid basicConfigurationId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ExceedLimitRecord>> GetExceedLimitRecordsAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
     {
-        var records = await _exceedLimitRecordRepository.ListByBasicConfigurationAsync(basicConfigurationId, cancellationToken).ConfigureAwait(false);
+        var records = await _exceedLimitRecordRepository.ListByClientAppConfigurationAsync(clientAppConfigurationId, cancellationToken).ConfigureAwait(false);
         return records.Select(MapToRecord).ToArray();
     }
 
     private async Task<bool> HandleEventAsync(
-        BasicConfigurationEntity basicConfiguration,
+        ClientAppConfigurationEntity clientAppConfiguration,
         WearPartDefinitionEntity definition,
         double currentValue,
         double warningValue,
@@ -115,10 +115,10 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
             return false;
         }
 
-        var message = $"资源号 {basicConfiguration.ResourceNumber} 的易损件 {definition.PartName} 当前值 {currentValue}，预警值 {warningValue}，停机值 {shutdownValue}，级别 {severity}。";
+        var message = $"资源号 {clientAppConfiguration.ResourceNumber} 的易损件 {definition.PartName} 当前值 {currentValue}，预警值 {warningValue}，停机值 {shutdownValue}，级别 {severity}。";
         var entity = new ExceedLimitRecordEntity
         {
-            BasicConfigurationId = basicConfiguration.Id,
+            ClientAppConfigurationId = clientAppConfiguration.Id,
             WearPartDefinitionId = definition.Id,
             PartName = definition.PartName,
             CurrentValue = currentValue,
@@ -169,7 +169,7 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
             ShutdownValue = entity.ShutdownValue,
             Severity = entity.Severity,
             OccurredAt = entity.OccurredAt,
-            BasicConfigurationId = entity.BasicConfigurationId,
+            ClientAppConfigurationId = entity.ClientAppConfigurationId,
             NotificationMessage = entity.NotificationMessage
         };
     }

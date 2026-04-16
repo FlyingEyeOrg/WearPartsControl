@@ -1,9 +1,10 @@
+using System;
 using WearPartsControl.Domain.Entities.Interfaces;
 using WearPartsControl.Domain.Validation;
 
 namespace WearPartsControl.Domain.Entities;
 
-public sealed class WearPartReplacementRecordEntity : Entity, IHasAuditTime, IHasAuditUser, IHasRemark
+public sealed class WearPartReplacementRecordEntity : Entity, IHasAuditTime, IHasAuditUser, ISoftDelete
 {
     public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -13,9 +14,11 @@ public sealed class WearPartReplacementRecordEntity : Entity, IHasAuditTime, IHa
 
     public string? UpdatedBy { get; set; } = string.Empty;
 
-    public string? Remark { get; set; }
+    public bool IsDeleted { get; set; }
 
-    public Guid BasicConfigurationId { get; set; }
+    public DateTime? DeletedAt { get; set; }
+
+    public Guid ClientAppConfigurationId { get; set; }
 
     public Guid WearPartDefinitionId { get; set; }
 
@@ -47,7 +50,7 @@ public sealed class WearPartReplacementRecordEntity : Entity, IHasAuditTime, IHa
 
     public string? DataValue { get; set; }
 
-    public BasicConfigurationEntity BasicConfiguration { get; set; } = null!;
+    public ClientAppConfigurationEntity ClientAppConfiguration { get; set; } = null!;
 
     public WearPartDefinitionEntity WearPartDefinition { get; set; } = null!;
 

@@ -15,7 +15,8 @@ public sealed class WearPartReplacementRecordEntityConfiguration : IEntityTypeCo
         builder.Property(x => x.UpdatedAt).IsRequired();
         builder.Property(x => x.CreatedBy).HasMaxLength(64).IsRequired();
         builder.Property(x => x.UpdatedBy).HasMaxLength(64).IsRequired();
-        builder.Property(x => x.Remark).HasMaxLength(512);
+        builder.Property(x => x.IsDeleted).IsRequired();
+        builder.Property(x => x.DeletedAt);
         builder.Property(x => x.SiteCode).HasMaxLength(64).IsRequired();
         builder.Property(x => x.PartName).HasMaxLength(128).IsRequired();
         builder.Property(x => x.OldBarcode).HasMaxLength(128);
@@ -30,9 +31,11 @@ public sealed class WearPartReplacementRecordEntityConfiguration : IEntityTypeCo
         builder.Property(x => x.DataType).HasMaxLength(64);
         builder.Property(x => x.DataValue).HasMaxLength(512);
 
-        builder.HasOne(x => x.BasicConfiguration)
+        builder.HasQueryFilter(x => !x.IsDeleted);
+
+        builder.HasOne(x => x.ClientAppConfiguration)
             .WithMany(x => x.WearPartReplacementRecords)
-            .HasForeignKey(x => x.BasicConfigurationId)
+            .HasForeignKey(x => x.ClientAppConfigurationId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.WearPartDefinition)

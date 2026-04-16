@@ -16,7 +16,7 @@ public sealed class LoginWindowViewModelTests
         var loginService = new StubLoginService();
         var viewModel = new LoginWindowViewModel(
             loginService,
-            new StubBasicConfigurationRepository(),
+            new StubClientAppConfigurationRepository(),
             new StubAppSettingsService());
 
         bool? dialogResult = null;
@@ -74,13 +74,13 @@ public sealed class LoginWindowViewModelTests
         public ValueTask SaveAsync(AppSettings settings, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
     }
 
-    private sealed class StubBasicConfigurationRepository : IBasicConfigurationRepository
+    private sealed class StubClientAppConfigurationRepository : IClientAppConfigurationRepository
     {
         public IUnitOfWork UnitOfWork => throw new NotSupportedException();
 
-        public Task<BasicConfigurationEntity?> GetByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
+        public Task<ClientAppConfigurationEntity?> GetByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<BasicConfigurationEntity?>(new BasicConfigurationEntity
+            return Task.FromResult<ClientAppConfigurationEntity?>(new ClientAppConfigurationEntity
             {
                 SiteCode = "SITE-01",
                 FactoryCode = "FACTORY-01",
@@ -99,22 +99,22 @@ public sealed class LoginWindowViewModelTests
             throw new NotSupportedException();
         }
 
-        public Task<IReadOnlyList<BasicConfigurationEntity>> ListAsync(CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ClientAppConfigurationEntity>> ListAsync(CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
         }
 
-        public Task<BasicConfigurationEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public Task<ClientAppConfigurationEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
         }
 
-        public Task AddAsync(BasicConfigurationEntity entity, CancellationToken cancellationToken = default)
+        public Task AddAsync(ClientAppConfigurationEntity entity, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
         }
 
-        public Task UpdateAsync(BasicConfigurationEntity entity, CancellationToken cancellationToken = default)
+        public Task UpdateAsync(ClientAppConfigurationEntity entity, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
         }

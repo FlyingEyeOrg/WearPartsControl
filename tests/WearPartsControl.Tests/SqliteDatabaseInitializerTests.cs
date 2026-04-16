@@ -28,7 +28,7 @@ public sealed class SqliteDatabaseInitializerTests : IDisposable
         await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
         Assert.True(await verifyContext.Database.CanConnectAsync());
 
-        var count = await verifyContext.BasicConfigurations.CountAsync();
+        var count = await verifyContext.ClientAppConfigurations.CountAsync();
         Assert.Equal(0, count);
     }
 

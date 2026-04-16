@@ -7,9 +7,7 @@ namespace WearPartsControl.Domain.Entities;
 public sealed class WearPartDefinitionEntity :
     Entity,
     IHasAuditTime,
-    IHasAuditUser,
-    ISoftDelete,
-    IHasRemark
+    IHasAuditUser
 {
     public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -19,13 +17,7 @@ public sealed class WearPartDefinitionEntity :
 
     public string? UpdatedBy { get; set; } = string.Empty;
 
-    public bool IsDeleted { get; set; }
-
-    public DateTime? DeletedAt { get; set; }
-
-    public string? Remark { get; set; }
-
-    public Guid BasicConfigurationId { get; set; }
+    public Guid ClientAppConfigurationId { get; set; }
 
     public string ResourceNumber { get; set; } = string.Empty;
 
@@ -57,7 +49,7 @@ public sealed class WearPartDefinitionEntity :
 
     public string BarcodeWriteAddress { get; set; } = string.Empty;
 
-    public BasicConfigurationEntity BasicConfiguration { get; set; } = null!;
+    public ClientAppConfigurationEntity ClientAppConfiguration { get; set; } = null!;
 
     public ICollection<WearPartReplacementRecordEntity> WearPartReplacementRecords { get; set; } = new List<WearPartReplacementRecordEntity>();
 

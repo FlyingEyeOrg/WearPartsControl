@@ -24,8 +24,8 @@ public static class EntityFrameworkCoreServiceRegistration
             .As<WearPartsControl.Domain.Repositories.IUnitOfWork>()
             .InstancePerLifetimeScope();
 
-        builder.RegisterType<BasicConfigurationRepository>()
-            .As<IBasicConfigurationRepository>()
+        builder.RegisterType<ClientAppConfigurationRepository>()
+            .As<IClientAppConfigurationRepository>()
             .InstancePerLifetimeScope();
 
         builder.RegisterType<WearPartRepository>()

@@ -26,13 +26,13 @@ public sealed class WearPartRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task AddAsync_ThenListByBasicConfigurationAsync_ShouldPersistEntity()
+    public async Task AddAsync_ThenListByClientAppConfigurationAsync_ShouldPersistEntity()
     {
         var basicConfigurationId = Guid.NewGuid();
 
         await using (var dbContext = await _dbContextFactory.CreateDbContextAsync())
         {
-            dbContext.BasicConfigurations.Add(new BasicConfigurationEntity
+            dbContext.ClientAppConfigurations.Add(new ClientAppConfigurationEntity
             {
                 Id = basicConfigurationId,
                 SiteCode = "S01",
@@ -60,7 +60,7 @@ public sealed class WearPartRepositoryTests : IDisposable
         var definition = new WearPartDefinitionEntity
         {
             Id = Guid.NewGuid(),
-            BasicConfigurationId = basicConfigurationId,
+            ClientAppConfigurationId = basicConfigurationId,
             ResourceNumber = "R001",
             PartName = "Knife-01",
             InputMode = "Barcode",
@@ -86,7 +86,7 @@ public sealed class WearPartRepositoryTests : IDisposable
 
         await using var readContext = await _dbContextFactory.CreateDbContextAsync();
         var readRepository = new WearPartRepository(readContext, new WearPartDefinitionDomainService());
-        var result = await readRepository.ListByBasicConfigurationAsync(basicConfigurationId);
+        var result = await readRepository.ListByClientAppConfigurationAsync(basicConfigurationId);
 
         Assert.Single(result);
         Assert.Equal("Knife-01", result[0].PartName);
@@ -105,7 +105,7 @@ public sealed class WearPartRepositoryTests : IDisposable
         var definition = new WearPartDefinitionEntity
         {
             Id = Guid.Empty,
-            BasicConfigurationId = basicConfigurationId,
+            ClientAppConfigurationId = basicConfigurationId,
             ResourceNumber = "R002",
             PartName = "Knife-02",
             InputMode = "Barcode",
@@ -139,7 +139,7 @@ public sealed class WearPartRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task SoftDeleteAsync_ShouldMarkDeleted_AndExcludeEntityFromRepositoryQueries()
+    public async Task DeleteAsync_ShouldRemoveEntityFromRepositoryQueries()
     {
         var basicConfigurationId = await SeedBasicConfigurationAsync("R003");
 
@@ -149,7 +149,7 @@ public sealed class WearPartRepositoryTests : IDisposable
         var definition = new WearPartDefinitionEntity
         {
             Id = Guid.NewGuid(),
-            BasicConfigurationId = basicConfigurationId,
+            ClientAppConfigurationId = basicConfigurationId,
             ResourceNumber = "R003",
             PartName = "Knife-03",
             InputMode = "Barcode",
@@ -172,22 +172,14 @@ public sealed class WearPartRepositoryTests : IDisposable
         await repository.AddAsync(definition);
         await repository.UnitOfWork.SaveChangesAsync();
 
-        await repository.SoftDeleteAsync(definition.Id);
+        await repository.DeleteAsync(definition.Id);
         await repository.UnitOfWork.SaveChangesAsync();
 
         await using var readContext = await _dbContextFactory.CreateDbContextAsync();
         var readRepository = new WearPartRepository(readContext, new WearPartDefinitionDomainService());
-        var result = await readRepository.ListByBasicConfigurationAsync(basicConfigurationId);
+        var result = await readRepository.ListByClientAppConfigurationAsync(basicConfigurationId);
 
         Assert.Empty(result);
-
-        await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
-        var deleted = await verifyContext.WearPartDefinitions
-            .IgnoreQueryFilters()
-            .FirstAsync(x => x.Id == definition.Id);
-
-        Assert.True(deleted.IsDeleted);
-        Assert.NotNull(deleted.DeletedAt);
     }
 
     private async Task<Guid> SeedBasicConfigurationAsync(string resourceNumber)
@@ -195,7 +187,7 @@ public sealed class WearPartRepositoryTests : IDisposable
         var basicConfigurationId = Guid.NewGuid();
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        dbContext.BasicConfigurations.Add(new BasicConfigurationEntity
+        dbContext.ClientAppConfigurations.Add(new ClientAppConfigurationEntity
         {
             Id = basicConfigurationId,
             SiteCode = "S01",

@@ -6,12 +6,10 @@ using WearPartsControl.Domain.Validation;
 
 namespace WearPartsControl.Domain.Entities;
 
-public sealed class BasicConfigurationEntity :
+public sealed class ClientAppConfigurationEntity :
     Entity,
     IHasAuditTime,
-    IHasAuditUser,
-    ISoftDelete,
-    IHasRemark
+    IHasAuditUser
 {
     public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -20,12 +18,6 @@ public sealed class BasicConfigurationEntity :
     public string? CreatedBy { get; set; } = string.Empty;
 
     public string? UpdatedBy { get; set; } = string.Empty;
-
-    public bool IsDeleted { get; set; }
-
-    public DateTime? DeletedAt { get; set; }
-
-    public string? Remark { get; set; }
 
     public string SiteCode { get; set; } = string.Empty;
 

@@ -22,10 +22,10 @@ public sealed class ExceedLimitRecordRepository : EfRepositoryBase<WearPartsCont
             .ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<ExceedLimitRecordEntity>> ListByBasicConfigurationAsync(Guid basicConfigurationId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ExceedLimitRecordEntity>> ListByClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
     {
         return await Queryable(asNoTracking: true)
-            .Where(x => x.BasicConfigurationId == basicConfigurationId)
+            .Where(x => x.ClientAppConfigurationId == clientAppConfigurationId)
             .OrderByDescending(x => x.OccurredAt)
             .ToArrayAsync(cancellationToken)
             .ConfigureAwait(false);

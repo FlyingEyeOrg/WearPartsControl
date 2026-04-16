@@ -4,7 +4,7 @@ public sealed class WearPartMonitorResult
 {
     public Guid WearPartDefinitionId { get; set; }
 
-    public Guid BasicConfigurationId { get; set; }
+    public Guid ClientAppConfigurationId { get; set; }
 
     public string ResourceNumber { get; set; } = string.Empty;
 

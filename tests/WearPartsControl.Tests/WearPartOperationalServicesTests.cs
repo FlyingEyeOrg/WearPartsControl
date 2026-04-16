@@ -79,7 +79,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
 
         await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
         var repository = new WearPartReplacementRecordRepository(verifyContext);
-        var records = await repository.ListByBasicConfigurationAsync(seeded.BasicConfigurationId);
+        var records = await repository.ListByClientAppConfigurationAsync(seeded.BasicConfigurationId);
         Assert.Single(records);
         Assert.Equal("寿命到期正常更换", records[0].ReplacementReason);
     }
@@ -107,7 +107,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
 
         await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
         var repository = new ExceedLimitRecordRepository(verifyContext);
-        var records = await repository.ListByBasicConfigurationAsync(seeded.BasicConfigurationId);
+        var records = await repository.ListByClientAppConfigurationAsync(seeded.BasicConfigurationId);
         Assert.Single(records);
         Assert.Equal("Warning", records[0].Severity);
     }
@@ -139,7 +139,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         var definitionId = Guid.NewGuid();
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        dbContext.BasicConfigurations.Add(new BasicConfigurationEntity
+        dbContext.ClientAppConfigurations.Add(new ClientAppConfigurationEntity
         {
             Id = basicConfigurationId,
             SiteCode = "S01",
@@ -159,7 +159,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         dbContext.WearPartDefinitions.Add(new WearPartDefinitionEntity
         {
             Id = definitionId,
-            BasicConfigurationId = basicConfigurationId,
+            ClientAppConfigurationId = basicConfigurationId,
             ResourceNumber = resourceNumber,
             PartName = "刀具A",
             InputMode = "Barcode",
@@ -197,7 +197,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
     {
         return new WearPartReplacementService(
             currentUserAccessor,
-            new BasicConfigurationRepository(dbContext),
+            new ClientAppConfigurationRepository(dbContext),
             new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
             new WearPartReplacementRecordRepository(dbContext),
             plcService);
@@ -207,7 +207,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
     {
         return new WearPartMonitorService(
             new CurrentUserAccessor(),
-            new BasicConfigurationRepository(dbContext),
+            new ClientAppConfigurationRepository(dbContext),
             new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
             new ExceedLimitRecordRepository(dbContext),
             plcService,

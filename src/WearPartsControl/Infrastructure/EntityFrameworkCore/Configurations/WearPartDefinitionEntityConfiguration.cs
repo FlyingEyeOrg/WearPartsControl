@@ -15,11 +15,6 @@ public sealed class WearPartDefinitionEntityConfiguration : IEntityTypeConfigura
         builder.Property(x => x.UpdatedAt).IsRequired();
         builder.Property(x => x.CreatedBy).HasMaxLength(64).IsRequired();
         builder.Property(x => x.UpdatedBy).HasMaxLength(64).IsRequired();
-        builder.Property(x => x.Remark).HasMaxLength(512);
-        builder.Property(x => x.IsDeleted).IsRequired();
-        builder.Property(x => x.DeletedAt);
-
-        builder.HasQueryFilter(x => !x.IsDeleted);
 
         builder.Property(x => x.ResourceNumber).HasMaxLength(128).IsRequired();
         builder.Property(x => x.PartName).HasMaxLength(128).IsRequired();
@@ -37,11 +32,11 @@ public sealed class WearPartDefinitionEntityConfiguration : IEntityTypeConfigura
         builder.Property(x => x.PlcZeroClearAddress).HasMaxLength(128).IsRequired();
         builder.Property(x => x.BarcodeWriteAddress).HasMaxLength(128).IsRequired();
 
-        builder.HasOne(x => x.BasicConfiguration)
+        builder.HasOne(x => x.ClientAppConfiguration)
             .WithMany(x => x.WearPartDefinitions)
-            .HasForeignKey(x => x.BasicConfigurationId)
+            .HasForeignKey(x => x.ClientAppConfigurationId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasIndex(x => new { x.BasicConfigurationId, x.PartName }).IsUnique();
+        builder.HasIndex(x => new { x.ClientAppConfigurationId, x.PartName }).IsUnique();
     }
 }

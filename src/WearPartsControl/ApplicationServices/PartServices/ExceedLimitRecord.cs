@@ -41,9 +41,9 @@ public sealed class ExceedLimitRecord
     public DateTime OccurredAt { get; set; } = DateTime.Now;
 
     /// <summary>
-    /// 对应的基础配置主键。
+    /// 对应的客户端配置主键。
     /// </summary>
-    public Guid BasicConfigurationId { get; set; }
+    public Guid ClientAppConfigurationId { get; set; }
 
     /// <summary>
     /// 通知消息。

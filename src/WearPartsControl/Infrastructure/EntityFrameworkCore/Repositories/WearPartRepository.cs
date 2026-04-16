@@ -29,22 +29,22 @@ public sealed class WearPartRepository : EfRepositoryBase<WearPartsControlDbCont
             .ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<WearPartDefinitionEntity>> ListByBasicConfigurationAsync(Guid basicConfigurationId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<WearPartDefinitionEntity>> ListByClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
     {
         return await Queryable(asNoTracking: true)
-            .Where(x => x.BasicConfigurationId == basicConfigurationId)
+            .Where(x => x.ClientAppConfigurationId == clientAppConfigurationId)
             .OrderBy(x => x.PartName)
             .ToArrayAsync(cancellationToken)
             .ConfigureAwait(false);
     }
 
-    public async Task<bool> ExistsPartNameAsync(Guid basicConfigurationId, string partName, Guid? excludeId = null, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsPartNameAsync(Guid clientAppConfigurationId, string partName, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {
         var normalizedPartName = partName.Trim();
 
         return await Queryable(asNoTracking: true)
             .AnyAsync(x =>
-                x.BasicConfigurationId == basicConfigurationId
+                x.ClientAppConfigurationId == clientAppConfigurationId
                 && x.PartName == normalizedPartName
                 && (!excludeId.HasValue || x.Id != excludeId.Value),
                 cancellationToken)

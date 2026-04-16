@@ -6,34 +6,34 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 
 public sealed class WearPartManagementService : ApplicationService, IWearPartManagementService
 {
-    private readonly IBasicConfigurationRepository _basicConfigurationRepository;
+    private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
     private readonly IWearPartRepository _wearPartRepository;
 
     public WearPartManagementService(
         ICurrentUserAccessor currentUserAccessor,
-        IBasicConfigurationRepository basicConfigurationRepository,
+        IClientAppConfigurationRepository clientAppConfigurationRepository,
         IWearPartRepository wearPartRepository)
         : base(currentUserAccessor)
     {
-        _basicConfigurationRepository = basicConfigurationRepository;
+        _clientAppConfigurationRepository = clientAppConfigurationRepository;
         _wearPartRepository = wearPartRepository;
     }
 
-    public async Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByBasicConfigurationAsync(Guid basicConfigurationId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
     {
-        if (basicConfigurationId == Guid.Empty)
+        if (clientAppConfigurationId == Guid.Empty)
         {
             return [];
         }
 
-        var entities = await _wearPartRepository.ListByBasicConfigurationAsync(basicConfigurationId, cancellationToken).ConfigureAwait(false);
+        var entities = await _wearPartRepository.ListByClientAppConfigurationAsync(clientAppConfigurationId, cancellationToken).ConfigureAwait(false);
         return entities.Select(MapToModel).ToArray();
     }
 
     public async Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
     {
-        var basicConfiguration = await GetRequiredBasicConfigurationByResourceNumberAsync(resourceNumber, cancellationToken).ConfigureAwait(false);
-        return await GetDefinitionsByBasicConfigurationAsync(basicConfiguration.Id, cancellationToken).ConfigureAwait(false);
+        var clientAppConfiguration = await GetRequiredClientAppConfigurationByResourceNumberAsync(resourceNumber, cancellationToken).ConfigureAwait(false);
+        return await GetDefinitionsByClientAppConfigurationAsync(clientAppConfiguration.Id, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<WearPartDefinition?> GetDefinitionAsync(Guid id, CancellationToken cancellationToken = default)
@@ -54,16 +54,16 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         GetRequiredCurrentUserId();
         ValidateDefinition(definition);
 
-        var basicConfiguration = await ResolveBasicConfigurationAsync(definition.BasicConfigurationId, definition.ResourceNumber, cancellationToken).ConfigureAwait(false);
+        var clientAppConfiguration = await ResolveClientAppConfigurationAsync(definition.ClientAppConfigurationId, definition.ResourceNumber, cancellationToken).ConfigureAwait(false);
         var partName = definition.PartName.Trim();
 
-        if (await _wearPartRepository.ExistsPartNameAsync(basicConfiguration.Id, partName, cancellationToken: cancellationToken).ConfigureAwait(false))
+        if (await _wearPartRepository.ExistsPartNameAsync(clientAppConfiguration.Id, partName, cancellationToken: cancellationToken).ConfigureAwait(false))
         {
-            throw new UserFriendlyException($"资源号 {basicConfiguration.ResourceNumber} 下已存在名称为 {partName} 的易损件定义。");
+            throw new UserFriendlyException($"资源号 {clientAppConfiguration.ResourceNumber} 下已存在名称为 {partName} 的易损件定义。");
         }
 
         var entity = new WearPartDefinitionEntity();
-        ApplyDefinition(entity, definition, basicConfiguration);
+        ApplyDefinition(entity, definition, clientAppConfiguration);
 
         await _wearPartRepository.AddAsync(entity, cancellationToken).ConfigureAwait(false);
         await _wearPartRepository.UnitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -87,20 +87,20 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         var entity = await _wearPartRepository.GetByIdAsync(definition.Id, cancellationToken).ConfigureAwait(false)
             ?? throw new EntityNotFoundException($"未找到主键为 {definition.Id} 的易损件定义。");
 
-        var basicConfiguration = await ResolveBasicConfigurationAsync(
-                definition.BasicConfigurationId,
+        var clientAppConfiguration = await ResolveClientAppConfigurationAsync(
+                definition.ClientAppConfigurationId,
                 definition.ResourceNumber,
                 cancellationToken,
-                entity.BasicConfigurationId)
+                entity.ClientAppConfigurationId)
             .ConfigureAwait(false);
 
         var partName = definition.PartName.Trim();
-        if (await _wearPartRepository.ExistsPartNameAsync(basicConfiguration.Id, partName, entity.Id, cancellationToken).ConfigureAwait(false))
+        if (await _wearPartRepository.ExistsPartNameAsync(clientAppConfiguration.Id, partName, entity.Id, cancellationToken).ConfigureAwait(false))
         {
-            throw new UserFriendlyException($"资源号 {basicConfiguration.ResourceNumber} 下已存在名称为 {partName} 的易损件定义。");
+            throw new UserFriendlyException($"资源号 {clientAppConfiguration.ResourceNumber} 下已存在名称为 {partName} 的易损件定义。");
         }
 
-        ApplyDefinition(entity, definition, basicConfiguration);
+        ApplyDefinition(entity, definition, clientAppConfiguration);
 
         await _wearPartRepository.UpdateAsync(entity, cancellationToken).ConfigureAwait(false);
         await _wearPartRepository.UnitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -133,16 +133,16 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
             throw new UserFriendlyException("源资源号和目标资源号不能相同。");
         }
 
-        var sourceConfiguration = await GetRequiredBasicConfigurationByResourceNumberAsync(normalizedSource, cancellationToken).ConfigureAwait(false);
-        var targetConfiguration = await GetRequiredBasicConfigurationByResourceNumberAsync(normalizedTarget, cancellationToken).ConfigureAwait(false);
+        var sourceConfiguration = await GetRequiredClientAppConfigurationByResourceNumberAsync(normalizedSource, cancellationToken).ConfigureAwait(false);
+        var targetConfiguration = await GetRequiredClientAppConfigurationByResourceNumberAsync(normalizedTarget, cancellationToken).ConfigureAwait(false);
 
-        var sourceDefinitions = await _wearPartRepository.ListByBasicConfigurationAsync(sourceConfiguration.Id, cancellationToken).ConfigureAwait(false);
+        var sourceDefinitions = await _wearPartRepository.ListByClientAppConfigurationAsync(sourceConfiguration.Id, cancellationToken).ConfigureAwait(false);
         if (sourceDefinitions.Count == 0)
         {
             return 0;
         }
 
-        var targetDefinitions = await _wearPartRepository.ListByBasicConfigurationAsync(targetConfiguration.Id, cancellationToken).ConfigureAwait(false);
+        var targetDefinitions = await _wearPartRepository.ListByClientAppConfigurationAsync(targetConfiguration.Id, cancellationToken).ConfigureAwait(false);
         var duplicatePartNames = sourceDefinitions
             .Select(x => x.PartName.Trim())
             .Intersect(targetDefinitions.Select(x => x.PartName.Trim()), StringComparer.OrdinalIgnoreCase)
@@ -163,58 +163,58 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         return sourceDefinitions.Count;
     }
 
-    private async Task<BasicConfigurationEntity> ResolveBasicConfigurationAsync(
-        Guid basicConfigurationId,
+    private async Task<ClientAppConfigurationEntity> ResolveClientAppConfigurationAsync(
+        Guid clientAppConfigurationId,
         string resourceNumber,
         CancellationToken cancellationToken,
-        Guid? fallbackBasicConfigurationId = null)
+        Guid? fallbackClientAppConfigurationId = null)
     {
-        if (basicConfigurationId != Guid.Empty)
+        if (clientAppConfigurationId != Guid.Empty)
         {
-            return await GetRequiredBasicConfigurationAsync(basicConfigurationId, cancellationToken).ConfigureAwait(false);
+            return await GetRequiredClientAppConfigurationAsync(clientAppConfigurationId, cancellationToken).ConfigureAwait(false);
         }
 
         if (!string.IsNullOrWhiteSpace(resourceNumber))
         {
-            return await GetRequiredBasicConfigurationByResourceNumberAsync(resourceNumber, cancellationToken).ConfigureAwait(false);
+            return await GetRequiredClientAppConfigurationByResourceNumberAsync(resourceNumber, cancellationToken).ConfigureAwait(false);
         }
 
-        if (fallbackBasicConfigurationId.HasValue && fallbackBasicConfigurationId.Value != Guid.Empty)
+        if (fallbackClientAppConfigurationId.HasValue && fallbackClientAppConfigurationId.Value != Guid.Empty)
         {
-            return await GetRequiredBasicConfigurationAsync(fallbackBasicConfigurationId.Value, cancellationToken).ConfigureAwait(false);
+            return await GetRequiredClientAppConfigurationAsync(fallbackClientAppConfigurationId.Value, cancellationToken).ConfigureAwait(false);
         }
 
-        throw new UserFriendlyException("易损件定义必须关联有效的基础配置或资源号。");
+        throw new UserFriendlyException("易损件定义必须关联有效的客户端配置或资源号。");
     }
 
-    private async Task<BasicConfigurationEntity> GetRequiredBasicConfigurationAsync(Guid basicConfigurationId, CancellationToken cancellationToken)
+    private async Task<ClientAppConfigurationEntity> GetRequiredClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken)
     {
-        var basicConfiguration = await _basicConfigurationRepository.GetByIdAsync(basicConfigurationId, cancellationToken).ConfigureAwait(false);
-        if (basicConfiguration is null)
+        var clientAppConfiguration = await _clientAppConfigurationRepository.GetByIdAsync(clientAppConfigurationId, cancellationToken).ConfigureAwait(false);
+        if (clientAppConfiguration is null)
         {
-            throw new EntityNotFoundException($"未找到主键为 {basicConfigurationId} 的基础配置。");
+            throw new EntityNotFoundException($"未找到主键为 {clientAppConfigurationId} 的客户端配置。");
         }
 
-        return basicConfiguration;
+        return clientAppConfiguration;
     }
 
-    private async Task<BasicConfigurationEntity> GetRequiredBasicConfigurationByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken)
+    private async Task<ClientAppConfigurationEntity> GetRequiredClientAppConfigurationByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken)
     {
         var normalized = NormalizeRequired(resourceNumber, "资源号不能为空。");
-        var basicConfiguration = await _basicConfigurationRepository.GetByResourceNumberAsync(normalized, cancellationToken).ConfigureAwait(false);
-        if (basicConfiguration is null)
+        var clientAppConfiguration = await _clientAppConfigurationRepository.GetByResourceNumberAsync(normalized, cancellationToken).ConfigureAwait(false);
+        if (clientAppConfiguration is null)
         {
-            throw new EntityNotFoundException($"未找到资源号为 {normalized} 的基础配置。");
+            throw new EntityNotFoundException($"未找到资源号为 {normalized} 的客户端配置。");
         }
 
-        return basicConfiguration;
+        return clientAppConfiguration;
     }
 
-    private static WearPartDefinitionEntity CloneDefinition(WearPartDefinitionEntity sourceDefinition, BasicConfigurationEntity targetConfiguration)
+    private static WearPartDefinitionEntity CloneDefinition(WearPartDefinitionEntity sourceDefinition, ClientAppConfigurationEntity targetConfiguration)
     {
         return new WearPartDefinitionEntity
         {
-            BasicConfigurationId = targetConfiguration.Id,
+            ClientAppConfigurationId = targetConfiguration.Id,
             ResourceNumber = targetConfiguration.ResourceNumber,
             PartName = sourceDefinition.PartName,
             InputMode = sourceDefinition.InputMode,
@@ -229,15 +229,14 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
             CodeMaxLength = sourceDefinition.CodeMaxLength,
             LifetimeType = sourceDefinition.LifetimeType,
             PlcZeroClearAddress = sourceDefinition.PlcZeroClearAddress,
-            BarcodeWriteAddress = sourceDefinition.BarcodeWriteAddress,
-            Remark = sourceDefinition.Remark
+            BarcodeWriteAddress = sourceDefinition.BarcodeWriteAddress
         };
     }
 
-    private static void ApplyDefinition(WearPartDefinitionEntity entity, WearPartDefinition definition, BasicConfigurationEntity basicConfiguration)
+    private static void ApplyDefinition(WearPartDefinitionEntity entity, WearPartDefinition definition, ClientAppConfigurationEntity clientAppConfiguration)
     {
-        entity.BasicConfigurationId = basicConfiguration.Id;
-        entity.ResourceNumber = basicConfiguration.ResourceNumber;
+        entity.ClientAppConfigurationId = clientAppConfiguration.Id;
+        entity.ResourceNumber = clientAppConfiguration.ResourceNumber;
         entity.PartName = definition.PartName.Trim();
         entity.InputMode = definition.InputMode.Trim();
         entity.CurrentValueAddress = definition.CurrentValueAddress.Trim();
@@ -259,7 +258,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         return new WearPartDefinition
         {
             Id = entity.Id,
-            BasicConfigurationId = entity.BasicConfigurationId,
+            ClientAppConfigurationId = entity.ClientAppConfigurationId,
             ResourceNumber = entity.ResourceNumber,
             PartName = entity.PartName,
             InputMode = entity.InputMode,

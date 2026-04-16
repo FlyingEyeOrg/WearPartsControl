@@ -18,7 +18,7 @@ public sealed class WearPartDefinitionDomainServiceTests
             new WearPartDefinitionEntity
             {
                 Id = Guid.NewGuid(),
-                BasicConfigurationId = basicId,
+                ClientAppConfigurationId = basicId,
                 ResourceNumber = "R001",
                 PartName = "Knife",
                 CurrentValueAddress = "DB1.0",
@@ -28,7 +28,7 @@ public sealed class WearPartDefinitionDomainServiceTests
             new WearPartDefinitionEntity
             {
                 Id = Guid.NewGuid(),
-                BasicConfigurationId = basicId,
+                ClientAppConfigurationId = basicId,
                 ResourceNumber = "R001",
                 PartName = " knife ",
                 CurrentValueAddress = "DB1.3",
@@ -46,7 +46,7 @@ public sealed class WearPartDefinitionDomainServiceTests
         var entity = new WearPartDefinitionEntity
         {
             Id = Guid.NewGuid(),
-            BasicConfigurationId = Guid.NewGuid(),
+            ClientAppConfigurationId = Guid.NewGuid(),
             ResourceNumber = "R001",
             PartName = new string('A', 129),
             CurrentValueAddress = "DB1.0",

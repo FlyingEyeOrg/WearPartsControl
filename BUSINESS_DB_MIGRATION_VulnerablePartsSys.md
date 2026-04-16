@@ -202,9 +202,9 @@
 - 主外键统一改 `Guid`（你当前项目已开始执行）
 - 统一时间字段：`CreatedAt` / `UpdatedAt` / `OccurredAt`
 - 为高频查询建立索引：
-  - `WearPartDefinition(BasicConfigurationId, PartName)`
-  - `WearPartReplacementRecord(BasicConfigurationId, ReplacedAt DESC)`
-  - `ExceedLimitRecord(BasicConfigurationId, PartName, OccurredAt DESC)`
+  - `WearPartDefinition(ClientAppConfigurationId, PartName)`
+  - `WearPartReplacementRecord(ClientAppConfigurationId, ReplacedAt DESC)`
+  - `ExceedLimitRecord(ClientAppConfigurationId, PartName, OccurredAt DESC)`
   - `EquipmentVersionRecord(ResourceNumber)`（唯一）
 
 

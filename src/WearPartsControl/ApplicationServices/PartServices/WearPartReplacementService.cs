@@ -7,20 +7,20 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 
 public sealed class WearPartReplacementService : ApplicationService, IWearPartReplacementService
 {
-    private readonly IBasicConfigurationRepository _basicConfigurationRepository;
+    private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
     private readonly IWearPartRepository _wearPartRepository;
     private readonly IWearPartReplacementRecordRepository _replacementRecordRepository;
     private readonly IPlcService _plcService;
 
     public WearPartReplacementService(
         ICurrentUserAccessor currentUserAccessor,
-        IBasicConfigurationRepository basicConfigurationRepository,
+        IClientAppConfigurationRepository clientAppConfigurationRepository,
         IWearPartRepository wearPartRepository,
         IWearPartReplacementRecordRepository replacementRecordRepository,
         IPlcService plcService)
         : base(currentUserAccessor)
     {
-        _basicConfigurationRepository = basicConfigurationRepository;
+        _clientAppConfigurationRepository = clientAppConfigurationRepository;
         _wearPartRepository = wearPartRepository;
         _replacementRecordRepository = replacementRecordRepository;
         _plcService = plcService;
@@ -29,17 +29,17 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
     public async Task<WearPartReplacementPreview> GetReplacementPreviewAsync(Guid wearPartDefinitionId, CancellationToken cancellationToken = default)
     {
         var definition = await GetRequiredDefinitionAsync(wearPartDefinitionId, cancellationToken).ConfigureAwait(false);
-        var basicConfiguration = await GetRequiredBasicConfigurationAsync(definition.BasicConfigurationId, cancellationToken).ConfigureAwait(false);
+        var clientAppConfiguration = await GetRequiredClientAppConfigurationAsync(definition.ClientAppConfigurationId, cancellationToken).ConfigureAwait(false);
 
-        _plcService.Connect(WearPartPlcAccessor.BuildConnectionOptions(basicConfiguration));
+        _plcService.Connect(WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration));
 
         var latestRecord = await _replacementRecordRepository.GetLatestByDefinitionAsync(definition.Id, cancellationToken).ConfigureAwait(false);
 
         return new WearPartReplacementPreview
         {
             WearPartDefinitionId = definition.Id,
-            BasicConfigurationId = basicConfiguration.Id,
-            ResourceNumber = basicConfiguration.ResourceNumber,
+            ClientAppConfigurationId = clientAppConfiguration.Id,
+            ResourceNumber = clientAppConfiguration.ResourceNumber,
             PartName = definition.PartName,
             LastBarcode = latestRecord?.NewBarcode,
             CurrentValue = WearPartPlcAccessor.ReadAsString(_plcService, definition.CurrentValueAddress, definition.CurrentValueDataType),
@@ -54,7 +54,7 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
 
         var currentUser = EnsureAccessLevel(1);
         var definition = await GetRequiredDefinitionAsync(request.WearPartDefinitionId, cancellationToken).ConfigureAwait(false);
-        var basicConfiguration = await GetRequiredBasicConfigurationAsync(definition.BasicConfigurationId, cancellationToken).ConfigureAwait(false);
+        var clientAppConfiguration = await GetRequiredClientAppConfigurationAsync(definition.ClientAppConfigurationId, cancellationToken).ConfigureAwait(false);
         var normalizedBarcode = NormalizeRequired(request.NewBarcode, "新条码不能为空。");
         var normalizedReason = NormalizeRequired(request.ReplacementReason, "更换原因不能为空。");
 
@@ -65,7 +65,7 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
             throw new UserFriendlyException($"易损件 {definition.PartName} 已存在条码 {normalizedBarcode} 的更换记录，不允许重复使用。", code: "WearPartReplacement:BarcodeDuplicated");
         }
 
-        _plcService.Connect(WearPartPlcAccessor.BuildConnectionOptions(basicConfiguration));
+        _plcService.Connect(WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration));
 
         var currentValue = WearPartPlcAccessor.ReadAsString(_plcService, definition.CurrentValueAddress, definition.CurrentValueDataType);
         var warningValue = WearPartPlcAccessor.ReadAsString(_plcService, definition.WarningValueAddress, definition.WarningValueDataType);
@@ -74,13 +74,13 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
 
         WearPartPlcAccessor.ClearCounter(_plcService, definition.PlcZeroClearAddress);
         WearPartPlcAccessor.WriteBarcode(_plcService, definition.BarcodeWriteAddress, normalizedBarcode);
-        WearPartPlcAccessor.WriteShutdownSignal(_plcService, basicConfiguration.ShutdownPointAddress, shutdown: false);
+        WearPartPlcAccessor.WriteShutdownSignal(_plcService, clientAppConfiguration.ShutdownPointAddress, shutdown: false);
 
         var entity = new WearPartReplacementRecordEntity
         {
-            BasicConfigurationId = basicConfiguration.Id,
+            ClientAppConfigurationId = clientAppConfiguration.Id,
             WearPartDefinitionId = definition.Id,
-            SiteCode = basicConfiguration.SiteCode,
+            SiteCode = clientAppConfiguration.SiteCode,
             PartName = definition.PartName,
             OldBarcode = latestRecord?.NewBarcode,
             NewBarcode = normalizedBarcode,
@@ -102,9 +102,9 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
         return MapToRecord(entity);
     }
 
-    public async Task<IReadOnlyList<WearPartReplacementRecord>> GetReplacementHistoryAsync(Guid basicConfigurationId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<WearPartReplacementRecord>> GetReplacementHistoryAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
     {
-        var entities = await _replacementRecordRepository.ListByBasicConfigurationAsync(basicConfigurationId, cancellationToken).ConfigureAwait(false);
+        var entities = await _replacementRecordRepository.ListByClientAppConfigurationAsync(clientAppConfigurationId, cancellationToken).ConfigureAwait(false);
         return entities.Select(MapToRecord).ToArray();
     }
 
@@ -119,10 +119,10 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
             ?? throw new EntityNotFoundException($"未找到主键为 {wearPartDefinitionId} 的易损件定义。");
     }
 
-    private async Task<BasicConfigurationEntity> GetRequiredBasicConfigurationAsync(Guid basicConfigurationId, CancellationToken cancellationToken)
+    private async Task<ClientAppConfigurationEntity> GetRequiredClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken)
     {
-        return await _basicConfigurationRepository.GetByIdAsync(basicConfigurationId, cancellationToken).ConfigureAwait(false)
-            ?? throw new EntityNotFoundException($"未找到主键为 {basicConfigurationId} 的基础配置。");
+        return await _clientAppConfigurationRepository.GetByIdAsync(clientAppConfigurationId, cancellationToken).ConfigureAwait(false)
+            ?? throw new EntityNotFoundException($"未找到主键为 {clientAppConfigurationId} 的客户端配置。");
     }
 
     private static void ValidateBarcode(WearPartDefinitionEntity definition, string barcode)
@@ -143,7 +143,7 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
         return new WearPartReplacementRecord
         {
             Id = entity.Id,
-            BasicConfigurationId = entity.BasicConfigurationId,
+            ClientAppConfigurationId = entity.ClientAppConfigurationId,
             WearPartDefinitionId = entity.WearPartDefinitionId,
             SiteCode = entity.SiteCode,
             PartName = entity.PartName,

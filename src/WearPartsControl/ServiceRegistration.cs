@@ -45,7 +45,6 @@ public static class ServiceRegistration
         builder.RegisterType<ComNotificationService>().As<IComNotificationService>().SingleInstance();
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<PlcService>().As<IPlcService>().SingleInstance();
-        builder.RegisterType<PartModelService>().As<IPartModelService>().SingleInstance();
         builder.RegisterType<AppSettingsService>().As<IAppSettingsService>().SingleInstance();
         builder.RegisterType<WearPartManagementService>().As<IWearPartManagementService>().InstancePerLifetimeScope();
         builder.RegisterType<WearPartReplacementService>().As<IWearPartReplacementService>().InstancePerLifetimeScope();

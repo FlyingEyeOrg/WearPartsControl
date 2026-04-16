@@ -2,7 +2,7 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 
 public interface IWearPartManagementService
 {
-    Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByBasicConfigurationAsync(Guid basicConfigurationId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default);
 

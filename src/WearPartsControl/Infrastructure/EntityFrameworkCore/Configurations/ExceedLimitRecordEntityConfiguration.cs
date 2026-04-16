@@ -15,14 +15,13 @@ public sealed class ExceedLimitRecordEntityConfiguration : IEntityTypeConfigurat
         builder.Property(x => x.UpdatedAt).IsRequired();
         builder.Property(x => x.CreatedBy).HasMaxLength(64).IsRequired();
         builder.Property(x => x.UpdatedBy).HasMaxLength(64).IsRequired();
-        builder.Property(x => x.Remark).HasMaxLength(512);
         builder.Property(x => x.PartName).HasMaxLength(128).IsRequired();
         builder.Property(x => x.Severity).HasMaxLength(32).IsRequired();
         builder.Property(x => x.NotificationMessage).HasMaxLength(512).IsRequired();
 
-        builder.HasOne(x => x.BasicConfiguration)
+        builder.HasOne(x => x.ClientAppConfiguration)
             .WithMany(x => x.ExceedLimitRecords)
-            .HasForeignKey(x => x.BasicConfigurationId)
+            .HasForeignKey(x => x.ClientAppConfigurationId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.WearPartDefinition)

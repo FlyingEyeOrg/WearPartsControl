@@ -6,23 +6,23 @@ using System.Linq.Expressions;
 
 namespace WearPartsControl.Infrastructure.EntityFrameworkCore.Repositories;
 
-public sealed class BasicConfigurationRepository : EfRepositoryBase<WearPartsControlDbContext, BasicConfigurationEntity, Guid>, IBasicConfigurationRepository
+public sealed class ClientAppConfigurationRepository : EfRepositoryBase<WearPartsControlDbContext, ClientAppConfigurationEntity, Guid>, IClientAppConfigurationRepository
 {
-    public BasicConfigurationRepository(WearPartsControlDbContext dbContext)
+    public ClientAppConfigurationRepository(WearPartsControlDbContext dbContext)
         : base(dbContext)
     {
     }
 
-    protected override Expression<Func<BasicConfigurationEntity, bool>> BuildIdPredicate(Guid id) => x => x.Id == id;
+    protected override Expression<Func<ClientAppConfigurationEntity, bool>> BuildIdPredicate(Guid id) => x => x.Id == id;
 
-    public override Task<BasicConfigurationEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public override Task<ClientAppConfigurationEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return Queryable(asNoTracking: true)
             .Include(x => x.WearPartDefinitions)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
-    public override async Task<IReadOnlyList<BasicConfigurationEntity>> ListAsync(CancellationToken cancellationToken = default)
+    public override async Task<IReadOnlyList<ClientAppConfigurationEntity>> ListAsync(CancellationToken cancellationToken = default)
     {
         return await Queryable(asNoTracking: true)
             .OrderBy(x => x.ResourceNumber)
@@ -30,7 +30,7 @@ public sealed class BasicConfigurationRepository : EfRepositoryBase<WearPartsCon
             .ConfigureAwait(false);
     }
 
-    public async Task<BasicConfigurationEntity?> GetByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
+    public async Task<ClientAppConfigurationEntity?> GetByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
     {
         var normalized = resourceNumber.Trim();
 
@@ -49,13 +49,13 @@ public sealed class BasicConfigurationRepository : EfRepositoryBase<WearPartsCon
             .ConfigureAwait(false);
     }
 
-    public override Task AddAsync(BasicConfigurationEntity entity, CancellationToken cancellationToken = default)
+    public override Task AddAsync(ClientAppConfigurationEntity entity, CancellationToken cancellationToken = default)
     {
         entity.EnsureValid();
         return base.AddAsync(entity, cancellationToken);
     }
 
-    public override Task UpdateAsync(BasicConfigurationEntity entity, CancellationToken cancellationToken = default)
+    public override Task UpdateAsync(ClientAppConfigurationEntity entity, CancellationToken cancellationToken = default)
     {
         entity.EnsureValid();
         return base.UpdateAsync(entity, cancellationToken);

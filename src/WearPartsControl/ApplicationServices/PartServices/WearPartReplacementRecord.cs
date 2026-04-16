@@ -11,9 +11,9 @@ public sealed class WearPartReplacementRecord
     public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <summary>
-    /// 基础配置主键。
+    /// 客户端配置主键。
     /// </summary>
-    public Guid BasicConfigurationId { get; set; }
+    public Guid ClientAppConfigurationId { get; set; }
 
     /// <summary>
     /// 易损件定义主键。

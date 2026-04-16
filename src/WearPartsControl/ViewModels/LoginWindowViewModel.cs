@@ -12,7 +12,7 @@ namespace WearPartsControl.ViewModels
     public class LoginWindowViewModel : ObservableObject
     {
         private readonly ILoginService _loginService;
-        private readonly IBasicConfigurationRepository _basicConfigurationRepository;
+        private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
         private readonly IAppSettingsService _appSettingsService;
         private string _authId = string.Empty;
         private string _statusMessage = "请刷卡登录";
@@ -23,11 +23,11 @@ namespace WearPartsControl.ViewModels
 
         public LoginWindowViewModel(
             ILoginService loginService,
-            IBasicConfigurationRepository basicConfigurationRepository,
+            IClientAppConfigurationRepository clientAppConfigurationRepository,
             IAppSettingsService appSettingsService)
         {
             _loginService = loginService;
-            _basicConfigurationRepository = basicConfigurationRepository;
+            _clientAppConfigurationRepository = clientAppConfigurationRepository;
             _appSettingsService = appSettingsService;
             LoginCommand = new AsyncRelayCommand(LoginAsync, CanLogin);
         }
@@ -99,15 +99,15 @@ namespace WearPartsControl.ViewModels
                 return;
             }
 
-            var basicConfiguration = await _basicConfigurationRepository.GetByResourceNumberAsync(ResourceNumber, cancellationToken).ConfigureAwait(false);
-            if (basicConfiguration is null)
+            var clientAppConfiguration = await _clientAppConfigurationRepository.GetByResourceNumberAsync(ResourceNumber, cancellationToken).ConfigureAwait(false);
+            if (clientAppConfiguration is null)
             {
                 SiteCode = string.Empty;
-                StatusMessage = $"未找到资源号 {ResourceNumber} 对应的基础配置。";
+                StatusMessage = $"未找到资源号 {ResourceNumber} 对应的客户端配置。";
                 return;
             }
 
-            SiteCode = basicConfiguration.SiteCode;
+            SiteCode = clientAppConfiguration.SiteCode;
             StatusMessage = "请刷卡登录";
         }
 

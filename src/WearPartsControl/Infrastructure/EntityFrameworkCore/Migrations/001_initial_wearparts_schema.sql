@@ -4,9 +4,6 @@ CREATE TABLE IF NOT EXISTS basic_configurations (
     UpdatedAt TEXT NOT NULL,
     CreatedBy TEXT NOT NULL,
     UpdatedBy TEXT NOT NULL,
-    IsDeleted INTEGER NOT NULL,
-    DeletedAt TEXT NULL,
-    Remark TEXT NULL,
     SiteCode TEXT NOT NULL,
     FactoryCode TEXT NOT NULL,
     AreaCode TEXT NOT NULL,
@@ -30,10 +27,7 @@ CREATE TABLE IF NOT EXISTS wear_part_definitions (
     UpdatedAt TEXT NOT NULL,
     CreatedBy TEXT NOT NULL,
     UpdatedBy TEXT NOT NULL,
-    IsDeleted INTEGER NOT NULL,
-    DeletedAt TEXT NULL,
-    Remark TEXT NULL,
-    BasicConfigurationId TEXT NOT NULL,
+    ClientAppConfigurationId TEXT NOT NULL,
     ResourceNumber TEXT NOT NULL,
     PartName TEXT NOT NULL,
     InputMode TEXT NOT NULL,
@@ -49,14 +43,14 @@ CREATE TABLE IF NOT EXISTS wear_part_definitions (
     LifetimeType TEXT NOT NULL,
     PlcZeroClearAddress TEXT NOT NULL,
     BarcodeWriteAddress TEXT NOT NULL,
-    CONSTRAINT FK_wear_part_definitions_basic_configurations_BasicConfigurationId
-        FOREIGN KEY (BasicConfigurationId)
+    CONSTRAINT FK_wear_part_definitions_basic_configurations_ClientAppConfigurationId
+        FOREIGN KEY (ClientAppConfigurationId)
         REFERENCES basic_configurations (Id)
         ON DELETE CASCADE
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS IX_wear_part_definitions_BasicConfigurationId_PartName
-ON wear_part_definitions(BasicConfigurationId, PartName);
+CREATE UNIQUE INDEX IF NOT EXISTS IX_wear_part_definitions_ClientAppConfigurationId_PartName
+ON wear_part_definitions(ClientAppConfigurationId, PartName);
 
 CREATE TABLE IF NOT EXISTS wear_part_replacement_records (
     Id TEXT NOT NULL PRIMARY KEY,
@@ -64,8 +58,9 @@ CREATE TABLE IF NOT EXISTS wear_part_replacement_records (
     UpdatedAt TEXT NOT NULL,
     CreatedBy TEXT NOT NULL,
     UpdatedBy TEXT NOT NULL,
-    Remark TEXT NULL,
-    BasicConfigurationId TEXT NOT NULL,
+    IsDeleted INTEGER NOT NULL,
+    DeletedAt TEXT NULL,
+    ClientAppConfigurationId TEXT NOT NULL,
     WearPartDefinitionId TEXT NOT NULL,
     SiteCode TEXT NOT NULL,
     PartName TEXT NOT NULL,
@@ -81,8 +76,8 @@ CREATE TABLE IF NOT EXISTS wear_part_replacement_records (
     ReplacedAt TEXT NOT NULL,
     DataType TEXT NULL,
     DataValue TEXT NULL,
-    CONSTRAINT FK_wear_part_replacement_records_basic_configurations_BasicConfigurationId
-        FOREIGN KEY (BasicConfigurationId)
+    CONSTRAINT FK_wear_part_replacement_records_basic_configurations_ClientAppConfigurationId
+        FOREIGN KEY (ClientAppConfigurationId)
         REFERENCES basic_configurations (Id)
         ON DELETE CASCADE,
     CONSTRAINT FK_wear_part_replacement_records_wear_part_definitions_WearPartDefinitionId
@@ -103,8 +98,7 @@ CREATE TABLE IF NOT EXISTS exceed_limit_records (
     UpdatedAt TEXT NOT NULL,
     CreatedBy TEXT NOT NULL,
     UpdatedBy TEXT NOT NULL,
-    Remark TEXT NULL,
-    BasicConfigurationId TEXT NOT NULL,
+    ClientAppConfigurationId TEXT NOT NULL,
     WearPartDefinitionId TEXT NOT NULL,
     PartName TEXT NOT NULL,
     CurrentValue REAL NOT NULL,
@@ -113,8 +107,8 @@ CREATE TABLE IF NOT EXISTS exceed_limit_records (
     Severity TEXT NOT NULL,
     OccurredAt TEXT NOT NULL,
     NotificationMessage TEXT NOT NULL,
-    CONSTRAINT FK_exceed_limit_records_basic_configurations_BasicConfigurationId
-        FOREIGN KEY (BasicConfigurationId)
+    CONSTRAINT FK_exceed_limit_records_basic_configurations_ClientAppConfigurationId
+        FOREIGN KEY (ClientAppConfigurationId)
         REFERENCES basic_configurations (Id)
         ON DELETE CASCADE,
     CONSTRAINT FK_exceed_limit_records_wear_part_definitions_WearPartDefinitionId

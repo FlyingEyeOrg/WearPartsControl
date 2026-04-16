@@ -30,7 +30,7 @@ public sealed class UnitOfWorkTests : IDisposable
 
         await unitOfWork.BeginTransactionAsync();
 
-        await dbContext.BasicConfigurations.AddAsync(new BasicConfigurationEntity
+        await dbContext.ClientAppConfigurations.AddAsync(new ClientAppConfigurationEntity
         {
             Id = Guid.NewGuid(),
             SiteCode = "S01",
@@ -52,7 +52,7 @@ public sealed class UnitOfWorkTests : IDisposable
         await unitOfWork.RollbackTransactionAsync();
 
         await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
-        var exists = await verifyContext.BasicConfigurations.AnyAsync(x => x.ResourceNumber == "R-UOW-01");
+        var exists = await verifyContext.ClientAppConfigurations.AnyAsync(x => x.ResourceNumber == "R-UOW-01");
 
         Assert.False(exists);
     }
@@ -65,7 +65,7 @@ public sealed class UnitOfWorkTests : IDisposable
 
         await unitOfWork.BeginTransactionAsync();
 
-        await dbContext.BasicConfigurations.AddAsync(new BasicConfigurationEntity
+        await dbContext.ClientAppConfigurations.AddAsync(new ClientAppConfigurationEntity
         {
             Id = Guid.NewGuid(),
             SiteCode = "S02",
@@ -86,7 +86,7 @@ public sealed class UnitOfWorkTests : IDisposable
         await unitOfWork.CommitTransactionAsync();
 
         await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
-        var exists = await verifyContext.BasicConfigurations.AnyAsync(x => x.ResourceNumber == "R-UOW-02");
+        var exists = await verifyContext.ClientAppConfigurations.AnyAsync(x => x.ResourceNumber == "R-UOW-02");
 
         Assert.True(exists);
     }

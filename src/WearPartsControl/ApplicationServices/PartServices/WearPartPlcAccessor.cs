@@ -8,7 +8,7 @@ internal static class WearPartPlcAccessor
 {
     private const string SkipAddress = "######";
 
-    public static PlcConnectionOptions BuildConnectionOptions(BasicConfigurationEntity configuration)
+    public static PlcConnectionOptions BuildConnectionOptions(ClientAppConfigurationEntity configuration)
     {
         return new PlcConnectionOptions
         {

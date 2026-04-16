@@ -14,7 +14,7 @@ public sealed class WearPartManagementServiceTests
     public async Task CreateDefinitionAsync_WhenUserNotLoggedIn_ShouldThrowAuthorizationException()
     {
         var currentUserAccessor = new CurrentUserAccessor();
-        var basicRepository = new FakeBasicConfigurationRepository();
+        var basicRepository = new FakeClientAppConfigurationRepository();
         var wearPartRepository = new FakeWearPartRepository();
         var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository);
 
@@ -25,8 +25,8 @@ public sealed class WearPartManagementServiceTests
     public async Task CreateDefinitionAsync_ShouldPersistDefinitionAndSaveChanges()
     {
         var currentUserAccessor = CreateLoggedInAccessor();
-        var basicConfiguration = CreateBasicConfiguration("R100");
-        var basicRepository = new FakeBasicConfigurationRepository(basicConfiguration);
+        var basicConfiguration = CreateClientAppConfiguration("R100");
+        var basicRepository = new FakeClientAppConfigurationRepository(basicConfiguration);
         var wearPartRepository = new FakeWearPartRepository();
         var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository);
 
@@ -43,8 +43,8 @@ public sealed class WearPartManagementServiceTests
     public async Task UpdateDefinitionAsync_WhenPartNameDuplicated_ShouldThrowUserFriendlyException()
     {
         var currentUserAccessor = CreateLoggedInAccessor();
-        var basicConfiguration = CreateBasicConfiguration("R200");
-        var basicRepository = new FakeBasicConfigurationRepository(basicConfiguration);
+        var basicConfiguration = CreateClientAppConfiguration("R200");
+        var basicRepository = new FakeClientAppConfigurationRepository(basicConfiguration);
         var existing = CreateEntity(basicConfiguration, "刀具A");
         var duplicate = CreateEntity(basicConfiguration, "刀具B");
         var wearPartRepository = new FakeWearPartRepository(existing, duplicate);
@@ -61,9 +61,9 @@ public sealed class WearPartManagementServiceTests
     public async Task CopyDefinitionsAsync_ShouldCloneDefinitionsToTargetResource()
     {
         var currentUserAccessor = CreateLoggedInAccessor();
-        var source = CreateBasicConfiguration("R300");
-        var target = CreateBasicConfiguration("R301");
-        var basicRepository = new FakeBasicConfigurationRepository(source, target);
+        var source = CreateClientAppConfiguration("R300");
+        var target = CreateClientAppConfiguration("R301");
+        var basicRepository = new FakeClientAppConfigurationRepository(source, target);
         var sourceDefinition = CreateEntity(source, "刀具A");
         var wearPartRepository = new FakeWearPartRepository(sourceDefinition);
         var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository);
@@ -72,7 +72,7 @@ public sealed class WearPartManagementServiceTests
 
         Assert.Equal(1, copiedCount);
         Assert.Equal(2, wearPartRepository.Entities.Count);
-        var copied = wearPartRepository.Entities.Single(x => x.BasicConfigurationId == target.Id);
+        var copied = wearPartRepository.Entities.Single(x => x.ClientAppConfigurationId == target.Id);
         Assert.NotEqual(sourceDefinition.Id, copied.Id);
         Assert.Equal(target.ResourceNumber, copied.ResourceNumber);
         Assert.Equal(sourceDefinition.PartName, copied.PartName);
@@ -91,9 +91,9 @@ public sealed class WearPartManagementServiceTests
         return accessor;
     }
 
-    private static BasicConfigurationEntity CreateBasicConfiguration(string resourceNumber)
+    private static ClientAppConfigurationEntity CreateClientAppConfiguration(string resourceNumber)
     {
-        return new BasicConfigurationEntity
+        return new ClientAppConfigurationEntity
         {
             Id = Guid.NewGuid(),
             SiteCode = "S01",
@@ -111,12 +111,12 @@ public sealed class WearPartManagementServiceTests
         };
     }
 
-    private static WearPartDefinition CreateDefinitionModel(Guid? basicConfigurationId = null, string resourceNumber = "R100")
+    private static WearPartDefinition CreateDefinitionModel(Guid? clientAppConfigurationId = null, string resourceNumber = "R100")
     {
         return new WearPartDefinition
         {
             Id = Guid.NewGuid(),
-            BasicConfigurationId = basicConfigurationId ?? Guid.Empty,
+            ClientAppConfigurationId = clientAppConfigurationId ?? Guid.Empty,
             ResourceNumber = resourceNumber,
             PartName = "刀具A",
             InputMode = "Barcode",
@@ -135,12 +135,12 @@ public sealed class WearPartManagementServiceTests
         };
     }
 
-    private static WearPartDefinitionEntity CreateEntity(BasicConfigurationEntity basicConfiguration, string partName)
+    private static WearPartDefinitionEntity CreateEntity(ClientAppConfigurationEntity basicConfiguration, string partName)
     {
         return new WearPartDefinitionEntity
         {
             Id = Guid.NewGuid(),
-            BasicConfigurationId = basicConfiguration.Id,
+            ClientAppConfigurationId = basicConfiguration.Id,
             ResourceNumber = basicConfiguration.ResourceNumber,
             PartName = partName,
             InputMode = "Barcode",
@@ -159,34 +159,34 @@ public sealed class WearPartManagementServiceTests
         };
     }
 
-    private sealed class FakeBasicConfigurationRepository : IBasicConfigurationRepository
+    private sealed class FakeClientAppConfigurationRepository : IClientAppConfigurationRepository
     {
-        private readonly List<BasicConfigurationEntity> _entities;
+        private readonly List<ClientAppConfigurationEntity> _entities;
 
-        public FakeBasicConfigurationRepository(params BasicConfigurationEntity[] entities)
+        public FakeClientAppConfigurationRepository(params ClientAppConfigurationEntity[] entities)
         {
             _entities = entities.ToList();
         }
 
         public IUnitOfWork UnitOfWork { get; } = new FakeUnitOfWork();
 
-        public Task<BasicConfigurationEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public Task<ClientAppConfigurationEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(_entities.FirstOrDefault(x => x.Id == id));
         }
 
-        public Task<IReadOnlyList<BasicConfigurationEntity>> ListAsync(CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ClientAppConfigurationEntity>> ListAsync(CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<IReadOnlyList<BasicConfigurationEntity>>(_entities.ToArray());
+            return Task.FromResult<IReadOnlyList<ClientAppConfigurationEntity>>(_entities.ToArray());
         }
 
-        public Task AddAsync(BasicConfigurationEntity entity, CancellationToken cancellationToken = default)
+        public Task AddAsync(ClientAppConfigurationEntity entity, CancellationToken cancellationToken = default)
         {
             _entities.Add(entity);
             return Task.CompletedTask;
         }
 
-        public Task UpdateAsync(BasicConfigurationEntity entity, CancellationToken cancellationToken = default)
+        public Task UpdateAsync(ClientAppConfigurationEntity entity, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
@@ -202,7 +202,7 @@ public sealed class WearPartManagementServiceTests
             return DeleteAsync(id, cancellationToken);
         }
 
-        public Task<BasicConfigurationEntity?> GetByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
+        public Task<ClientAppConfigurationEntity?> GetByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(_entities.FirstOrDefault(x => x.ResourceNumber == resourceNumber));
         }
@@ -269,16 +269,16 @@ public sealed class WearPartManagementServiceTests
             return DeleteAsync(id, cancellationToken);
         }
 
-        public Task<IReadOnlyList<WearPartDefinitionEntity>> ListByBasicConfigurationAsync(Guid basicConfigurationId, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<WearPartDefinitionEntity>> ListByClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<IReadOnlyList<WearPartDefinitionEntity>>(Entities.Where(x => x.BasicConfigurationId == basicConfigurationId).OrderBy(x => x.PartName).ToArray());
+            return Task.FromResult<IReadOnlyList<WearPartDefinitionEntity>>(Entities.Where(x => x.ClientAppConfigurationId == clientAppConfigurationId).OrderBy(x => x.PartName).ToArray());
         }
 
-        public Task<bool> ExistsPartNameAsync(Guid basicConfigurationId, string partName, Guid? excludeId = null, CancellationToken cancellationToken = default)
+        public Task<bool> ExistsPartNameAsync(Guid clientAppConfigurationId, string partName, Guid? excludeId = null, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(
                 Entities.Any(x =>
-                    x.BasicConfigurationId == basicConfigurationId
+                    x.ClientAppConfigurationId == clientAppConfigurationId
                     && string.Equals(x.PartName, partName, StringComparison.OrdinalIgnoreCase)
                     && (!excludeId.HasValue || x.Id != excludeId.Value)));
         }

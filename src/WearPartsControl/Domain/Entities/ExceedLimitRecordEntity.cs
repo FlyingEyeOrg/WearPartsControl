@@ -3,7 +3,7 @@ using WearPartsControl.Domain.Validation;
 
 namespace WearPartsControl.Domain.Entities;
 
-public sealed class ExceedLimitRecordEntity : Entity, IHasAuditTime, IHasAuditUser, IHasRemark
+public sealed class ExceedLimitRecordEntity : Entity, IHasAuditTime, IHasAuditUser
 {
     public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -13,9 +13,7 @@ public sealed class ExceedLimitRecordEntity : Entity, IHasAuditTime, IHasAuditUs
 
     public string? UpdatedBy { get; set; } = string.Empty;
 
-    public string? Remark { get; set; }
-
-    public Guid BasicConfigurationId { get; set; }
+    public Guid ClientAppConfigurationId { get; set; }
 
     public Guid WearPartDefinitionId { get; set; }
 
@@ -33,7 +31,7 @@ public sealed class ExceedLimitRecordEntity : Entity, IHasAuditTime, IHasAuditUs
 
     public string NotificationMessage { get; set; } = string.Empty;
 
-    public BasicConfigurationEntity BasicConfiguration { get; set; } = null!;
+    public ClientAppConfigurationEntity ClientAppConfiguration { get; set; } = null!;
 
     public WearPartDefinitionEntity WearPartDefinition { get; set; } = null!;
 

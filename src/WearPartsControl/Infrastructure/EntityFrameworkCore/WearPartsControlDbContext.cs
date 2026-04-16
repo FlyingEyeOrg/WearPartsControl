@@ -12,7 +12,7 @@ public sealed class WearPartsControlDbContext : DbContextBase
     {
     }
 
-    public DbSet<BasicConfigurationEntity> BasicConfigurations => Set<BasicConfigurationEntity>();
+    public DbSet<ClientAppConfigurationEntity> ClientAppConfigurations => Set<ClientAppConfigurationEntity>();
 
     public DbSet<WearPartDefinitionEntity> WearPartDefinitions => Set<WearPartDefinitionEntity>();
 

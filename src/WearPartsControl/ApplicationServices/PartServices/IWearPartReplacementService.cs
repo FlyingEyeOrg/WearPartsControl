@@ -6,5 +6,5 @@ public interface IWearPartReplacementService
 
     Task<WearPartReplacementRecord> ReplaceByScanAsync(WearPartReplacementRequest request, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<WearPartReplacementRecord>> GetReplacementHistoryAsync(Guid basicConfigurationId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<WearPartReplacementRecord>> GetReplacementHistoryAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default);
 }

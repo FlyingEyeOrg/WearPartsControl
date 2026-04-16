@@ -1,31 +1,38 @@
 # PartServices 模型迁移映射（VulnerablePartsSys -> WearPartsControl）
 
-本文档用于后续数据库迁移时快速对照旧模型与新模型，包含类型重命名、主外键类型调整与字段语义变化。
+本文档记录当前保留的迁移映射。随着领域模型稳定，客户端配置已收敛到 Domain/Infrastructure，PartServices 中仅保留直接参与应用服务编排的 DTO 与服务类型。
 
 ## 1. 类型映射
 
-| 旧类型（VulnerablePartsSys/Model） | 新类型（PartServices） | 说明 |
+| 旧类型（VulnerablePartsSys/Model） | 新类型 | 说明 |
 | --- | --- | --- |
-| `BaseFactoryModel` | `SiteFactoryMapping` | 基地工厂映射，工厂列表改为数组字段 `FactoryCodes` |
-| `BasicModel` | `BasicConfiguration` | 基础配置主模型 |
-| `VulnerablePartsModel` | `WearPartDefinition` | 易损件定义 |
-| `ReplaceRecordModel` | `WearPartReplacementRecord` | 易损件更换记录 |
-| `Exceedlimitinfo` | `ExceedLimitRecord` | 超限记录 |
-| `EquipentInVersion` | `EquipmentVersionRecord` | 设备版本记录 |
-| `ToolChange` | `ToolChangeRecord` | 刀具变更记录 |
-| `UserInfoByResourceId` | `ResourceUserSnapshot` | 资源号用户快照 |
-| `MHR` | `MhrApiSettings` | MHR 接口配置 |
-| `HMRResult` | `MhrResult` | MHR 返回对象 |
-| `HTMItemData` | `MhrData` | MHR 数据载荷 |
-| `UserModel` | `MhrUser` | MHR 用户实体 |
-| `VersionModel` | `VersionInfo` | 版本信息 |
+| `BasicModel` | `ClientAppConfigurationEntity` | 客户端软件基础配置实体，现位于 Domain |
+| `VulnerablePartsModel` | `WearPartDefinition` | 易损件定义 DTO |
+| `ReplaceRecordModel` | `WearPartReplacementRecord` | 易损件更换记录 DTO |
+| `Exceedlimitinfo` | `ExceedLimitRecord` | 超限记录 DTO |
 | `AppSetting` | `AppSettings` | 本地应用配置 |
-| `MysqlStr` | `MySqlConnectionSettings` | MySQL 配置 |
 | `EDataType` | `PartDataType` | 数据类型枚举 |
+| `UserModel` | `MhrUser` | 登录用户对象 |
+
+以下旧迁移类型已删除，不再在 PartServices 中保留镜像模型：
+
+- `BaseFactoryOptionsSaveInfo`
+- `BasicModel`
+- `EquipentInVersion`
+- `HMRResult`
+- `HTMItemData`
+- `IPartModelService`
+- `MHR`
+- `MysqlStr`
+- `PartModelService`
+- `SiteFactory`
+- `ToolChange`
+- `UserInfoByResourceId`
+- `VersionModel`
 
 ## 2. 关键字段映射
 
-### 2.1 BasicConfiguration（原 BasicModel）
+### 2.1 ClientAppConfiguration（原 BasicModel）
 
 | 旧字段 | 新字段 | 类型变化 |
 | --- | --- | --- |
@@ -35,7 +42,6 @@
 | `Area` | `AreaCode` | `string` -> `string` |
 | `Procedure` | `ProcedureCode` | `string` -> `string` |
 | `EquipmentNum` | `EquipmentCode` | `string` -> `string` |
-| `DataType` | `DataStorageTypeCode` | `string` -> `string` |
 | `ResourceNum` | `ResourceNumber` | `string` -> `string` |
 | `PlcType` | `PlcProtocolType` | `string` -> `string` |
 | `PlcIp` | `PlcIpAddress` | `string` -> `string` |
@@ -47,7 +53,7 @@
 | 旧字段 | 新字段 | 类型变化 |
 | --- | --- | --- |
 | `Id` | `Id` | `string` -> `Guid` |
-| `BasicModelId` | `BasicConfigurationId` | `string` -> `Guid` |
+| `BasicModelId` | `ClientAppConfigurationId` | `string` -> `Guid` |
 | `ResourceNum` | `ResourceNumber` | `string` -> `string` |
 | `Name` | `PartName` | `string` -> `string` |
 | `Input` | `InputMode` | `string` -> `string` |
@@ -65,7 +71,7 @@
 | 旧字段 | 新字段 | 类型变化 |
 | --- | --- | --- |
 | `Id` | `Id` | `string` -> `Guid` |
-| `BasicModelId` | `BasicConfigurationId` | `string` -> `Guid` |
+| `BasicModelId` | `ClientAppConfigurationId` | `string` -> `Guid` |
 | `Site` | `SiteCode` | `string` -> `string` |
 | `Name` | `PartName` | `string` -> `string` |
 | `OldNo` | `OldBarcode` | `string?` -> `string?` |
@@ -84,35 +90,9 @@
 | `Id` | `Id` | `string` -> `Guid` |
 | `Name` | `PartName` | `string` -> `string` |
 | `DateTime` | `OccurredAt` | `DateTime` -> `DateTime` |
-| `BasicId` | `BasicConfigurationId` | `string` -> `Guid` |
-
-### 2.5 EquipmentVersionRecord（原 EquipentInVersion）
-
-| 旧字段 | 新字段 | 类型变化 |
-| --- | --- | --- |
-| `Id` | `Id` | `string` -> `Guid` |
-| `ResourceNum` | `ResourceNumber` | `string` -> `string` |
-| `DateTime` | `UpdatedAt` | `DateTime` -> `DateTime` |
-
-### 2.6 ToolChangeRecord（原 ToolChange）
-
-| 旧字段 | 新字段 | 类型变化 |
-| --- | --- | --- |
-| `Id` | `Id` | `string` -> `Guid` |
-| `Name` | `ToolName` | `string?` -> `string?` |
-| `Code` | `ToolCode` | `string?` -> `string?` |
-| `CreatTime` | `CreatedAt` | `string` -> `DateTime` |
-
-### 2.7 ResourceUserSnapshot（原 UserInfoByResourceId）
-
-| 旧字段 | 新字段 | 类型变化 |
-| --- | --- | --- |
-| `Id` | `Id` | `string` -> `Guid` |
-| `ResourceId` | `ResourceNumber` | `string` -> `string` |
-| `MhrResult` | `MhrResult` | `HMRResult` -> `MhrResult` |
+| `BasicId` | `ClientAppConfigurationId` | `string` -> `Guid` |
 
 ## 3. 迁移注意事项
 
 - 旧库中保存为字符串的 Guid 字段，在迁移脚本中建议先做合法性校验，再转换为数据库 `uniqueidentifier`。
-- `ToolChange.CreatTime` 为字符串，迁移到 `CreatedAt` 时需明确源字符串格式并做失败兜底（如默认当前时间或空值策略）。
-- `SiteFactoryOptionsSaveInfo` 使用 `JsonPropertyName("Factories")` 兼容旧 JSON 结构，避免配置文件强制改版。
+- 客户端配置不再在 PartServices 中保留副本类型，迁移时应直接落到 `ClientAppConfigurationEntity`。

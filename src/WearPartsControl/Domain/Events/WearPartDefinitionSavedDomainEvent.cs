@@ -4,6 +4,6 @@ namespace WearPartsControl.Domain.Events;
 
 public sealed record WearPartDefinitionSavedDomainEvent(
     Guid WearPartDefinitionId,
-    Guid BasicConfigurationId,
+    Guid ClientAppConfigurationId,
     string PartName,
     DateTime OccurredAtUtc) : IDomainEvent;

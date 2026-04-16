@@ -7,11 +7,11 @@
 - 位置：`src/WearPartsControl/Domain`
 - 职责：表达业务概念、规则和契约，不依赖数据库、网络、文件或 EF Core。
 - 关键内容：
-	- 实体：`BasicConfigurationEntity`、`WearPartDefinitionEntity`
+	- 实体：`ClientAppConfigurationEntity`、`WearPartDefinitionEntity`
 	- 值对象：`ResourceNumber`、`PlcEndpoint`
 	- 领域服务：`WearPartDefinitionDomainService`
 	- 领域事件契约：`IDomainEvent`、`IDomainEventHandler<T>`
-	- 仓储接口：`IRepository<TEntity, TId>`、`IBasicConfigurationRepository`、`IWearPartRepository`
+	- 仓储接口：`IRepository<TEntity, TId>`、`IClientAppConfigurationRepository`、`IWearPartRepository`
 		- `IRepository<TEntity, TId>` 仅保留仓储职责（包含 `SoftDeleteAsync`）。
 		- 事务由独立的 `IUnitOfWork<TDbContext>` 负责，仓储内部持有对应 `UnitOfWork`，符合单一职责。
 		- `DbContextBase` 不直接实现 `IUnitOfWork`，避免上下文职责膨胀。
@@ -24,10 +24,10 @@
 - 关键内容：
 	- `WearPartsControlDbContext`
 	- EF Core 映射配置：
-		- `EntityFrameworkCore/Configurations/BasicConfigurationEntityConfiguration`
+		- `EntityFrameworkCore/Configurations/ClientAppConfigurationEntityConfiguration`
 		- `EntityFrameworkCore/Configurations/WearPartDefinitionEntityConfiguration`
 	- 仓储实现：
-		- `EntityFrameworkCore/Repositories/BasicConfigurationRepository`
+		- `EntityFrameworkCore/Repositories/ClientAppConfigurationRepository`
 		- `EntityFrameworkCore/Repositories/WearPartRepository`
 	- 初始化与脚本：
 		- `EntityFrameworkCore/SqliteDatabaseInitializer`
@@ -70,7 +70,7 @@
 - 登录窗口支持回车提交；当相邻输入间隔超过 `LoginInputMaxIntervalMilliseconds` 时，会判定为手工输入并拒绝登录。
 - 应用配置统一使用 `src/WearPartsControl/PrivateData/Settings/app-settings.json`。
 - 当前默认配置示例：`{"ResourceNumber":"","LoginInputMaxIntervalMilliseconds":80}`
-- `ResourceNumber` 用于在基础配置中查找资源对应的 `SiteCode`，随后由登录服务完成用户认证。
+- `ResourceNumber` 用于在客户端配置中查找资源对应的 `SiteCode`，随后由登录服务完成用户认证。
 - 登录成功后，用户信息会同步到 `ICurrentUserAccessor`，主窗口右上角 `LoginBox` 会自动刷新工号、权限与登录按钮状态。
 
 ## 测试

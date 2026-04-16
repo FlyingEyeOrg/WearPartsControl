@@ -4,9 +4,9 @@ using WearPartsControl.Domain.Entities;
 
 namespace WearPartsControl.Infrastructure.EntityFrameworkCore.Configurations;
 
-public sealed class BasicConfigurationEntityConfiguration : IEntityTypeConfiguration<BasicConfigurationEntity>
+public sealed class ClientAppConfigurationEntityConfiguration : IEntityTypeConfiguration<ClientAppConfigurationEntity>
 {
-    public void Configure(EntityTypeBuilder<BasicConfigurationEntity> builder)
+    public void Configure(EntityTypeBuilder<ClientAppConfigurationEntity> builder)
     {
         builder.ToTable("basic_configurations");
         builder.HasKey(x => x.Id);
@@ -15,11 +15,6 @@ public sealed class BasicConfigurationEntityConfiguration : IEntityTypeConfigura
         builder.Property(x => x.UpdatedAt).IsRequired();
         builder.Property(x => x.CreatedBy).HasMaxLength(64).IsRequired();
         builder.Property(x => x.UpdatedBy).HasMaxLength(64).IsRequired();
-        builder.Property(x => x.Remark).HasMaxLength(512);
-        builder.Property(x => x.IsDeleted).IsRequired();
-        builder.Property(x => x.DeletedAt);
-
-        builder.HasQueryFilter(x => !x.IsDeleted);
 
         builder.Property(x => x.SiteCode).HasMaxLength(64).IsRequired();
         builder.Property(x => x.FactoryCode).HasMaxLength(64).IsRequired();

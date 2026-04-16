@@ -5,9 +5,9 @@ using WearPartsControl.Domain.Entities;
 
 namespace WearPartsControl.Domain.Repositories;
 
-public interface IBasicConfigurationRepository : IRepository<BasicConfigurationEntity, Guid>
+public interface IClientAppConfigurationRepository : IRepository<ClientAppConfigurationEntity, Guid>
 {
-    Task<BasicConfigurationEntity?> GetByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default);
+    Task<ClientAppConfigurationEntity?> GetByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default);
 
     Task<bool> ExistsByResourceNumberAsync(string resourceNumber, Guid? excludeId = null, CancellationToken cancellationToken = default);
 }

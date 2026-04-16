@@ -22,10 +22,10 @@ public sealed class WearPartReplacementRecordRepository : EfRepositoryBase<WearP
             .ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<WearPartReplacementRecordEntity>> ListByBasicConfigurationAsync(Guid basicConfigurationId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<WearPartReplacementRecordEntity>> ListByClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
     {
         return await Queryable(asNoTracking: true)
-            .Where(x => x.BasicConfigurationId == basicConfigurationId)
+            .Where(x => x.ClientAppConfigurationId == clientAppConfigurationId)
             .OrderByDescending(x => x.ReplacedAt)
             .ToArrayAsync(cancellationToken)
             .ConfigureAwait(false);
