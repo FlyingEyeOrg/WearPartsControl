@@ -17,9 +17,9 @@ public sealed class BasicConfigurationEntity :
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-    public string? CreatedBy { get; set; } 
+    public string? CreatedBy { get; set; } = "system";
 
-    public string? UpdatedBy { get; set; }
+    public string? UpdatedBy { get; set; } = "system";
 
     public bool IsDeleted { get; set; }
 

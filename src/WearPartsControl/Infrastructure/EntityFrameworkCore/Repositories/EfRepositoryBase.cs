@@ -22,6 +22,8 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
     protected string? CurrentUserId => CurrentUser.UserId;
 
+    protected string EffectiveUserId => string.IsNullOrWhiteSpace(CurrentUserId) ? "system" : CurrentUserId;
+
     protected DbSet<TEntity> Set => DbContext.Set<TEntity>();
 
     protected IQueryable<TEntity> Queryable(bool asNoTracking = true, bool includeSoftDeleted = false)
@@ -80,7 +82,7 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
             return;
         }
 
-        Set.Remove(entity);
+        ApplyDeleteBehavior(entity);
     }
 
     protected virtual void SetCreationDefaults(TEntity entity)
@@ -104,8 +106,12 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
         if (entity is IHasAuditUser auditUser)
         {
-            auditUser.CreatedBy = CurrentUserId;
-            auditUser.UpdatedBy = CurrentUserId;
+            if (ShouldAssignCurrentUser(auditUser.CreatedBy))
+            {
+                auditUser.CreatedBy = EffectiveUserId;
+            }
+
+            auditUser.UpdatedBy = EffectiveUserId;
         }
     }
 
@@ -118,7 +124,7 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
         if (entity is IHasAuditUser auditUser)
         {
-            auditUser.UpdatedBy = CurrentUserId;
+            auditUser.UpdatedBy = EffectiveUserId;
         }
     }
 
@@ -137,8 +143,20 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
         if (entity is IHasAuditUser auditUser)
         {
-            auditUser.UpdatedBy = CurrentUserId;
+            auditUser.UpdatedBy = EffectiveUserId;
         }
+    }
+
+    protected virtual void ApplyDeleteBehavior(TEntity entity)
+    {
+        if (entity is ISoftDelete)
+        {
+            SetDeleteDefaults(entity);
+            Set.Update(entity);
+            return;
+        }
+
+        Set.Remove(entity);
     }
 
     private static IQueryable<TEntity> ApplySoftDeleteFilter(IQueryable<TEntity> source)
@@ -149,5 +167,11 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
         }
 
         return source.Where(x => !EF.Property<bool>(x, nameof(ISoftDelete.IsDeleted)));
+    }
+
+    private static bool ShouldAssignCurrentUser(string? userId)
+    {
+        return string.IsNullOrWhiteSpace(userId)
+               || string.Equals(userId, "system", StringComparison.OrdinalIgnoreCase);
     }
 }
