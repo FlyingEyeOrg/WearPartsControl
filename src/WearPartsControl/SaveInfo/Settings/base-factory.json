@@ -3,602 +3,302 @@
     {
       "Base": "AC",
       "BaseName": "苏州安驰系统基地",
-      "FactoryName": "ACM01"
+      "FactoryNames": [
+        "ACM01"
+      ]
     },
     {
       "Base": "CA",
       "BaseName": "苏州时代新安基地",
-      "FactoryName": "CAM01"
+      "FactoryNames": [
+        "CAM01"
+      ]
     },
     {
       "Base": "CC",
       "BaseName": "时代长安基地",
-      "FactoryName": "CCC01E1"
-    },
-    {
-      "Base": "CC",
-      "BaseName": "时代长安基地",
-      "FactoryName": "CCC01"
-    },
-    {
-      "Base": "CF",
-      "BaseName": "时代一汽基地",
-      "FactoryName": "CFM01"
+      "FactoryNames": [
+        "CCC01",
+        "CCC01E1"
+      ]
     },
     {
       "Base": "CF",
       "BaseName": "时代一汽基地",
-      "FactoryName": "CFC02A1"
-    },
-    {
-      "Base": "CF",
-      "BaseName": "时代一汽基地",
-      "FactoryName": "CFC02"
-    },
-    {
-      "Base": "CF",
-      "BaseName": "时代一汽基地",
-      "FactoryName": "CFC01"
+      "FactoryNames": [
+        "CFC01",
+        "CFC02",
+        "CFC02A1",
+        "CFM01"
+      ]
     },
     {
       "Base": "CG",
       "BaseName": "时代广汽基地",
-      "FactoryName": "CGM01"
-    },
-    {
-      "Base": "CG",
-      "BaseName": "时代广汽基地",
-      "FactoryName": "CGC01"
-    },
-    {
-      "Base": "CL",
-      "BaseName": "时代吉利基地",
-      "FactoryName": "CLM01"
+      "FactoryNames": [
+        "CGC01",
+        "CGM01"
+      ]
     },
     {
       "Base": "CL",
       "BaseName": "时代吉利基地",
-      "FactoryName": "CLC02E1"
-    },
-    {
-      "Base": "CL",
-      "BaseName": "时代吉利基地",
-      "FactoryName": "CLC01A1"
-    },
-    {
-      "Base": "CL",
-      "BaseName": "时代吉利基地",
-      "FactoryName": "CLC01"
+      "FactoryNames": [
+        "CLC01",
+        "CLC01A1",
+        "CLC02E1",
+        "CLM01"
+      ]
     },
     {
       "Base": "CS",
       "BaseName": "时代上汽基地",
-      "FactoryName": "CSC03A1"
-    },
-    {
-      "Base": "CS",
-      "BaseName": "时代上汽基地",
-      "FactoryName": "CSC03"
-    },
-    {
-      "Base": "CS",
-      "BaseName": "时代上汽基地",
-      "FactoryName": "CSC02A1"
-    },
-    {
-      "Base": "CS",
-      "BaseName": "时代上汽基地",
-      "FactoryName": "CSC02"
-    },
-    {
-      "Base": "CS",
-      "BaseName": "时代上汽基地",
-      "FactoryName": "CSC01"
+      "FactoryNames": [
+        "CSC01",
+        "CSC02",
+        "CSC02A1",
+        "CSC03",
+        "CSC03A1"
+      ]
     },
     {
       "Base": "FD",
       "BaseName": "福鼎基地",
-      "FactoryName": "FDM03"
-    },
-    {
-      "Base": "FD",
-      "BaseName": "福鼎基地",
-      "FactoryName": "FDM02"
-    },
-    {
-      "Base": "FD",
-      "BaseName": "福鼎基地",
-      "FactoryName": "FDM01"
-    },
-    {
-      "Base": "FD",
-      "BaseName": "福鼎基地",
-      "FactoryName": "FDC04A1"
-    },
-    {
-      "Base": "FD",
-      "BaseName": "福鼎基地",
-      "FactoryName": "FDC04"
-    },
-    {
-      "Base": "FD",
-      "BaseName": "福鼎基地",
-      "FactoryName": "FDC03A1"
-    },
-    {
-      "Base": "FD",
-      "BaseName": "福鼎基地",
-      "FactoryName": "FDC03"
-    },
-    {
-      "Base": "FD",
-      "BaseName": "福鼎基地",
-      "FactoryName": "FDC02A1"
-    },
-    {
-      "Base": "FD",
-      "BaseName": "福鼎基地",
-      "FactoryName": "FDC02"
-    },
-    {
-      "Base": "FD",
-      "BaseName": "福鼎基地",
-      "FactoryName": "FDC01A1"
-    },
-    {
-      "Base": "FD",
-      "BaseName": "福鼎基地",
-      "FactoryName": "FDC01"
+      "FactoryNames": [
+        "FDC01",
+        "FDC01A1",
+        "FDC02",
+        "FDC02A1",
+        "FDC03",
+        "FDC03A1",
+        "FDC04",
+        "FDC04A1",
+        "FDM01",
+        "FDM02",
+        "FDM03"
+      ]
     },
     {
       "Base": "GY",
       "BaseName": "贵阳基地",
-      "FactoryName": "GYM01"
-    },
-    {
-      "Base": "GY",
-      "BaseName": "贵阳基地",
-      "FactoryName": "GYC01"
-    },
-    {
-      "Base": "HD",
-      "BaseName": "湖东基地",
-      "FactoryName": "HDM01"
+      "FactoryNames": [
+        "GYC01",
+        "GYM01"
+      ]
     },
     {
       "Base": "HD",
       "BaseName": "湖东基地",
-      "FactoryName": "HDC03"
+      "FactoryNames": [
+        "HDC01",
+        "HDC02",
+        "HDC03",
+        "HDM01"
+      ]
     },
     {
       "Base": "HD",
       "BaseName": "湖西基地",
-      "FactoryName": "HDC02A1"
+      "FactoryNames": [
+        "HDC02A1"
+      ]
     },
     {
-      "Base": "HD",
-      "BaseName": "湖东基地",
-      "FactoryName": "HDC02"
-    },
-    {
-      "Base": "HD",
-      "BaseName": "湖东基地",
-      "FactoryName": "HDC01"
-    },
-    {
-      "Base": "HX",
-      "BaseName": "湖西基地",
-      "FactoryName": "HXS01"
+      "Base": "HJ",
+      "BaseName": "匈牙利",
+      "FactoryNames": [
+        "HCM01",
+        "HJC01",
+        "HJM02"
+      ]
     },
     {
       "Base": "HX",
       "BaseName": "湖西基地",
-      "FactoryName": "HXM02"
-    },
-    {
-      "Base": "HX",
-      "BaseName": "湖西基地",
-      "FactoryName": "HXM01"
-    },
-    {
-      "Base": "HX",
-      "BaseName": "湖西基地",
-      "FactoryName": "HXC03"
-    },
-    {
-      "Base": "HX",
-      "BaseName": "湖西基地",
-      "FactoryName": "HXC02C1"
-    },
-    {
-      "Base": "HX",
-      "BaseName": "湖西基地",
-      "FactoryName": "HXC02A1"
-    },
-    {
-      "Base": "HX",
-      "BaseName": "湖西基地",
-      "FactoryName": "HXC02"
-    },
-    {
-      "Base": "HX",
-      "BaseName": "湖西基地",
-      "FactoryName": "HXC01"
+      "FactoryNames": [
+        "HXC01",
+        "HXC02",
+        "HXC02A1",
+        "HXC02C1",
+        "HXC03",
+        "HXM01",
+        "HXM02",
+        "HXS01"
+      ]
     },
     {
       "Base": "HZ",
       "BaseName": "Z 基地",
-      "FactoryName": "HZM02"
-    },
-    {
-      "Base": "HZ",
-      "BaseName": "Z 基地",
-      "FactoryName": "HZM01"
-    },
-    {
-      "Base": "HZ",
-      "BaseName": "Z 基地",
-      "FactoryName": "HZC02A1"
-    },
-    {
-      "Base": "HZ",
-      "BaseName": "Z 基地",
-      "FactoryName": "HZC02"
-    },
-    {
-      "Base": "HZ",
-      "BaseName": "Z 基地",
-      "FactoryName": "HZC01A1"
-    },
-    {
-      "Base": "HZ",
-      "BaseName": "Z 基地",
-      "FactoryName": "HZC01"
+      "FactoryNames": [
+        "HZC01",
+        "HZC01A1",
+        "HZC02",
+        "HZC02A1",
+        "HZM01",
+        "HZM02"
+      ]
     },
     {
       "Base": "JC",
       "BaseName": "蕉城基地",
-      "FactoryName": "JCM01"
+      "FactoryNames": [
+        "JCC01",
+        "JCC01A1",
+        "JCC01E1",
+        "JCC02",
+        "JCC02A1",
+        "JCC02E1",
+        "JCM01"
+      ]
     },
     {
-      "Base": "JC",
-      "BaseName": "蕉城基地",
-      "FactoryName": "JCC02E1"
-    },
-    {
-      "Base": "JC",
-      "BaseName": "蕉城基地",
-      "FactoryName": "JCC02A1"
-    },
-    {
-      "Base": "JC",
-      "BaseName": "蕉城基地",
-      "FactoryName": "JCC02"
-    },
-    {
-      "Base": "JC",
-      "BaseName": "蕉城基地",
-      "FactoryName": "JCC01E1"
-    },
-    {
-      "Base": "JC",
-      "BaseName": "蕉城基地",
-      "FactoryName": "JCC01A1"
-    },
-    {
-      "Base": "JC",
-      "BaseName": "蕉城基地",
-      "FactoryName": "JCC01"
+      "Base": "JN",
+      "BaseName": "济宁时代",
+      "FactoryNames": [
+        "JNC01",
+        "JNC02",
+        "JNC03"
+      ]
     },
     {
       "Base": "JT",
       "BaseName": "金堂基地",
-      "FactoryName": "JTB02"
-    },
-    {
-      "Base": "JT",
-      "BaseName": "金堂基地",
-      "FactoryName": "JTB01"
-    },
-    {
-      "Base": "LJ",
-      "BaseName": "洛京基地",
-      "FactoryName": "LJM01"
+      "FactoryNames": [
+        "JTB01",
+        "JTB02"
+      ]
     },
     {
       "Base": "LJ",
       "BaseName": "洛京基地",
-      "FactoryName": "LJC01"
-    },
-    {
-      "Base": "ZZ",
-      "BaseName": "中州时代",
-      "FactoryName": "ZZC01"
-    },
-    {
-      "Base": "ZZ",
-      "BaseName": "中州时代",
-      "FactoryName": "ZZC02"
-    },
-    {
-      "Base": "ZZ",
-      "BaseName": "中州时代",
-      "FactoryName": "ZZC03"
-    },
-    {
-      "Base": "ZZ",
-      "BaseName": "中州时代",
-      "FactoryName": "ZZC04"
+      "FactoryNames": [
+        "LJC01",
+        "LJM01"
+      ]
     },
     {
       "Base": "LY",
       "BaseName": "溧阳基地",
-      "FactoryName": "LYM03"
-    },
-    {
-      "Base": "LY",
-      "BaseName": "溧阳基地",
-      "FactoryName": "LYM02"
-    },
-    {
-      "Base": "LY",
-      "BaseName": "溧阳基地",
-      "FactoryName": "LYM01"
-    },
-    {
-      "Base": "LY",
-      "BaseName": "溧阳基地",
-      "FactoryName": "LYC06A1"
-    },
-    {
-      "Base": "LY",
-      "BaseName": "溧阳基地",
-      "FactoryName": "LYC06"
-    },
-    {
-      "Base": "LY",
-      "BaseName": "溧阳基地",
-      "FactoryName": "LYC05A1"
-    },
-    {
-      "Base": "LY",
-      "BaseName": "溧阳基地",
-      "FactoryName": "LYC05"
-    },
-    {
-      "Base": "LY",
-      "BaseName": "溧阳基地",
-      "FactoryName": "LYC04A1"
-    },
-    {
-      "Base": "LY",
-      "BaseName": "溧阳基地",
-      "FactoryName": "LYC04"
-    },
-    {
-      "Base": "LY",
-      "BaseName": "溧阳基地",
-      "FactoryName": "LYC03A1"
-    },
-    {
-      "Base": "LY",
-      "BaseName": "溧阳基地",
-      "FactoryName": "LYC03"
-    },
-    {
-      "Base": "LY",
-      "BaseName": "溧阳基地",
-      "FactoryName": "LYC02"
-    },
-    {
-      "Base": "LY",
-      "BaseName": "溧阳基地",
-      "FactoryName": "LYC01"
+      "FactoryNames": [
+        "LYC01",
+        "LYC02",
+        "LYC03",
+        "LYC03A1",
+        "LYC04",
+        "LYC04A1",
+        "LYC05",
+        "LYC05A1",
+        "LYC06",
+        "LYC06A1",
+        "LYM01",
+        "LYM02",
+        "LYM03"
+      ]
     },
     {
       "Base": "PN",
       "BaseName": "屏南基地",
-      "FactoryName": "PNB01"
+      "FactoryNames": [
+        "PNB01"
+      ]
     },
     {
       "Base": "PTO",
       "BaseName": "样品部",
-      "FactoryName": "HX"
-    },
-    {
-      "Base": "PTO",
-      "BaseName": "样品部",
-      "FactoryName": "HD"
-    },
-    {
-      "Base": "QH",
-      "BaseName": "青海基地",
-      "FactoryName": "QHC03"
+      "FactoryNames": [
+        "HD",
+        "HX"
+      ]
     },
     {
       "Base": "QH",
       "BaseName": "青海基地",
-      "FactoryName": "QHC02"
-    },
-    {
-      "Base": "QH",
-      "BaseName": "青海基地",
-      "FactoryName": "QHC01"
-    },
-    {
-      "Base": "RQ",
-      "BaseName": "瑞庆基地",
-      "FactoryName": "RQM01"
+      "FactoryNames": [
+        "QHC01",
+        "QHC02",
+        "QHC03"
+      ]
     },
     {
       "Base": "RQ",
       "BaseName": "瑞庆基地",
-      "FactoryName": "RQC01E1"
-    },
-    {
-      "Base": "RQ",
-      "BaseName": "瑞庆基地",
-      "FactoryName": "RQC01"
+      "FactoryNames": [
+        "RQC01",
+        "RQC01E1",
+        "RQM01"
+      ]
     },
     {
       "Base": "RT",
       "BaseName": "瑞庭基地",
-      "FactoryName": "RTM02"
-    },
-    {
-      "Base": "RT",
-      "BaseName": "瑞庭基地",
-      "FactoryName": "RTM01"
-    },
-    {
-      "Base": "TH",
-      "BaseName": "图林根基地",
-      "FactoryName": "THM02"
+      "FactoryNames": [
+        "RTM01",
+        "RTM02"
+      ]
     },
     {
       "Base": "TH",
       "BaseName": "图林根基地",
-      "FactoryName": "THM01"
-    },
-    {
-      "Base": "TH",
-      "BaseName": "图林根基地",
-      "FactoryName": "THC01"
-    },
-    {
-      "Base": "XJ",
-      "BaseName": "新津基地",
-      "FactoryName": "XJM01"
+      "FactoryNames": [
+        "THC01",
+        "THM01",
+        "THM02"
+      ]
     },
     {
       "Base": "XJ",
       "BaseName": "新津基地",
-      "FactoryName": "XJC01A1"
-    },
-    {
-      "Base": "XJ",
-      "BaseName": "新津基地",
-      "FactoryName": "XJC01"
+      "FactoryNames": [
+        "XJC01",
+        "XJC01A1",
+        "XJM01"
+      ]
     },
     {
       "Base": "XM",
       "BaseName": "厦门基地",
-      "FactoryName": "XMM01"
-    },
-    {
-      "Base": "XM",
-      "BaseName": "厦门基地",
-      "FactoryName": "XMC01"
-    },
-    {
-      "Base": "YB",
-      "BaseName": "宜宾基地",
-      "FactoryName": "YBM05"
+      "FactoryNames": [
+        "XMC01",
+        "XMM01"
+      ]
     },
     {
       "Base": "YB",
       "BaseName": "宜宾基地",
-      "FactoryName": "YBM04"
-    },
-    {
-      "Base": "YB",
-      "BaseName": "宜宾基地",
-      "FactoryName": "YBM02"
-    },
-    {
-      "Base": "YB",
-      "BaseName": "宜宾基地",
-      "FactoryName": "YBM01"
-    },
-    {
-      "Base": "YB",
-      "BaseName": "宜宾基地",
-      "FactoryName": "YBC06A1"
-    },
-    {
-      "Base": "YB",
-      "BaseName": "宜宾基地",
-      "FactoryName": "YBC06"
-    },
-    {
-      "Base": "YB",
-      "BaseName": "宜宾基地",
-      "FactoryName": "YBC05A1"
-    },
-    {
-      "Base": "YB",
-      "BaseName": "宜宾基地",
-      "FactoryName": "YBC05"
-    },
-    {
-      "Base": "YB",
-      "BaseName": "宜宾基地",
-      "FactoryName": "YBC03"
-    },
-    {
-      "Base": "YB",
-      "BaseName": "宜宾基地",
-      "FactoryName": "YBC02A1"
-    },
-    {
-      "Base": "YB",
-      "BaseName": "宜宾基地",
-      "FactoryName": "YBC02"
-    },
-    {
-      "Base": "YB",
-      "BaseName": "宜宾基地",
-      "FactoryName": "YBC01A1"
-    },
-    {
-      "Base": "YB",
-      "BaseName": "宜宾基地",
-      "FactoryName": "YBC01"
+      "FactoryNames": [
+        "YBC01",
+        "YBC01A1",
+        "YBC02",
+        "YBC02A1",
+        "YBC03",
+        "YBC05",
+        "YBC05A1",
+        "YBC06",
+        "YBC06A1",
+        "YBM01",
+        "YBM02",
+        "YBM04",
+        "YBM05"
+      ]
     },
     {
       "Base": "YC",
       "BaseName": "宜春基地",
-      "FactoryName": "YCM01"
+      "FactoryNames": [
+        "YCC01",
+        "YCC01A1",
+        "YCM01"
+      ]
     },
     {
-      "Base": "YC",
-      "BaseName": "宜春基地",
-      "FactoryName": "YCC01A1"
-    },
-    {
-      "Base": "YC",
-      "BaseName": "宜春基地",
-      "FactoryName": "YCC01"
-    },
-    {
-      "Base": "JN",
-      "BaseName": "济宁时代",
-      "FactoryName": "JNC01"
-    },
-    {
-      "Base": "JN",
-      "BaseName": "济宁时代",
-      "FactoryName": "JNC02"
-    },
-    {
-      "Base": "JN",
-      "BaseName": "济宁时代",
-      "FactoryName": "JNC03"
-    },
-    {
-      "Base": "HJ",
-      "BaseName": "匈牙利",
-      "FactoryName": "HJC01"
-    },
-    {
-      "Base": "HJ",
-      "BaseName": "匈牙利",
-      "FactoryName": "HCM01"
-    },
-    {
-      "Base": "HJ",
-      "BaseName": "匈牙利",
-      "FactoryName": "HJM02"
+      "Base": "ZZ",
+      "BaseName": "中州时代",
+      "FactoryNames": [
+        "ZZC01",
+        "ZZC02",
+        "ZZC03",
+        "ZZC04"
+      ]
     }
   ]
 }
