@@ -6,7 +6,7 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 /// MHR 接口配置。
 /// </summary>
 [SaveInfoFile("settings/mhr")]
-public sealed class MHR
+public sealed class MhrApiSettings
 {
     /// <summary>
     /// 获取 token 的地址。

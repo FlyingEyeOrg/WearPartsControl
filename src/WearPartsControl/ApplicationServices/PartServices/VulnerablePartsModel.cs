@@ -3,37 +3,37 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 /// <summary>
 /// 易损件定义模型。
 /// </summary>
-public sealed class VulnerablePartsModel
+public sealed class WearPartDefinition
 {
     /// <summary>
     /// 主键。
     /// </summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <summary>
     /// 基础配置主键。
     /// </summary>
-    public string BasicModelId { get; set; } = string.Empty;
+    public Guid BasicConfigurationId { get; set; }
 
     /// <summary>
     /// 资源号。
     /// </summary>
-    public string ResourceNum { get; set; } = string.Empty;
+    public string ResourceNumber { get; set; } = string.Empty;
 
     /// <summary>
     /// 易损件名称。
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public string PartName { get; set; } = string.Empty;
 
     /// <summary>
     /// 输入方式。
     /// </summary>
-    public string Input { get; set; } = string.Empty;
+    public string InputMode { get; set; } = string.Empty;
 
     /// <summary>
     /// 当前值点位。
     /// </summary>
-    public string CurrentValuePoint { get; set; } = string.Empty;
+    public string CurrentValueAddress { get; set; } = string.Empty;
 
     /// <summary>
     /// 当前值点位类型。
@@ -43,17 +43,17 @@ public sealed class VulnerablePartsModel
     /// <summary>
     /// 预警值点位。
     /// </summary>
-    public string WarnValuePoint { get; set; } = string.Empty;
+    public string WarningValueAddress { get; set; } = string.Empty;
 
     /// <summary>
     /// 预警值点位类型。
     /// </summary>
-    public string WarnValueDataType { get; set; } = string.Empty;
+    public string WarningValueDataType { get; set; } = string.Empty;
 
     /// <summary>
     /// 停机值点位。
     /// </summary>
-    public string ShutdownValuePoint { get; set; } = string.Empty;
+    public string ShutdownValueAddress { get; set; } = string.Empty;
 
     /// <summary>
     /// 停机值点位类型。
@@ -78,20 +78,20 @@ public sealed class VulnerablePartsModel
     /// <summary>
     /// 寿命类型。
     /// </summary>
-    public string LifeType { get; set; } = string.Empty;
+    public string LifetimeType { get; set; } = string.Empty;
 
     /// <summary>
     /// PLC 清零点位。
     /// </summary>
-    public string PlcZeroClear { get; set; } = string.Empty;
+    public string PlcZeroClearAddress { get; set; } = string.Empty;
 
     /// <summary>
     /// 新条码写入 PLC 的地址。
     /// </summary>
-    public string CodeWritePlcPoint { get; set; } = string.Empty;
+    public string BarcodeWriteAddress { get; set; } = string.Empty;
 
     /// <summary>
     /// 最后更新时间。
     /// </summary>
-    public DateTime? DateTime { get; set; } = System.DateTime.Now;
+    public DateTime? UpdatedAt { get; set; } = DateTime.Now;
 }

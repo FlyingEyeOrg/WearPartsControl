@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 
 namespace WearPartsControl.ApplicationServices.PartServices;
@@ -12,5 +13,6 @@ public sealed class SiteFactoryOptionsSaveInfo
     /// <summary>
     /// 基地配置集合。
     /// </summary>
-    public List<SiteFactory> Factories { get; set; } = new();
+    [JsonPropertyName("Factories")]
+    public List<SiteFactoryMapping> SiteFactories { get; set; } = new();
 }

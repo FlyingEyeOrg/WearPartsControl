@@ -6,7 +6,7 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 /// MySQL 连接字符串配置。
 /// </summary>
 [SaveInfoFile("settings/mysql")]
-public sealed class MysqlStr
+public sealed class MySqlConnectionSettings
 {
     /// <summary>
     /// 数据库连接字符串。

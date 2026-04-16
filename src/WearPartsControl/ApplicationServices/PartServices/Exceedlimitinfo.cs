@@ -3,17 +3,17 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 /// <summary>
 /// 超限报警记录。
 /// </summary>
-public sealed class Exceedlimitinfo
+public sealed class ExceedLimitRecord
 {
     /// <summary>
     /// 主键。
     /// </summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <summary>
     /// 易损件名称。
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public string PartName { get; set; } = string.Empty;
 
     /// <summary>
     /// 当前值。
@@ -28,10 +28,10 @@ public sealed class Exceedlimitinfo
     /// <summary>
     /// 报警时间。
     /// </summary>
-    public DateTime DateTime { get; set; } = DateTime.Now;
+    public DateTime OccurredAt { get; set; } = DateTime.Now;
 
     /// <summary>
     /// 对应的基础配置主键。
     /// </summary>
-    public string BasicId { get; set; } = string.Empty;
+    public Guid BasicConfigurationId { get; set; }
 }

@@ -3,7 +3,7 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 /// <summary>
 /// 数据值类型枚举。
 /// </summary>
-public enum EDataType
+public enum PartDataType
 {
     /// <summary>
     /// JSON。

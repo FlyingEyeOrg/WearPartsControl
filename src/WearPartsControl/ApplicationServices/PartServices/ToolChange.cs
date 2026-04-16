@@ -3,25 +3,25 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 /// <summary>
 /// 工具更换记录。
 /// </summary>
-public sealed class ToolChange
+public sealed class ToolChangeRecord
 {
     /// <summary>
     /// 主键。
     /// </summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <summary>
     /// 名称。
     /// </summary>
-    public string? Name { get; set; }
+    public string? ToolName { get; set; }
 
     /// <summary>
     /// 编码。
     /// </summary>
-    public string? Code { get; set; }
+    public string? ToolCode { get; set; }
 
     /// <summary>
     /// 创建时间。
     /// </summary>
-    public string CreatTime { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 }

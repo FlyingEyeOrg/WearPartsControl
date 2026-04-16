@@ -3,17 +3,17 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 /// <summary>
 /// 设备版本记录。
 /// </summary>
-public sealed class EquipentInVersion
+public sealed class EquipmentVersionRecord
 {
     /// <summary>
     /// 主键。
     /// </summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <summary>
     /// 资源号。
     /// </summary>
-    public string ResourceNum { get; set; } = string.Empty;
+    public string ResourceNumber { get; set; } = string.Empty;
 
     /// <summary>
     /// 版本号。
@@ -23,5 +23,5 @@ public sealed class EquipentInVersion
     /// <summary>
     /// 最后更新时间。
     /// </summary>
-    public DateTime DateTime { get; set; } = DateTime.Now;
+    public DateTime UpdatedAt { get; set; } = DateTime.Now;
 }

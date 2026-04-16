@@ -6,67 +6,67 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 /// <summary>
 /// 基础配置模型。
 /// </summary>
-public sealed class BasicModel
+public sealed class BasicConfiguration
 {
     /// <summary>
     /// 主键。
     /// </summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <summary>
     /// 基地。
     /// </summary>
-    public string Site { get; set; } = string.Empty;
+    public string SiteCode { get; set; } = string.Empty;
 
     /// <summary>
     /// 工厂。
     /// </summary>
-    public string Factory { get; set; } = string.Empty;
+    public string FactoryCode { get; set; } = string.Empty;
 
     /// <summary>
     /// 区域。
     /// </summary>
-    public string Area { get; set; } = string.Empty;
+    public string AreaCode { get; set; } = string.Empty;
 
     /// <summary>
     /// 工序。
     /// </summary>
-    public string Procedure { get; set; } = string.Empty;
+    public string ProcedureCode { get; set; } = string.Empty;
 
     /// <summary>
     /// 设备编号。
     /// </summary>
-    public string EquipmentNum { get; set; } = "000";
+    public string EquipmentCode { get; set; } = "000";
 
     /// <summary>
     /// 数据保存类型。
     /// </summary>
-    public string DataType { get; set; } = "2";
+    public string DataStorageTypeCode { get; set; } = "2";
 
     /// <summary>
     /// 资源号。
     /// </summary>
-    public string ResourceNum { get; set; } = string.Empty;
+    public string ResourceNumber { get; set; } = string.Empty;
 
     /// <summary>
     /// PLC 类型。
     /// </summary>
-    public string PlcType { get; set; } = string.Empty;
+    public string PlcProtocolType { get; set; } = string.Empty;
 
     /// <summary>
     /// PLC IP 地址。
     /// </summary>
-    public string PlcIp { get; set; } = string.Empty;
+    public string PlcIpAddress { get; set; } = string.Empty;
 
     /// <summary>
     /// PLC 端口。
     /// </summary>
-    public int Port { get; set; }
+    public int PlcPort { get; set; }
 
     /// <summary>
     /// 停机点位。
     /// </summary>
-    public string ShutdownPoint { get; set; } = string.Empty;
+    public string ShutdownPointAddress { get; set; } = string.Empty;
 
     /// <summary>
     /// 西门子插槽号。
@@ -81,5 +81,5 @@ public sealed class BasicModel
     /// <summary>
     /// 唯一业务键。
     /// </summary>
-    public string UniqueKey => $"{Site}/{Factory}/{Area}/{Procedure}";
+    public string UniqueKey => $"{SiteCode}/{FactoryCode}/{AreaCode}/{ProcedureCode}";
 }
