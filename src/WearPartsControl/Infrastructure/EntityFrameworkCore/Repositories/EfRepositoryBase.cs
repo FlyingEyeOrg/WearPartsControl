@@ -15,6 +15,7 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
     protected EfRepositoryBase(TDbContext dbContext)
     {
         DbContext = dbContext;
+        UnitOfWork = (IUnitOfWork<DbContextBase>)dbContext;
         ServiceProvider = dbContext.GetService<IServiceProvider>();
         IServiceProvider? tempServiceProvider = ServiceProvider;
 
@@ -31,6 +32,8 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
     protected IServiceProvider ServiceProvider { get; }
 
     protected TDbContext DbContext { get; }
+
+    protected IUnitOfWork<DbContextBase> UnitOfWork { get; }
 
     protected ICurrentUser CurrentUser { get; }
 
@@ -116,26 +119,6 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
         SetDeleteDefaults(entity);
         Set.Update(entity);
-    }
-
-    public virtual Task BeginTransactionAsync(CancellationToken cancellationToken = default)
-    {
-        return DbContext.BeginTransactionAsync(cancellationToken);
-    }
-
-    public virtual Task CommitTransactionAsync(CancellationToken cancellationToken = default)
-    {
-        return DbContext.CommitTransactionAsync(cancellationToken);
-    }
-
-    public virtual Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
-    {
-        return DbContext.RollbackTransactionAsync(cancellationToken);
-    }
-
-    public virtual Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        return DbContext.SaveChangesAsync(cancellationToken);
     }
 
     protected virtual void SetCreationDefaults(TEntity entity)

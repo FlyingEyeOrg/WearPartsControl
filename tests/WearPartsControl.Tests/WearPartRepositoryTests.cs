@@ -52,7 +52,7 @@ public sealed class WearPartRepositoryTests : IDisposable
 
         await using var writeContext = await _dbContextFactory.CreateDbContextAsync();
         var repository = new WearPartRepository(writeContext, new WearPartDefinitionDomainService());
-        IUnitOfWork unitOfWork = writeContext;
+        IUnitOfWork<DbContextBase> unitOfWork = writeContext;
 
         var definition = new WearPartDefinitionEntity
         {

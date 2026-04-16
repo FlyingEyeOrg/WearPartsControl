@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace WearPartsControl.Infrastructure.EntityFrameworkCore;
 
-public abstract class DbContextBase : DbContext, IUnitOfWork
+public abstract class DbContextBase : DbContext, IUnitOfWork<DbContextBase>
 {
     private IDbContextTransaction? _currentTransaction;
 
