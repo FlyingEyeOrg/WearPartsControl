@@ -42,9 +42,9 @@ public sealed class PartDbContextFactory : IDesignTimeDbContextFactory<PartDbCon
 
     private static string BuildDefaultConnectionString()
     {
-        var dbDirectory = Path.Combine(AppContext.BaseDirectory, "saveinfo", "db");
+        var dbDirectory = Path.Combine(AppContext.BaseDirectory, "localdb");
         Directory.CreateDirectory(dbDirectory);
-        var dbPath = Path.Combine(dbDirectory, "wearparts.db");
+        var dbPath = Path.Combine(dbDirectory, "wear-parts-control.db");
         return $"Data Source={dbPath}";
     }
 }
