@@ -1,7 +1,6 @@
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Domain.Repositories;
 using WearPartsControl.Domain.Services;
-using WearPartsControl.Infrastructure;
 using WearPartsControl.Infrastructure.EntityFrameworkCore;
 using WearPartsControl.Infrastructure.EntityFrameworkCore.Repositories;
 using System.IO;

@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using WearPartsControl.Domain.Entities;
-using WearPartsControl.Infrastructure.EntityFrameworkCore;
 
-namespace WearPartsControl.Infrastructure;
+namespace WearPartsControl.Infrastructure.EntityFrameworkCore;
 
 public sealed class WearPartsControlDbContext : DbContextBase
 {

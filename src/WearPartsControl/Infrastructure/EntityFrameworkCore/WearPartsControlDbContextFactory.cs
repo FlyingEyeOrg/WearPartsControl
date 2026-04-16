@@ -1,11 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using System;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace WearPartsControl.Infrastructure;
+namespace WearPartsControl.Infrastructure.EntityFrameworkCore;
 
 public sealed class WearPartsControlDbContextFactory : IDesignTimeDbContextFactory<WearPartsControlDbContext>, IDbContextFactory<WearPartsControlDbContext>
 {

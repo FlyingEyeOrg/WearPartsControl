@@ -1,7 +1,6 @@
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using WearPartsControl.Domain.Entities;
-using WearPartsControl.Infrastructure;
 using WearPartsControl.Infrastructure.EntityFrameworkCore;
 using Xunit;
 

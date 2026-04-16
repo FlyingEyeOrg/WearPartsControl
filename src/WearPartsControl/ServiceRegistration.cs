@@ -11,7 +11,6 @@ using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.Domain.Repositories;
 using WearPartsControl.Domain.Services;
-using WearPartsControl.Infrastructure;
 using WearPartsControl.Infrastructure.EntityFrameworkCore;
 using WearPartsControl.Infrastructure.EntityFrameworkCore.Repositories;
 using WearPartsControl.Exceptions;
