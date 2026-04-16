@@ -39,6 +39,15 @@
 - `Infrastructure` 可以依赖 `Domain`
 - `ApplicationServices` 通过接口（仓储契约）访问领域数据
 
+## 数据与配置目录
+
+- 为便于整包拷贝迁移，程序运行时依赖的数据统一放在 `PrivateData` 目录。
+- 默认位置：`{应用程序目录}/PrivateData`
+- 子目录约定：
+	- `Settings`：所有设置与配置 JSON（SaveInfo、登录配置等）
+	- `LocalDB`：SQLite 数据库文件（`wear-parts-control.db`）
+- 日志为临时运行文件，保留在应用根目录：`{应用程序目录}/logs/app-*.log`
+
 ## 测试
 
 - `tests/WearPartsControl.Tests/DomainValueObjectsTests.cs`

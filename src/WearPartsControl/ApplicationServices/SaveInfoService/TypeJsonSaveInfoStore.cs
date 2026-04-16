@@ -22,7 +22,7 @@ public sealed class TypeJsonSaveInfoStore : ISaveInfoStore
 
     public TypeJsonSaveInfoStore(string? rootDirectory = null)
     {
-        _rootDirectory = rootDirectory ?? Path.Combine(AppContext.BaseDirectory, "saveinfo");
+        _rootDirectory = rootDirectory ?? PortableDataPaths.SettingsDirectory;
         _rootDirectory = Path.GetFullPath(_rootDirectory);
         Directory.CreateDirectory(_rootDirectory);
     }

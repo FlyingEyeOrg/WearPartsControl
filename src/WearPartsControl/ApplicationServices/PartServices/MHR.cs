@@ -5,7 +5,7 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 /// <summary>
 /// MHR 接口配置。
 /// </summary>
-[SaveInfoFile("settings/mhr")]
+[SaveInfoFile("mhr")]
 public sealed class MhrApiSettings
 {
     /// <summary>

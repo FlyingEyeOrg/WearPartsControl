@@ -26,16 +26,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="SaveInfo\Settings\site-factory.json">
+		<None Update="PrivateData\Settings\site-factory.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="SaveInfo\Settings\com-notification.json">
+		<None Update="PrivateData\Settings\com-notification.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="SaveInfo\Settings\spacer-validation.json">
+		<None Update="PrivateData\Settings\spacer-validation.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="SaveInfo\Settings\mhrinfo.json">
+		<None Update="PrivateData\Settings\mhrinfo.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>

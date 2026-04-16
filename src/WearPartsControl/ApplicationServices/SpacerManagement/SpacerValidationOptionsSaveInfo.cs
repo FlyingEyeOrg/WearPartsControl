@@ -2,7 +2,7 @@ using WearPartsControl.ApplicationServices.SaveInfoService;
 
 namespace WearPartsControl.ApplicationServices.SpacerManagement;
 
-[SaveInfoFile("settings/spacer-validation")]
+[SaveInfoFile("spacer-validation")]
 public sealed class SpacerValidationOptionsSaveInfo
 {
     public bool Enabled { get; set; } = true;

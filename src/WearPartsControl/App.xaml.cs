@@ -57,10 +57,14 @@ public partial class App : Application
 
     private static void ConfigureLogging()
     {
+        var logsDirectory = System.IO.Path.Combine(AppContext.BaseDirectory, "logs");
+        System.IO.Directory.CreateDirectory(logsDirectory);
+        var logFilePath = System.IO.Path.Combine(logsDirectory, "app-.log");
+
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Console()
-            .WriteTo.File("logs/app-.log", rollingInterval: RollingInterval.Day)
+            .WriteTo.File(logFilePath, rollingInterval: RollingInterval.Day)
             .CreateLogger();
     }
 

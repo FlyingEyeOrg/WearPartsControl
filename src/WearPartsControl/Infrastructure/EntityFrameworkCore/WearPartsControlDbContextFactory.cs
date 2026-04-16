@@ -39,7 +39,7 @@ public sealed class WearPartsControlDbContextFactory : IDesignTimeDbContextFacto
 
     private static string BuildDefaultConnectionString()
     {
-        var dbDirectory = Path.Combine(AppContext.BaseDirectory, "localdb");
+        var dbDirectory = PortableDataPaths.DatabaseDirectory;
         Directory.CreateDirectory(dbDirectory);
         var dbPath = Path.Combine(dbDirectory, "wear-parts-control.db");
         return $"Data Source={dbPath}";

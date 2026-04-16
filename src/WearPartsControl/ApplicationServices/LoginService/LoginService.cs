@@ -12,7 +12,7 @@ public sealed class LoginService : ILoginService
 {
     private readonly IHttpJsonService _httpJsonService;
     private readonly ILocalizationService _localizationService;
-    private readonly string _configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "saveinfo", "settings", "mhrinfo.json");
+    private readonly string _configPath = Path.Combine(PortableDataPaths.SettingsDirectory, "mhrinfo.json");
 
     public LoginService(IHttpJsonService httpJsonService, ILocalizationService localizationService)
     {

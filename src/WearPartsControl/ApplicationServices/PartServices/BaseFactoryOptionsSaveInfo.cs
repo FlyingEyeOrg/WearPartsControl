@@ -7,7 +7,7 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 /// <summary>
 /// 基地工厂配置的持久化根对象。
 /// </summary>
-[SaveInfoFile("settings/site-factory")]
+[SaveInfoFile("site-factory")]
 public sealed class SiteFactoryOptionsSaveInfo
 {
     /// <summary>
