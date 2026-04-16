@@ -1,4 +1,5 @@
 using Autofac;
+using Microsoft.EntityFrameworkCore;
 using System.Net.Http;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
@@ -8,6 +9,7 @@ using WearPartsControl.ApplicationServices.SpacerManagement;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.LoginService;
+using WearPartsControl.Infrastructure.Database;
 using WearPartsControl.Exceptions;
 using WearPartsControl.Views;
 using WearPartsControl.ViewModels;
@@ -39,6 +41,8 @@ public static class ServiceRegistration
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<PlcService>().As<IPlcService>().SingleInstance();
         builder.RegisterType<PartModelService>().As<IPartModelService>().SingleInstance();
+        builder.Register(_ => new PartDbContextFactory()).As<IDbContextFactory<PartDbContext>>().SingleInstance();
+        builder.RegisterType<SqliteDatabaseInitializer>().As<IDatabaseInitializer>().SingleInstance();
         builder.RegisterType<MainWindowViewModel>().AsSelf().InstancePerDependency();
         // Add other services as needed
 

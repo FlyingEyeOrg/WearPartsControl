@@ -6,6 +6,7 @@ using Serilog;
 using System.Windows;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
+using WearPartsControl.Infrastructure.Database;
 using WearPartsControl.Exceptions;
 using WearPartsControl.Views;
 
@@ -85,6 +86,9 @@ public partial class App : Application
 
             _localizationService = _host.Services.GetRequiredService<ILocalizationService>();
             _localizationService.InitializeAsync().GetAwaiter().GetResult();
+
+            var databaseInitializer = _host.Services.GetRequiredService<IDatabaseInitializer>();
+            databaseInitializer.InitializeAsync().GetAwaiter().GetResult();
 
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             mainWindow.Show();
