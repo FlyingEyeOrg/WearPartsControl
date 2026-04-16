@@ -34,5 +34,30 @@ public sealed class WearPartDefinitionDomainService
         definition.EnsureValid();
         DomainValidationRules.MaxLength(definition.PartName.Trim(), 128, nameof(definition.PartName));
         DomainValidationRules.MaxLength(definition.ResourceNumber.Trim(), 128, nameof(definition.ResourceNumber));
+        DomainValidationRules.MaxLength(definition.InputMode.Trim(), 64, nameof(definition.InputMode));
+        DomainValidationRules.MaxLength(definition.CurrentValueAddress.Trim(), 128, nameof(definition.CurrentValueAddress));
+        DomainValidationRules.MaxLength(definition.CurrentValueDataType.Trim(), 64, nameof(definition.CurrentValueDataType));
+        DomainValidationRules.MaxLength(definition.WarningValueAddress.Trim(), 128, nameof(definition.WarningValueAddress));
+        DomainValidationRules.MaxLength(definition.WarningValueDataType.Trim(), 64, nameof(definition.WarningValueDataType));
+        DomainValidationRules.MaxLength(definition.ShutdownValueAddress.Trim(), 128, nameof(definition.ShutdownValueAddress));
+        DomainValidationRules.MaxLength(definition.ShutdownValueDataType.Trim(), 64, nameof(definition.ShutdownValueDataType));
+        DomainValidationRules.MaxLength(definition.LifetimeType.Trim(), 64, nameof(definition.LifetimeType));
+        DomainValidationRules.MaxLength(definition.PlcZeroClearAddress.Trim(), 128, nameof(definition.PlcZeroClearAddress));
+        DomainValidationRules.MaxLength(definition.BarcodeWriteAddress.Trim(), 128, nameof(definition.BarcodeWriteAddress));
+
+        if (definition.CodeMinLength < 0)
+        {
+            throw new DomainBusinessException("条码最小长度不能小于 0。");
+        }
+
+        if (definition.CodeMaxLength <= 0)
+        {
+            throw new DomainBusinessException("条码最大长度必须大于 0。");
+        }
+
+        if (definition.CodeMinLength > definition.CodeMaxLength)
+        {
+            throw new DomainBusinessException("条码最小长度不能大于最大长度。");
+        }
     }
 }

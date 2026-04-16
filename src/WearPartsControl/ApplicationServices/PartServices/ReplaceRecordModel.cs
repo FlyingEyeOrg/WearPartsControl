@@ -16,6 +16,11 @@ public sealed class WearPartReplacementRecord
     public Guid BasicConfigurationId { get; set; }
 
     /// <summary>
+    /// 易损件定义主键。
+    /// </summary>
+    public Guid WearPartDefinitionId { get; set; }
+
+    /// <summary>
     /// 基地。
     /// </summary>
     public string SiteCode { get; set; } = string.Empty;
@@ -64,6 +69,11 @@ public sealed class WearPartReplacementRecord
     /// 更换说明。
     /// </summary>
     public string ReplacementMessage { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 更换原因。
+    /// </summary>
+    public string ReplacementReason { get; set; } = string.Empty;
 
     /// <summary>
     /// 操作时间。

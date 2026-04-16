@@ -23,9 +23,19 @@ public sealed class WearPartDefinitionEntityConfiguration : IEntityTypeConfigura
 
         builder.Property(x => x.ResourceNumber).HasMaxLength(128).IsRequired();
         builder.Property(x => x.PartName).HasMaxLength(128).IsRequired();
+        builder.Property(x => x.InputMode).HasMaxLength(64).IsRequired();
         builder.Property(x => x.CurrentValueAddress).HasMaxLength(128).IsRequired();
+        builder.Property(x => x.CurrentValueDataType).HasMaxLength(64).IsRequired();
         builder.Property(x => x.WarningValueAddress).HasMaxLength(128).IsRequired();
+        builder.Property(x => x.WarningValueDataType).HasMaxLength(64).IsRequired();
         builder.Property(x => x.ShutdownValueAddress).HasMaxLength(128).IsRequired();
+        builder.Property(x => x.ShutdownValueDataType).HasMaxLength(64).IsRequired();
+        builder.Property(x => x.IsShutdown).IsRequired();
+        builder.Property(x => x.CodeMinLength).IsRequired();
+        builder.Property(x => x.CodeMaxLength).IsRequired();
+        builder.Property(x => x.LifetimeType).HasMaxLength(64).IsRequired();
+        builder.Property(x => x.PlcZeroClearAddress).HasMaxLength(128).IsRequired();
+        builder.Property(x => x.BarcodeWriteAddress).HasMaxLength(128).IsRequired();
 
         builder.HasOne(x => x.BasicConfiguration)
             .WithMany(x => x.WearPartDefinitions)

@@ -9,4 +9,8 @@ public sealed class MhrUser
 
     [JsonPropertyName("work_id")]
     public string WorkId { get; set; } = string.Empty;
+
+    [JsonPropertyName("access_level")]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+    public int AccessLevel { get; set; }
 }

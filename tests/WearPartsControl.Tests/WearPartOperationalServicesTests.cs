@@ -1,0 +1,295 @@
+using System.Globalization;
+using System.IO;
+using Microsoft.EntityFrameworkCore;
+using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.ComNotification;
+using WearPartsControl.ApplicationServices.PartServices;
+using WearPartsControl.ApplicationServices.PlcService;
+using WearPartsControl.Domain.Entities;
+using WearPartsControl.Domain.Repositories;
+using WearPartsControl.Domain.Services;
+using WearPartsControl.Exceptions;
+using WearPartsControl.Infrastructure.EntityFrameworkCore;
+using WearPartsControl.Infrastructure.EntityFrameworkCore.Repositories;
+using Xunit;
+
+namespace WearPartsControl.Tests;
+
+public sealed class WearPartOperationalServicesTests : IDisposable
+{
+    private readonly string _dbFilePath;
+    private readonly WearPartsControlDbContextFactory _dbContextFactory;
+
+    public WearPartOperationalServicesTests()
+    {
+        _dbFilePath = Path.Combine(Path.GetTempPath(), $"wearparts-ops-{Guid.NewGuid():N}.db");
+        _dbContextFactory = new WearPartsControlDbContextFactory($"Data Source={_dbFilePath}");
+
+        using var dbContext = _dbContextFactory.CreateDbContext();
+        dbContext.Database.EnsureDeleted();
+        dbContext.Database.EnsureCreated();
+    }
+
+    [Fact]
+    public async Task ReplaceByScanAsync_WhenAccessLevelInsufficient_ShouldThrowAuthorizationException()
+    {
+        var seeded = await SeedAsync("R-OPS-01", "M0.0");
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 0);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 12);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService);
+
+        await Assert.ThrowsAsync<AuthorizationException>(() => service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "BARCODE-0001",
+            ReplacementReason = "寿命到期正常更换"
+        }));
+    }
+
+    [Fact]
+    public async Task ReplaceByScanAsync_ShouldWritePlcAndPersistRecord()
+    {
+        var seeded = await SeedAsync("R-OPS-02", "M0.1");
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 12);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService);
+
+        var result = await service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "BARCODE-0002",
+            ReplacementReason = "寿命到期正常更换",
+            ReplacementMessage = "扫码更换"
+        });
+
+        Assert.Equal("BARCODE-0002", result.NewBarcode);
+        Assert.Contains(plcService.Writes, x => x.Address == "DB1.3" && Equals(x.Value, 0));
+        Assert.Contains(plcService.Writes, x => x.Address == "DB1.4" && Equals(x.Value, "BARCODE-0002"));
+        Assert.Contains(plcService.Writes, x => x.Address == "M0.1" && Equals(x.Value, false));
+
+        await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
+        var repository = new WearPartReplacementRecordRepository(verifyContext);
+        var records = await repository.ListByBasicConfigurationAsync(seeded.BasicConfigurationId);
+        Assert.Single(records);
+        Assert.Equal("寿命到期正常更换", records[0].ReplacementReason);
+    }
+
+    [Fact]
+    public async Task MonitorByResourceNumberAsync_WhenWarningExceeded_ShouldPersistRecordAndNotifyGroup()
+    {
+        var seeded = await SeedAsync("R-OPS-03", "M0.2");
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 15);
+        plcService.SetValue("DB1.1", 10);
+        plcService.SetValue("DB1.2", 20);
+        var notificationService = new FakeComNotificationService();
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateMonitorService(dbContext, plcService, notificationService);
+
+        var results = await service.MonitorByResourceNumberAsync("R-OPS-03");
+
+        Assert.Single(results);
+        Assert.Equal(WearPartMonitorStatus.Warning, results[0].Status);
+        Assert.True(results[0].NotificationTriggered);
+        Assert.Single(notificationService.GroupNotifications);
+        Assert.Empty(notificationService.WorkNotifications);
+
+        await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
+        var repository = new ExceedLimitRecordRepository(verifyContext);
+        var records = await repository.ListByBasicConfigurationAsync(seeded.BasicConfigurationId);
+        Assert.Single(records);
+        Assert.Equal("Warning", records[0].Severity);
+    }
+
+    [Fact]
+    public async Task MonitorByResourceNumberAsync_WhenShutdownExceeded_ShouldWriteShutdownSignal()
+    {
+        var seeded = await SeedAsync("R-OPS-04", "!M0.3");
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 25);
+        plcService.SetValue("DB1.1", 10);
+        plcService.SetValue("DB1.2", 20);
+        var notificationService = new FakeComNotificationService();
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateMonitorService(dbContext, plcService, notificationService);
+
+        var results = await service.MonitorByResourceNumberAsync("R-OPS-04");
+
+        Assert.Single(results);
+        Assert.Equal(WearPartMonitorStatus.Shutdown, results[0].Status);
+        Assert.Contains(plcService.Writes, x => x.Address == "M0.3" && Equals(x.Value, false));
+        Assert.Single(notificationService.WorkNotifications);
+    }
+
+    private async Task<(Guid BasicConfigurationId, Guid DefinitionId)> SeedAsync(string resourceNumber, string shutdownPointAddress)
+    {
+        var basicConfigurationId = Guid.NewGuid();
+        var definitionId = Guid.NewGuid();
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        dbContext.BasicConfigurations.Add(new BasicConfigurationEntity
+        {
+            Id = basicConfigurationId,
+            SiteCode = "S01",
+            FactoryCode = "F01",
+            AreaCode = "A01",
+            ProcedureCode = "P01",
+            EquipmentCode = "E01",
+            ResourceNumber = resourceNumber,
+            PlcProtocolType = "S7",
+            PlcIpAddress = "127.0.0.1",
+            PlcPort = 102,
+            ShutdownPointAddress = shutdownPointAddress,
+            SiemensSlot = 1,
+            IsStringReverse = true
+        });
+
+        dbContext.WearPartDefinitions.Add(new WearPartDefinitionEntity
+        {
+            Id = definitionId,
+            BasicConfigurationId = basicConfigurationId,
+            ResourceNumber = resourceNumber,
+            PartName = "刀具A",
+            InputMode = "Barcode",
+            CurrentValueAddress = "DB1.0",
+            CurrentValueDataType = "Int32",
+            WarningValueAddress = "DB1.1",
+            WarningValueDataType = "Int32",
+            ShutdownValueAddress = "DB1.2",
+            ShutdownValueDataType = "Int32",
+            IsShutdown = true,
+            CodeMinLength = 8,
+            CodeMaxLength = 32,
+            LifetimeType = "Count",
+            PlcZeroClearAddress = "DB1.3",
+            BarcodeWriteAddress = "DB1.4"
+        });
+
+        await dbContext.SaveChangesAsync();
+        return (basicConfigurationId, definitionId);
+    }
+
+    private static CurrentUserAccessor CreateCurrentUserAccessor(int accessLevel)
+    {
+        var accessor = new CurrentUserAccessor();
+        accessor.SetCurrentUser(new WearPartsControl.ApplicationServices.LoginService.MhrUser
+        {
+            CardId = "CARD-OPS",
+            WorkId = "WORK-OPS",
+            AccessLevel = accessLevel
+        });
+        return accessor;
+    }
+
+    private static WearPartReplacementService CreateReplacementService(WearPartsControlDbContext dbContext, ICurrentUserAccessor currentUserAccessor, IPlcService plcService)
+    {
+        return new WearPartReplacementService(
+            currentUserAccessor,
+            new BasicConfigurationRepository(dbContext),
+            new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
+            new WearPartReplacementRecordRepository(dbContext),
+            plcService);
+    }
+
+    private static WearPartMonitorService CreateMonitorService(WearPartsControlDbContext dbContext, IPlcService plcService, IComNotificationService notificationService)
+    {
+        return new WearPartMonitorService(
+            new CurrentUserAccessor(),
+            new BasicConfigurationRepository(dbContext),
+            new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
+            new ExceedLimitRecordRepository(dbContext),
+            plcService,
+            notificationService);
+    }
+
+    public void Dispose()
+    {
+        using (var dbContext = _dbContextFactory.CreateDbContext())
+        {
+            dbContext.Database.EnsureDeleted();
+        }
+
+        try
+        {
+            if (File.Exists(_dbFilePath))
+            {
+                File.Delete(_dbFilePath);
+            }
+        }
+        catch (IOException)
+        {
+        }
+    }
+
+    private sealed class FakePlcService : IPlcService
+    {
+        private readonly Dictionary<string, object> _values = new(StringComparer.OrdinalIgnoreCase);
+
+        public bool IsConnected { get; private set; }
+
+        public List<(string Address, object? Value)> Writes { get; } = new();
+
+        public void SetValue(string address, object value)
+        {
+            _values[address] = value;
+        }
+
+        public void Connect(PlcConnectionOptions options)
+        {
+            IsConnected = true;
+        }
+
+        public void Disconnect()
+        {
+            IsConnected = false;
+        }
+
+        public TValue Read<TValue>(string address, int retryCount = 1)
+        {
+            var value = _values[address];
+            if (value is TValue matched)
+            {
+                return matched;
+            }
+
+            return (TValue)Convert.ChangeType(value, typeof(TValue), CultureInfo.InvariantCulture);
+        }
+
+        public void Write<TValue>(string address, TValue value, int retryCount = 1)
+        {
+            Writes.Add((address, value));
+            _values[address] = value!;
+        }
+    }
+
+    private sealed class FakeComNotificationService : IComNotificationService
+    {
+        public List<string> GroupNotifications { get; } = new();
+
+        public List<string> WorkNotifications { get; } = new();
+
+        public ValueTask NotifyGroupAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default)
+        {
+            GroupNotifications.Add($"{title}:{text}");
+            return ValueTask.CompletedTask;
+        }
+
+        public ValueTask NotifyWorkAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default)
+        {
+            WorkNotifications.Add($"{title}:{text}");
+            return ValueTask.CompletedTask;
+        }
+    }
+}

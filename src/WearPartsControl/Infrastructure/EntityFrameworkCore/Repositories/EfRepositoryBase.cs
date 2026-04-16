@@ -15,7 +15,7 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
     protected EfRepositoryBase(TDbContext dbContext)
     {
         DbContext = dbContext;
-        ServiceProvider = dbContext.GetService<IServiceProvider>();
+        ServiceProvider = dbContext.ApplicationServiceProvider ?? dbContext.GetService<IServiceProvider>();
         CurrentUser = ServiceProvider.GetService<ICurrentUser>() ?? new DefaultCurrentUser();
         UnitOfWork = ServiceProvider.GetService<IUnitOfWork<TDbContext>>() ?? new EfUnitOfWork<TDbContext>(dbContext);
     }

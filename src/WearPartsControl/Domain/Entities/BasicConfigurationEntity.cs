@@ -45,7 +45,17 @@ public sealed class BasicConfigurationEntity :
 
     public int PlcPort { get; set; }
 
+    public string ShutdownPointAddress { get; set; } = string.Empty;
+
+    public int SiemensSlot { get; set; }
+
+    public bool IsStringReverse { get; set; } = true;
+
     public ICollection<WearPartDefinitionEntity> WearPartDefinitions { get; set; } = new List<WearPartDefinitionEntity>();
+
+    public ICollection<WearPartReplacementRecordEntity> WearPartReplacementRecords { get; set; } = new List<WearPartReplacementRecordEntity>();
+
+    public ICollection<ExceedLimitRecordEntity> ExceedLimitRecords { get; set; } = new List<ExceedLimitRecordEntity>();
 
     public void UpdatePlcConnection(string protocolType, string ipAddress, int port)
     {

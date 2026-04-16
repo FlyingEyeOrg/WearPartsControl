@@ -29,6 +29,7 @@ public sealed class BasicConfigurationEntityConfiguration : IEntityTypeConfigura
         builder.Property(x => x.ResourceNumber).HasMaxLength(128).IsRequired();
         builder.Property(x => x.PlcProtocolType).HasMaxLength(64).IsRequired();
         builder.Property(x => x.PlcIpAddress).HasMaxLength(128).IsRequired();
+        builder.Property(x => x.ShutdownPointAddress).HasMaxLength(128);
 
         builder.HasIndex(x => x.ResourceNumber).IsUnique();
     }

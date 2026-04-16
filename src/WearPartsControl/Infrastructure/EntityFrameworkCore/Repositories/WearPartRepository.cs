@@ -64,6 +64,7 @@ public sealed class WearPartRepository : EfRepositoryBase<WearPartsControlDbCont
         foreach (var entity in entities)
         {
             _domainService.ValidateEntity(entity);
+            SetCreationDefaults(entity);
         }
 
         _domainService.ValidateUniquePartNames(entities);

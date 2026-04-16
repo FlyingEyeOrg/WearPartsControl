@@ -5,4 +5,8 @@ namespace WearPartsControl.ApplicationServices.LoginService;
 public interface ILoginService
 {
     Task<MhrUser?> LoginAsync(string authId, string factory, string resourceId, bool isIdCard, CancellationToken cancellationToken = default);
+
+    MhrUser? GetCurrentUser();
+
+    ValueTask LogoutAsync(CancellationToken cancellationToken = default);
 }

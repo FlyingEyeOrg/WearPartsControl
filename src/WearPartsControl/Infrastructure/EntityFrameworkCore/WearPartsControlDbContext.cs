@@ -5,13 +5,20 @@ namespace WearPartsControl.Infrastructure.EntityFrameworkCore;
 
 public sealed class WearPartsControlDbContext : DbContextBase
 {
-    public WearPartsControlDbContext(DbContextOptions<WearPartsControlDbContext> options) : base(options)
+    public WearPartsControlDbContext(
+        DbContextOptions<WearPartsControlDbContext> options,
+        IServiceProvider? applicationServiceProvider = null)
+        : base(options, applicationServiceProvider)
     {
     }
 
     public DbSet<BasicConfigurationEntity> BasicConfigurations => Set<BasicConfigurationEntity>();
 
     public DbSet<WearPartDefinitionEntity> WearPartDefinitions => Set<WearPartDefinitionEntity>();
+
+    public DbSet<WearPartReplacementRecordEntity> WearPartReplacementRecords => Set<WearPartReplacementRecordEntity>();
+
+    public DbSet<ExceedLimitRecordEntity> ExceedLimitRecords => Set<ExceedLimitRecordEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -16,6 +16,11 @@ public sealed class ExceedLimitRecord
     public string PartName { get; set; } = string.Empty;
 
     /// <summary>
+    /// 易损件定义主键。
+    /// </summary>
+    public Guid WearPartDefinitionId { get; set; }
+
+    /// <summary>
     /// 当前值。
     /// </summary>
     public double CurrentValue { get; set; }
@@ -26,6 +31,11 @@ public sealed class ExceedLimitRecord
     public double ShutdownValue { get; set; }
 
     /// <summary>
+    /// 级别。
+    /// </summary>
+    public string Severity { get; set; } = string.Empty;
+
+    /// <summary>
     /// 报警时间。
     /// </summary>
     public DateTime OccurredAt { get; set; } = DateTime.Now;
@@ -34,4 +44,9 @@ public sealed class ExceedLimitRecord
     /// 对应的基础配置主键。
     /// </summary>
     public Guid BasicConfigurationId { get; set; }
+
+    /// <summary>
+    /// 通知消息。
+    /// </summary>
+    public string NotificationMessage { get; set; } = string.Empty;
 }

@@ -42,6 +42,9 @@ public sealed class UnitOfWorkTests : IDisposable
             PlcProtocolType = "S7",
             PlcIpAddress = "127.0.0.1",
             PlcPort = 102,
+            ShutdownPointAddress = "DB1.10",
+            SiemensSlot = 1,
+            IsStringReverse = true,
             UpdatedAt = DateTime.UtcNow
         });
 
@@ -74,6 +77,9 @@ public sealed class UnitOfWorkTests : IDisposable
             PlcProtocolType = "S7",
             PlcIpAddress = "127.0.0.2",
             PlcPort = 103,
+            ShutdownPointAddress = "DB1.11",
+            SiemensSlot = 1,
+            IsStringReverse = true,
             UpdatedAt = DateTime.UtcNow
         });
 

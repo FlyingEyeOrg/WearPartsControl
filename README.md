@@ -39,6 +39,22 @@
 - `Infrastructure` 可以依赖 `Domain`
 - `ApplicationServices` 通过接口（仓储契约）访问领域数据
 
+## ApplicationServices
+
+- `ApplicationServices/ApplicationService`：应用服务基类，统一提供当前登录用户访问能力。
+- `ApplicationServices/ApplicationService`：应用服务基类，统一提供当前登录用户访问能力和基于 `access_level` 的权限校验。
+- `ApplicationServices/CurrentUserAccessor`：桌面应用登录态上下文，同时实现 `ICurrentUserAccessor` 与 `ICurrentUser`，供应用服务和 EF 审计共用。
+- `ApplicationServices/LoginService/LoginService`：支持登录、读取当前用户、注销，并将登录态同步给应用服务与 EF 审计。
+- `ApplicationServices/PartServices/WearPartManagementService`：易损件定义管理服务，负责定义查询、创建、更新、删除和跨资源号复制。
+- `ApplicationServices/PartServices/WearPartReplacementService`：扫码更换应用服务，负责读取 PLC 当前状态、校验条码、执行清零/写码，并写入更换记录。
+- `ApplicationServices/PartServices/WearPartMonitorService`：寿命监控应用服务，负责读取 PLC 阈值、生成超限记录、发送通知，并执行停机点写入逻辑。
+
+## 当前业务迁移进度
+
+- 已完成：易损件定义管理、扫码更换主流程、寿命监控与超限记录主流程。
+- 已完成：登录用户上下文与 `access_level` 权限校验。
+- 已补齐持久化表：`wear_part_replacement_records`、`exceed_limit_records`。
+
 ## 数据与配置目录
 
 - 为便于整包拷贝迁移，程序运行时依赖的数据统一放在 `PrivateData` 目录。

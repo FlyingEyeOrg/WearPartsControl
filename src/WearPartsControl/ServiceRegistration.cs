@@ -1,5 +1,6 @@
 using Autofac;
 using System.Net.Http;
+using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.ComNotification;
@@ -36,11 +37,18 @@ public static class ServiceRegistration
             })
             .SingleInstance();
         builder.RegisterType<HttpJsonService>().As<IHttpJsonService>().SingleInstance();
+        builder.RegisterType<CurrentUserAccessor>()
+            .As<ICurrentUserAccessor>()
+            .As<ICurrentUser>()
+            .SingleInstance();
         builder.RegisterType<LoginService>().As<ILoginService>().SingleInstance();
         builder.RegisterType<ComNotificationService>().As<IComNotificationService>().SingleInstance();
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<PlcService>().As<IPlcService>().SingleInstance();
         builder.RegisterType<PartModelService>().As<IPartModelService>().SingleInstance();
+        builder.RegisterType<WearPartManagementService>().As<IWearPartManagementService>().InstancePerLifetimeScope();
+        builder.RegisterType<WearPartReplacementService>().As<IWearPartReplacementService>().InstancePerLifetimeScope();
+        builder.RegisterType<WearPartMonitorService>().As<IWearPartMonitorService>().InstancePerLifetimeScope();
         EntityFrameworkCoreServiceRegistration.RegisterServices(builder);
         builder.RegisterType<WearPartDefinitionDomainService>().AsSelf().SingleInstance();
         builder.RegisterType<MainWindowViewModel>().AsSelf().InstancePerDependency();

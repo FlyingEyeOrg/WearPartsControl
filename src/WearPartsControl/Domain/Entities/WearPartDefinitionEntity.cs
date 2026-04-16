@@ -31,13 +31,37 @@ public sealed class WearPartDefinitionEntity :
 
     public string PartName { get; set; } = string.Empty;
 
+    public string InputMode { get; set; } = string.Empty;
+
     public string CurrentValueAddress { get; set; } = string.Empty;
+
+    public string CurrentValueDataType { get; set; } = string.Empty;
 
     public string WarningValueAddress { get; set; } = string.Empty;
 
+    public string WarningValueDataType { get; set; } = string.Empty;
+
     public string ShutdownValueAddress { get; set; } = string.Empty;
 
+    public string ShutdownValueDataType { get; set; } = string.Empty;
+
+    public bool IsShutdown { get; set; }
+
+    public int CodeMinLength { get; set; }
+
+    public int CodeMaxLength { get; set; }
+
+    public string LifetimeType { get; set; } = string.Empty;
+
+    public string PlcZeroClearAddress { get; set; } = string.Empty;
+
+    public string BarcodeWriteAddress { get; set; } = string.Empty;
+
     public BasicConfigurationEntity BasicConfiguration { get; set; } = null!;
+
+    public ICollection<WearPartReplacementRecordEntity> WearPartReplacementRecords { get; set; } = new List<WearPartReplacementRecordEntity>();
+
+    public ICollection<ExceedLimitRecordEntity> ExceedLimitRecords { get; set; } = new List<ExceedLimitRecordEntity>();
 
     public void UpdateAddresses(string currentValueAddress, string warningValueAddress, string shutdownValueAddress)
     {
@@ -55,8 +79,15 @@ public sealed class WearPartDefinitionEntity :
     {
         DomainValidationRules.NotWhiteSpace(ResourceNumber, nameof(ResourceNumber));
         DomainValidationRules.NotWhiteSpace(PartName, nameof(PartName));
+        DomainValidationRules.NotWhiteSpace(InputMode, nameof(InputMode));
         DomainValidationRules.NotWhiteSpace(CurrentValueAddress, nameof(CurrentValueAddress));
+        DomainValidationRules.NotWhiteSpace(CurrentValueDataType, nameof(CurrentValueDataType));
         DomainValidationRules.NotWhiteSpace(WarningValueAddress, nameof(WarningValueAddress));
+        DomainValidationRules.NotWhiteSpace(WarningValueDataType, nameof(WarningValueDataType));
         DomainValidationRules.NotWhiteSpace(ShutdownValueAddress, nameof(ShutdownValueAddress));
+        DomainValidationRules.NotWhiteSpace(ShutdownValueDataType, nameof(ShutdownValueDataType));
+        DomainValidationRules.NotWhiteSpace(LifetimeType, nameof(LifetimeType));
+        DomainValidationRules.NotWhiteSpace(PlcZeroClearAddress, nameof(PlcZeroClearAddress));
+        DomainValidationRules.NotWhiteSpace(BarcodeWriteAddress, nameof(BarcodeWriteAddress));
     }
 }
