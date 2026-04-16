@@ -28,7 +28,7 @@ public sealed class PartModelService : IPartModelService
     /// <summary>
     /// 读取并归一化基地工厂配置，确保同一基地下的工厂编码合并为数组。
     /// </summary>
-    public async ValueTask<IReadOnlyList<BaseFactoryModel>> GetBaseFactoryModelsAsync(CancellationToken cancellationToken = default)
+    public async ValueTask<IReadOnlyList<BaseFactory>> GetBaseFactoryModelsAsync(CancellationToken cancellationToken = default)
     {
         var options = await _saveInfoStore.ReadAsync<BaseFactoryOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
 
@@ -38,7 +38,7 @@ public sealed class PartModelService : IPartModelService
     /// <summary>
     /// 保存基地工厂配置，并在写入前完成分组与去重。
     /// </summary>
-    public ValueTask SaveBaseFactoryModelsAsync(IReadOnlyCollection<BaseFactoryModel> factories, CancellationToken cancellationToken = default)
+    public ValueTask SaveBaseFactoryModelsAsync(IReadOnlyCollection<BaseFactory> factories, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(factories);
 
@@ -53,7 +53,7 @@ public sealed class PartModelService : IPartModelService
     /// <summary>
     /// 按基地编码和基地名称合并同类数据，并对工厂编码进行去重排序。
     /// </summary>
-    private static IReadOnlyList<BaseFactoryModel> NormalizeFactories(IEnumerable<BaseFactoryModel> factories)
+    private static IReadOnlyList<BaseFactory> NormalizeFactories(IEnumerable<BaseFactory> factories)
     {
         return factories
             .Where(factory => factory is not null)
@@ -70,7 +70,7 @@ public sealed class PartModelService : IPartModelService
                     .OrderBy(factoryName => factoryName, StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
-                return new BaseFactoryModel
+                return new BaseFactory
                 {
                     Base = first.Base.Trim(),
                     BaseName = first.BaseName.Trim(),

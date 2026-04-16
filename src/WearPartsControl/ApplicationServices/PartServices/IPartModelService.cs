@@ -12,10 +12,10 @@ public interface IPartModelService
     /// <summary>
     /// 读取按基地分组后的工厂配置。
     /// </summary>
-    ValueTask<IReadOnlyList<BaseFactoryModel>> GetBaseFactoryModelsAsync(CancellationToken cancellationToken = default);
+    ValueTask<IReadOnlyList<BaseFactory>> GetBaseFactoryModelsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 保存按基地分组后的工厂配置。
     /// </summary>
-    ValueTask SaveBaseFactoryModelsAsync(IReadOnlyCollection<BaseFactoryModel> factories, CancellationToken cancellationToken = default);
+    ValueTask SaveBaseFactoryModelsAsync(IReadOnlyCollection<BaseFactory> factories, CancellationToken cancellationToken = default);
 }
