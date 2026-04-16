@@ -10,6 +10,9 @@ public class MhrConfig
     [JsonPropertyName("Password")]
     public string Password { get; set; } = string.Empty;
 
+    [JsonPropertyName("CacheDays")]
+    public int CacheDays { get; set; } = 1;
+
     [JsonPropertyName("LoginInfos")]
     public List<MhrSiteLoginInfo> LoginInfos { get; set; } = new();
 }

@@ -1,11 +1,8 @@
-using System;
 using System.IO;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 
-namespace WearPartsControl.ApplicationServices.PartServices;
+namespace WearPartsControl.ApplicationServices.AppSettings;
 
 public sealed class AppSettingsService : IAppSettingsService
 {

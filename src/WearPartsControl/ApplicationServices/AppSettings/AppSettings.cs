@@ -1,6 +1,6 @@
 using WearPartsControl.ApplicationServices.SaveInfoService;
 
-namespace WearPartsControl.ApplicationServices.PartServices;
+namespace WearPartsControl.ApplicationServices.AppSettings;
 
 /// <summary>
 /// 本地应用配置，保存当前资源号。

@@ -1,5 +1,5 @@
+using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.LoginService;
-using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Domain.Repositories;
 using WearPartsControl.Infrastructure.EntityFrameworkCore;

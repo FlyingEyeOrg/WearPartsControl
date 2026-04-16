@@ -1,0 +1,73 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.Exceptions;
+
+namespace WearPartsControl.ApplicationServices.PartServices;
+
+public sealed class WearPartMonitoringHostedService : BackgroundService
+{
+    private static readonly TimeSpan MonitorInterval = TimeSpan.FromMinutes(5);
+
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly ILogger<WearPartMonitoringHostedService> _logger;
+
+    public WearPartMonitoringHostedService(IServiceScopeFactory serviceScopeFactory, ILogger<WearPartMonitoringHostedService> logger)
+    {
+        _serviceScopeFactory = serviceScopeFactory;
+        _logger = logger;
+    }
+
+    public Task RunOnceAsync(CancellationToken cancellationToken = default)
+    {
+        return ExecuteCycleAsync(cancellationToken);
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        await ExecuteCycleAsync(stoppingToken).ConfigureAwait(false);
+
+        using var timer = new PeriodicTimer(MonitorInterval);
+        while (!stoppingToken.IsCancellationRequested
+            && await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false))
+        {
+            await ExecuteCycleAsync(stoppingToken).ConfigureAwait(false);
+        }
+    }
+
+    private async Task ExecuteCycleAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await using var scope = _serviceScopeFactory.CreateAsyncScope();
+            var appSettingsService = scope.ServiceProvider.GetRequiredService<IAppSettingsService>();
+            var monitorService = scope.ServiceProvider.GetRequiredService<IWearPartMonitorService>();
+            var settings = await appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
+
+            if (string.IsNullOrWhiteSpace(settings.ResourceNumber))
+            {
+                _logger.LogDebug("跳过后台易损件监控：当前未配置资源号。");
+                return;
+            }
+
+            var results = await monitorService.MonitorByResourceNumberAsync(settings.ResourceNumber, cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("后台易损件监控完成，资源号 {ResourceNumber}，处理 {Count} 项。", settings.ResourceNumber, results.Count);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        catch (EntityNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "后台易损件监控跳过：{Message}", ex.Message);
+        }
+        catch (UserFriendlyException ex)
+        {
+            _logger.LogWarning(ex, "后台易损件监控失败：{Message}", ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "后台易损件监控发生未处理异常。");
+        }
+    }
+}

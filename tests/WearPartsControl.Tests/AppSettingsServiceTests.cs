@@ -1,6 +1,6 @@
 using System.IO;
 using System.Text.Json;
-using WearPartsControl.ApplicationServices.PartServices;
+using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using Xunit;
 

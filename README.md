@@ -44,16 +44,21 @@
 - `ApplicationServices/ApplicationService`：应用服务基类，统一提供当前登录用户访问能力。
 - `ApplicationServices/ApplicationService`：应用服务基类，统一提供当前登录用户访问能力和基于 `access_level` 的权限校验。
 - `ApplicationServices/CurrentUserAccessor`：桌面应用登录态上下文，同时实现 `ICurrentUserAccessor` 与 `ICurrentUser`，供应用服务和 EF 审计共用。
+- `ApplicationServices/AppSettings/AppSettingsService`：独立的客户端应用设置服务，负责资源号与登录输入阈值配置，不再混入 `PartServices`。
 - `ApplicationServices/LoginService/LoginService`：支持登录、读取当前用户、注销，并将登录态同步给应用服务与 EF 审计。
+- `ApplicationServices/LoginService/MhrUserDirectoryCache`：缓存 MHR 用户目录，优先复用最近一次拉取结果，减少重复访问远程接口。
 - `ApplicationServices/PartServices/WearPartManagementService`：易损件定义管理服务，负责定义查询、创建、更新、删除和跨资源号复制。
 - `ApplicationServices/PartServices/WearPartReplacementService`：扫码更换应用服务，负责读取 PLC 当前状态、校验条码、执行清零/写码，并写入更换记录。
 - `ApplicationServices/PartServices/WearPartMonitorService`：寿命监控应用服务，负责读取 PLC 阈值、生成超限记录、发送通知，并执行停机点写入逻辑。
+- `ApplicationServices/PartServices/WearPartMonitoringHostedService`：后台监控调度服务，启动后按当前资源号每 5 分钟执行一次寿命监控。
+- `ApplicationServices/LegacyImport/LegacyDatabaseImportService`：旧版 SQLite 数据导入服务，负责把旧库配置、易损件、超限记录和更换记录映射到当前库。
 
 ## 当前业务迁移进度
 
 - 已完成：易损件定义管理、扫码更换主流程、寿命监控与超限记录主流程。
 - 已完成：登录用户上下文与 `access_level` 权限校验。
 - 已补齐持久化表：`wear_part_replacement_records`、`exceed_limit_records`。
+- 已补齐：后台寿命监控调度、MHR 用户列表缓存、旧版 SQLite 数据导入。
 
 ## 数据与配置目录
 
@@ -72,6 +77,15 @@
 - 当前默认配置示例：`{"ResourceNumber":"","LoginInputMaxIntervalMilliseconds":80}`
 - `ResourceNumber` 用于在客户端配置中查找资源对应的 `SiteCode`，随后由登录服务完成用户认证。
 - 登录成功后，用户信息会同步到 `ICurrentUserAccessor`，主窗口右上角 `LoginBox` 会自动刷新工号、权限与登录按钮状态。
+- 登录服务会将 MHR 返回的用户目录缓存到 `PrivateData/Settings/mhr-user-cache.json`，默认缓存 1 天，可通过 `mhrinfo.json` 的 `CacheDays` 调整。
+
+## 旧库导入
+
+- 启动程序时可传入旧版 SQLite 数据库文件路径，执行导入后自动退出。
+- 支持两种写法：
+	- `WearPartsControl.exe --import-legacy-db E:\Old\Data.db`
+	- `WearPartsControl.exe E:\Old\Data.db`
+- 导入范围：`v_Basic`、`v_VulnerableParts`、`v_ReplaceRecord`、`v_exceedlimitinfo`
 
 ## 测试
 

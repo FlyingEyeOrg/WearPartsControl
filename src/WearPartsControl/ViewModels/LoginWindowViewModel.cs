@@ -3,8 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.LoginService;
-using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.Domain.Repositories;
 
 namespace WearPartsControl.ViewModels

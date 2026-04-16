@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using System.Windows;
+using WearPartsControl.ApplicationServices.LegacyImport;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.Infrastructure.EntityFrameworkCore;
@@ -83,8 +84,6 @@ public partial class App : Application
                 .UseSerilog(Log.Logger, dispose: true)
                 .Build();
 
-            _host.StartAsync().GetAwaiter().GetResult();
-
             var saveInfoStore = _host.Services.GetRequiredService<ISaveInfoStore>();
             SaveInfo.SetStore(saveInfoStore);
 
@@ -93,6 +92,18 @@ public partial class App : Application
 
             var databaseInitializer = _host.Services.GetRequiredService<IDatabaseInitializer>();
             databaseInitializer.InitializeAsync().GetAwaiter().GetResult();
+
+            var legacyDatabasePath = LegacyImportCommandLine.GetLegacyDatabasePathOrDefault(e.Args);
+            if (!string.IsNullOrWhiteSpace(legacyDatabasePath))
+            {
+                var importService = _host.Services.GetRequiredService<ILegacyDatabaseImportService>();
+                var importResult = importService.ImportAsync(legacyDatabasePath).GetAwaiter().GetResult();
+                MessageBox.Show(importResult.ToSummary(), "旧库导入完成", MessageBoxButton.OK, MessageBoxImage.Information);
+                Shutdown();
+                return;
+            }
+
+            _host.StartAsync().GetAwaiter().GetResult();
 
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             mainWindow.Show();

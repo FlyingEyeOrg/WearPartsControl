@@ -14,45 +14,63 @@ public sealed class LoginService : ILoginService
     private readonly IHttpJsonService _httpJsonService;
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly ILocalizationService _localizationService;
-    private readonly string _configPath = Path.Combine(PortableDataPaths.SettingsDirectory, "mhrinfo.json");
+    private readonly IMhrUserDirectoryCache _mhrUserDirectoryCache;
+    private readonly string _configPath;
 
-    public LoginService(IHttpJsonService httpJsonService, ILocalizationService localizationService, ICurrentUserAccessor currentUserAccessor)
+    public LoginService(
+        IHttpJsonService httpJsonService,
+        ILocalizationService localizationService,
+        ICurrentUserAccessor currentUserAccessor,
+        IMhrUserDirectoryCache mhrUserDirectoryCache,
+        string? configPath = null)
     {
         _httpJsonService = httpJsonService;
         _localizationService = localizationService;
         _currentUserAccessor = currentUserAccessor;
+        _mhrUserDirectoryCache = mhrUserDirectoryCache;
+        _configPath = Path.GetFullPath(configPath ?? Path.Combine(PortableDataPaths.SettingsDirectory, "mhrinfo.json"));
     }
 
     public async Task<MhrUser?> LoginAsync(string authId, string factory, string resourceId, bool isIdCard, CancellationToken cancellationToken = default)
     {
         var config = await LoadConfigAsync(cancellationToken);
-        var loginInfo = config.LoginInfos.FirstOrDefault(x => x.Site.Equals(factory, StringComparison.OrdinalIgnoreCase));
+        var normalizedFactory = factory?.Trim() ?? string.Empty;
+        var normalizedResourceId = resourceId?.Trim() ?? string.Empty;
+        var normalizedAuthId = authId?.Trim() ?? string.Empty;
+        var loginInfo = config.LoginInfos.FirstOrDefault(x => x.Site.Equals(normalizedFactory, StringComparison.OrdinalIgnoreCase));
         if (loginInfo == null)
         {
-            throw new UserFriendlyException(LF("LoginService.FactoryConfigNotFound", factory));
+            throw new UserFriendlyException(LF("LoginService.FactoryConfigNotFound", normalizedFactory));
         }
 
         if (string.IsNullOrEmpty(config.Password))
         {
-            throw new UserFriendlyException(LF("LoginService.PasswordEmpty", factory));
+            throw new UserFriendlyException(LF("LoginService.PasswordEmpty", normalizedFactory));
         }
 
         if (string.IsNullOrEmpty(config.LoginName))
         {
-            throw new UserFriendlyException(LF("LoginService.LoginNameEmpty", factory));
+            throw new UserFriendlyException(LF("LoginService.LoginNameEmpty", normalizedFactory));
         }
 
         if (string.IsNullOrEmpty(loginInfo.GetUsersUrl))
         {
-            throw new UserFriendlyException(LF("LoginService.GetUsersUrlEmpty", factory));
+            throw new UserFriendlyException(LF("LoginService.GetUsersUrlEmpty", normalizedFactory));
         }
 
         if (string.IsNullOrEmpty(loginInfo.LoginUrl))
         {
-            throw new UserFriendlyException(LF("LoginService.LoginUrlEmpty", factory));
+            throw new UserFriendlyException(LF("LoginService.LoginUrlEmpty", normalizedFactory));
         }
 
         // Get token
+        var cachedUser = await _mhrUserDirectoryCache.FindUserAsync(normalizedFactory, normalizedResourceId, normalizedAuthId, isIdCard, config.CacheDays, cancellationToken).ConfigureAwait(false);
+        if (cachedUser is not null)
+        {
+            _currentUserAccessor.SetCurrentUser(cachedUser);
+            return cachedUser;
+        }
+
         var token = await GetTokenAsync(loginInfo.LoginUrl, config.LoginName, config.Password, cancellationToken);
         if (string.IsNullOrWhiteSpace(token))
         {
@@ -60,14 +78,16 @@ public sealed class LoginService : ILoginService
         }
 
         // Get user list
-        var result = await GetUserListAsync(loginInfo.GetUsersUrl, token, factory, resourceId, cancellationToken);
+        var result = await GetUserListAsync(loginInfo.GetUsersUrl, token, normalizedFactory, normalizedResourceId, cancellationToken);
         if (result?.Success != true || result.Data.Users == null || result.Data.Users.Count == 0)
         {
             throw new UserFriendlyException(L("LoginService.UserListEmpty"));
         }
 
+        await _mhrUserDirectoryCache.SaveUsersAsync(normalizedFactory, normalizedResourceId, result.Data.Users, DateTime.UtcNow, cancellationToken).ConfigureAwait(false);
+
         // Find user
-        var user = result.Data.Users.FirstOrDefault(x => isIdCard ? x.CardId == authId : x.WorkId == authId);
+        var user = result.Data.Users.FirstOrDefault(x => isIdCard ? x.CardId == normalizedAuthId : x.WorkId == normalizedAuthId);
         if (user is null)
         {
             _currentUserAccessor.Clear();
