@@ -1,0 +1,70 @@
+﻿<Window x:Class="WearPartsControl.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="登录"
+        Height="420"
+        Width="800"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner">
+    <Grid Background="AliceBlue">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid>
+            <Image Source="pack://application:,,,/Assets/loginwindow-background.png"></Image>
+            <Image Source="pack://application:,,,/Assets/catl-logo-white.png"
+                   Width="200"
+                   VerticalAlignment="Top"
+                   Margin="0 40 0 0"></Image>
+        </Grid>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <StackPanel Margin="24">
+                <Label Style="{x:Null}"
+                       HorizontalAlignment="Center"
+                       FontWeight="Bold"
+                       FontSize="24">请刷卡登录</Label>
+                <TextBlock Margin="0 16 0 0"
+                           HorizontalAlignment="Center"
+                           Foreground="Gray"
+                           Text="{Binding ResourceNumber, StringFormat=当前资源号：{0}}" />
+                <TextBlock Margin="0 8 0 0"
+                           HorizontalAlignment="Center"
+                           Foreground="Gray"
+                           Text="{Binding SiteCode, StringFormat=基地：{0}}" />
+                <Grid Margin="0 24 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <PasswordBox x:Name="PasswordInputBox"
+                                 Height="36"
+                                 VerticalContentAlignment="Center"
+                                 PasswordChanged="PasswordInputBox_OnPasswordChanged"
+                                 PreviewKeyDown="PasswordInputBox_OnPreviewKeyDown"
+                                 PreviewTextInput="PasswordInputBox_OnPreviewTextInput"
+                                 DataObject.Pasting="PasswordInputBox_OnPasting" />
+                    <Button Grid.Column="1"
+                            Margin="8 0 0 0"
+                            Style="{StaticResource ButtonPrimary}"
+                            Width="80"
+                            Command="{Binding LoginCommand}">登录</Button>
+                </Grid>
+                <TextBlock Margin="0 16 0 0"
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           Foreground="DarkSlateGray"
+                           Text="{Binding StatusMessage}" />
+            </StackPanel>
+            <Image Grid.Row="1"
+                   Source="/Assets/card.png"></Image>
+        </Grid>
+    </Grid>
+</Window>

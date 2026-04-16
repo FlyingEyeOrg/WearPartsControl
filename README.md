@@ -64,6 +64,15 @@
 	- `LocalDB`：SQLite 数据库文件（`wear-parts-control.db`）
 - 日志为临时运行文件，保留在应用根目录：`{应用程序目录}/logs/app-*.log`
 
+## 登录与配置
+
+- 登录窗口通过刷卡器模拟键盘输入完成登录，窗口打开后会自动聚焦到密码输入框。
+- 登录窗口支持回车提交；当相邻输入间隔超过 `LoginInputMaxIntervalMilliseconds` 时，会判定为手工输入并拒绝登录。
+- 应用配置统一使用 `src/WearPartsControl/PrivateData/Settings/app-settings.json`。
+- 当前默认配置示例：`{"ResourceNumber":"","LoginInputMaxIntervalMilliseconds":80}`
+- `ResourceNumber` 用于在基础配置中查找资源对应的 `SiteCode`，随后由登录服务完成用户认证。
+- 登录成功后，用户信息会同步到 `ICurrentUserAccessor`，主窗口右上角 `LoginBox` 会自动刷新工号、权限与登录按钮状态。
+
 ## 测试
 
 - `tests/WearPartsControl.Tests/DomainValueObjectsTests.cs`

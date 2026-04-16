@@ -30,15 +30,15 @@
                         Margin="8,0">
                 <TextBlock FontWeight="SemiBold"
                            FontSize="14"
-                           Text="工号：--" />
+                           Text="{Binding CurrentUserWorkIdText}" />
                 <TextBlock Margin=" 0 8 0 0"
                            FontSize="12"
                            Foreground="Gray"
-                           Text="权限：--" />
+                           Text="{Binding CurrentUserAccessLevelText}" />
                 <TextBlock Margin=" 0 8 0 0"
                            FontSize="12"
                            Foreground="Gray"
-                           Text="软件版本：--" />
+                           Text="{Binding SoftwareVersionText}" />
             </StackPanel>
 
             <!-- 右侧：登录/注销 -->
@@ -47,10 +47,12 @@
                         HorizontalAlignment="Right">
                 <Button x:Name="LoginButton"
                         Style="{StaticResource ButtonPrimary}"
-                        Content="登录"
+                    Command="{Binding OpenLoginCommand}"
+                    Content="{Binding LoginButtonText}"
                         MinWidth="60" />
                 <Button x:Name="LogoutButton"
                         Margin="0 8 0 0"
+                    Command="{Binding LogoutCommand}"
                         Content="注销"
                         MinWidth="60" />
             </StackPanel>

@@ -46,6 +46,7 @@ public static class ServiceRegistration
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<PlcService>().As<IPlcService>().SingleInstance();
         builder.RegisterType<PartModelService>().As<IPartModelService>().SingleInstance();
+        builder.RegisterType<AppSettingsService>().As<IAppSettingsService>().SingleInstance();
         builder.RegisterType<WearPartManagementService>().As<IWearPartManagementService>().InstancePerLifetimeScope();
         builder.RegisterType<WearPartReplacementService>().As<IWearPartReplacementService>().InstancePerLifetimeScope();
         builder.RegisterType<WearPartMonitorService>().As<IWearPartMonitorService>().InstancePerLifetimeScope();
@@ -59,5 +60,7 @@ public static class ServiceRegistration
         builder.RegisterType<UserConfigUserControl>().AsSelf();
         builder.RegisterType<PartManagementUserControl>().AsSelf();
         builder.RegisterType<PartUpdateRecordUserControl>().AsSelf();
+        builder.RegisterType<LoginWindowViewModel>().AsSelf();
+        builder.RegisterType<LoginWindow>();
     }
 }

@@ -38,10 +38,16 @@
 		<None Update="PrivateData\Settings\mhrinfo.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="PrivateData\Settings\app-settings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 	<ItemGroup>
 		<Resource Include="Assets\catl.ico" />
+		<Resource Include="Assets\card.png" />
+		<Resource Include="Assets\catl-logo-white.png" />
+		<Resource Include="Assets\loginwindow-background.png" />
 	</ItemGroup>
 
 	<!-- Localization generation target moved to build/Localization.targets -->

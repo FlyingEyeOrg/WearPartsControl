@@ -7,6 +7,8 @@ public interface ICurrentUserAccessor : ICurrentUser
 {
     MhrUser? CurrentUser { get; }
 
+    event EventHandler? CurrentUserChanged;
+
     void SetCurrentUser(MhrUser? user);
 
     void Clear();

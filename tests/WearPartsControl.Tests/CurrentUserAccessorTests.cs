@@ -11,6 +11,9 @@ public sealed class CurrentUserAccessorTests
     public void SetCurrentUser_ShouldExposeWorkIdThroughICurrentUser()
     {
         var accessor = new CurrentUserAccessor();
+        var raisedCount = 0;
+        accessor.CurrentUserChanged += (_, _) => raisedCount++;
+
         accessor.SetCurrentUser(new MhrUser
         {
             CardId = "CARD-01",
@@ -26,5 +29,9 @@ public sealed class CurrentUserAccessorTests
         Assert.Equal("CARD-01", snapshot!.CardId);
         Assert.Equal("WORK-01", snapshot.WorkId);
         Assert.Equal(2, snapshot.AccessLevel);
+        Assert.Equal(1, raisedCount);
+
+        accessor.Clear();
+        Assert.Equal(2, raisedCount);
     }
 }
