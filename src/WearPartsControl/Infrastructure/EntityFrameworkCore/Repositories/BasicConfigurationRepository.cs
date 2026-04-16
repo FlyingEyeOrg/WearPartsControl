@@ -8,8 +8,8 @@ namespace WearPartsControl.Infrastructure.EntityFrameworkCore.Repositories;
 
 public sealed class BasicConfigurationRepository : EfRepositoryBase<DbContextBase, BasicConfigurationEntity, Guid>, IBasicConfigurationRepository
 {
-    public BasicConfigurationRepository(DbContextBase dbContext, IUnitOfWork<DbContextBase> unitOfWork)
-        : base(dbContext, unitOfWork)
+    public BasicConfigurationRepository(DbContextBase dbContext)
+        : base(dbContext)
     {
     }
 

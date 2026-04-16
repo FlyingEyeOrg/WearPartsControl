@@ -12,21 +12,12 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
     where TEntity : class, IEntity<TId>
     where TId : notnull
 {
-    protected EfRepositoryBase(TDbContext dbContext, IUnitOfWork<TDbContext> unitOfWork)
+    protected EfRepositoryBase(TDbContext dbContext)
     {
         DbContext = dbContext;
-        UnitOfWork = unitOfWork;
         ServiceProvider = dbContext.GetService<IServiceProvider>();
-        IServiceProvider? tempServiceProvider = ServiceProvider;
-
-        if (tempServiceProvider == null)
-        {
-            CurrentUser = new DefaultCurrentUser();
-        }
-        else
-        {
-            CurrentUser = ServiceProvider.GetService<ICurrentUser>() ?? new DefaultCurrentUser();
-        }
+        CurrentUser = ServiceProvider.GetService<ICurrentUser>() ?? new DefaultCurrentUser();
+        UnitOfWork = ServiceProvider.GetService<IUnitOfWork<TDbContext>>() ?? new EfUnitOfWork<TDbContext>(dbContext);
     }
 
     protected IServiceProvider ServiceProvider { get; }

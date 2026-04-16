@@ -52,7 +52,7 @@ public sealed class WearPartRepositoryTests : IDisposable
 
         await using var writeContext = await _dbContextFactory.CreateDbContextAsync();
         await using IUnitOfWork<DbContextBase> unitOfWork = new EfUnitOfWork<DbContextBase>(writeContext);
-        var repository = new WearPartRepository(writeContext, unitOfWork, new WearPartDefinitionDomainService());
+        var repository = new WearPartRepository(writeContext, new WearPartDefinitionDomainService());
 
         var definition = new WearPartDefinitionEntity
         {
@@ -72,8 +72,7 @@ public sealed class WearPartRepositoryTests : IDisposable
         await unitOfWork.SaveChangesAsync();
 
         await using var readContext = await _dbContextFactory.CreateDbContextAsync();
-        await using IUnitOfWork<DbContextBase> readUnitOfWork = new EfUnitOfWork<DbContextBase>(readContext);
-        var readRepository = new WearPartRepository(readContext, readUnitOfWork, new WearPartDefinitionDomainService());
+        var readRepository = new WearPartRepository(readContext, new WearPartDefinitionDomainService());
         var result = await readRepository.ListByBasicConfigurationAsync(basicConfigurationId);
 
         Assert.Single(result);

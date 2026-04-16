@@ -13,9 +13,8 @@ public sealed class WearPartRepository : EfRepositoryBase<DbContextBase, WearPar
 
     public WearPartRepository(
         DbContextBase dbContext,
-        IUnitOfWork<DbContextBase> unitOfWork,
         WearPartDefinitionDomainService domainService)
-        : base(dbContext, unitOfWork)
+        : base(dbContext)
     {
         _domainService = domainService;
     }
