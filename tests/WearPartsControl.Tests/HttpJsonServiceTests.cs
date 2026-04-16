@@ -2,9 +2,12 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using WearPartsControl.ApplicationServices.HttpService;
+using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.Localization.Generated;
 using WearPartsControl.Exceptions;
 using Xunit;
 
@@ -21,7 +24,7 @@ public sealed class HttpJsonServiceTests
                 Content = new StringContent("Bad Request Payload", Encoding.UTF8, "application/json")
             })));
 
-        var service = new HttpJsonService(httpClient);
+        var service = new HttpJsonService(httpClient, new StubLocalizationService());
 
         await Assert.ThrowsAsync<UserFriendlyException>(async () =>
         {
@@ -48,5 +51,18 @@ public sealed class HttpJsonServiceTests
         {
             return _handler(request);
         }
+    }
+
+    private sealed class StubLocalizationService : ILocalizationService
+    {
+        public string this[string name] => name;
+
+        public LocalizationCatalog Catalog { get; } = new(static key => key);
+
+        public ValueTask InitializeAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+
+        public ValueTask SetCultureAsync(string cultureName, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+
+        public CultureInfo CurrentCulture { get; } = CultureInfo.InvariantCulture;
     }
 }

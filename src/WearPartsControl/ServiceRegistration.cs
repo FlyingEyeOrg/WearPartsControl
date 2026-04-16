@@ -9,8 +9,11 @@ using WearPartsControl.ApplicationServices.SpacerManagement;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.LoginService;
+using WearPartsControl.Domain.Repositories;
+using WearPartsControl.Domain.Services;
 using WearPartsControl.Infrastructure;
 using WearPartsControl.Infrastructure.EntityFrameworkCore;
+using WearPartsControl.Infrastructure.EntityFrameworkCore.Repositories;
 using WearPartsControl.Exceptions;
 using WearPartsControl.Views;
 using WearPartsControl.ViewModels;
@@ -42,7 +45,15 @@ public static class ServiceRegistration
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<PlcService>().As<IPlcService>().SingleInstance();
         builder.RegisterType<PartModelService>().As<IPartModelService>().SingleInstance();
-        builder.Register(_ => new WearPartsControlDbContextFactory()).As<IDbContextFactory<WearPartsControlDbContext>>().SingleInstance();
+        builder.Register(_ => new WearPartsControlDbContextFactory()).AsSelf().As<IDbContextFactory<WearPartsControlDbContext>>().SingleInstance();
+        builder.Register(ctx => ctx.Resolve<WearPartsControlDbContextFactory>().CreateDbContext())
+            .As<WearPartsControlDbContext>()
+            .As<DbContextBase>()
+            .As<IUnitOfWork>()
+            .InstancePerLifetimeScope();
+        builder.RegisterType<WearPartDefinitionDomainService>().AsSelf().SingleInstance();
+        builder.RegisterType<BasicConfigurationRepository>().As<IBasicConfigurationRepository>().InstancePerLifetimeScope();
+        builder.RegisterType<WearPartRepository>().As<IWearPartRepository>().InstancePerLifetimeScope();
         builder.RegisterType<SqliteDatabaseInitializer>().As<IDatabaseInitializer>().SingleInstance();
         builder.RegisterType<MainWindowViewModel>().AsSelf().InstancePerDependency();
         // Add other services as needed
