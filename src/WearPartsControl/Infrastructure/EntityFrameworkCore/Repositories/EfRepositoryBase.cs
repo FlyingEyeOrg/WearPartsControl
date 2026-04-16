@@ -20,7 +20,7 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
     protected ICurrentUser CurrentUser { get; }
 
-    protected string CurrentUserId => string.IsNullOrWhiteSpace(CurrentUser.UserId) ? "system" : CurrentUser.UserId;
+    protected string? CurrentUserId => CurrentUser.UserId;
 
     protected DbSet<TEntity> Set => DbContext.Set<TEntity>();
 
@@ -71,7 +71,7 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
     public virtual async Task DeleteAsync(TId id, CancellationToken cancellationToken = default)
     {
-        var entity = await Queryable(asNoTracking: false)
+        var entity = await Queryable(asNoTracking: false, includeSoftDeleted: true)
             .FirstOrDefaultAsync(BuildIdPredicate(id), cancellationToken)
             .ConfigureAwait(false);
 
@@ -80,20 +80,16 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
             return;
         }
 
-        SetDeleteDefaults(entity);
-        Set.Update(entity);
+        Set.Remove(entity);
     }
 
     protected virtual void SetCreationDefaults(TEntity entity)
     {
         var now = DateTime.UtcNow;
 
-        if (EqualityComparer<TId>.Default.Equals(entity.Id, default!))
+        if (typeof(TId) == typeof(Guid) && ((Guid)(object)entity.Id) == Guid.Empty)
         {
-            if (typeof(TId) == typeof(Guid))
-            {
-                entity.Id = (TId)(object)Guid.NewGuid();
-            }
+            entity.Id = (TId)(object)Guid.NewGuid();
         }
 
         if (entity is IHasAuditTime auditTime)
@@ -108,11 +104,7 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
         if (entity is IHasAuditUser auditUser)
         {
-            if (ShouldAssignCurrentUser(auditUser.CreatedBy))
-            {
-                auditUser.CreatedBy = CurrentUserId;
-            }
-
+            auditUser.CreatedBy = CurrentUserId;
             auditUser.UpdatedBy = CurrentUserId;
         }
     }
@@ -122,12 +114,6 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
         if (entity is IHasAuditTime auditTime)
         {
             auditTime.UpdatedAt = DateTime.UtcNow;
-        }
-
-        if (entity is ISoftDelete softDelete)
-        {
-            softDelete.IsDeleted = false;
-            softDelete.DeletedAt = null;
         }
 
         if (entity is IHasAuditUser auditUser)
@@ -163,11 +149,5 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
         }
 
         return source.Where(x => !EF.Property<bool>(x, nameof(ISoftDelete.IsDeleted)));
-    }
-
-    private static bool ShouldAssignCurrentUser(string? userId)
-    {
-        return string.IsNullOrWhiteSpace(userId)
-               || string.Equals(userId, "system", StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -1,8 +1,8 @@
 namespace WearPartsControl.Domain.Entities.Interfaces;
 
-public interface IEntity
+public interface IEntity : IEntity<Guid>
 {
-    Guid Id { get; set; }
+
 }
 
 public interface IEntity<TId>
@@ -10,3 +10,4 @@ public interface IEntity<TId>
 {
     TId Id { get; set; }
 }
+    
