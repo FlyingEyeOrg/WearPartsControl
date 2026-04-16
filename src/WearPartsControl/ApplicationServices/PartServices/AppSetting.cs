@@ -11,5 +11,5 @@ public sealed class AppSetting
     /// <summary>
     /// 当前资源号。
     /// </summary>
-    public string ResourceNum { get; set; } = string.Empty;
+    public string ResourceNumber { get; set; } = string.Empty;
 }
