@@ -1,5 +1,4 @@
 using Autofac;
-using Microsoft.EntityFrameworkCore;
 using System.Net.Http;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
@@ -9,10 +8,8 @@ using WearPartsControl.ApplicationServices.SpacerManagement;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.LoginService;
-using WearPartsControl.Domain.Repositories;
 using WearPartsControl.Domain.Services;
 using WearPartsControl.Infrastructure.EntityFrameworkCore;
-using WearPartsControl.Infrastructure.EntityFrameworkCore.Repositories;
 using WearPartsControl.Exceptions;
 using WearPartsControl.Views;
 using WearPartsControl.ViewModels;
@@ -44,20 +41,8 @@ public static class ServiceRegistration
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<PlcService>().As<IPlcService>().SingleInstance();
         builder.RegisterType<PartModelService>().As<IPartModelService>().SingleInstance();
-        builder.Register(_ => new WearPartsControlDbContextFactory()).AsSelf().As<IDbContextFactory<WearPartsControlDbContext>>().SingleInstance();
-        builder.Register(ctx => ctx.Resolve<WearPartsControlDbContextFactory>().CreateDbContext())
-            .As<WearPartsControlDbContext>()
-            .As<DbContextBase>()
-            .InstancePerLifetimeScope();
-        builder.Register(ctx => new EfUnitOfWork<DbContextBase>(ctx.Resolve<DbContextBase>()))
-            .As<IUnitOfWork<DbContextBase>>()
-            .As<WearPartsControl.Domain.Repositories.IUnitOfWork>()
-            .InstancePerLifetimeScope();
-        builder.RegisterType<DefaultCurrentUser>().As<ICurrentUser>().SingleInstance();
+        EntityFrameworkCoreServiceRegistration.RegisterServices(builder);
         builder.RegisterType<WearPartDefinitionDomainService>().AsSelf().SingleInstance();
-        builder.RegisterType<BasicConfigurationRepository>().As<IBasicConfigurationRepository>().InstancePerLifetimeScope();
-        builder.RegisterType<WearPartRepository>().As<IWearPartRepository>().InstancePerLifetimeScope();
-        builder.RegisterType<SqliteDatabaseInitializer>().As<IDatabaseInitializer>().SingleInstance();
         builder.RegisterType<MainWindowViewModel>().AsSelf().InstancePerDependency();
         // Add other services as needed
 
