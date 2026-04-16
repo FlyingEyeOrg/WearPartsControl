@@ -1,17 +1,10 @@
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using WearPartsControl.Domain.Repositories;
 
 namespace WearPartsControl.Infrastructure.EntityFrameworkCore;
 
-public interface IUnitOfWork<TDbContext> : IAsyncDisposable
+public interface IUnitOfWork<TDbContext> : IUnitOfWork
     where TDbContext : DbContext
 {
-    Task BeginTransactionAsync(CancellationToken cancellationToken = default);
-
-    Task CommitTransactionAsync(CancellationToken cancellationToken = default);
-
-    Task RollbackTransactionAsync(CancellationToken cancellationToken = default);
-
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    TDbContext DbContext { get; }
 }

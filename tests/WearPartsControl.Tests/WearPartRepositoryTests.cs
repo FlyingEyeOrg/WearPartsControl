@@ -51,8 +51,8 @@ public sealed class WearPartRepositoryTests : IDisposable
         }
 
         await using var writeContext = await _dbContextFactory.CreateDbContextAsync();
-        var repository = new WearPartRepository(writeContext, new WearPartDefinitionDomainService());
-        IUnitOfWork<DbContextBase> unitOfWork = writeContext;
+        await using IUnitOfWork<DbContextBase> unitOfWork = new EfUnitOfWork<DbContextBase>(writeContext);
+        var repository = new WearPartRepository(writeContext, unitOfWork, new WearPartDefinitionDomainService());
 
         var definition = new WearPartDefinitionEntity
         {
@@ -72,7 +72,8 @@ public sealed class WearPartRepositoryTests : IDisposable
         await unitOfWork.SaveChangesAsync();
 
         await using var readContext = await _dbContextFactory.CreateDbContextAsync();
-        var readRepository = new WearPartRepository(readContext, new WearPartDefinitionDomainService());
+        await using IUnitOfWork<DbContextBase> readUnitOfWork = new EfUnitOfWork<DbContextBase>(readContext);
+        var readRepository = new WearPartRepository(readContext, readUnitOfWork, new WearPartDefinitionDomainService());
         var result = await readRepository.ListByBasicConfigurationAsync(basicConfigurationId);
 
         Assert.Single(result);

@@ -9,6 +9,8 @@ public interface IRepository<TEntity, in TId>
     where TEntity : class
     where TId : notnull
 {
+    IUnitOfWork UnitOfWork { get; }
+
     Task<TEntity?> GetByIdAsync(TId id, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<TEntity>> ListAsync(CancellationToken cancellationToken = default);

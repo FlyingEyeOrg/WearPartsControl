@@ -12,10 +12,10 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
     where TEntity : class, IEntity<TId>
     where TId : notnull
 {
-    protected EfRepositoryBase(TDbContext dbContext)
+    protected EfRepositoryBase(TDbContext dbContext, IUnitOfWork<TDbContext> unitOfWork)
     {
         DbContext = dbContext;
-        UnitOfWork = (IUnitOfWork<DbContextBase>)dbContext;
+        UnitOfWork = unitOfWork;
         ServiceProvider = dbContext.GetService<IServiceProvider>();
         IServiceProvider? tempServiceProvider = ServiceProvider;
 
@@ -33,7 +33,7 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
     protected TDbContext DbContext { get; }
 
-    protected IUnitOfWork<DbContextBase> UnitOfWork { get; }
+    public IUnitOfWork UnitOfWork { get; }
 
     protected ICurrentUser CurrentUser { get; }
 

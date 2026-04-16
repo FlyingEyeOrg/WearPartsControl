@@ -27,7 +27,7 @@ public sealed class UnitOfWorkTests : IDisposable
     public async Task RollbackTransactionAsync_ShouldNotPersistChanges()
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        IUnitOfWork<DbContextBase> unitOfWork = dbContext;
+        await using IUnitOfWork<DbContextBase> unitOfWork = new EfUnitOfWork<DbContextBase>(dbContext);
 
         await unitOfWork.BeginTransactionAsync();
 

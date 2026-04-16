@@ -49,7 +49,10 @@ public static class ServiceRegistration
         builder.Register(ctx => ctx.Resolve<WearPartsControlDbContextFactory>().CreateDbContext())
             .As<WearPartsControlDbContext>()
             .As<DbContextBase>()
+            .InstancePerLifetimeScope();
+        builder.Register(ctx => new EfUnitOfWork<DbContextBase>(ctx.Resolve<DbContextBase>()))
             .As<IUnitOfWork<DbContextBase>>()
+            .As<WearPartsControl.Domain.Repositories.IUnitOfWork>()
             .InstancePerLifetimeScope();
         builder.RegisterType<DefaultCurrentUser>().As<ICurrentUser>().SingleInstance();
         builder.RegisterType<WearPartDefinitionDomainService>().AsSelf().SingleInstance();

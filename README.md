@@ -14,6 +14,7 @@
 	- 仓储接口：`IRepository<TEntity, TId>`、`IBasicConfigurationRepository`、`IWearPartRepository`
 		- `IRepository<TEntity, TId>` 仅保留仓储职责（包含 `SoftDeleteAsync`）。
 		- 事务由独立的 `IUnitOfWork<TDbContext>` 负责，仓储内部持有对应 `UnitOfWork`，符合单一职责。
+		- `DbContextBase` 不直接实现 `IUnitOfWork`，避免上下文职责膨胀。
 	- 领域异常与验证：`DomainBusinessException`、`DomainValidationException`、`DomainValidationRules`
 
 ### Infrastructure（EF Core）
