@@ -26,7 +26,7 @@ public sealed class UnitOfWorkTests : IDisposable
     public async Task RollbackTransactionAsync_ShouldNotPersistChanges()
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        await using IUnitOfWork<DbContextBase> unitOfWork = new EfUnitOfWork<DbContextBase>(dbContext);
+        await using IUnitOfWork<WearPartsControlDbContext> unitOfWork = new EfUnitOfWork<WearPartsControlDbContext>(dbContext);
 
         await unitOfWork.BeginTransactionAsync();
 
@@ -58,7 +58,7 @@ public sealed class UnitOfWorkTests : IDisposable
     public async Task CommitTransactionAsync_ShouldPersistChanges()
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        await using IUnitOfWork<DbContextBase> unitOfWork = new EfUnitOfWork<DbContextBase>(dbContext);
+        await using IUnitOfWork<WearPartsControlDbContext> unitOfWork = new EfUnitOfWork<WearPartsControlDbContext>(dbContext);
 
         await unitOfWork.BeginTransactionAsync();
 

@@ -7,12 +7,12 @@ using System.Linq.Expressions;
 
 namespace WearPartsControl.Infrastructure.EntityFrameworkCore.Repositories;
 
-public sealed class WearPartRepository : EfRepositoryBase<DbContextBase, WearPartDefinitionEntity, Guid>, IWearPartRepository
+public sealed class WearPartRepository : EfRepositoryBase<WearPartsControlDbContext, WearPartDefinitionEntity, Guid>, IWearPartRepository
 {
     private readonly WearPartDefinitionDomainService _domainService;
 
     public WearPartRepository(
-        DbContextBase dbContext,
+        WearPartsControlDbContext dbContext,
         WearPartDefinitionDomainService domainService)
         : base(dbContext)
     {

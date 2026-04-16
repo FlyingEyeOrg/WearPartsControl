@@ -51,7 +51,7 @@ public sealed class WearPartRepositoryTests : IDisposable
         }
 
         await using var writeContext = await _dbContextFactory.CreateDbContextAsync();
-        await using IUnitOfWork<DbContextBase> unitOfWork = new EfUnitOfWork<DbContextBase>(writeContext);
+        await using IUnitOfWork<WearPartsControlDbContext> unitOfWork = new EfUnitOfWork<WearPartsControlDbContext>(writeContext);
         var repository = new WearPartRepository(writeContext, new WearPartDefinitionDomainService());
 
         var definition = new WearPartDefinitionEntity
@@ -108,7 +108,7 @@ public sealed class WearPartRepositoryTests : IDisposable
         await repository.UnitOfWork.SaveChangesAsync();
 
         Assert.NotEqual(Guid.Empty, definition.Id);
-        Assert.IsType<EfUnitOfWork<DbContextBase>>(repository.UnitOfWork);
+        Assert.IsType<EfUnitOfWork<WearPartsControlDbContext>>(repository.UnitOfWork);
         Assert.NotNull(definition.CreatedAt);
         Assert.NotNull(definition.UpdatedAt);
         Assert.Equal(string.Empty, definition.CreatedBy);

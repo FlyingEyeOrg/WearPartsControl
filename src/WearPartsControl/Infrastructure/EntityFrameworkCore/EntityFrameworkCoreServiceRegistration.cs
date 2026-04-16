@@ -19,8 +19,8 @@ public static class EntityFrameworkCoreServiceRegistration
             .As<DbContextBase>()
             .InstancePerLifetimeScope();
 
-        builder.Register(ctx => new EfUnitOfWork<DbContextBase>(ctx.Resolve<DbContextBase>()))
-            .As<IUnitOfWork<DbContextBase>>()
+        builder.Register(ctx => new EfUnitOfWork<WearPartsControlDbContext>(ctx.Resolve<WearPartsControlDbContext>()))
+            .As<IUnitOfWork<WearPartsControlDbContext>>()
             .As<WearPartsControl.Domain.Repositories.IUnitOfWork>()
             .InstancePerLifetimeScope();
 
