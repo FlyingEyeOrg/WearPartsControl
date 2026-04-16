@@ -6,7 +6,7 @@ using Serilog;
 using System.Windows;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
-using WearPartsControl.Infrastructure.Database;
+using WearPartsControl.Infrastructure.EntityFrameworkCore;
 using WearPartsControl.Exceptions;
 using WearPartsControl.Views;
 
