@@ -118,6 +118,26 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
         Set.Update(entity);
     }
 
+    public virtual Task BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        return DbContext.BeginTransactionAsync(cancellationToken);
+    }
+
+    public virtual Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        return DbContext.CommitTransactionAsync(cancellationToken);
+    }
+
+    public virtual Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        return DbContext.RollbackTransactionAsync(cancellationToken);
+    }
+
+    public virtual Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        return DbContext.SaveChangesAsync(cancellationToken);
+    }
+
     protected virtual void SetCreationDefaults(TEntity entity)
     {
         var now = DateTime.UtcNow;
@@ -139,12 +159,15 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
         if (entity is IHasAuditUser auditUser)
         {
-            if (ShouldAssignCurrentUser(auditUser.CreatedBy))
+            if (ShouldAssignCurrentUser(auditUser.CreatedBy) && HasCurrentUser())
             {
                 auditUser.CreatedBy = CurrentUserId;
             }
 
-            auditUser.UpdatedBy = CurrentUserId;
+            if (HasCurrentUser())
+            {
+                auditUser.UpdatedBy = CurrentUserId;
+            }
         }
     }
 
@@ -157,7 +180,10 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
         if (entity is IHasAuditUser auditUser)
         {
-            auditUser.UpdatedBy = CurrentUserId;
+            if (HasCurrentUser())
+            {
+                auditUser.UpdatedBy = CurrentUserId;
+            }
         }
     }
 
@@ -176,7 +202,10 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
         if (entity is IHasAuditUser auditUser)
         {
-            auditUser.UpdatedBy = CurrentUserId;
+            if (HasCurrentUser())
+            {
+                auditUser.UpdatedBy = CurrentUserId;
+            }
         }
     }
 
@@ -193,5 +222,10 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
     private static bool ShouldAssignCurrentUser(string? userId)
     {
         return string.IsNullOrWhiteSpace(userId);
+    }
+
+    private bool HasCurrentUser()
+    {
+        return !string.IsNullOrWhiteSpace(CurrentUserId);
     }
 }

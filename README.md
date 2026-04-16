@@ -12,6 +12,7 @@
 	- 领域服务：`WearPartDefinitionDomainService`
 	- 领域事件契约：`IDomainEvent`、`IDomainEventHandler<T>`
 	- 仓储接口：`IRepository<TEntity, TId>`、`IBasicConfigurationRepository`、`IWearPartRepository`
+		- `IRepository<TEntity, TId>` 已统一提供 `SoftDeleteAsync` 与事务能力（`BeginTransactionAsync`、`CommitTransactionAsync`、`RollbackTransactionAsync`、`SaveChangesAsync`），应用层仅依赖仓储接口即可完成 UoW 流程。
 	- 领域异常与验证：`DomainBusinessException`、`DomainValidationException`、`DomainValidationRules`
 
 ### Infrastructure（EF Core）

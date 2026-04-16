@@ -51,7 +51,7 @@ public sealed class WearPartRepositoryTests : IDisposable
         }
 
         await using var writeContext = await _dbContextFactory.CreateDbContextAsync();
-        var repository = new WearPartRepository(writeContext, new StubCurrentUser(), new WearPartDefinitionDomainService());
+        var repository = new WearPartRepository(writeContext, new WearPartDefinitionDomainService());
         IUnitOfWork unitOfWork = writeContext;
 
         var definition = new WearPartDefinitionEntity
@@ -63,6 +63,8 @@ public sealed class WearPartRepositoryTests : IDisposable
             CurrentValueAddress = "DB1.0",
             WarningValueAddress = "DB1.1",
             ShutdownValueAddress = "DB1.2",
+            CreatedBy = "manual-user",
+            UpdatedBy = "manual-user",
             UpdatedAt = DateTime.UtcNow
         };
 
@@ -70,18 +72,13 @@ public sealed class WearPartRepositoryTests : IDisposable
         await unitOfWork.SaveChangesAsync();
 
         await using var readContext = await _dbContextFactory.CreateDbContextAsync();
-        var readRepository = new WearPartRepository(readContext, new StubCurrentUser(), new WearPartDefinitionDomainService());
+        var readRepository = new WearPartRepository(readContext, new WearPartDefinitionDomainService());
         var result = await readRepository.ListByBasicConfigurationAsync(basicConfigurationId);
 
         Assert.Single(result);
         Assert.Equal("Knife-01", result[0].PartName);
-        Assert.Equal("test-user", result[0].CreatedBy);
-        Assert.Equal("test-user", result[0].UpdatedBy);
-    }
-
-    private sealed class StubCurrentUser : ICurrentUser
-    {
-        public string UserId => "test-user";
+        Assert.Equal("manual-user", result[0].CreatedBy);
+        Assert.Equal("manual-user", result[0].UpdatedBy);
     }
 
     public void Dispose()
