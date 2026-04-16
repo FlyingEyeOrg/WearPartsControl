@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using System.Linq.Expressions;
 using WearPartsControl.Domain.Entities.Interfaces;
 using WearPartsControl.Domain.Repositories;
@@ -10,19 +12,29 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
     where TEntity : class, IEntity<TId>
     where TId : notnull
 {
-    protected EfRepositoryBase(TDbContext dbContext, ICurrentUser currentUser)
+    protected EfRepositoryBase(TDbContext dbContext)
     {
         DbContext = dbContext;
-        CurrentUser = currentUser;
+        ServiceProvider = dbContext.GetService<IServiceProvider>();
+        IServiceProvider? tempServiceProvider = ServiceProvider;
+
+        if (tempServiceProvider == null)
+        {
+            CurrentUser = new DefaultCurrentUser();
+        }
+        else
+        {
+            CurrentUser = ServiceProvider.GetService<ICurrentUser>() ?? new DefaultCurrentUser();
+        }
     }
+
+    protected IServiceProvider ServiceProvider { get; }
 
     protected TDbContext DbContext { get; }
 
     protected ICurrentUser CurrentUser { get; }
 
     protected string? CurrentUserId => CurrentUser.UserId;
-
-    protected string EffectiveUserId => string.IsNullOrWhiteSpace(CurrentUserId) ? "system" : CurrentUserId;
 
     protected DbSet<TEntity> Set => DbContext.Set<TEntity>();
 
@@ -82,7 +94,28 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
             return;
         }
 
-        ApplyDeleteBehavior(entity);
+        Set.Remove(entity);
+    }
+
+    public virtual async Task SoftDeleteAsync(TId id, CancellationToken cancellationToken = default)
+    {
+        var entity = await Queryable(asNoTracking: false, includeSoftDeleted: true)
+            .FirstOrDefaultAsync(BuildIdPredicate(id), cancellationToken)
+            .ConfigureAwait(false);
+
+        if (entity is null)
+        {
+            return;
+        }
+
+        if (entity is not ISoftDelete)
+        {
+            Set.Remove(entity);
+            return;
+        }
+
+        SetDeleteDefaults(entity);
+        Set.Update(entity);
     }
 
     protected virtual void SetCreationDefaults(TEntity entity)
@@ -108,10 +141,10 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
         {
             if (ShouldAssignCurrentUser(auditUser.CreatedBy))
             {
-                auditUser.CreatedBy = EffectiveUserId;
+                auditUser.CreatedBy = CurrentUserId;
             }
 
-            auditUser.UpdatedBy = EffectiveUserId;
+            auditUser.UpdatedBy = CurrentUserId;
         }
     }
 
@@ -124,7 +157,7 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
         if (entity is IHasAuditUser auditUser)
         {
-            auditUser.UpdatedBy = EffectiveUserId;
+            auditUser.UpdatedBy = CurrentUserId;
         }
     }
 
@@ -143,20 +176,8 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
         if (entity is IHasAuditUser auditUser)
         {
-            auditUser.UpdatedBy = EffectiveUserId;
+            auditUser.UpdatedBy = CurrentUserId;
         }
-    }
-
-    protected virtual void ApplyDeleteBehavior(TEntity entity)
-    {
-        if (entity is ISoftDelete)
-        {
-            SetDeleteDefaults(entity);
-            Set.Update(entity);
-            return;
-        }
-
-        Set.Remove(entity);
     }
 
     private static IQueryable<TEntity> ApplySoftDeleteFilter(IQueryable<TEntity> source)
@@ -171,7 +192,6 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
     private static bool ShouldAssignCurrentUser(string? userId)
     {
-        return string.IsNullOrWhiteSpace(userId)
-               || string.Equals(userId, "system", StringComparison.OrdinalIgnoreCase);
+        return string.IsNullOrWhiteSpace(userId);
     }
 }
