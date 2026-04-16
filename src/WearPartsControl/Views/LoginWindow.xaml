@@ -11,7 +11,7 @@
         WindowStartupLocation="CenterOwner">
     <Grid Background="AliceBlue">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Grid>
@@ -26,7 +26,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <StackPanel Margin="24">
+            <StackPanel Margin="8">
                 <Label Style="{x:Null}"
                        HorizontalAlignment="Center"
                        FontWeight="Bold"
@@ -39,7 +39,7 @@
                            HorizontalAlignment="Center"
                            Foreground="Gray"
                            Text="{Binding SiteCode, StringFormat=基地：{0}}" />
-                <Grid Margin="0 24 0 0">
+                <Grid Margin="0 16 0 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                         <ColumnDefinition Width="Auto" />
@@ -64,7 +64,7 @@
                            Text="{Binding StatusMessage}" />
             </StackPanel>
             <Image Grid.Row="1"
-                   Source="/Assets/card.png"></Image>
+                   Source="pack://application:,,,/Assets/card.png"></Image>
         </Grid>
     </Grid>
 </Window>
