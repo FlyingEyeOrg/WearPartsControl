@@ -7,14 +7,12 @@ using WearPartsControl.Domain.Validation;
 namespace WearPartsControl.Domain.Entities;
 
 public sealed class BasicConfigurationEntity :
-    IEntity<Guid>,
+    Entity,
     IHasAuditTime,
     IHasAuditUser,
     ISoftDelete,
     IHasRemark
 {
-    public Guid Id { get; set; }
-
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

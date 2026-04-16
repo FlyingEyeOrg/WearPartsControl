@@ -10,12 +10,17 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
     where TEntity : class, IEntity<TId>
     where TId : notnull
 {
-    protected EfRepositoryBase(TDbContext dbContext)
+    protected EfRepositoryBase(TDbContext dbContext, ICurrentUser currentUser)
     {
         DbContext = dbContext;
+        CurrentUser = currentUser;
     }
 
     protected TDbContext DbContext { get; }
+
+    protected ICurrentUser CurrentUser { get; }
+
+    protected string CurrentUserId => string.IsNullOrWhiteSpace(CurrentUser.UserId) ? "system" : CurrentUser.UserId;
 
     protected DbSet<TEntity> Set => DbContext.Set<TEntity>();
 
@@ -103,15 +108,12 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
         if (entity is IHasAuditUser auditUser)
         {
-            if (string.IsNullOrWhiteSpace(auditUser.CreatedBy))
+            if (ShouldAssignCurrentUser(auditUser.CreatedBy))
             {
-                auditUser.CreatedBy = "system";
+                auditUser.CreatedBy = CurrentUserId;
             }
 
-            if (string.IsNullOrWhiteSpace(auditUser.UpdatedBy))
-            {
-                auditUser.UpdatedBy = auditUser.CreatedBy;
-            }
+            auditUser.UpdatedBy = CurrentUserId;
         }
     }
 
@@ -128,9 +130,9 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
             softDelete.DeletedAt = null;
         }
 
-        if (entity is IHasAuditUser auditUser && string.IsNullOrWhiteSpace(auditUser.UpdatedBy))
+        if (entity is IHasAuditUser auditUser)
         {
-            auditUser.UpdatedBy = "system";
+            auditUser.UpdatedBy = CurrentUserId;
         }
     }
 
@@ -147,9 +149,9 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
             }
         }
 
-        if (entity is IHasAuditUser auditUser && string.IsNullOrWhiteSpace(auditUser.UpdatedBy))
+        if (entity is IHasAuditUser auditUser)
         {
-            auditUser.UpdatedBy = "system";
+            auditUser.UpdatedBy = CurrentUserId;
         }
     }
 
@@ -161,5 +163,11 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
         }
 
         return source.Where(x => !EF.Property<bool>(x, nameof(ISoftDelete.IsDeleted)));
+    }
+
+    private static bool ShouldAssignCurrentUser(string? userId)
+    {
+        return string.IsNullOrWhiteSpace(userId)
+               || string.Equals(userId, "system", StringComparison.OrdinalIgnoreCase);
     }
 }

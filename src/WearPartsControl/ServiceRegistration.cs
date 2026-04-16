@@ -51,6 +51,7 @@ public static class ServiceRegistration
             .As<DbContextBase>()
             .As<IUnitOfWork>()
             .InstancePerLifetimeScope();
+        builder.RegisterType<DefaultCurrentUser>().As<ICurrentUser>().SingleInstance();
         builder.RegisterType<WearPartDefinitionDomainService>().AsSelf().SingleInstance();
         builder.RegisterType<BasicConfigurationRepository>().As<IBasicConfigurationRepository>().InstancePerLifetimeScope();
         builder.RegisterType<WearPartRepository>().As<IWearPartRepository>().InstancePerLifetimeScope();
