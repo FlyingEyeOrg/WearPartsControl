@@ -28,9 +28,9 @@ public sealed class PartModelService : IPartModelService
     /// <summary>
     /// 读取并归一化基地工厂配置，确保同一基地下的工厂编码合并为数组。
     /// </summary>
-    public async ValueTask<IReadOnlyList<BaseFactory>> GetBaseFactoryModelsAsync(CancellationToken cancellationToken = default)
+    public async ValueTask<IReadOnlyList<SiteFactory>> GetSiteFactoryModelsAsync(CancellationToken cancellationToken = default)
     {
-        var options = await _saveInfoStore.ReadAsync<BaseFactoryOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
+        var options = await _saveInfoStore.ReadAsync<SiteFactoryOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
 
         return NormalizeFactories(options.Factories);
     }
@@ -38,11 +38,11 @@ public sealed class PartModelService : IPartModelService
     /// <summary>
     /// 保存基地工厂配置，并在写入前完成分组与去重。
     /// </summary>
-    public ValueTask SaveBaseFactoryModelsAsync(IReadOnlyCollection<BaseFactory> factories, CancellationToken cancellationToken = default)
+    public ValueTask SaveSiteFactoryModelsAsync(IReadOnlyCollection<SiteFactory> factories, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(factories);
 
-        var options = new BaseFactoryOptionsSaveInfo
+        var options = new SiteFactoryOptionsSaveInfo
         {
             Factories = NormalizeFactories(factories).ToList()
         };
@@ -53,12 +53,12 @@ public sealed class PartModelService : IPartModelService
     /// <summary>
     /// 按基地编码和基地名称合并同类数据，并对工厂编码进行去重排序。
     /// </summary>
-    private static IReadOnlyList<BaseFactory> NormalizeFactories(IEnumerable<BaseFactory> factories)
+    private static IReadOnlyList<SiteFactory> NormalizeFactories(IEnumerable<SiteFactory> factories)
     {
         return factories
             .Where(factory => factory is not null)
-            .Where(factory => !string.IsNullOrWhiteSpace(factory.Base) && !string.IsNullOrWhiteSpace(factory.BaseName))
-            .GroupBy(factory => NormalizeGroupKey(factory.Base, factory.BaseName), StringComparer.OrdinalIgnoreCase)
+            .Where(factory => !string.IsNullOrWhiteSpace(factory.Site) && !string.IsNullOrWhiteSpace(factory.SiteName))
+            .GroupBy(factory => NormalizeGroupKey(factory.Site, factory.SiteName), StringComparer.OrdinalIgnoreCase)
             .Select(group =>
             {
                 var first = group.First();
@@ -70,16 +70,16 @@ public sealed class PartModelService : IPartModelService
                     .OrderBy(factoryName => factoryName, StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
-                return new BaseFactory
+                return new SiteFactory
                 {
-                    Base = first.Base.Trim(),
-                    BaseName = first.BaseName.Trim(),
+                    Site = first.Site.Trim(),
+                    SiteName = first.SiteName.Trim(),
                     FactoryNames = factoryNames
                 };
             })
             .Where(factory => factory.FactoryNames.Count > 0)
-            .OrderBy(factory => factory.Base, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(factory => factory.BaseName, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(factory => factory.Site, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(factory => factory.SiteName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
 

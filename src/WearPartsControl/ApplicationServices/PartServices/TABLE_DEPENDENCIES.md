@@ -76,7 +76,7 @@
 ## 3. 配置模型（非表）
 
 下列模型是配置/接口数据，不属于业务表：
-- `BaseFactoryModel` + `BaseFactoryOptionsSaveInfo`（基地工厂映射配置，按 `Base` 和 `BaseName` 分组，一个基地下的多个 `FactoryNames` 用数组保存）
+- `SiteFactoryModel` + `SiteFactoryOptionsSaveInfo`（基地工厂映射配置，按 `Base` 和 `BaseName` 分组，一个基地下的多个 `FactoryNames` 用数组保存）
 - `AppSetting`
 - `MysqlStr`
 - `MHR` / `HMRResult` / `HTMItemData` / `UserModel`
