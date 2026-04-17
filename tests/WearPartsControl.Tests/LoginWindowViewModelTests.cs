@@ -80,6 +80,42 @@ public sealed class LoginWindowViewModelTests
         Assert.False(viewModel.IsBusy);
     }
 
+    [Fact]
+    public async Task LoginCommand_WhenLoginSucceedsImmediately_ShouldKeepLoadingVisibleBeforeClosing()
+    {
+        var delaySignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var loginService = new StubLoginService();
+        var viewModel = new LoginWindowViewModel(
+            loginService,
+            new StubClientAppConfigurationRepository(),
+            new StubAppSettingsService(),
+            TimeSpan.FromMilliseconds(500),
+            (delay, cancellationToken) =>
+            {
+                Assert.True(delay > TimeSpan.Zero);
+                cancellationToken.Register(() => delaySignal.TrySetCanceled(cancellationToken));
+                return delaySignal.Task;
+            });
+
+        bool? dialogResult = null;
+        viewModel.RequestClose += (_, result) => dialogResult = result;
+
+        await viewModel.InitializeAsync();
+        viewModel.AuthId = "CARD-01";
+
+        var executeTask = viewModel.LoginCommand.ExecuteAsync(null);
+        await WaitUntilAsync(() => viewModel.IsBusy);
+
+        Assert.True(viewModel.IsBusy);
+        Assert.Null(dialogResult);
+
+        delaySignal.SetResult(true);
+        await executeTask;
+
+        Assert.True(dialogResult);
+        Assert.False(viewModel.IsBusy);
+    }
+
     private sealed class StubLoginService : ILoginService
     {
         public string ResourceNumber { get; private set; } = string.Empty;

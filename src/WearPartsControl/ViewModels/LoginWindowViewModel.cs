@@ -16,6 +16,7 @@ namespace WearPartsControl.ViewModels
         private readonly ILoginService _loginService;
         private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
         private readonly IAppSettingsService _appSettingsService;
+        private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
         private string _authId = string.Empty;
         private string _statusMessage = "请刷卡登录";
         private string _resourceNumber = string.Empty;
@@ -26,11 +27,15 @@ namespace WearPartsControl.ViewModels
         public LoginWindowViewModel(
             ILoginService loginService,
             IClientAppConfigurationRepository clientAppConfigurationRepository,
-            IAppSettingsService appSettingsService)
+            IAppSettingsService appSettingsService,
+            TimeSpan? minimumBusyDuration = null,
+            Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
         {
             _loginService = loginService;
             _clientAppConfigurationRepository = clientAppConfigurationRepository;
             _appSettingsService = appSettingsService;
+            _delayAsync = delayAsync ?? Task.Delay;
+            MinimumBusyDuration = minimumBusyDuration ?? TimeSpan.FromMilliseconds(500);
             LoginCommand = new AsyncRelayCommand(LoginAsync, CanLogin);
         }
 
@@ -72,6 +77,8 @@ namespace WearPartsControl.ViewModels
             private set => SetProperty(ref _loginInputMaxIntervalMilliseconds, value);
         }
 
+        public TimeSpan MinimumBusyDuration { get; }
+
         public bool IsBusy
         {
             get => _isBusy;
@@ -79,7 +86,7 @@ namespace WearPartsControl.ViewModels
             {
                 if (SetProperty(ref _isBusy, value))
                 {
-                    LoginCommand.NotifyCanExecuteChanged();
+                    NotifyLoginCommandCanExecuteChanged();
                 }
             }
         }
@@ -150,11 +157,13 @@ namespace WearPartsControl.ViewModels
             var authId = AuthId.Trim();
             if (string.IsNullOrWhiteSpace(authId))
             {
-                RunOnUiThread(() => StatusMessage = "请先刷卡后再登录。");
+                await RunOnUiThreadAsync(() => StatusMessage = "请先刷卡后再登录。");
                 return;
             }
 
-            RunOnUiThread(() =>
+            var busyEnteredAt = DateTimeOffset.UtcNow;
+
+            await RunOnUiThreadAsync(() =>
             {
                 IsBusy = true;
                 StatusMessage = "正在登录...";
@@ -165,13 +174,15 @@ namespace WearPartsControl.ViewModels
             try
             {
                 var user = await _loginService.LoginAsync(authId, SiteCode, ResourceNumber, isIdCard: true);
+                await EnsureMinimumBusyDurationAsync(busyEnteredAt);
+
                 if (user is null)
                 {
-                    RunOnUiThread(() => StatusMessage = "未找到对应用户，请确认卡号或权限配置。");
+                    await RunOnUiThreadAsync(() => StatusMessage = "未找到对应用户，请确认卡号或权限配置。");
                     return;
                 }
 
-                RunOnUiThread(() =>
+                await RunOnUiThreadAsync(() =>
                 {
                     StatusMessage = $"登录成功，工号 {user.WorkId}";
                     RequestClose?.Invoke(this, true);
@@ -179,12 +190,25 @@ namespace WearPartsControl.ViewModels
             }
             catch (Exception ex)
             {
-                RunOnUiThread(() => StatusMessage = ex.Message);
+                await EnsureMinimumBusyDurationAsync(busyEnteredAt);
+                await RunOnUiThreadAsync(() => StatusMessage = ex.Message);
             }
             finally
             {
-                RunOnUiThread(() => IsBusy = false);
+                await RunOnUiThreadAsync(() => IsBusy = false);
             }
+        }
+
+        private async Task EnsureMinimumBusyDurationAsync(DateTimeOffset busyEnteredAt, CancellationToken cancellationToken = default)
+        {
+            var elapsed = DateTimeOffset.UtcNow - busyEnteredAt;
+            var remaining = MinimumBusyDuration - elapsed;
+            if (remaining <= TimeSpan.Zero)
+            {
+                return;
+            }
+
+            await _delayAsync(remaining, cancellationToken);
         }
 
         private static async Task EnsureLoadingRenderedAsync()
@@ -198,15 +222,32 @@ namespace WearPartsControl.ViewModels
             await Task.Yield();
         }
 
-        private static void RunOnUiThread(Action action)
+        private void NotifyLoginCommandCanExecuteChanged()
         {
             if (Application.Current?.Dispatcher is { } dispatcher && !dispatcher.CheckAccess())
             {
-                dispatcher.Invoke(action);
+                _ = dispatcher.BeginInvoke(LoginCommand.NotifyCanExecuteChanged, DispatcherPriority.Normal);
                 return;
             }
 
+            LoginCommand.NotifyCanExecuteChanged();
+        }
+
+        private static Task RunOnUiThreadAsync(Action action)
+        {
+            if (Application.Current?.Dispatcher is { } dispatcher)
+            {
+                if (dispatcher.CheckAccess())
+                {
+                    action();
+                    return Task.CompletedTask;
+                }
+
+                return dispatcher.InvokeAsync(action, DispatcherPriority.Normal).Task;
+            }
+
             action();
+            return Task.CompletedTask;
         }
     }
 }
