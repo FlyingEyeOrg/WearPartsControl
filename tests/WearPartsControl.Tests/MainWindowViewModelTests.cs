@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.Localization.Generated;
 using WearPartsControl.ApplicationServices.LoginService;
@@ -18,12 +19,14 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void CurrentUserChanged_ShouldRefreshLoginStatus()
     {
+        var appSettingsService = new StubAppSettingsService();
         var accessor = new CurrentUserAccessor();
         var viewModel = new MainWindowViewModel(
             new StubLocalizationService(),
             new StubServiceProvider(),
             accessor,
-            new StubLoginService());
+            new StubLoginService(),
+            appSettingsService);
 
         Assert.Equal("工号：--", viewModel.CurrentUserWorkIdText);
         Assert.Equal("权限：--", viewModel.CurrentUserAccessLevelText);
@@ -42,6 +45,35 @@ public sealed class MainWindowViewModelTests
         Assert.Equal("切换登录", viewModel.LoginButtonText);
     }
 
+    [Fact]
+    public async Task AppSettingsSaved_ShouldRefreshTabs()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = false
+            }
+        };
+
+        var viewModel = new MainWindowViewModel(
+            new StubLocalizationService(),
+            new StubServiceProvider(),
+            new CurrentUserAccessor(),
+            new StubLoginService(),
+            appSettingsService);
+
+        Assert.Single(viewModel.Tabs);
+
+        await appSettingsService.SaveAsync(new AppSettings
+        {
+            IsSetClientAppInfo = true,
+            ResourceNumber = "RES-01"
+        });
+
+        Assert.Equal(5, viewModel.Tabs.Count());
+    }
+
     private sealed class StubLoginService : ILoginService
     {
         public Task<MhrUser?> LoginAsync(string authId, string factory, string resourceId, bool isIdCard, CancellationToken cancellationToken = default)
@@ -52,6 +84,30 @@ public sealed class MainWindowViewModelTests
         public MhrUser? GetCurrentUser() => null;
 
         public ValueTask LogoutAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+    }
+
+    private sealed class StubAppSettingsService : IAppSettingsService
+    {
+        public AppSettings Current { get; set; } = new();
+
+        public event EventHandler<AppSettings>? SettingsSaved;
+
+        public ValueTask<AppSettings> GetAsync(CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(new AppSettings
+            {
+                ResourceNumber = Current.ResourceNumber,
+                LoginInputMaxIntervalMilliseconds = Current.LoginInputMaxIntervalMilliseconds,
+                IsSetClientAppInfo = Current.IsSetClientAppInfo
+            });
+        }
+
+        public ValueTask SaveAsync(AppSettings settings, CancellationToken cancellationToken = default)
+        {
+            Current = settings;
+            SettingsSaved?.Invoke(this, settings);
+            return ValueTask.CompletedTask;
+        }
     }
 
     private sealed class StubLocalizationService : ILocalizationService
@@ -71,7 +127,8 @@ public sealed class MainWindowViewModelTests
     {
         private readonly Dictionary<Type, object> _services = new()
         {
-            [typeof(ReplacePartUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(ReplacePartUserControl))
+            [typeof(ReplacePartUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(ReplacePartUserControl)),
+            [typeof(ClientAppInfoUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(ClientAppInfoUserControl))
         };
 
         public object? GetService(Type serviceType)

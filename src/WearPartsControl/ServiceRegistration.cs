@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using System.Net.Http;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.LegacyImport;
 using WearPartsControl.ApplicationServices.Localization;
@@ -50,6 +51,7 @@ public static class ServiceRegistration
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<PlcService>().As<IPlcService>().SingleInstance();
         builder.RegisterType<AppSettingsService>().As<IAppSettingsService>().SingleInstance();
+        builder.RegisterType<ClientAppInfoService>().As<IClientAppInfoService>().InstancePerLifetimeScope();
         builder.RegisterType<LegacyDatabaseImportService>().As<ILegacyDatabaseImportService>().SingleInstance();
         builder.RegisterType<WearPartManagementService>().As<IWearPartManagementService>().InstancePerLifetimeScope();
         builder.RegisterType<WearPartReplacementService>().As<IWearPartReplacementService>().InstancePerLifetimeScope();
@@ -57,6 +59,7 @@ public static class ServiceRegistration
         builder.RegisterType<WearPartMonitoringHostedService>().As<IHostedService>().SingleInstance();
         EntityFrameworkCoreServiceRegistration.RegisterServices(builder);
         builder.RegisterType<WearPartDefinitionDomainService>().AsSelf().SingleInstance();
+        builder.RegisterType<ClientAppInfoViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<MainWindowViewModel>().AsSelf().InstancePerDependency();
         // Add other services as needed
 

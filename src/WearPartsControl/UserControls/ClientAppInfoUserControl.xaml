@@ -3,13 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:WearPartsControl.UserControls"
-             xmlns:hc="https://handyorg.github.io/handycontrol"
+             xmlns:ui="https://handyorg.github.io/handycontrol"
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="800">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
     <Grid>
-        <StackPanel>
+        <StackPanel IsEnabled="{Binding IsNotBusy}">
             <Border Background="#FF365082"
                     Padding="0 4">
                 <TextBlock HorizontalAlignment="Center"
@@ -32,8 +34,12 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">基地：</TextBlock>
                         <ComboBox Style="{StaticResource ComboBoxExtend}"
-                                  hc:InfoElement.Placeholder="请选择基地"
-                                  Grid.Column="1"></ComboBox>
+                                  ui:InfoElement.Placeholder="请选择基地"
+                                  DisplayMemberPath="DisplayName"
+                                  Grid.Column="1"
+                                  ItemsSource="{Binding SiteOptions}"
+                                  SelectedValue="{Binding SiteCode, UpdateSourceTrigger=PropertyChanged}"
+                                  SelectedValuePath="Code" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -44,7 +50,10 @@
                                    VerticalAlignment="Center">工序：</TextBlock>
                         <ComboBox Grid.Column="1"
                                   Style="{StaticResource ComboBoxExtend}"
-                                  hc:InfoElement.Placeholder="请选择易工序"></ComboBox>
+                                  IsEditable="True"
+                                  ItemsSource="{Binding ProcedureOptions}"
+                                  Text="{Binding ProcedureCode, UpdateSourceTrigger=PropertyChanged}"
+                                  ui:InfoElement.Placeholder="请输入或选择工序" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -54,8 +63,10 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">PLC 类型：</TextBlock>
                         <ComboBox Style="{StaticResource ComboBoxExtend}"
-                                  hc:InfoElement.Placeholder="请选择 PLC 类型"
-                                  Grid.Column="1"></ComboBox>
+                                  Grid.Column="1"
+                                  ItemsSource="{Binding PlcProtocolTypes}"
+                                  SelectedItem="{Binding PlcProtocolType, UpdateSourceTrigger=PropertyChanged}"
+                                  ui:InfoElement.Placeholder="请选择 PLC 类型" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -65,8 +76,9 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">停机地址：</TextBlock>
                         <TextBox Style="{StaticResource TextBoxExtend}"
-                                 hc:InfoElement.Placeholder="请输入 PLC 的停机地址"
-                                 Grid.Column="1"></TextBox>
+                                 Grid.Column="1"
+                                 Text="{Binding ShutdownPointAddress, UpdateSourceTrigger=PropertyChanged}"
+                                 ui:InfoElement.Placeholder="请输入 PLC 的停机地址" />
                     </Grid>
                 </StackPanel>
                 <StackPanel Grid.Column="1"
@@ -79,8 +91,10 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">工厂：</TextBlock>
                         <ComboBox Style="{StaticResource ComboBoxExtend}"
-                                  hc:InfoElement.Placeholder="请选择工厂"
-                                  Grid.Column="1"></ComboBox>
+                                  Grid.Column="1"
+                                  ItemsSource="{Binding FactoryOptions}"
+                                  SelectedItem="{Binding FactoryCode, UpdateSourceTrigger=PropertyChanged}"
+                                  ui:InfoElement.Placeholder="请选择工厂" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -90,8 +104,9 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">设备资源号：</TextBlock>
                         <TextBox Style="{StaticResource TextBoxExtend}"
-                                 hc:InfoElement.Placeholder="请输入设备资源号"
-                                 Grid.Column="1"></TextBox>
+                                 Grid.Column="1"
+                                 Text="{Binding ResourceNumber, UpdateSourceTrigger=PropertyChanged}"
+                                 ui:InfoElement.Placeholder="请输入设备资源号" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -101,8 +116,9 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">IP 地址：</TextBlock>
                         <TextBox Style="{StaticResource TextBoxExtend}"
-                                 hc:InfoElement.Placeholder="请输入 PLC 的 IP 地址"
-                                 Grid.Column="1"></TextBox>
+                                 Grid.Column="1"
+                                 Text="{Binding PlcIpAddress, UpdateSourceTrigger=PropertyChanged}"
+                                 ui:InfoElement.Placeholder="请输入 PLC 的 IP 地址" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -112,8 +128,9 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">插槽号：</TextBlock>
                         <TextBox Style="{StaticResource TextBoxExtend}"
-                                 hc:InfoElement.Placeholder="西门子 PLC 插槽号"
-                                 Grid.Column="1"></TextBox>
+                                 Grid.Column="1"
+                                 Text="{Binding SiemensSlot, UpdateSourceTrigger=PropertyChanged}"
+                                 ui:InfoElement.Placeholder="西门子 PLC 插槽号" />
                     </Grid>
                 </StackPanel>
                 <StackPanel Grid.Column="2">
@@ -126,12 +143,22 @@
                                    VerticalAlignment="Center">区域：</TextBlock>
                         <ComboBox Grid.Column="1"
                                   Style="{StaticResource ComboBoxExtend}"
-                                  hc:InfoElement.Placeholder="请选择区域"></ComboBox>
+                                  IsEditable="True"
+                                  ItemsSource="{Binding AreaOptions}"
+                                  Text="{Binding AreaCode, UpdateSourceTrigger=PropertyChanged}"
+                                  ui:InfoElement.Placeholder="请输入或选择区域" />
                     </Grid>
-                    <!--占位符-->
-                    <Grid Margin="0 8 0 0"
-                          Visibility="Hidden">
-                        <TextBox Grid.Column="1"></TextBox>
+                    <Grid Margin="0 8 0 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">设备编号：</TextBlock>
+                        <TextBox Grid.Column="1"
+                                 Style="{StaticResource TextBoxExtend}"
+                                 Text="{Binding EquipmentCode, UpdateSourceTrigger=PropertyChanged}"
+                                 ui:InfoElement.Placeholder="请输入设备编号" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -142,17 +169,30 @@
                                    VerticalAlignment="Center">端口：</TextBlock>
                         <TextBox Grid.Column="1"
                                  Style="{StaticResource TextBoxExtend}"
-                                 hc:InfoElement.Placeholder="请输入 PLC 端口"></TextBox>
+                                 Text="{Binding PlcPort, UpdateSourceTrigger=PropertyChanged}"
+                                 ui:InfoElement.Placeholder="请输入 PLC 端口" />
                     </Grid>
                 </StackPanel>
             </Grid>
+            <TextBlock Margin="8 0 8 16"
+                       Foreground="#FF365082"
+                       Text="{Binding StatusMessage}" />
             <Grid    Margin="8 16 8 8">
                 <Button Width="80"
+                        Command="{Binding SaveCommand}"
                         Style="{StaticResource ButtonPrimary}">保存信息</Button>
                 <Button Width="100"
-                        HorizontalAlignment="Right">测试 PLC 连接</Button>
+                        HorizontalAlignment="Right"
+                        IsEnabled="False">测试 PLC 连接</Button>
             </Grid>
         </StackPanel>
-        <hc:LoadingCircle IsRunning="True"></hc:LoadingCircle>
+        <Border Background="#40FFFFFF"
+                Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <ui:LoadingCircle Width="80"
+                              Height="80"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              IsRunning="{Binding IsBusy}" />
+        </Border>
     </Grid>
 </UserControl>

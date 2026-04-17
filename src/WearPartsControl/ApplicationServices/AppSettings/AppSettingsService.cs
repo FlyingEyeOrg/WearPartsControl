@@ -17,6 +17,8 @@ public sealed class AppSettingsService : IAppSettingsService
     private readonly string _legacyFilePath;
     private readonly string _currentFilePath;
 
+    public event EventHandler<AppSettings>? SettingsSaved;
+
     public AppSettingsService(ISaveInfoStore saveInfoStore, string? settingsDirectory = null)
     {
         _saveInfoStore = saveInfoStore;
@@ -36,7 +38,10 @@ public sealed class AppSettingsService : IAppSettingsService
     public ValueTask SaveAsync(AppSettings settings, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        return _saveInfoStore.WriteAsync(Normalize(settings), cancellationToken);
+
+        var normalized = Normalize(settings);
+        var task = _saveInfoStore.WriteAsync(normalized, cancellationToken);
+        return NotifyAfterSaveAsync(task, normalized);
     }
 
     private async Task MigrateLegacyFileIfNeededAsync(CancellationToken cancellationToken)
@@ -66,7 +71,24 @@ public sealed class AppSettingsService : IAppSettingsService
             ResourceNumber = settings.ResourceNumber?.Trim() ?? string.Empty,
             LoginInputMaxIntervalMilliseconds = settings.LoginInputMaxIntervalMilliseconds <= 0
                 ? 80
-                : settings.LoginInputMaxIntervalMilliseconds
+                : settings.LoginInputMaxIntervalMilliseconds,
+            IsSetClientAppInfo = settings.IsSetClientAppInfo
+        };
+    }
+
+    private async ValueTask NotifyAfterSaveAsync(ValueTask writeTask, AppSettings normalized)
+    {
+        await writeTask.ConfigureAwait(false);
+        SettingsSaved?.Invoke(this, Clone(normalized));
+    }
+
+    private static AppSettings Clone(AppSettings settings)
+    {
+        return new AppSettings
+        {
+            ResourceNumber = settings.ResourceNumber,
+            LoginInputMaxIntervalMilliseconds = settings.LoginInputMaxIntervalMilliseconds,
+            IsSetClientAppInfo = settings.IsSetClientAppInfo
         };
     }
 }

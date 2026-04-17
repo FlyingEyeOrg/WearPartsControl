@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Reflection;
+using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -19,9 +20,12 @@ namespace WearPartsControl.ViewModels
         private readonly ICurrentUserAccessor _currentUserAccessor;
         private readonly ILoginService _loginService;
         private readonly IAppSettingsService _appSettingsService;
+        private readonly IReadOnlyList<string> _allTabs;
         private string _currentUserWorkIdText = "工号：--";
         private string _currentUserAccessLevelText = "权限：--";
+        private IEnumerable<string> _tabs = Array.Empty<string>();
         private bool _isLoggedIn;
+        private bool _isClientAppInfoConfigured;
 
         public MainWindowViewModel(
             ILocalizationService localizationService,
@@ -39,21 +43,15 @@ namespace WearPartsControl.ViewModels
             _loginService = loginService;
             _selectedContent = _serviceProvider.GetRequiredService<ReplacePartUserControl>();
             _appSettingsService = appSettingsService;
+            _allTabs = localizationService.Catalog.MainWindow.Tabs.ToArray();
 
             SoftwareVersionText = $"软件版本：{ResolveVersion()}";
             _currentUserAccessor.CurrentUserChanged += OnCurrentUserChanged;
+            _appSettingsService.SettingsSaved += OnAppSettingsSaved;
             UpdateCurrentUserState();
-            Tabs = localizationService.Catalog.MainWindow.Tabs;
-            var appSettings = _appSettingsService.GetAsync(default).GetAwaiter().GetResult();
 
-            if (appSettings.IsSetClientAppInfo)
-            {
-                Tabs = localizationService.Catalog.MainWindow.Tabs;
-            }
-            else
-            {
-                Tabs = new List<string>() { localizationService.Catalog.MainWindow.Tabs[1] };
-            }
+            var appSettings = _appSettingsService.GetAsync(default).GetAwaiter().GetResult();
+            ApplyClientAppInfoState(appSettings.IsSetClientAppInfo);
         }
 
         public event EventHandler? LoginRequested;
@@ -97,7 +95,11 @@ namespace WearPartsControl.ViewModels
             set => SetProperty(ref _selectedContent, value);
         }
 
-        public IEnumerable<string> Tabs { get; }
+        public IEnumerable<string> Tabs
+        {
+            get => _tabs;
+            private set => SetProperty(ref _tabs, value);
+        }
 
         public string? SelectedTabHeader
         {
@@ -122,9 +124,7 @@ namespace WearPartsControl.ViewModels
 
         private void OnTabChanged(int index)
         {
-            var appSettings = _appSettingsService.GetAsync(default).GetAwaiter().GetResult();
-
-            if (!appSettings.IsSetClientAppInfo)
+            if (!_isClientAppInfoConfigured)
             {
                 SelectedContent = _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
                 return;
@@ -155,6 +155,17 @@ namespace WearPartsControl.ViewModels
             LoginRequested?.Invoke(this, EventArgs.Empty);
         }
 
+        private void OnAppSettingsSaved(object? sender, AppSettings settings)
+        {
+            if (Application.Current?.Dispatcher is { } dispatcher && !dispatcher.CheckAccess())
+            {
+                dispatcher.Invoke(() => ApplyClientAppInfoState(settings.IsSetClientAppInfo));
+                return;
+            }
+
+            ApplyClientAppInfoState(settings.IsSetClientAppInfo);
+        }
+
         private async Task LogoutAsync()
         {
             await _loginService.LogoutAsync().ConfigureAwait(false);
@@ -171,6 +182,28 @@ namespace WearPartsControl.ViewModels
             IsLoggedIn = currentUser is not null;
             CurrentUserWorkIdText = currentUser is null ? "工号：--" : $"工号：{currentUser.WorkId}";
             CurrentUserAccessLevelText = currentUser is null ? "权限：--" : $"权限：{currentUser.AccessLevel}";
+        }
+
+        private void ApplyClientAppInfoState(bool isConfigured)
+        {
+            var stateChanged = _isClientAppInfoConfigured != isConfigured;
+            _isClientAppInfoConfigured = isConfigured;
+
+            if (isConfigured)
+            {
+                Tabs = _allTabs.ToArray();
+                if (stateChanged || SelectedContent is ClientAppInfoUserControl)
+                {
+                    SelectedContent = _serviceProvider.GetRequiredService<ReplacePartUserControl>();
+                }
+
+                return;
+            }
+
+            Tabs = _allTabs.Count > 1
+                ? new[] { _allTabs[1] }
+                : _allTabs.ToArray();
+            SelectedContent = _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
         }
 
         private static string ResolveVersion()

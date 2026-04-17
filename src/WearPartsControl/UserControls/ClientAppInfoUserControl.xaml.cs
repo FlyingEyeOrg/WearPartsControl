@@ -1,17 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows.Controls;
+using WearPartsControl.ViewModels;
 
 namespace WearPartsControl.UserControls
 {
@@ -20,9 +8,26 @@ namespace WearPartsControl.UserControls
     /// </summary>
     public partial class ClientAppInfoUserControl : UserControl
     {
-        public ClientAppInfoUserControl()
+        private readonly ClientAppInfoViewModel _viewModel;
+        private bool _isInitialized;
+
+        public ClientAppInfoUserControl(ClientAppInfoViewModel viewModel)
         {
             InitializeComponent();
+            _viewModel = viewModel;
+            DataContext = viewModel;
+            Loaded += OnLoaded;
+        }
+
+        private async void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (_isInitialized)
+            {
+                return;
+            }
+
+            _isInitialized = true;
+            await _viewModel.InitializeAsync().ConfigureAwait(true);
         }
     }
 }

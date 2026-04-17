@@ -62,6 +62,8 @@ public sealed class LoginWindowViewModelTests
 
     private sealed class StubAppSettingsService : IAppSettingsService
     {
+        public event EventHandler<AppSettings>? SettingsSaved;
+
         public ValueTask<AppSettings> GetAsync(CancellationToken cancellationToken = default)
         {
             return ValueTask.FromResult(new AppSettings
@@ -71,7 +73,11 @@ public sealed class LoginWindowViewModelTests
             });
         }
 
-        public ValueTask SaveAsync(AppSettings settings, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+        public ValueTask SaveAsync(AppSettings settings, CancellationToken cancellationToken = default)
+        {
+            SettingsSaved?.Invoke(this, settings);
+            return ValueTask.CompletedTask;
+        }
     }
 
     private sealed class StubClientAppConfigurationRepository : IClientAppConfigurationRepository
