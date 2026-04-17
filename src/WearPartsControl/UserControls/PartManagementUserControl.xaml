@@ -59,21 +59,35 @@
                   Margin="0 8 0 0">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="名称"
-                                    Width="*"></DataGridTextColumn>
+                                    Width="Auto"></DataGridTextColumn>
                 <DataGridTextColumn Header="寿命类型"
-                                    Width="*"></DataGridTextColumn>
-                <DataGridTextColumn Header="输入方式"
-                                    Width="*"></DataGridTextColumn>
+                                    Width="Auto"></DataGridTextColumn>
                 <DataGridTextColumn Header="当前寿命地址"
-                                    Width="*"></DataGridTextColumn>
-                <DataGridTextColumn Header="预警寿命"
-                                    Width="*"></DataGridTextColumn>
-                <DataGridTextColumn Header="停机寿命"
-                                    Width="*"></DataGridTextColumn>
+                                    Width="Auto"></DataGridTextColumn>
+                <DataGridTextColumn Header="当前寿命数据类型"
+                                    Width="Auto"></DataGridTextColumn>
+                <DataGridTextColumn Header="预警寿命地址"
+                                    Width="Auto"></DataGridTextColumn>
+                <DataGridTextColumn Header="预警寿命数据类型"
+                                    Width="Auto"></DataGridTextColumn>
+                <DataGridTextColumn Header="停机寿命地址"
+                                    Width="Auto"></DataGridTextColumn>
+                <DataGridTextColumn Header="停机寿命数据类型"
+                                    Width="Auto"></DataGridTextColumn>
+                <DataGridTextColumn Header="输入方式"
+                                    Width="Auto"></DataGridTextColumn>
+                <DataGridTextColumn Header="条码最小长度"
+                                    Width="Auto"></DataGridTextColumn>
+                <DataGridTextColumn Header="条码最大长度"
+                                    Width="Auto"></DataGridTextColumn>
+                <DataGridTextColumn Header="附加清零地址"
+                                    Width="Auto"></DataGridTextColumn>
+                <DataGridTextColumn Header="易损件条码地址"
+                                    Width="Auto"></DataGridTextColumn>
                 <DataGridTextColumn Header="录入时间"
-                                    Width="*"></DataGridTextColumn>
+                                    Width="Auto"></DataGridTextColumn>
                 <DataGridTextColumn Header="操作员"
-                                    Width="*"></DataGridTextColumn>
+                                    Width="Auto"></DataGridTextColumn>
                 <DataGridCheckBoxColumn Width="Auto"></DataGridCheckBoxColumn>
             </DataGrid.Columns>
         </DataGrid>
