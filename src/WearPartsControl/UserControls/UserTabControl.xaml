@@ -113,8 +113,14 @@
               Background="{DynamicResource PrimaryBrush}" />
 
         <Border Grid.Column="2"
+                MinWidth="0"
+                MinHeight="0"
                 Background="AliceBlue">
-            <ContentPresenter Content="{Binding SelectedContent, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:UserTabControl}}" />
+            <ContentControl MinWidth="0"
+                            MinHeight="0"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch"
+                            Content="{Binding SelectedContent, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:UserTabControl}}" />
         </Border>
     </Grid>
 </UserControl>

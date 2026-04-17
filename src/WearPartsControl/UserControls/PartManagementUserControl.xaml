@@ -6,8 +6,9 @@
              xmlns:hc="https://handyorg.github.io/handycontrol"
              mc:Ignorable="d"
              d:DesignHeight="450"
-             d:DesignWidth="1000">
-    <Grid>
+         d:DesignWidth="1000">
+    <Grid MinHeight="0"
+        MinWidth="0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -91,17 +92,24 @@
             </Border>
         </StackPanel>
 
-        <DataGrid Grid.Row="1"
-                  Margin="8"
-                  AutoGenerateColumns="False"
+        <Border Grid.Row="1"
+            Margin="8"
+            MinHeight="0"
+            MinWidth="0"
+            ClipToBounds="True">
+            <DataGrid AutoGenerateColumns="False"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
                   IsReadOnly="True"
                   ItemsSource="{Binding Definitions}"
                   SelectedItem="{Binding SelectedDefinition, Mode=TwoWay}"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
                   ScrollViewer.HorizontalScrollBarVisibility="Auto"
                   ScrollViewer.VerticalScrollBarVisibility="Auto"
-                  ScrollViewer.CanContentScroll="True">
+                  ScrollViewer.CanContentScroll="True"
+                  EnableColumnVirtualization="True"
+                  EnableRowVirtualization="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="资源号"
                                     Binding="{Binding ResourceNumber}"
@@ -160,7 +168,17 @@
                 <DataGridTextColumn Header="更新人"
                                     Binding="{Binding UpdatedBy}"
                                     Width="100" />
-            </DataGrid.Columns>
-        </DataGrid>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <Border Background="#40FFFFFF"
+                Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <hc:LoadingCircle Width="60"
+                              Height="60"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              IsRunning="{Binding IsBusy}" />
+        </Border>
     </Grid>
 </UserControl>

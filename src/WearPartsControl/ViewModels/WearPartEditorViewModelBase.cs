@@ -107,85 +107,85 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
     public string PartName
     {
         get => _partName;
-        set => SetProperty(ref _partName, value);
+        set => SetEditorProperty(ref _partName, value);
     }
 
     public string InputMode
     {
         get => _inputMode;
-        set => SetProperty(ref _inputMode, value);
+        set => SetEditorProperty(ref _inputMode, value);
     }
 
     public string CurrentValueAddress
     {
         get => _currentValueAddress;
-        set => SetProperty(ref _currentValueAddress, value);
+        set => SetEditorProperty(ref _currentValueAddress, value);
     }
 
     public string CurrentValueDataType
     {
         get => _currentValueDataType;
-        set => SetProperty(ref _currentValueDataType, value);
+        set => SetEditorProperty(ref _currentValueDataType, value);
     }
 
     public string WarningValueAddress
     {
         get => _warningValueAddress;
-        set => SetProperty(ref _warningValueAddress, value);
+        set => SetEditorProperty(ref _warningValueAddress, value);
     }
 
     public string WarningValueDataType
     {
         get => _warningValueDataType;
-        set => SetProperty(ref _warningValueDataType, value);
+        set => SetEditorProperty(ref _warningValueDataType, value);
     }
 
     public string ShutdownValueAddress
     {
         get => _shutdownValueAddress;
-        set => SetProperty(ref _shutdownValueAddress, value);
+        set => SetEditorProperty(ref _shutdownValueAddress, value);
     }
 
     public string ShutdownValueDataType
     {
         get => _shutdownValueDataType;
-        set => SetProperty(ref _shutdownValueDataType, value);
+        set => SetEditorProperty(ref _shutdownValueDataType, value);
     }
 
     public bool IsShutdown
     {
         get => _isShutdown;
-        set => SetProperty(ref _isShutdown, value);
+        set => SetEditorProperty(ref _isShutdown, value);
     }
 
     public string CodeMinLength
     {
         get => _codeMinLength;
-        set => SetProperty(ref _codeMinLength, value);
+        set => SetEditorProperty(ref _codeMinLength, value);
     }
 
     public string CodeMaxLength
     {
         get => _codeMaxLength;
-        set => SetProperty(ref _codeMaxLength, value);
+        set => SetEditorProperty(ref _codeMaxLength, value);
     }
 
     public string LifetimeType
     {
         get => _lifetimeType;
-        set => SetProperty(ref _lifetimeType, value);
+        set => SetEditorProperty(ref _lifetimeType, value);
     }
 
     public string PlcZeroClearAddress
     {
         get => _plcZeroClearAddress;
-        set => SetProperty(ref _plcZeroClearAddress, value);
+        set => SetEditorProperty(ref _plcZeroClearAddress, value);
     }
 
     public string BarcodeWriteAddress
     {
         get => _barcodeWriteAddress;
-        set => SetProperty(ref _barcodeWriteAddress, value);
+        set => SetEditorProperty(ref _barcodeWriteAddress, value);
     }
 
     public string StatusMessage
@@ -216,6 +216,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         StatusMessage = string.IsNullOrWhiteSpace(ResourceNumber)
             ? "当前未配置资源号，无法保存易损件。"
             : $"当前资源号：{ResourceNumber}";
+        SaveCommand.NotifyCanExecuteChanged();
     }
 
     public void InitializeForEdit(WearPartDefinition definition)
@@ -240,6 +241,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         PlcZeroClearAddress = definition.PlcZeroClearAddress;
         BarcodeWriteAddress = definition.BarcodeWriteAddress;
         StatusMessage = $"正在编辑资源号 {ResourceNumber} 的易损件。";
+        SaveCommand.NotifyCanExecuteChanged();
     }
 
     protected abstract Task<WearPartDefinition> PersistAsync(WearPartDefinition definition, CancellationToken cancellationToken);
@@ -248,7 +250,21 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
 
     private bool CanSave()
     {
-        return !IsBusy && ClientAppConfigurationId != Guid.Empty && !string.IsNullOrWhiteSpace(ResourceNumber);
+        return !IsBusy
+            && ClientAppConfigurationId != Guid.Empty
+            && !string.IsNullOrWhiteSpace(ResourceNumber)
+            && !string.IsNullOrWhiteSpace(PartName)
+            && !string.IsNullOrWhiteSpace(InputMode)
+            && !string.IsNullOrWhiteSpace(CurrentValueAddress)
+            && !string.IsNullOrWhiteSpace(CurrentValueDataType)
+            && !string.IsNullOrWhiteSpace(WarningValueAddress)
+            && !string.IsNullOrWhiteSpace(WarningValueDataType)
+            && !string.IsNullOrWhiteSpace(ShutdownValueAddress)
+            && !string.IsNullOrWhiteSpace(ShutdownValueDataType)
+            && !string.IsNullOrWhiteSpace(LifetimeType)
+            && !string.IsNullOrWhiteSpace(PlcZeroClearAddress)
+            && int.TryParse(CodeMinLength?.Trim(), out _)
+            && int.TryParse(CodeMaxLength?.Trim(), out _);
     }
 
     private async Task SaveAsync()
@@ -338,5 +354,13 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         }
 
         await Task.Yield();
+    }
+
+    private void SetEditorProperty<T>(ref T field, T value)
+    {
+        if (SetProperty(ref field, value))
+        {
+            SaveCommand.NotifyCanExecuteChanged();
+        }
     }
 }
