@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices.AppSettings;
@@ -159,6 +160,8 @@ namespace WearPartsControl.ViewModels
                 StatusMessage = "正在登录...";
             });
 
+            await EnsureLoadingRenderedAsync();
+
             try
             {
                 var user = await _loginService.LoginAsync(authId, SiteCode, ResourceNumber, isIdCard: true);
@@ -182,6 +185,17 @@ namespace WearPartsControl.ViewModels
             {
                 RunOnUiThread(() => IsBusy = false);
             }
+        }
+
+        private static async Task EnsureLoadingRenderedAsync()
+        {
+            if (Application.Current?.Dispatcher is { } dispatcher)
+            {
+                await dispatcher.InvokeAsync(static () => { }, DispatcherPriority.Render);
+                return;
+            }
+
+            await Task.Yield();
         }
 
         private static void RunOnUiThread(Action action)
