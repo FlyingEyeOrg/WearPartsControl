@@ -72,6 +72,9 @@ public sealed class AppSettingsService : IAppSettingsService
             LoginInputMaxIntervalMilliseconds = settings.LoginInputMaxIntervalMilliseconds <= 0
                 ? 80
                 : settings.LoginInputMaxIntervalMilliseconds,
+            AutoLogoutCountdownSeconds = settings.AutoLogoutCountdownSeconds <= 0
+                ? 360
+                : settings.AutoLogoutCountdownSeconds,
             IsSetClientAppInfo = settings.IsSetClientAppInfo
         };
     }
@@ -88,6 +91,7 @@ public sealed class AppSettingsService : IAppSettingsService
         {
             ResourceNumber = settings.ResourceNumber,
             LoginInputMaxIntervalMilliseconds = settings.LoginInputMaxIntervalMilliseconds,
+            AutoLogoutCountdownSeconds = settings.AutoLogoutCountdownSeconds,
             IsSetClientAppInfo = settings.IsSetClientAppInfo
         };
     }

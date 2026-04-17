@@ -48,6 +48,38 @@ public sealed class LoginWindowViewModelTests
         Assert.Equal("资源号 RES-001 的客户端配置未设置基地。", viewModel.StatusMessage);
     }
 
+    [Fact]
+    public async Task LoginCommand_WhenExecuting_ShouldSetBusyForLoginWindowLoading()
+    {
+        var loginService = new StubLoginService
+        {
+            LoginTaskSource = new TaskCompletionSource<MhrUser?>(TaskCreationOptions.RunContinuationsAsynchronously)
+        };
+        var viewModel = new LoginWindowViewModel(
+            loginService,
+            new StubClientAppConfigurationRepository(),
+            new StubAppSettingsService());
+
+        await viewModel.InitializeAsync();
+        viewModel.AuthId = "CARD-01";
+
+        var executeTask = viewModel.LoginCommand.ExecuteAsync(null);
+        await WaitUntilAsync(() => viewModel.IsBusy);
+
+        Assert.True(viewModel.IsBusy);
+        Assert.Equal("正在登录...", viewModel.StatusMessage);
+
+        loginService.LoginTaskSource.SetResult(new MhrUser
+        {
+            CardId = "CARD-01",
+            WorkId = "WORK-01",
+            AccessLevel = 1
+        });
+
+        await executeTask;
+        Assert.False(viewModel.IsBusy);
+    }
+
     private sealed class StubLoginService : ILoginService
     {
         public string ResourceNumber { get; private set; } = string.Empty;
@@ -56,11 +88,18 @@ public sealed class LoginWindowViewModelTests
 
         public bool IsIdCard { get; private set; }
 
+        public TaskCompletionSource<MhrUser?>? LoginTaskSource { get; set; }
+
         public Task<MhrUser?> LoginAsync(string authId, string factory, string resourceId, bool isIdCard, CancellationToken cancellationToken = default)
         {
             SiteCode = factory;
             ResourceNumber = resourceId;
             IsIdCard = isIdCard;
+
+            if (LoginTaskSource is not null)
+            {
+                return LoginTaskSource.Task;
+            }
 
             return Task.FromResult<MhrUser?>(new MhrUser
             {
@@ -166,5 +205,20 @@ public sealed class LoginWindowViewModelTests
         {
             throw new NotSupportedException();
         }
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> predicate)
+    {
+        for (var index = 0; index < 20; index++)
+        {
+            if (predicate())
+            {
+                return;
+            }
+
+            await Task.Delay(10);
+        }
+
+        Assert.True(predicate());
     }
 }

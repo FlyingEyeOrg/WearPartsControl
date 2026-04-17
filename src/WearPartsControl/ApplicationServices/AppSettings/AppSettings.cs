@@ -19,6 +19,11 @@ public sealed class AppSettings
     public int LoginInputMaxIntervalMilliseconds { get; set; } = 80;
 
     /// <summary>
+    /// 自动注销倒计时，单位秒。
+    /// </summary>
+    public int AutoLogoutCountdownSeconds { get; set; } = 360;
+
+    /// <summary>
     /// 是否已经设置客户端信息
     /// </summary>
     public bool IsSetClientAppInfo { get; set; }

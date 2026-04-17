@@ -23,7 +23,8 @@ public sealed class MainWindowViewModelTests
         {
             Current = new AppSettings
             {
-                IsSetClientAppInfo = true
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
             }
         };
         var accessor = new CurrentUserAccessor();
@@ -48,7 +49,7 @@ public sealed class MainWindowViewModelTests
         });
 
         Assert.Equal("工号：WORK-02", viewModel.CurrentUserWorkIdText);
-        Assert.Equal("权限：3", viewModel.CurrentUserAccessLevelText);
+        Assert.Equal("权限：3 | 自动注销：06:00", viewModel.CurrentUserAccessLevelText);
         Assert.True(viewModel.IsLoggedIn);
         Assert.False(viewModel.ShowLoginButton);
         Assert.True(viewModel.ShowLogoutButton);
@@ -62,7 +63,8 @@ public sealed class MainWindowViewModelTests
         {
             Current = new AppSettings
             {
-                IsSetClientAppInfo = true
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
             }
         };
 
@@ -87,7 +89,8 @@ public sealed class MainWindowViewModelTests
         {
             Current = new AppSettings
             {
-                IsSetClientAppInfo = false
+                IsSetClientAppInfo = false,
+                AutoLogoutCountdownSeconds = 360
             }
         };
 
@@ -112,8 +115,65 @@ public sealed class MainWindowViewModelTests
         Assert.True(viewModel.IsClientAppInfoConfigured);
     }
 
+    [Fact]
+    public async Task CurrentUserChanged_ShouldAutoLogoutAfterCountdownElapsed()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 2
+            }
+        };
+        var accessor = new CurrentUserAccessor();
+        var delaySignals = new Queue<TaskCompletionSource<bool>>();
+        var loginService = new StubLoginService(accessor);
+        var viewModel = new MainWindowViewModel(
+            new StubLocalizationService(),
+            new StubServiceProvider(),
+            accessor,
+            loginService,
+            appSettingsService,
+            new UiBusyService(),
+            (delay, cancellationToken) =>
+            {
+                var signal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                delaySignals.Enqueue(signal);
+                cancellationToken.Register(() => signal.TrySetCanceled(cancellationToken));
+                return signal.Task;
+            });
+
+        accessor.SetCurrentUser(new MhrUser
+        {
+            CardId = "CARD-01",
+            WorkId = "WORK-02",
+            AccessLevel = 3
+        });
+
+        Assert.Equal("权限：3 | 自动注销：00:02", viewModel.CurrentUserAccessLevelText);
+
+        delaySignals.Dequeue().SetResult(true);
+        await WaitUntilAsync(() => viewModel.CurrentUserAccessLevelText == "权限：3 | 自动注销：00:01");
+
+        delaySignals.Dequeue().SetResult(true);
+        await WaitUntilAsync(() => !viewModel.IsLoggedIn);
+
+        Assert.Equal(1, loginService.LogoutCount);
+        Assert.Equal("权限：--", viewModel.CurrentUserAccessLevelText);
+    }
+
     private sealed class StubLoginService : ILoginService
     {
+        private readonly CurrentUserAccessor? _currentUserAccessor;
+
+        public StubLoginService(CurrentUserAccessor? currentUserAccessor = null)
+        {
+            _currentUserAccessor = currentUserAccessor;
+        }
+
+        public int LogoutCount { get; private set; }
+
         public Task<MhrUser?> LoginAsync(string authId, string factory, string resourceId, bool isIdCard, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
@@ -121,7 +181,12 @@ public sealed class MainWindowViewModelTests
 
         public MhrUser? GetCurrentUser() => null;
 
-        public ValueTask LogoutAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+        public ValueTask LogoutAsync(CancellationToken cancellationToken = default)
+        {
+            LogoutCount++;
+            _currentUserAccessor?.Clear();
+            return ValueTask.CompletedTask;
+        }
     }
 
     private sealed class StubAppSettingsService : IAppSettingsService
@@ -136,6 +201,7 @@ public sealed class MainWindowViewModelTests
             {
                 ResourceNumber = Current.ResourceNumber,
                 LoginInputMaxIntervalMilliseconds = Current.LoginInputMaxIntervalMilliseconds,
+                AutoLogoutCountdownSeconds = Current.AutoLogoutCountdownSeconds,
                 IsSetClientAppInfo = Current.IsSetClientAppInfo
             });
         }
@@ -146,6 +212,21 @@ public sealed class MainWindowViewModelTests
             SettingsSaved?.Invoke(this, settings);
             return ValueTask.CompletedTask;
         }
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> predicate)
+    {
+        for (var index = 0; index < 20; index++)
+        {
+            if (predicate())
+            {
+                return;
+            }
+
+            await Task.Delay(10);
+        }
+
+        Assert.True(predicate());
     }
 
     private sealed class StubLocalizationService : ILocalizationService

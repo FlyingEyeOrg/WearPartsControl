@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -22,12 +23,16 @@ namespace WearPartsControl.ViewModels
         private readonly ILoginService _loginService;
         private readonly IAppSettingsService _appSettingsService;
         private readonly IUiBusyService _uiBusyService;
+        private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
         private readonly IReadOnlyList<string> _allTabs;
         private string _currentUserWorkIdText = "工号：--";
         private string _currentUserAccessLevelText = "权限：--";
         private IEnumerable<string> _tabs = Array.Empty<string>();
         private bool _isLoggedIn;
         private bool _isClientAppInfoConfigured;
+        private int _autoLogoutCountdownSeconds = 360;
+        private int _remainingAutoLogoutSeconds;
+        private CancellationTokenSource? _autoLogoutCancellationTokenSource;
 
         public MainWindowViewModel(
             ILocalizationService localizationService,
@@ -35,7 +40,8 @@ namespace WearPartsControl.ViewModels
             ICurrentUserAccessor currentUserAccessor,
             ILoginService loginService,
             IAppSettingsService appSettingsService,
-            IUiBusyService uiBusyService)
+            IUiBusyService uiBusyService,
+            Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
         {
             Title = localizationService["MainWindow.Title"];
             TabChangedCommand = new RelayCommand<int>(OnTabChanged);
@@ -45,6 +51,7 @@ namespace WearPartsControl.ViewModels
             _currentUserAccessor = currentUserAccessor;
             _loginService = loginService;
             _uiBusyService = uiBusyService;
+            _delayAsync = delayAsync ?? Task.Delay;
             _selectedContent = _serviceProvider.GetRequiredService<ReplacePartUserControl>();
             _appSettingsService = appSettingsService;
             _allTabs = localizationService.Catalog.MainWindow.Tabs.ToArray();
@@ -56,6 +63,7 @@ namespace WearPartsControl.ViewModels
             UpdateCurrentUserState();
 
             var appSettings = _appSettingsService.GetAsync(default).GetAwaiter().GetResult();
+            ApplyAutoLogoutSettings(appSettings);
             ApplyClientAppInfoState(appSettings.IsSetClientAppInfo);
         }
 
@@ -177,10 +185,15 @@ namespace WearPartsControl.ViewModels
         {
             if (Application.Current?.Dispatcher is { } dispatcher && !dispatcher.CheckAccess())
             {
-                dispatcher.Invoke(() => ApplyClientAppInfoState(settings.IsSetClientAppInfo));
+                dispatcher.Invoke(() =>
+                {
+                    ApplyAutoLogoutSettings(settings);
+                    ApplyClientAppInfoState(settings.IsSetClientAppInfo);
+                });
                 return;
             }
 
+            ApplyAutoLogoutSettings(settings);
             ApplyClientAppInfoState(settings.IsSetClientAppInfo);
         }
 
@@ -211,7 +224,86 @@ namespace WearPartsControl.ViewModels
             var currentUser = _currentUserAccessor.CurrentUser;
             IsLoggedIn = currentUser is not null;
             CurrentUserWorkIdText = currentUser is null ? "工号：--" : $"工号：{currentUser.WorkId}";
-            CurrentUserAccessLevelText = currentUser is null ? "权限：--" : $"权限：{currentUser.AccessLevel}";
+
+            if (currentUser is null)
+            {
+                StopAutoLogoutCountdown();
+                CurrentUserAccessLevelText = "权限：--";
+                return;
+            }
+
+            StartAutoLogoutCountdown(currentUser);
+        }
+
+        private void ApplyAutoLogoutSettings(AppSettings settings)
+        {
+            _autoLogoutCountdownSeconds = settings.AutoLogoutCountdownSeconds <= 0
+                ? 360
+                : settings.AutoLogoutCountdownSeconds;
+
+            if (_currentUserAccessor.CurrentUser is { } currentUser)
+            {
+                StartAutoLogoutCountdown(currentUser);
+            }
+        }
+
+        private void StartAutoLogoutCountdown(MhrUser currentUser)
+        {
+            StopAutoLogoutCountdown();
+
+            _remainingAutoLogoutSeconds = _autoLogoutCountdownSeconds;
+            CurrentUserAccessLevelText = FormatAccessLevelText(currentUser.AccessLevel, _remainingAutoLogoutSeconds);
+
+            var cts = new CancellationTokenSource();
+            _autoLogoutCancellationTokenSource = cts;
+            _ = RunAutoLogoutCountdownAsync(currentUser, cts.Token);
+        }
+
+        private async Task RunAutoLogoutCountdownAsync(MhrUser currentUser, CancellationToken cancellationToken)
+        {
+            try
+            {
+                while (_remainingAutoLogoutSeconds > 0)
+                {
+                    await _delayAsync(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    _remainingAutoLogoutSeconds--;
+                    RunOnUiThread(() =>
+                    {
+                        if (_currentUserAccessor.CurrentUser is not null)
+                        {
+                            CurrentUserAccessLevelText = FormatAccessLevelText(currentUser.AccessLevel, _remainingAutoLogoutSeconds);
+                        }
+                    });
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+                await _loginService.LogoutAsync().ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        private void StopAutoLogoutCountdown()
+        {
+            var cts = _autoLogoutCancellationTokenSource;
+            _autoLogoutCancellationTokenSource = null;
+            if (cts is not null)
+            {
+                cts.Cancel();
+                cts.Dispose();
+            }
+
+            _remainingAutoLogoutSeconds = 0;
+        }
+
+        private static string FormatAccessLevelText(int accessLevel, int remainingSeconds)
+        {
+            var clampedSeconds = Math.Max(remainingSeconds, 0);
+            var remaining = TimeSpan.FromSeconds(clampedSeconds);
+            return $"权限：{accessLevel} | 自动注销：{remaining:mm\\:ss}";
         }
 
         private void ApplyClientAppInfoState(bool isConfigured)

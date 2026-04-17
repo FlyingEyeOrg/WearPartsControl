@@ -20,7 +20,8 @@ public sealed class AppSettingsServiceTests
             var legacySettings = new AppSettings
             {
                 ResourceNumber = "RES-001",
-                LoginInputMaxIntervalMilliseconds = 135
+                LoginInputMaxIntervalMilliseconds = 135,
+                AutoLogoutCountdownSeconds = 240
             };
 
             await File.WriteAllTextAsync(legacyPath, JsonSerializer.Serialize(legacySettings));
@@ -32,6 +33,7 @@ public sealed class AppSettingsServiceTests
 
             Assert.Equal("RES-001", settings.ResourceNumber);
             Assert.Equal(135, settings.LoginInputMaxIntervalMilliseconds);
+            Assert.Equal(240, settings.AutoLogoutCountdownSeconds);
             Assert.False(File.Exists(legacyPath));
             Assert.True(File.Exists(Path.Combine(settingsDirectory, "app-settings.json")));
         }
