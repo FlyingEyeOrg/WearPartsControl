@@ -190,8 +190,8 @@
                     </Grid>
                 </StackPanel>
             </Grid>
-            <TextBlock Margin="8 16 0 0"
-                       Foreground="#FF365082"
+            <TextBlock Style="{StaticResource TextBlockDefaultWarning}"
+                       Margin="8 16 0 0"
                        Text="{Binding StatusMessage}" />
             <Grid    Margin="8 16 8 8">
                 <Button Width="80"
