@@ -50,7 +50,34 @@ public sealed class MainWindowViewModelTests
         Assert.Equal("工号：WORK-02", viewModel.CurrentUserWorkIdText);
         Assert.Equal("权限：3", viewModel.CurrentUserAccessLevelText);
         Assert.True(viewModel.IsLoggedIn);
-        Assert.Equal("切换登录", viewModel.LoginButtonText);
+        Assert.False(viewModel.ShowLoginButton);
+        Assert.True(viewModel.ShowLogoutButton);
+        Assert.True(viewModel.LogoutCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void InitialState_WhenNoUser_ShouldShowLoginAndDisableLogout()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true
+            }
+        };
+
+        var viewModel = new MainWindowViewModel(
+            new StubLocalizationService(),
+            new StubServiceProvider(),
+            new CurrentUserAccessor(),
+            new StubLoginService(),
+            appSettingsService,
+            new UiBusyService());
+
+        Assert.False(viewModel.IsLoggedIn);
+        Assert.True(viewModel.ShowLoginButton);
+        Assert.False(viewModel.ShowLogoutButton);
+        Assert.False(viewModel.LogoutCommand.CanExecute(null));
     }
 
     [Fact]

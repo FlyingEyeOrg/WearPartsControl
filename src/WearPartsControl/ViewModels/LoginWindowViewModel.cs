@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices.AppSettings;
@@ -148,33 +149,50 @@ namespace WearPartsControl.ViewModels
             var authId = AuthId.Trim();
             if (string.IsNullOrWhiteSpace(authId))
             {
-                StatusMessage = "请先刷卡后再登录。";
+                RunOnUiThread(() => StatusMessage = "请先刷卡后再登录。");
                 return;
             }
 
-            IsBusy = true;
-            StatusMessage = "正在登录...";
+            RunOnUiThread(() =>
+            {
+                IsBusy = true;
+                StatusMessage = "正在登录...";
+            });
 
             try
             {
                 var user = await _loginService.LoginAsync(authId, SiteCode, ResourceNumber, isIdCard: true);
                 if (user is null)
                 {
-                    StatusMessage = "未找到对应用户，请确认卡号或权限配置。";
+                    RunOnUiThread(() => StatusMessage = "未找到对应用户，请确认卡号或权限配置。");
                     return;
                 }
 
-                StatusMessage = $"登录成功，工号 {user.WorkId}";
-                RequestClose?.Invoke(this, true);
+                RunOnUiThread(() =>
+                {
+                    StatusMessage = $"登录成功，工号 {user.WorkId}";
+                    RequestClose?.Invoke(this, true);
+                });
             }
             catch (Exception ex)
             {
-                StatusMessage = ex.Message;
+                RunOnUiThread(() => StatusMessage = ex.Message);
             }
             finally
             {
-                IsBusy = false;
+                RunOnUiThread(() => IsBusy = false);
             }
+        }
+
+        private static void RunOnUiThread(Action action)
+        {
+            if (Application.Current?.Dispatcher is { } dispatcher && !dispatcher.CheckAccess())
+            {
+                dispatcher.Invoke(action);
+                return;
+            }
+
+            action();
         }
     }
 }

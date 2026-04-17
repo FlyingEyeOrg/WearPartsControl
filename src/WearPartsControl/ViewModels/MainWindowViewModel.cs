@@ -40,7 +40,7 @@ namespace WearPartsControl.ViewModels
             Title = localizationService["MainWindow.Title"];
             TabChangedCommand = new RelayCommand<int>(OnTabChanged);
             OpenLoginCommand = new RelayCommand(OnOpenLoginRequested);
-            LogoutCommand = new AsyncRelayCommand(LogoutAsync);
+            LogoutCommand = new AsyncRelayCommand(LogoutAsync, CanLogout);
             _serviceProvider = serviceProvider;
             _currentUserAccessor = currentUserAccessor;
             _loginService = loginService;
@@ -86,7 +86,8 @@ namespace WearPartsControl.ViewModels
             {
                 if (SetProperty(ref _isLoggedIn, value))
                 {
-                    OnPropertyChanged(nameof(LoginButtonText));
+                    OnPropertyChanged(nameof(ShowLoginButton));
+                    OnPropertyChanged(nameof(ShowLogoutButton));
                     LogoutCommand.NotifyCanExecuteChanged();
                 }
             }
@@ -98,7 +99,9 @@ namespace WearPartsControl.ViewModels
             private set => SetProperty(ref _isClientAppInfoConfigured, value);
         }
 
-        public string LoginButtonText => IsLoggedIn ? "切换登录" : "登录";
+        public bool ShowLoginButton => !IsLoggedIn;
+
+        public bool ShowLogoutButton => IsLoggedIn;
 
         private object _selectedContent;
 
@@ -134,6 +137,8 @@ namespace WearPartsControl.ViewModels
         public ICommand OpenLoginCommand { get; }
 
         public IAsyncRelayCommand LogoutCommand { get; }
+
+        private bool CanLogout() => IsLoggedIn;
 
         private void OnTabChanged(int index)
         {
@@ -186,14 +191,18 @@ namespace WearPartsControl.ViewModels
 
         private void OnCurrentUserChanged(object? sender, EventArgs e)
         {
-            UpdateCurrentUserState();
+            RunOnUiThread(UpdateCurrentUserState);
         }
 
         private void OnUiBusyServicePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(IUiBusyService.IsBusy))
             {
-                OnPropertyChanged(nameof(IsBusy));
+                RunOnUiThread(() =>
+                {
+                    OnPropertyChanged(nameof(IsBusy));
+                    LogoutCommand.NotifyCanExecuteChanged();
+                });
             }
         }
 
@@ -238,6 +247,17 @@ namespace WearPartsControl.ViewModels
             return version.Build >= 0
                 ? version.ToString(3)
                 : version.ToString();
+        }
+
+        private static void RunOnUiThread(Action action)
+        {
+            if (Application.Current?.Dispatcher is { } dispatcher && !dispatcher.CheckAccess())
+            {
+                dispatcher.Invoke(action);
+                return;
+            }
+
+            action();
         }
     }
 }

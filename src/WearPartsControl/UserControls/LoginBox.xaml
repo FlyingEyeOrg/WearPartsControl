@@ -47,13 +47,15 @@
                         HorizontalAlignment="Right">
                 <Button x:Name="LoginButton"
                         Style="{StaticResource ButtonPrimary}"
-                    Command="{Binding OpenLoginCommand}"
-                    Content="{Binding LoginButtonText}"
+                        Command="{Binding OpenLoginCommand}"
+                        Content="登录"
+                        Visibility="{Binding ShowLoginButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                         MinWidth="60" />
                 <Button x:Name="LogoutButton"
                         Margin="0 8 0 0"
-                    Command="{Binding LogoutCommand}"
+                        Command="{Binding LogoutCommand}"
                         Content="注销"
+                        Visibility="{Binding ShowLogoutButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                         MinWidth="60" />
             </StackPanel>
         </Grid>
