@@ -7,6 +7,14 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
+    <ItemGroup>
+        <Compile Remove="artifacts\**\*.cs" />
+        <EmbeddedResource Remove="artifacts\**\*" />
+        <None Remove="artifacts\**\*" />
+        <Page Remove="artifacts\**\*" />
+        <Resource Remove="artifacts\**\*" />
+    </ItemGroup>
+
     <PropertyGroup Condition="'$(Configuration)'=='Release'">
         <DebugType>none</DebugType>
         <DebugSymbols>false</DebugSymbols>

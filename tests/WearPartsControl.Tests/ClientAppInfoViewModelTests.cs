@@ -41,17 +41,30 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         Assert.False(viewModel.IsDirty);
         Assert.False(viewModel.SaveCommand.CanExecute(null));
 
-        viewModel.AreaCode = "A02";
+        Assert.Contains("阳极", viewModel.AreaOptions);
+        Assert.Contains("阴极", viewModel.AreaOptions);
+        Assert.Contains("热压/冷压", viewModel.ProcedureOptions);
+        Assert.Contains("X-ray", viewModel.ProcedureOptions);
+        Assert.True(viewModel.IsSiemensSlotVisible);
+        Assert.False(viewModel.IsStringReverseVisible);
+
+        viewModel.AreaCode = "阴极";
+        viewModel.PlcProtocolType = "ModbusTcp";
+        viewModel.IsStringReverse = false;
 
         Assert.True(viewModel.IsDirty);
         Assert.True(viewModel.SaveCommand.CanExecute(null));
+        Assert.False(viewModel.IsSiemensSlotVisible);
+        Assert.True(viewModel.IsStringReverseVisible);
 
         await viewModel.SaveCommand.ExecuteAsync(null);
 
         Assert.False(viewModel.IsDirty);
         Assert.Equal("客户端信息保存成功。", viewModel.StatusMessage);
         Assert.NotNull(service.LastRequest);
-        Assert.Equal("A02", service.LastRequest!.AreaCode);
+        Assert.Equal("阴极", service.LastRequest!.AreaCode);
+        Assert.Equal("ModbusTcp", service.LastRequest.PlcProtocolType);
+        Assert.False(service.LastRequest.IsStringReverse);
     }
 
     public void Dispose()
@@ -88,7 +101,8 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
                 PlcIpAddress = "127.0.0.1",
                 PlcPort = 102,
                 ShutdownPointAddress = "M0.0",
-                SiemensSlot = 1
+                SiemensSlot = 1,
+                IsStringReverse = true
             });
         }
 
@@ -108,7 +122,8 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
                 PlcIpAddress = request.PlcIpAddress,
                 PlcPort = request.PlcPort,
                 ShutdownPointAddress = request.ShutdownPointAddress,
-                SiemensSlot = request.SiemensSlot
+                SiemensSlot = request.SiemensSlot,
+                IsStringReverse = request.IsStringReverse
             });
         }
     }

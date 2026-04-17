@@ -41,7 +41,8 @@
                                   SelectedValue="{Binding SiteCode, UpdateSourceTrigger=PropertyChanged}"
                                   SelectedValuePath="Code" />
                     </Grid>
-                    <Grid Margin="0 8 0 0">
+                    <Grid Margin="0 8 0 0"
+                          Visibility="{Binding IsSiemensSlotVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="80" />
                             <ColumnDefinition />
@@ -50,10 +51,9 @@
                                    VerticalAlignment="Center">工序：</TextBlock>
                         <ComboBox Grid.Column="1"
                                   Style="{StaticResource ComboBoxExtend}"
-                                  IsEditable="True"
                                   ItemsSource="{Binding ProcedureOptions}"
-                                  Text="{Binding ProcedureCode, UpdateSourceTrigger=PropertyChanged}"
-                                  ui:InfoElement.Placeholder="请输入或选择工序" />
+                                  SelectedItem="{Binding ProcedureCode, UpdateSourceTrigger=PropertyChanged}"
+                                  ui:InfoElement.Placeholder="请选择工序" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -143,10 +143,9 @@
                                    VerticalAlignment="Center">区域：</TextBlock>
                         <ComboBox Grid.Column="1"
                                   Style="{StaticResource ComboBoxExtend}"
-                                  IsEditable="True"
                                   ItemsSource="{Binding AreaOptions}"
-                                  Text="{Binding AreaCode, UpdateSourceTrigger=PropertyChanged}"
-                                  ui:InfoElement.Placeholder="请输入或选择区域" />
+                                  SelectedItem="{Binding AreaCode, UpdateSourceTrigger=PropertyChanged}"
+                                  ui:InfoElement.Placeholder="请选择区域" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -178,11 +177,13 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">字符串反转：</TextBlock>
+                                   VerticalAlignment="Center"
+                                   Visibility="{Binding IsStringReverseVisible, Converter={StaticResource BooleanToVisibilityConverter}}">字符串反转：</TextBlock>
                         <CheckBox Grid.Column="1"
                                   Style="{StaticResource ToggleButtonSwitch}"
                                   Width="80"
-                                  ui:InfoElement.Placeholder="请输入 PLC 端口" />
+                                  IsChecked="{Binding IsStringReverse, UpdateSourceTrigger=PropertyChanged}"
+                                  Visibility="{Binding IsStringReverseVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </Grid>
                 </StackPanel>
             </Grid>

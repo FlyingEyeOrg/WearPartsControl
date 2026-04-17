@@ -11,6 +11,37 @@ namespace WearPartsControl.ViewModels;
 
 public sealed class ClientAppInfoViewModel : ObservableObject
 {
+    private static readonly string[] FixedAreaOptions = ["阳极", "阴极"];
+    private static readonly string[] FixedProcedureOptions =
+    [
+        "搅拌",
+        "凹版",
+        "涂布",
+        "冷压预分切",
+        "冷压",
+        "预分切",
+        "模切分条",
+        "模切",
+        "分条",
+        "WCP",
+        "卷绕",
+        "热压/冷压",
+        "X-ray",
+        "配对",
+        "超声波",
+        "转接片焊接",
+        "包Mylar",
+        "顶盖焊接",
+        "一次氦检",
+        "Baking",
+        "一次注液",
+        "化成",
+        "二次注液",
+        "密封钉焊接",
+        "容量",
+        "包膜"
+    ];
+
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly List<SiteFactoryOption> _siteFactoryOptions = new();
     private Guid? _clientAppConfigurationId;
@@ -31,11 +62,22 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     private string _shutdownPointAddress = string.Empty;
     private string _siemensSlot = "1";
     private string _statusMessage = "请先完善客户端信息。";
+    private bool _isStringReverse = true;
 
     public ClientAppInfoViewModel(IClientAppInfoService clientAppInfoService)
     {
         _clientAppInfoService = clientAppInfoService;
         SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
+
+        foreach (var area in FixedAreaOptions)
+        {
+            AreaOptions.Add(area);
+        }
+
+        foreach (var procedure in FixedProcedureOptions)
+        {
+            ProcedureOptions.Add(procedure);
+        }
 
         foreach (var plcProtocolType in Enum.GetNames<PlcProtocolType>())
         {
@@ -81,6 +123,10 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             }
         }
     }
+
+    public bool IsSiemensSlotVisible => IsSiemensPlc(PlcProtocolType);
+
+    public bool IsStringReverseVisible => SupportsStringReverse(PlcProtocolType);
 
     public string StatusMessage
     {
@@ -170,6 +216,8 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         {
             if (SetProperty(ref _plcProtocolType, value))
             {
+                OnPropertyChanged(nameof(IsSiemensSlotVisible));
+                OnPropertyChanged(nameof(IsStringReverseVisible));
                 UpdateDirtyState();
             }
         }
@@ -217,6 +265,18 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         set
         {
             if (SetProperty(ref _siemensSlot, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public bool IsStringReverse
+    {
+        get => _isStringReverse;
+        set
+        {
+            if (SetProperty(ref _isStringReverse, value))
             {
                 UpdateDirtyState();
             }
@@ -281,7 +341,8 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             throw new UserFriendlyException("PLC 端口必须是整数。");
         }
 
-        if (!int.TryParse(SiemensSlot?.Trim(), out var siemensSlot))
+        var siemensSlot = 1;
+        if (IsSiemensSlotVisible && !int.TryParse(SiemensSlot?.Trim(), out siemensSlot))
         {
             throw new UserFriendlyException("PLC 插槽号必须是整数。");
         }
@@ -299,7 +360,8 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             PlcIpAddress = PlcIpAddress,
             PlcPort = plcPort,
             ShutdownPointAddress = ShutdownPointAddress,
-            SiemensSlot = siemensSlot
+            SiemensSlot = siemensSlot,
+            IsStringReverse = IsStringReverseVisible && IsStringReverse
         };
     }
 
@@ -320,9 +382,8 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             PlcPort = model.PlcPort.ToString();
             ShutdownPointAddress = model.ShutdownPointAddress;
             SiemensSlot = model.SiemensSlot.ToString();
+            IsStringReverse = model.IsStringReverse;
 
-            EnsureOption(AreaOptions, model.AreaCode);
-            EnsureOption(ProcedureOptions, model.ProcedureCode);
             UpdateFactoryOptions();
             _originalSnapshot = CaptureSnapshot();
             IsDirty = false;
@@ -346,7 +407,8 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             Normalize(PlcIpAddress),
             Normalize(PlcPort),
             Normalize(ShutdownPointAddress),
-            Normalize(SiemensSlot));
+            Normalize(SiemensSlot),
+            IsStringReverse);
     }
 
     private void UpdateDirtyState()
@@ -423,6 +485,23 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         }
     }
 
+    private static bool IsSiemensPlc(string? plcProtocolType)
+    {
+        return string.Equals(plcProtocolType?.Trim(), nameof(WearPartsControl.ApplicationServices.PlcService.PlcProtocolType.SiemensS1500), StringComparison.Ordinal)
+            || string.Equals(plcProtocolType?.Trim(), nameof(WearPartsControl.ApplicationServices.PlcService.PlcProtocolType.SiemensS1200), StringComparison.Ordinal);
+    }
+
+    private static bool SupportsStringReverse(string? plcProtocolType)
+    {
+        if (string.IsNullOrWhiteSpace(plcProtocolType))
+        {
+            return false;
+        }
+
+        return string.Equals(plcProtocolType.Trim(), nameof(WearPartsControl.ApplicationServices.PlcService.PlcProtocolType.ModbusTcp), StringComparison.Ordinal)
+            || plcProtocolType.StartsWith("Inovance", StringComparison.Ordinal);
+    }
+
     private static void EnsureOption(ICollection<string> options, string? value)
     {
         if (string.IsNullOrWhiteSpace(value) || options.Contains(value.Trim()))
@@ -449,9 +528,10 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         string PlcIpAddress,
         string PlcPort,
         string ShutdownPointAddress,
-        string SiemensSlot)
+        string SiemensSlot,
+        bool IsStringReverse)
     {
-        public static ClientAppInfoSnapshot Empty { get; } = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty);
+        public static ClientAppInfoSnapshot Empty { get; } = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true);
     }
 
     public sealed class SiteOption

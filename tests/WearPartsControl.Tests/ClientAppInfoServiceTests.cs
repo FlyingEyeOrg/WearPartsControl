@@ -48,7 +48,8 @@ public sealed class ClientAppInfoServiceTests : IDisposable
             PlcIpAddress = "127.0.0.1",
             PlcPort = 102,
             ShutdownPointAddress = "M0.0",
-            SiemensSlot = 1
+            SiemensSlot = 1,
+            IsStringReverse = false
         });
 
         Assert.NotNull(saved.Id);
@@ -58,6 +59,7 @@ public sealed class ClientAppInfoServiceTests : IDisposable
         var entity = await verifyContext.ClientAppConfigurations.SingleAsync();
         Assert.Equal("S01", entity.SiteCode);
         Assert.Equal("EQ01", entity.EquipmentCode);
+        Assert.False(entity.IsStringReverse);
 
         var settings = await appSettingsService.GetAsync();
         Assert.Equal("RES-CLIENT-01", settings.ResourceNumber);

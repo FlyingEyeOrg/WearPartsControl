@@ -102,6 +102,7 @@ public sealed class ClientAppInfoService : IClientAppInfoService
         entity.PlcPort = request.PlcPort;
         entity.ShutdownPointAddress = NormalizeRequired(request.ShutdownPointAddress, "停机地址不能为空。");
         entity.SiemensSlot = request.SiemensSlot;
+        entity.IsStringReverse = request.IsStringReverse;
         entity.EnsureValid();
     }
 
@@ -120,7 +121,8 @@ public sealed class ClientAppInfoService : IClientAppInfoService
             PlcIpAddress = entity.PlcIpAddress,
             PlcPort = entity.PlcPort,
             ShutdownPointAddress = entity.ShutdownPointAddress,
-            SiemensSlot = entity.SiemensSlot
+            SiemensSlot = entity.SiemensSlot,
+            IsStringReverse = entity.IsStringReverse
         };
     }
 
@@ -131,7 +133,8 @@ public sealed class ClientAppInfoService : IClientAppInfoService
             ResourceNumber = resourceNumber,
             PlcProtocolType = "SiemensS1500",
             PlcPort = 102,
-            SiemensSlot = 1
+            SiemensSlot = 1,
+            IsStringReverse = true
         };
     }
 

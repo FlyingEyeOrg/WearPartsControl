@@ -25,4 +25,6 @@ public sealed class ClientAppInfoModel
     public string ShutdownPointAddress { get; set; } = string.Empty;
 
     public int SiemensSlot { get; set; } = 1;
+
+    public bool IsStringReverse { get; set; } = true;
 }

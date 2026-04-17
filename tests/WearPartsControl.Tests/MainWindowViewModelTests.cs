@@ -19,7 +19,13 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void CurrentUserChanged_ShouldRefreshLoginStatus()
     {
-        var appSettingsService = new StubAppSettingsService();
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true
+            }
+        };
         var accessor = new CurrentUserAccessor();
         var viewModel = new MainWindowViewModel(
             new StubLocalizationService(),
@@ -28,6 +34,7 @@ public sealed class MainWindowViewModelTests
             new StubLoginService(),
             appSettingsService);
 
+        Assert.True(viewModel.IsClientAppInfoConfigured);
         Assert.Equal("工号：--", viewModel.CurrentUserWorkIdText);
         Assert.Equal("权限：--", viewModel.CurrentUserAccessLevelText);
         Assert.False(viewModel.IsLoggedIn);
@@ -64,6 +71,7 @@ public sealed class MainWindowViewModelTests
             appSettingsService);
 
         Assert.Single(viewModel.Tabs);
+        Assert.False(viewModel.IsClientAppInfoConfigured);
 
         await appSettingsService.SaveAsync(new AppSettings
         {
@@ -72,6 +80,7 @@ public sealed class MainWindowViewModelTests
         });
 
         Assert.Equal(5, viewModel.Tabs.Count());
+        Assert.True(viewModel.IsClientAppInfoConfigured);
     }
 
     private sealed class StubLoginService : ILoginService

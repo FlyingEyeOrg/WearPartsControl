@@ -52,6 +52,7 @@
                 <uc:LoginBox x:Name="LoginBoxControl"
                              Margin="8"
                              Width="300"
+                             IsEnabled="{Binding IsClientAppInfoConfigured}"
                              Grid.Column="4" />
             </Grid>
             <Grid Height="1"

@@ -85,6 +85,12 @@ namespace WearPartsControl.ViewModels
             }
         }
 
+        public bool IsClientAppInfoConfigured
+        {
+            get => _isClientAppInfoConfigured;
+            private set => SetProperty(ref _isClientAppInfoConfigured, value);
+        }
+
         public string LoginButtonText => IsLoggedIn ? "切换登录" : "登录";
 
         private object _selectedContent;
@@ -187,7 +193,7 @@ namespace WearPartsControl.ViewModels
         private void ApplyClientAppInfoState(bool isConfigured)
         {
             var stateChanged = _isClientAppInfoConfigured != isConfigured;
-            _isClientAppInfoConfigured = isConfigured;
+            IsClientAppInfoConfigured = isConfigured;
 
             if (isConfigured)
             {
