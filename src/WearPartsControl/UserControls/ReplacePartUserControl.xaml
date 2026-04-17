@@ -38,9 +38,9 @@
                                    VerticalAlignment="Center">PLC连接状态：</TextBlock>
                         <TextBox IsReadOnly="True"
                                  Grid.Column="1"
-                                 Background="{Binding PlcConnectionStatusBackground}"
+                                 Background="{Binding PlcConnectionStatusBackground, Mode=OneWay}"
                                  Foreground="White"
-                                 Text="{Binding PlcConnectionStatusText}" />
+                                 Text="{Binding PlcConnectionStatusText, Mode=OneWay}" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>

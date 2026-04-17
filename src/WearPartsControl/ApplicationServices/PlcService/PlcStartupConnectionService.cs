@@ -1,5 +1,6 @@
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 namespace WearPartsControl.ApplicationServices.PlcService;
@@ -7,16 +8,16 @@ namespace WearPartsControl.ApplicationServices.PlcService;
 public sealed class PlcStartupConnectionService : IPlcStartupConnectionService
 {
     private readonly IAppSettingsService _appSettingsService;
-    private readonly IClientAppInfoService _clientAppInfoService;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IPlcService _plcService;
 
     public PlcStartupConnectionService(
         IAppSettingsService appSettingsService,
-        IClientAppInfoService clientAppInfoService,
+        IServiceScopeFactory serviceScopeFactory,
         IPlcService plcService)
     {
         _appSettingsService = appSettingsService;
-        _clientAppInfoService = clientAppInfoService;
+        _serviceScopeFactory = serviceScopeFactory;
         _plcService = plcService;
     }
 
@@ -28,7 +29,9 @@ public sealed class PlcStartupConnectionService : IPlcStartupConnectionService
             return PlcStartupConnectionResult.NotConfigured();
         }
 
-        var clientAppInfo = await _clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(false);
+        await using var scope = _serviceScopeFactory.CreateAsyncScope();
+        var clientAppInfoService = scope.ServiceProvider.GetRequiredService<IClientAppInfoService>();
+        var clientAppInfo = await clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(clientAppInfo.ResourceNumber)
             || string.IsNullOrWhiteSpace(clientAppInfo.PlcProtocolType)
             || string.IsNullOrWhiteSpace(clientAppInfo.PlcIpAddress))

@@ -1,4 +1,5 @@
 using System.Windows.Media;
+using Microsoft.Extensions.DependencyInjection;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.PlcService;
@@ -22,7 +23,7 @@ public sealed class ReplacePartViewModelTests
                     ResourceNumber = string.Empty
                 }
             },
-            new StubClientAppInfoService(),
+            new StubServiceScopeFactory(new StubClientAppInfoService()),
             plcService);
 
         var result = await service.EnsureConnectedAsync();
@@ -45,18 +46,19 @@ public sealed class ReplacePartViewModelTests
                     ResourceNumber = "RES-01"
                 }
             },
-            new StubClientAppInfoService
-            {
-                Model = new ClientAppInfoModel
+            new StubServiceScopeFactory(
+                new StubClientAppInfoService
                 {
-                    ResourceNumber = "RES-01",
-                    PlcProtocolType = "ModbusTcp",
-                    PlcIpAddress = "192.168.0.10",
-                    PlcPort = 502,
-                    SiemensSlot = 1,
-                    IsStringReverse = false
-                }
-            },
+                    Model = new ClientAppInfoModel
+                    {
+                        ResourceNumber = "RES-01",
+                        PlcProtocolType = "ModbusTcp",
+                        PlcIpAddress = "192.168.0.10",
+                        PlcPort = 502,
+                        SiemensSlot = 1,
+                        IsStringReverse = false
+                    }
+                }),
             plcService);
 
         var result = await service.EnsureConnectedAsync();
@@ -177,6 +179,58 @@ public sealed class ReplacePartViewModelTests
         public void Write<TValue>(string address, TValue value, int retryCount = 1)
         {
             throw new NotSupportedException();
+        }
+    }
+
+    private sealed class StubServiceScopeFactory : IServiceScopeFactory
+    {
+        private readonly IClientAppInfoService _clientAppInfoService;
+
+        public StubServiceScopeFactory(IClientAppInfoService clientAppInfoService)
+        {
+            _clientAppInfoService = clientAppInfoService;
+        }
+
+        public IServiceScope CreateScope()
+        {
+            return new StubServiceScope(_clientAppInfoService);
+        }
+    }
+
+    private sealed class StubServiceScope : IServiceScope, IAsyncDisposable
+    {
+        public StubServiceScope(IClientAppInfoService clientAppInfoService)
+        {
+            ServiceProvider = new StubScopedServiceProvider(clientAppInfoService);
+        }
+
+        public IServiceProvider ServiceProvider { get; }
+
+        public void Dispose()
+        {
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            Dispose();
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class StubScopedServiceProvider : IServiceProvider
+    {
+        private readonly IClientAppInfoService _clientAppInfoService;
+
+        public StubScopedServiceProvider(IClientAppInfoService clientAppInfoService)
+        {
+            _clientAppInfoService = clientAppInfoService;
+        }
+
+        public object? GetService(Type serviceType)
+        {
+            return serviceType == typeof(IClientAppInfoService)
+                ? _clientAppInfoService
+                : null;
         }
     }
 }
