@@ -1,0 +1,198 @@
+﻿<Window x:Class="WearPartsControl.Views.AddPartWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns:local="clr-namespace:WearPartsControl.Views"
+        mc:Ignorable="d"
+        Title="添加易损件"
+        Height="Auto"
+        Width="800"
+        ResizeMode="NoResize">
+    <StackPanel>
+        <Grid Margin="8 8 8 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0"
+                        Margin="8 0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">当前寿命地址：</TextBlock>
+                    <TextBox IsReadOnly="True"
+                             Grid.Column="1"
+                             Style="{StaticResource TextBoxExtend}"
+                             hc:InfoElement.Placeholder="请输入当前寿命 PLC 地址"></TextBox>
+                </Grid>
+                <Grid Margin="0 8 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">预警寿命地址：</TextBlock>
+                    <TextBox IsReadOnly="True"
+                             Grid.Column="1"
+                             Style="{StaticResource TextBoxExtend}"
+                             hc:InfoElement.Placeholder="请输入预警寿命 PLC 地址"></TextBox>
+                </Grid>
+                <Grid Margin="0 8 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">停机寿命地址：</TextBlock>
+                    <TextBox IsReadOnly="True"
+                             Grid.Column="1"
+                             Style="{StaticResource TextBoxExtend}"
+                             hc:InfoElement.Placeholder="请输入停机寿命 PLC 地址"></TextBox>
+                </Grid>
+                <Grid Margin="0 8 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">寿命类型：</TextBlock>
+                    <ComboBox Grid.Column="1"
+                              Style="{StaticResource ComboBoxExtend}"
+                              hc:InfoElement.Placeholder="请选择寿命类型"></ComboBox>
+                </Grid>
+                <Grid Margin="0 8 0 0"
+                      Height="28">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">寿命到期强制停机：</TextBlock>
+                    <CheckBox Grid.Column="1"
+                              Style="{StaticResource ToggleButtonSwitch}"
+                              hc:InfoElement.Placeholder="请选择寿命类型" />
+                </Grid>
+                <Grid Margin="0 8 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">附加清零地址：</TextBlock>
+                    <TextBox IsReadOnly="True"
+                             Grid.Column="1"
+                             Style="{StaticResource TextBoxExtend}"
+                             hc:InfoElement.Placeholder="附加的清除当前寿命值的 BOOL 地址"></TextBox>
+                </Grid>
+                <Grid Margin="0 8 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">易损件名称：</TextBlock>
+                    <TextBox IsReadOnly="True"
+                             Grid.Column="1"
+                             Style="{StaticResource TextBoxExtend}"
+                             hc:InfoElement.Placeholder="请输入易损件名称"></TextBox>
+                </Grid>
+            </StackPanel>
+            <StackPanel Grid.Column="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">当前寿命数据类型：</TextBlock>
+                    <ComboBox Grid.Column="1"
+                              Style="{StaticResource ComboBoxExtend}"
+                              hc:InfoElement.Placeholder="请选择数据类型"></ComboBox>
+                </Grid>
+                <Grid Margin="0 8 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">预警寿命数据类型：</TextBlock>
+                    <ComboBox Grid.Column="1"
+                              IsEditable="True"
+                              Style="{StaticResource ComboBoxExtend}"
+                              hc:InfoElement.Placeholder="请选择数据类型"></ComboBox>
+                </Grid>
+                <Grid Margin="0 8 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">停机寿命数据类型：</TextBlock>
+                    <ComboBox IsEditable="True"
+                              Grid.Column="1"
+                              Style="{StaticResource ComboBoxExtend}"
+                              hc:InfoElement.Placeholder="请选择数据类型"></ComboBox>
+                </Grid>
+                <Grid Margin="0 8 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">条码输入模式：</TextBlock>
+                    <ComboBox Grid.Column="1"
+                              Style="{StaticResource ComboBoxExtend}"
+                              hc:InfoElement.Placeholder="请选择输入模式"></ComboBox>
+                </Grid>
+                <Grid Margin="0 8 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">条码最小长度：</TextBlock>
+                    <ComboBox Grid.Column="1"
+                              IsEditable="True"
+                              Style="{StaticResource ComboBoxExtend}"
+                              hc:InfoElement.Placeholder="请选择最小长度"></ComboBox>
+                </Grid>
+                <Grid Margin="0 8 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">条码最大长度：</TextBlock>
+                    <ComboBox IsEditable="True"
+                              Grid.Column="1"
+                              Style="{StaticResource ComboBoxExtend}"
+                              hc:InfoElement.Placeholder="请选择最大长度"></ComboBox>
+                </Grid>
+                <Grid Margin="0 8 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">易损件条码地址：</TextBlock>
+                    <TextBox IsReadOnly="True"
+                             Grid.Column="1"
+                             Style="{StaticResource TextBoxExtend}"
+                             hc:InfoElement.Placeholder="易损件条码地址，更换时写入PLC (可不填)"></TextBox>
+                </Grid>
+            </StackPanel>
+        </Grid>
+        <Grid Margin="8 32 8 8">
+            <Button Style="{StaticResource ButtonPrimary}">添加易损件</Button>
+            <Button Style="{StaticResource ButtonPrimary}"
+                    HorizontalAlignment="Right">
+                一键读取所有地址测试
+            </Button>
+        </Grid>
+    </StackPanel>
+</Window>
