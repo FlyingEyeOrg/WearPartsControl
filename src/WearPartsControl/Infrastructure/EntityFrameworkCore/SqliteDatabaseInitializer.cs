@@ -47,12 +47,9 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
                 return;
             }
 
-            if (!await ColumnExistsAsync(connection, "basic_configurations", "IsStringReverse", cancellationToken).ConfigureAwait(false))
-            {
-                await using var command = connection.CreateCommand();
-                command.CommandText = "ALTER TABLE basic_configurations ADD COLUMN IsStringReverse INTEGER NOT NULL DEFAULT 1;";
-                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-            }
+            await EnsureColumnExistsAsync(connection, "basic_configurations", "ShutdownPointAddress", "TEXT NULL", cancellationToken).ConfigureAwait(false);
+            await EnsureColumnExistsAsync(connection, "basic_configurations", "SiemensSlot", "INTEGER NOT NULL DEFAULT 1", cancellationToken).ConfigureAwait(false);
+            await EnsureColumnExistsAsync(connection, "basic_configurations", "IsStringReverse", "INTEGER NOT NULL DEFAULT 1", cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -87,5 +84,17 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
         }
 
         return false;
+    }
+
+    private static async Task EnsureColumnExistsAsync(SqliteConnection connection, string tableName, string columnName, string columnDefinition, CancellationToken cancellationToken)
+    {
+        if (await ColumnExistsAsync(connection, tableName, columnName, cancellationToken).ConfigureAwait(false))
+        {
+            return;
+        }
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"ALTER TABLE {tableName} ADD COLUMN {columnName} {columnDefinition};";
+        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 }

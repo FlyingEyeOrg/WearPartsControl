@@ -344,7 +344,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             SiteCode = model.SiteCode;
             FactoryCode = model.FactoryCode;
             AreaCode = ResolveAreaCode(model.AreaCode);
-            ProcedureCode = model.ProcedureCode;
+            ProcedureCode = ResolveProcedureCode(model.ProcedureCode);
             EquipmentCode = model.EquipmentCode;
             ResourceNumber = model.ResourceNumber;
             PlcProtocolType = model.PlcProtocolType;
@@ -513,6 +513,17 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         }
 
         return AreaOptions.FirstOrDefault() ?? string.Empty;
+    }
+
+    private string ResolveProcedureCode(string? procedureCode)
+    {
+        var normalized = Normalize(procedureCode);
+        if (!string.IsNullOrWhiteSpace(normalized))
+        {
+            return normalized;
+        }
+
+        return ProcedureOptions.FirstOrDefault() ?? string.Empty;
     }
 
     private sealed record ClientAppInfoSnapshot(

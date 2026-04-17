@@ -34,7 +34,7 @@ public sealed class SqliteDatabaseInitializerTests : IDisposable
     }
 
     [Fact]
-    public async Task InitializeAsync_WhenDatabaseIsMissingIsStringReverseColumn_ShouldPatchSchema()
+    public async Task InitializeAsync_WhenDatabaseIsMissingClientAppColumns_ShouldPatchSchema()
     {
         await using (var connection = new SqliteConnection($"Data Source={_dbFilePath}"))
         {
@@ -55,9 +55,7 @@ CREATE TABLE basic_configurations (
     ResourceNumber TEXT NOT NULL,
     PlcProtocolType TEXT NOT NULL,
     PlcIpAddress TEXT NOT NULL,
-    PlcPort INTEGER NOT NULL,
-    ShutdownPointAddress TEXT NULL,
-    SiemensSlot INTEGER NOT NULL
+    PlcPort INTEGER NOT NULL
 );
 CREATE UNIQUE INDEX IX_basic_configurations_ResourceNumber ON basic_configurations(ResourceNumber);
 """;
@@ -73,17 +71,35 @@ CREATE UNIQUE INDEX IX_basic_configurations_ResourceNumber ON basic_configuratio
         verifyCommand.CommandText = "PRAGMA table_info(basic_configurations);";
         await using var reader = await verifyCommand.ExecuteReaderAsync();
 
+        var hasShutdownPointAddress = false;
+        var hasSiemensSlot = false;
         var hasIsStringReverse = false;
         while (await reader.ReadAsync())
         {
-            if (string.Equals(reader.GetString(1), "IsStringReverse", StringComparison.OrdinalIgnoreCase))
+            var columnName = reader.GetString(1);
+            if (string.Equals(columnName, "ShutdownPointAddress", StringComparison.OrdinalIgnoreCase))
+            {
+                hasShutdownPointAddress = true;
+            }
+
+            if (string.Equals(columnName, "SiemensSlot", StringComparison.OrdinalIgnoreCase))
+            {
+                hasSiemensSlot = true;
+            }
+
+            if (string.Equals(columnName, "IsStringReverse", StringComparison.OrdinalIgnoreCase))
             {
                 hasIsStringReverse = true;
-                break;
             }
         }
 
+        Assert.True(hasShutdownPointAddress);
+        Assert.True(hasSiemensSlot);
         Assert.True(hasIsStringReverse);
+
+        await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
+        var count = await verifyContext.ClientAppConfigurations.CountAsync();
+        Assert.Equal(0, count);
     }
 
     public void Dispose()

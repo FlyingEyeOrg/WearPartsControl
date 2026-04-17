@@ -82,6 +82,40 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         Assert.False(service.LastRequest.IsStringReverse);
     }
 
+    [Fact]
+    public async Task InitializeAsync_WhenProcedureIsEmpty_ShouldUseFirstProcedureOptionAsDefault()
+    {
+        var service = new StubClientAppInfoService
+        {
+            Model = new ClientAppInfoModel
+            {
+                Id = Guid.NewGuid(),
+                SiteCode = "S01",
+                FactoryCode = "F01",
+                AreaCode = "阳极",
+                ProcedureCode = string.Empty,
+                EquipmentCode = "EQ01",
+                ResourceNumber = "RES01",
+                PlcProtocolType = "SiemensS1500",
+                PlcIpAddress = "127.0.0.1",
+                PlcPort = 102,
+                ShutdownPointAddress = "M0.0",
+                SiemensSlot = 1,
+                IsStringReverse = true
+            }
+        };
+
+        var viewModel = new ClientAppInfoViewModel(
+            service,
+            new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
+            new UiBusyService());
+
+        await viewModel.InitializeAsync();
+
+        Assert.Equal("凹版", viewModel.ProcedureCode);
+        Assert.False(viewModel.IsDirty);
+    }
+
     public void Dispose()
     {
         if (_originalSiteFactoryJson is null)
@@ -121,24 +155,26 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
     {
         public ClientAppInfoSaveRequest? LastRequest { get; private set; }
 
+        public ClientAppInfoModel Model { get; set; } = new()
+        {
+            Id = Guid.NewGuid(),
+            SiteCode = "S01",
+            FactoryCode = "F01",
+            AreaCode = "A01",
+            ProcedureCode = "P01",
+            EquipmentCode = "EQ01",
+            ResourceNumber = "RES01",
+            PlcProtocolType = "SiemensS1500",
+            PlcIpAddress = "127.0.0.1",
+            PlcPort = 102,
+            ShutdownPointAddress = "M0.0",
+            SiemensSlot = 1,
+            IsStringReverse = true
+        };
+
         public Task<ClientAppInfoModel> GetAsync(CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(new ClientAppInfoModel
-            {
-                Id = Guid.NewGuid(),
-                SiteCode = "S01",
-                FactoryCode = "F01",
-                AreaCode = "A01",
-                ProcedureCode = "P01",
-                EquipmentCode = "EQ01",
-                ResourceNumber = "RES01",
-                PlcProtocolType = "SiemensS1500",
-                PlcIpAddress = "127.0.0.1",
-                PlcPort = 102,
-                ShutdownPointAddress = "M0.0",
-                SiemensSlot = 1,
-                IsStringReverse = true
-            });
+            return Task.FromResult(Model);
         }
 
         public Task<ClientAppInfoModel> SaveAsync(ClientAppInfoSaveRequest request, CancellationToken cancellationToken = default)
