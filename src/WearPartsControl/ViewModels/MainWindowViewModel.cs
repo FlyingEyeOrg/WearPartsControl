@@ -126,14 +126,14 @@ namespace WearPartsControl.ViewModels
 
             if (!appSettings.IsSetClientAppInfo)
             {
-                SelectedContent = _serviceProvider.GetRequiredService<DeviceInfoUserControl>();
+                SelectedContent = _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
                 return;
             }
 
             switch (index)
             {
                 case 1:
-                    SelectedContent = _serviceProvider.GetRequiredService<DeviceInfoUserControl>();
+                    SelectedContent = _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
                     break;
                 case 2:
                     SelectedContent = _serviceProvider.GetRequiredService<PartManagementUserControl>();

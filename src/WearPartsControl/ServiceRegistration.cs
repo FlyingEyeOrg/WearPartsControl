@@ -61,7 +61,7 @@ public static class ServiceRegistration
         // Add other services as needed
 
         builder.RegisterType<ReplacePartUserControl>().AsSelf();
-        builder.RegisterType<DeviceInfoUserControl>().AsSelf();
+        builder.RegisterType<ClientAppInfoUserControl>().AsSelf();
         builder.RegisterType<UserConfigUserControl>().AsSelf();
         builder.RegisterType<PartManagementUserControl>().AsSelf();
         builder.RegisterType<PartUpdateRecordUserControl>().AsSelf();

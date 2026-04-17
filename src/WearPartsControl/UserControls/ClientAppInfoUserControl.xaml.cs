@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace WearPartsControl.UserControls
 {
     /// <summary>
-    /// DeviceInfoUserControl.xaml 的交互逻辑
+    /// ClientAppInfoUserControl.xaml 的交互逻辑
     /// </summary>
-    public partial class DeviceInfoUserControl : UserControl
+    public partial class ClientAppInfoUserControl : UserControl
     {
-        public DeviceInfoUserControl()
+        public ClientAppInfoUserControl()
         {
             InitializeComponent();
         }

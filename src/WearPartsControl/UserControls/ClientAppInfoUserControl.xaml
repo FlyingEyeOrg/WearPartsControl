@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="WearPartsControl.UserControls.DeviceInfoUserControl"
+﻿<UserControl x:Class="WearPartsControl.UserControls.ClientAppInfoUserControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -14,7 +14,7 @@
             <TextBlock HorizontalAlignment="Center"
                        FontWeight="Bold"
                        FontSize="16"
-                       Foreground="White">设备信息</TextBlock>
+                       Foreground="White">客户端信息</TextBlock>
         </Border>
         <Grid Margin="8 8 8 0">
             <Grid.ColumnDefinitions>
