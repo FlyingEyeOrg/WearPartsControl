@@ -17,4 +17,9 @@ public sealed class AppSettings
     /// 登录时相邻按键允许的最大时间间隔，超过则判定为手工输入。
     /// </summary>
     public int LoginInputMaxIntervalMilliseconds { get; set; } = 80;
+
+    /// <summary>
+    /// 是否已经设置客户端信息
+    /// </summary>
+    public bool IsSetClientAppInfo { get; set; }
 }

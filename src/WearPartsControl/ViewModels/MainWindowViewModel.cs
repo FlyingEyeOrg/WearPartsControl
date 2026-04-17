@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.UserControls;
@@ -17,6 +18,7 @@ namespace WearPartsControl.ViewModels
         private readonly IServiceProvider _serviceProvider;
         private readonly ICurrentUserAccessor _currentUserAccessor;
         private readonly ILoginService _loginService;
+        private readonly IAppSettingsService _appSettingsService;
         private string _currentUserWorkIdText = "工号：--";
         private string _currentUserAccessLevelText = "权限：--";
         private bool _isLoggedIn;
@@ -25,10 +27,10 @@ namespace WearPartsControl.ViewModels
             ILocalizationService localizationService,
             IServiceProvider serviceProvider,
             ICurrentUserAccessor currentUserAccessor,
-            ILoginService loginService)
+            ILoginService loginService,
+            IAppSettingsService appSettingsService)
         {
             Title = localizationService["MainWindow.Title"];
-            Tabs = localizationService.Catalog.MainWindow.Tabs;
             TabChangedCommand = new RelayCommand<int>(OnTabChanged);
             OpenLoginCommand = new RelayCommand(OnOpenLoginRequested);
             LogoutCommand = new AsyncRelayCommand(LogoutAsync);
@@ -36,10 +38,22 @@ namespace WearPartsControl.ViewModels
             _currentUserAccessor = currentUserAccessor;
             _loginService = loginService;
             _selectedContent = _serviceProvider.GetRequiredService<ReplacePartUserControl>();
+            _appSettingsService = appSettingsService;
 
             SoftwareVersionText = $"软件版本：{ResolveVersion()}";
             _currentUserAccessor.CurrentUserChanged += OnCurrentUserChanged;
             UpdateCurrentUserState();
+            Tabs = localizationService.Catalog.MainWindow.Tabs;
+            var appSettings = _appSettingsService.GetAsync(default).GetAwaiter().GetResult();
+
+            if (appSettings.IsSetClientAppInfo)
+            {
+                Tabs = localizationService.Catalog.MainWindow.Tabs;
+            }
+            else
+            {
+                Tabs = new List<string>() { localizationService.Catalog.MainWindow.Tabs[1] };
+            }
         }
 
         public event EventHandler? LoginRequested;
@@ -102,12 +116,20 @@ namespace WearPartsControl.ViewModels
 
         public ICommand TabChangedCommand { get; }
 
-    public ICommand OpenLoginCommand { get; }
+        public ICommand OpenLoginCommand { get; }
 
-    public IAsyncRelayCommand LogoutCommand { get; }
+        public IAsyncRelayCommand LogoutCommand { get; }
 
         private void OnTabChanged(int index)
         {
+            var appSettings = _appSettingsService.GetAsync(default).GetAwaiter().GetResult();
+
+            if (!appSettings.IsSetClientAppInfo)
+            {
+                SelectedContent = _serviceProvider.GetRequiredService<DeviceInfoUserControl>();
+                return;
+            }
+
             switch (index)
             {
                 case 1:

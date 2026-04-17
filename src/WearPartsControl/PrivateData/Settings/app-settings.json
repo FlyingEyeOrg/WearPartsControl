@@ -1,1 +1,5 @@
-{"ResourceNumber":"","LoginInputMaxIntervalMilliseconds":80}
+{
+  "ResourceNumber": "",
+  "LoginInputMaxIntervalMilliseconds": 2000,
+  "IsSetClientAppInfo": false
+}
