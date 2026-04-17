@@ -3,11 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:WearPartsControl.UserControls"
+             xmlns:vm="clr-namespace:WearPartsControl.ViewModels"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              mc:Ignorable="d"
              d:DesignHeight="450"
-             d:DesignWidth="800">
+             d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance Type=vm:ReplacePartViewModel}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="AUto" />
@@ -37,7 +38,9 @@
                                    VerticalAlignment="Center">PLC连接状态：</TextBlock>
                         <TextBox IsReadOnly="True"
                                  Grid.Column="1"
-                                 Background="Red">未连接</TextBox>
+                                 Background="{Binding PlcConnectionStatusBackground}"
+                                 Foreground="White"
+                                 Text="{Binding PlcConnectionStatusText}" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>

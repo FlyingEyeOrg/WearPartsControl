@@ -10,14 +10,7 @@ internal static class WearPartPlcAccessor
 
     public static PlcConnectionOptions BuildConnectionOptions(ClientAppConfigurationEntity configuration)
     {
-        return new PlcConnectionOptions
-        {
-            PlcType = ResolveProtocolType(configuration.PlcProtocolType),
-            IpAddress = configuration.PlcIpAddress,
-            Port = configuration.PlcPort,
-            SiemensSlot = configuration.SiemensSlot,
-            IsStringReverse = configuration.IsStringReverse
-        };
+        return PlcConnectionOptionsFactory.Create(configuration);
     }
 
     public static string ReadAsString(IPlcService plcService, string address, string dataType)
@@ -97,19 +90,6 @@ internal static class WearPartPlcAccessor
             "FLOAT" or "SINGLE" => PartDataType.Float,
             "DOUBLE" or "DECIMAL" => PartDataType.Double,
             _ => null
-        };
-    }
-
-    private static PlcProtocolType ResolveProtocolType(string value)
-    {
-        var normalized = value.Trim().ToUpperInvariant();
-        return normalized switch
-        {
-            "S7" or "SIEMENSS1500" => PlcProtocolType.SiemensS1500,
-            "SIEMENSS1200" => PlcProtocolType.SiemensS1200,
-            "MODBUSTCP" => PlcProtocolType.ModbusTcp,
-            _ when Enum.TryParse<PlcProtocolType>(value, true, out var protocolType) => protocolType,
-            _ => throw new UserFriendlyException($"不支持的 PLC 协议类型：{value}。")
         };
     }
 
