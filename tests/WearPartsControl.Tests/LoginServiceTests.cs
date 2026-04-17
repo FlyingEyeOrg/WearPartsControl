@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
+using System.Text.Json;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
@@ -69,7 +70,7 @@ public sealed class LoginServiceTests : IDisposable
         var cache = new MhrUserDirectoryCache(cachePath);
         var httpJsonService = new RecordingHttpJsonService
         {
-            Token = "token-01",
+            TokenPayload = JsonDocument.Parse("\"token-01\"").RootElement.Clone(),
             Response = new MhrUserListResponse
             {
                 Success = true,
@@ -93,6 +94,39 @@ public sealed class LoginServiceTests : IDisposable
         Assert.Equal(1, httpJsonService.PostCallCount);
         Assert.Equal(1, httpJsonService.SendCallCount);
         Assert.True(File.Exists(cachePath));
+    }
+
+    [Fact]
+    public async Task LoginAsync_WhenTokenEndpointReturnsAuthorizationObject_ShouldUseReturnedHeaderValue()
+    {
+        var currentUserAccessor = new CurrentUserAccessor();
+        var cache = new MhrUserDirectoryCache(Path.Combine(_settingsDirectory, "cache.json"));
+        var httpJsonService = new RecordingHttpJsonService
+        {
+            TokenPayload = JsonDocument.Parse("""
+{
+  "Authorization": "Bearer token-from-object"
+}
+""").RootElement.Clone(),
+            Response = new MhrUserListResponse
+            {
+                Success = true,
+                Data = new MhrUserListData
+                {
+                    Users =
+                    [
+                        new MhrUser { CardId = "CARD-03", WorkId = "WORK-03", AccessLevel = 2 }
+                    ]
+                }
+            }
+        };
+
+        var service = new LoginService(httpJsonService, new StubLocalizationService(), currentUserAccessor, cache, CreateConfigPath());
+
+        var user = await service.LoginAsync("CARD-03", "S01", "RES-03", isIdCard: true);
+
+        Assert.NotNull(user);
+        Assert.Equal("Bearer token-from-object", httpJsonService.LastAuthorizationHeader);
     }
 
     public void Dispose()
@@ -165,9 +199,11 @@ public sealed class LoginServiceTests : IDisposable
 
         public int SendCallCount { get; private set; }
 
-        public string Token { get; set; } = string.Empty;
+        public JsonElement TokenPayload { get; set; } = JsonDocument.Parse("\"\"").RootElement.Clone();
 
         public MhrUserListResponse Response { get; set; } = new();
+
+        public string? LastAuthorizationHeader { get; private set; }
 
         public ValueTask<TResponse> GetAsync<TResponse>(string requestUri, CancellationToken cancellationToken = default)
         {
@@ -177,12 +213,14 @@ public sealed class LoginServiceTests : IDisposable
         public ValueTask<TResponse> PostAsync<TRequest, TResponse>(string requestUri, TRequest requestBody, CancellationToken cancellationToken = default)
         {
             PostCallCount++;
-            return ValueTask.FromResult((TResponse)(object)Token);
+            return ValueTask.FromResult((TResponse)(object)TokenPayload);
         }
 
         public ValueTask<TResponse> SendAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken = default)
         {
             SendCallCount++;
+            LastAuthorizationHeader = request.Headers.Authorization?.ToString()
+                ?? (request.Headers.TryGetValues("Authorization", out var values) ? values.FirstOrDefault() : null);
             return ValueTask.FromResult((TResponse)(object)Response);
         }
 

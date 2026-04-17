@@ -1,12 +1,27 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using System.Threading;
 
 namespace WearPartsControl.ApplicationServices;
 
 public sealed class UiBusyService : ObservableObject, IUiBusyService
 {
     private readonly object _syncRoot = new();
+    private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
+    private readonly SynchronizationContext? _synchronizationContext;
     private int _busyCount;
     private bool _isBusy;
+
+    public UiBusyService(
+        TimeSpan? minimumBusyDuration = null,
+        Func<TimeSpan, CancellationToken, Task>? delayAsync = null,
+        SynchronizationContext? synchronizationContext = null)
+    {
+        MinimumBusyDuration = minimumBusyDuration ?? TimeSpan.FromSeconds(2);
+        _delayAsync = delayAsync ?? Task.Delay;
+        _synchronizationContext = synchronizationContext ?? SynchronizationContext.Current;
+    }
+
+    public TimeSpan MinimumBusyDuration { get; }
 
     public bool IsBusy
     {
@@ -19,14 +34,21 @@ public sealed class UiBusyService : ObservableObject, IUiBusyService
         lock (_syncRoot)
         {
             _busyCount++;
-            IsBusy = _busyCount > 0;
+            SetIsBusy(_busyCount > 0);
         }
 
-        return new BusyScope(this);
+        return new BusyScope(this, DateTimeOffset.UtcNow);
     }
 
-    private void Exit()
+    private async Task ExitAsync(DateTimeOffset enteredAt)
     {
+        var elapsed = DateTimeOffset.UtcNow - enteredAt;
+        var remaining = MinimumBusyDuration - elapsed;
+        if (remaining > TimeSpan.Zero)
+        {
+            await _delayAsync(remaining, CancellationToken.None).ConfigureAwait(false);
+        }
+
         lock (_syncRoot)
         {
             if (_busyCount > 0)
@@ -34,23 +56,45 @@ public sealed class UiBusyService : ObservableObject, IUiBusyService
                 _busyCount--;
             }
 
-            IsBusy = _busyCount > 0;
+            SetIsBusy(_busyCount > 0);
         }
+    }
+
+    private void SetIsBusy(bool value)
+    {
+        if (_synchronizationContext is null || SynchronizationContext.Current == _synchronizationContext)
+        {
+            IsBusy = value;
+            return;
+        }
+
+        _synchronizationContext.Post(static state =>
+        {
+            var payload = ((UiBusyService Owner, bool Value))state!;
+            payload.Owner.IsBusy = payload.Value;
+        }, (this, value));
     }
 
     private sealed class BusyScope : IDisposable
     {
         private UiBusyService? _owner;
+        private readonly DateTimeOffset _enteredAt;
 
-        public BusyScope(UiBusyService owner)
+        public BusyScope(UiBusyService owner, DateTimeOffset enteredAt)
         {
             _owner = owner;
+            _enteredAt = enteredAt;
         }
 
         public void Dispose()
         {
             var owner = Interlocked.Exchange(ref _owner, null);
-            owner?.Exit();
+            if (owner is null)
+            {
+                return;
+            }
+
+            _ = owner.ExitAsync(_enteredAt);
         }
     }
 }

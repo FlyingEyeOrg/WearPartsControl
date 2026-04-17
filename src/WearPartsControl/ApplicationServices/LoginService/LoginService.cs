@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Net.Http;
 using System.IO;
 using System.Globalization;
+using System.Net.Http.Headers;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
@@ -130,16 +131,70 @@ public sealed class LoginService : ILoginService
     private async Task<string> GetTokenAsync(string loginUrl, string loginName, string password, CancellationToken cancellationToken)
     {
         var request = new { loginName, password };
-        var response = await _httpJsonService.PostAsync<object, string>(loginUrl, request, cancellationToken);
-        return response; // Assume response is token string
+        var response = await _httpJsonService.PostAsync<object, JsonElement>(loginUrl, request, cancellationToken).ConfigureAwait(false);
+        return ParseAuthorizationValue(response);
     }
 
     private async Task<MhrUserListResponse> GetUserListAsync(string getUsersUrl, string token, string factory, string resourceId, CancellationToken cancellationToken)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, $"{getUsersUrl}?factory={factory}&resourceId={resourceId}");
-        request.Headers.Add("Authorization", $"Bearer {token}");
+        request.Headers.TryAddWithoutValidation("Authorization", NormalizeAuthorizationHeader(token));
         var response = await _httpJsonService.SendAsync<MhrUserListResponse>(request, cancellationToken);
         return response;
+    }
+
+    private static string ParseAuthorizationValue(JsonElement response)
+    {
+        if (response.ValueKind == JsonValueKind.String)
+        {
+            return response.GetString()?.Trim() ?? string.Empty;
+        }
+
+        if (response.ValueKind == JsonValueKind.Object)
+        {
+            if (TryGetStringProperty(response, "Authorization", out var authorization)
+                || TryGetStringProperty(response, "AccessToken", out authorization)
+                || TryGetStringProperty(response, "Token", out authorization))
+            {
+                return authorization;
+            }
+        }
+
+        throw new UserFriendlyException("登录接口返回的 token 格式不正确。", code: "LoginService:InvalidTokenPayload");
+    }
+
+    private static bool TryGetStringProperty(JsonElement element, string propertyName, out string value)
+    {
+        foreach (var property in element.EnumerateObject())
+        {
+            if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase)
+                && property.Value.ValueKind == JsonValueKind.String)
+            {
+                value = property.Value.GetString()?.Trim() ?? string.Empty;
+                return !string.IsNullOrWhiteSpace(value);
+            }
+        }
+
+        value = string.Empty;
+        return false;
+    }
+
+    private static string NormalizeAuthorizationHeader(string token)
+    {
+        var normalized = token?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return string.Empty;
+        }
+
+        if (AuthenticationHeaderValue.TryParse(normalized, out var headerValue)
+            && !string.IsNullOrWhiteSpace(headerValue.Scheme)
+            && !string.IsNullOrWhiteSpace(headerValue.Parameter))
+        {
+            return normalized;
+        }
+
+        return $"Bearer {normalized}";
     }
 
     private string L(string key) => _localizationService[key];
