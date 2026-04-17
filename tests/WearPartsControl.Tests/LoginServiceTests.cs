@@ -7,6 +7,7 @@ using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.Localization.Generated;
 using WearPartsControl.ApplicationServices.LoginService;
+using WearPartsControl.Exceptions;
 using Xunit;
 
 namespace WearPartsControl.Tests;
@@ -51,7 +52,7 @@ public sealed class LoginServiceTests : IDisposable
             DateTime.UtcNow);
 
         var httpJsonService = new RecordingHttpJsonService();
-        var service = new LoginService(httpJsonService, new StubLocalizationService(), currentUserAccessor, cache, CreateConfigPath());
+        var service = new LoginService(httpJsonService, new StubLocalizationService(), currentUserAccessor, cache, CreateConfigPath(getUsersUrl: "http://ddm.catl.com/LeanManHour/ClinkGetPermissions"));
 
         var user = await service.LoginAsync("CARD-01", "S01", "RES-01", isIdCard: true);
 
@@ -84,7 +85,12 @@ public sealed class LoginServiceTests : IDisposable
             }
         };
 
-        var service = new LoginService(httpJsonService, new StubLocalizationService(), currentUserAccessor, cache, CreateConfigPath());
+        var service = new LoginService(
+            httpJsonService,
+            new StubLocalizationService(),
+            currentUserAccessor,
+            cache,
+            CreateConfigPath(getUsersUrl: "http://ddm.catl.com/LeanManHour/ClinkGetPermissions"));
 
         var user = await service.LoginAsync("CARD-02", "S01", "RES-02", isIdCard: true);
         var cachedUser = await cache.FindUserAsync("S01", "RES-02", "CARD-02", isIdCard: true, cacheDays: 1);
@@ -121,12 +127,55 @@ public sealed class LoginServiceTests : IDisposable
             }
         };
 
-        var service = new LoginService(httpJsonService, new StubLocalizationService(), currentUserAccessor, cache, CreateConfigPath());
+        var service = new LoginService(
+            httpJsonService,
+            new StubLocalizationService(),
+            currentUserAccessor,
+            cache,
+            CreateConfigPath(getUsersUrl: "http://ddm.catl.com/LeanManHour/ClinkGetPermissions"));
 
         var user = await service.LoginAsync("CARD-03", "S01", "RES-03", isIdCard: true);
 
         Assert.NotNull(user);
         Assert.Equal("Bearer token-from-object", httpJsonService.LastAuthorizationHeader);
+    }
+
+    [Fact]
+    public async Task LoginAsync_WhenLegacyGetUsersUrlReturns404_ShouldFallbackToModernEndpoint()
+    {
+        var currentUserAccessor = new CurrentUserAccessor();
+        var cache = new MhrUserDirectoryCache(Path.Combine(_settingsDirectory, "cache.json"));
+        var httpJsonService = new RecordingHttpJsonService
+        {
+            TokenPayload = JsonDocument.Parse("\"token-04\"").RootElement.Clone(),
+            Response = new MhrUserListResponse
+            {
+                Success = true,
+                Data = new MhrUserListData
+                {
+                    Users =
+                    [
+                        new MhrUser { CardId = "CARD-04", WorkId = "WORK-04", AccessLevel = 2 }
+                    ]
+                }
+            },
+            FailLegacyGetUsersUrlWith404 = true
+        };
+
+        var service = new LoginService(
+            httpJsonService,
+            new StubLocalizationService(),
+            currentUserAccessor,
+            cache,
+            CreateConfigPath(getUsersUrl: "http://ddm.catl.com/LeanManHour/ClinkGetPermissions"));
+
+        var user = await service.LoginAsync("CARD-04", "S01", "RES-04", isIdCard: true);
+
+        Assert.NotNull(user);
+        Assert.Equal(2, httpJsonService.SendCallCount);
+        Assert.Contains(
+            httpJsonService.RequestUris,
+            uri => uri.StartsWith("https://mhrcatl.com/api/MHR/LeanManHour/GetClinkPermissions", StringComparison.OrdinalIgnoreCase));
     }
 
     public void Dispose()
@@ -137,7 +186,7 @@ public sealed class LoginServiceTests : IDisposable
         }
     }
 
-    private string CreateConfigPath()
+    private string CreateConfigPath(string? getUsersUrl = null)
     {
         var path = Path.Combine(_settingsDirectory, "mhrinfo.json");
         File.WriteAllText(path, """
@@ -149,11 +198,11 @@ public sealed class LoginServiceTests : IDisposable
     {
       "site": "S01",
       "loginUrl": "https://example.com/token",
-      "getUsersUrl": "https://example.com/users"
+        "getUsersUrl": "__GET_USERS_URL__"
     }
   ]
 }
-""");
+""".Replace("__GET_USERS_URL__", getUsersUrl ?? "https://example.com/users", StringComparison.Ordinal));
         return path;
     }
 
@@ -199,11 +248,15 @@ public sealed class LoginServiceTests : IDisposable
 
         public int SendCallCount { get; private set; }
 
+        public bool FailLegacyGetUsersUrlWith404 { get; set; }
+
         public JsonElement TokenPayload { get; set; } = JsonDocument.Parse("\"\"").RootElement.Clone();
 
         public MhrUserListResponse Response { get; set; } = new();
 
         public string? LastAuthorizationHeader { get; private set; }
+
+        public List<string> RequestUris { get; } = [];
 
         public ValueTask<TResponse> GetAsync<TResponse>(string requestUri, CancellationToken cancellationToken = default)
         {
@@ -219,8 +272,18 @@ public sealed class LoginServiceTests : IDisposable
         public ValueTask<TResponse> SendAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken = default)
         {
             SendCallCount++;
+            RequestUris.Add(request.RequestUri?.ToString() ?? string.Empty);
             LastAuthorizationHeader = request.Headers.Authorization?.ToString()
                 ?? (request.Headers.TryGetValues("Authorization", out var values) ? values.FirstOrDefault() : null);
+
+            if (FailLegacyGetUsersUrlWith404
+                && request.RequestUri is not null
+                && string.Equals(request.RequestUri.Host, "ddm.catl.com", StringComparison.OrdinalIgnoreCase)
+                && request.RequestUri.AbsolutePath.Contains("/LeanManHour/ClinkGetPermissions", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new UserFriendlyException("{\"status\":404,\"error\":\"Not Found\"}", code: "Http:404");
+            }
+
             return ValueTask.FromResult((TResponse)(object)Response);
         }
 

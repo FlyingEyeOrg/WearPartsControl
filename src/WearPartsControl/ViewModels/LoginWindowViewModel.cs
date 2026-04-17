@@ -86,7 +86,7 @@ namespace WearPartsControl.ViewModels
 
         public async Task InitializeAsync(CancellationToken cancellationToken = default)
         {
-            var settings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
+            var settings = await _appSettingsService.GetAsync(cancellationToken);
             ResourceNumber = settings.ResourceNumber;
             LoginInputMaxIntervalMilliseconds = settings.LoginInputMaxIntervalMilliseconds <= 0
                 ? 80
@@ -99,7 +99,7 @@ namespace WearPartsControl.ViewModels
                 return;
             }
 
-            var clientAppConfiguration = await _clientAppConfigurationRepository.GetByResourceNumberAsync(ResourceNumber, cancellationToken).ConfigureAwait(false);
+            var clientAppConfiguration = await _clientAppConfigurationRepository.GetByResourceNumberAsync(ResourceNumber, cancellationToken);
             if (clientAppConfiguration is null)
             {
                 SiteCode = string.Empty;
@@ -131,7 +131,7 @@ namespace WearPartsControl.ViewModels
         {
             if (string.IsNullOrWhiteSpace(ResourceNumber) || string.IsNullOrWhiteSpace(SiteCode))
             {
-                await InitializeAsync().ConfigureAwait(false);
+                await InitializeAsync();
                 if (string.IsNullOrWhiteSpace(ResourceNumber) || string.IsNullOrWhiteSpace(SiteCode))
                 {
                     return;
@@ -150,7 +150,7 @@ namespace WearPartsControl.ViewModels
 
             try
             {
-                var user = await _loginService.LoginAsync(authId, SiteCode, ResourceNumber, isIdCard: true).ConfigureAwait(false);
+                var user = await _loginService.LoginAsync(authId, SiteCode, ResourceNumber, isIdCard: true);
                 if (user is null)
                 {
                     StatusMessage = "未找到对应用户，请确认卡号或权限配置。";
