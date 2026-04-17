@@ -59,6 +59,7 @@
 - 已完成：登录用户上下文与 `access_level` 权限校验。
 - 已补齐持久化表：`wear_part_replacement_records`、`exceed_limit_records`。
 - 已补齐：后台寿命监控调度、MHR 用户列表缓存、旧版 SQLite 数据导入。
+- 易损件新增窗口默认值沿用旧版录入习惯：输入方式默认 `Manual`，三组 PLC 数据类型默认 `FLOAT`，寿命类型默认 `Meter`，条码长度默认 `0-0`。
 
 ## 数据与配置目录
 

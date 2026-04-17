@@ -11,6 +11,12 @@ namespace WearPartsControl.ViewModels;
 
 public abstract class WearPartEditorViewModelBase : ObservableObject
 {
+    private const string DefaultCreateInputMode = "Manual";
+    private const string DefaultCreateDataType = "FLOAT";
+    private const string DefaultCreateLifetimeType = "Meter";
+    private const string DefaultCreateCodeMinLength = "0";
+    private const string DefaultCreateCodeMaxLength = "0";
+
     private readonly IWearPartManagementService _wearPartManagementService;
     private readonly IUiBusyService _uiBusyService;
     private Guid _id;
@@ -18,17 +24,17 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
     private bool _isBusy;
     private string _resourceNumber = string.Empty;
     private string _partName = string.Empty;
-    private string _inputMode = "Barcode";
+    private string _inputMode = DefaultCreateInputMode;
     private string _currentValueAddress = string.Empty;
-    private string _currentValueDataType = "INT32";
+    private string _currentValueDataType = DefaultCreateDataType;
     private string _warningValueAddress = string.Empty;
-    private string _warningValueDataType = "INT32";
+    private string _warningValueDataType = DefaultCreateDataType;
     private string _shutdownValueAddress = string.Empty;
-    private string _shutdownValueDataType = "INT32";
+    private string _shutdownValueDataType = DefaultCreateDataType;
     private bool _isShutdown;
-    private string _codeMinLength = "0";
-    private string _codeMaxLength = "30";
-    private string _lifetimeType = "Count";
+    private string _codeMinLength = DefaultCreateCodeMinLength;
+    private string _codeMaxLength = DefaultCreateCodeMaxLength;
+    private string _lifetimeType = DefaultCreateLifetimeType;
     private string _plcZeroClearAddress = string.Empty;
     private string _barcodeWriteAddress = string.Empty;
     private string _statusMessage = string.Empty;
@@ -40,17 +46,17 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         _wearPartManagementService = wearPartManagementService;
         _uiBusyService = uiBusyService;
 
-        foreach (var item in new[] { "Barcode", "Manual", "Scanner" })
+        foreach (var item in new[] { "Manual", "Scanner", "Barcode" })
         {
             InputModes.Add(item);
         }
 
-        foreach (var item in new[] { "Count", "Time", "Json" })
+        foreach (var item in new[] { "Meter", "Count", "Time", "Json" })
         {
             LifetimeTypes.Add(item);
         }
 
-        foreach (var item in new[] { "INT32", "FLOAT", "DOUBLE", "BOOL", "STRING", "JSON" })
+        foreach (var item in new[] { "FLOAT", "DOUBLE", "INT32", "BOOL", "STRING", "JSON" })
         {
             DataTypes.Add(item);
         }
@@ -200,17 +206,17 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         ClientAppConfigurationId = clientAppConfigurationId;
         ResourceNumber = resourceNumber?.Trim() ?? string.Empty;
         PartName = string.Empty;
-        InputMode = "Barcode";
+        InputMode = DefaultCreateInputMode;
         CurrentValueAddress = string.Empty;
-        CurrentValueDataType = "INT32";
+        CurrentValueDataType = DefaultCreateDataType;
         WarningValueAddress = string.Empty;
-        WarningValueDataType = "INT32";
+        WarningValueDataType = DefaultCreateDataType;
         ShutdownValueAddress = string.Empty;
-        ShutdownValueDataType = "INT32";
+        ShutdownValueDataType = DefaultCreateDataType;
         IsShutdown = false;
-        CodeMinLength = "0";
-        CodeMaxLength = "30";
-        LifetimeType = "Count";
+        CodeMinLength = DefaultCreateCodeMinLength;
+        CodeMaxLength = DefaultCreateCodeMaxLength;
+        LifetimeType = DefaultCreateLifetimeType;
         PlcZeroClearAddress = string.Empty;
         BarcodeWriteAddress = string.Empty;
         StatusMessage = string.IsNullOrWhiteSpace(ResourceNumber)
