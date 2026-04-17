@@ -7,6 +7,32 @@ namespace WearPartsControl.Infrastructure.EntityFrameworkCore;
 
 public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
 {
+    private static readonly IReadOnlyDictionary<string, string[]> ExpectedTables = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["basic_configurations"] =
+        [
+            "Id", "CreatedAt", "UpdatedAt", "CreatedBy", "UpdatedBy", "SiteCode", "FactoryCode", "AreaCode", "ProcedureCode",
+            "EquipmentCode", "ResourceNumber", "PlcProtocolType", "PlcIpAddress", "PlcPort", "ShutdownPointAddress", "SiemensSlot", "IsStringReverse"
+        ],
+        ["wear_part_definitions"] =
+        [
+            "Id", "CreatedAt", "UpdatedAt", "CreatedBy", "UpdatedBy", "ClientAppConfigurationId", "ResourceNumber", "PartName", "InputMode",
+            "CurrentValueAddress", "CurrentValueDataType", "WarningValueAddress", "WarningValueDataType", "ShutdownValueAddress", "ShutdownValueDataType",
+            "IsShutdown", "CodeMinLength", "CodeMaxLength", "LifetimeType", "PlcZeroClearAddress", "BarcodeWriteAddress"
+        ],
+        ["wear_part_replacement_records"] =
+        [
+            "Id", "CreatedAt", "UpdatedAt", "CreatedBy", "UpdatedBy", "IsDeleted", "DeletedAt", "ClientAppConfigurationId", "WearPartDefinitionId",
+            "SiteCode", "PartName", "OldBarcode", "NewBarcode", "CurrentValue", "WarningValue", "ShutdownValue", "OperatorWorkNumber",
+            "OperatorUserName", "ReplacementReason", "ReplacementMessage", "ReplacedAt", "DataType", "DataValue"
+        ],
+        ["exceed_limit_records"] =
+        [
+            "Id", "CreatedAt", "UpdatedAt", "CreatedBy", "UpdatedBy", "ClientAppConfigurationId", "WearPartDefinitionId", "PartName",
+            "CurrentValue", "WarningValue", "ShutdownValue", "Severity", "OccurredAt", "NotificationMessage"
+        ]
+    };
+
     private readonly IDbContextFactory<WearPartsControlDbContext> _dbContextFactory;
 
     public SqliteDatabaseInitializer(IDbContextFactory<WearPartsControlDbContext> dbContextFactory)
@@ -16,6 +42,11 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
+        if (await RequiresDatabaseResetAsync(cancellationToken).ConfigureAwait(false))
+        {
+            await ResetDatabaseAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var migrations = dbContext.Database.GetMigrations();
@@ -27,12 +58,11 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
         {
             await dbContext.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
         }
-
-        await EnsureClientAppConfigurationSchemaAsync(dbContext, cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task EnsureClientAppConfigurationSchemaAsync(WearPartsControlDbContext dbContext, CancellationToken cancellationToken)
+    private async Task<bool> RequiresDatabaseResetAsync(CancellationToken cancellationToken)
     {
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         var connection = (SqliteConnection)dbContext.Database.GetDbConnection();
         var shouldClose = connection.State != System.Data.ConnectionState.Open;
         if (shouldClose)
@@ -42,14 +72,28 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
 
         try
         {
-            if (!await TableExistsAsync(connection, "basic_configurations", cancellationToken).ConfigureAwait(false))
+            var existingTables = await GetUserTableNamesAsync(connection, cancellationToken).ConfigureAwait(false);
+            if (existingTables.Count == 0)
             {
-                return;
+                return false;
             }
 
-            await EnsureColumnExistsAsync(connection, "basic_configurations", "ShutdownPointAddress", "TEXT NULL", cancellationToken).ConfigureAwait(false);
-            await EnsureColumnExistsAsync(connection, "basic_configurations", "SiemensSlot", "INTEGER NOT NULL DEFAULT 1", cancellationToken).ConfigureAwait(false);
-            await EnsureColumnExistsAsync(connection, "basic_configurations", "IsStringReverse", "INTEGER NOT NULL DEFAULT 1", cancellationToken).ConfigureAwait(false);
+            var expectedTableNames = ExpectedTables.Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            if (!existingTables.SetEquals(expectedTableNames))
+            {
+                return true;
+            }
+
+            foreach (var table in ExpectedTables)
+            {
+                var actualColumns = await GetColumnsAsync(connection, table.Key, cancellationToken).ConfigureAwait(false);
+                if (!actualColumns.SetEquals(table.Value))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
         finally
         {
@@ -60,41 +104,45 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
         }
     }
 
-    private static async Task<bool> TableExistsAsync(SqliteConnection connection, string tableName, CancellationToken cancellationToken)
+    private async Task ResetDatabaseAsync(CancellationToken cancellationToken)
     {
-        await using var command = connection.CreateCommand();
-        command.CommandText = "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = $name LIMIT 1;";
-        command.Parameters.AddWithValue("$name", tableName);
-        var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-        return result is not null;
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.Database.EnsureDeletedAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task<bool> ColumnExistsAsync(SqliteConnection connection, string tableName, string columnName, CancellationToken cancellationToken)
+    private static async Task<HashSet<string>> GetUserTableNamesAsync(SqliteConnection connection, CancellationToken cancellationToken)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+SELECT name
+FROM sqlite_master
+WHERE type = 'table'
+  AND name NOT LIKE 'sqlite_%'
+  AND name <> '__EFMigrationsHistory';
+""";
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        var tableNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            tableNames.Add(reader.GetString(0));
+        }
+
+        return tableNames;
+    }
+
+    private static async Task<HashSet<string>> GetColumnsAsync(SqliteConnection connection, string tableName, CancellationToken cancellationToken)
     {
         await using var command = connection.CreateCommand();
         command.CommandText = $"PRAGMA table_info({tableName});";
 
         await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            if (string.Equals(reader.GetString(1), columnName, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
+            columns.Add(reader.GetString(1));
         }
 
-        return false;
-    }
-
-    private static async Task EnsureColumnExistsAsync(SqliteConnection connection, string tableName, string columnName, string columnDefinition, CancellationToken cancellationToken)
-    {
-        if (await ColumnExistsAsync(connection, tableName, columnName, cancellationToken).ConfigureAwait(false))
-        {
-            return;
-        }
-
-        await using var command = connection.CreateCommand();
-        command.CommandText = $"ALTER TABLE {tableName} ADD COLUMN {columnName} {columnDefinition};";
-        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        return columns;
     }
 }
