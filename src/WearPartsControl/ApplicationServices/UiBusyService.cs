@@ -16,7 +16,7 @@ public sealed class UiBusyService : ObservableObject, IUiBusyService
         Func<TimeSpan, CancellationToken, Task>? delayAsync = null,
         SynchronizationContext? synchronizationContext = null)
     {
-        MinimumBusyDuration = minimumBusyDuration ?? TimeSpan.FromSeconds(1);
+        MinimumBusyDuration = minimumBusyDuration ?? TimeSpan.FromMilliseconds(500);
         _delayAsync = delayAsync ?? Task.Delay;
         _synchronizationContext = synchronizationContext ?? SynchronizationContext.Current;
     }
