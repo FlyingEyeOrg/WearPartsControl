@@ -1,5 +1,7 @@
 using System.IO;
+using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ViewModels;
 using Xunit;
 
@@ -9,14 +11,18 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
 {
     private readonly string _settingsDirectory;
     private readonly string _siteFactoryPath;
+    private readonly string _selectionOptionsPath;
     private readonly string? _originalSiteFactoryJson;
+    private readonly string? _originalSelectionOptionsJson;
 
     public ClientAppInfoViewModelTests()
     {
         _settingsDirectory = PortableDataPaths.SettingsDirectory;
         Directory.CreateDirectory(_settingsDirectory);
         _siteFactoryPath = Path.Combine(_settingsDirectory, "site-factory.json");
+        _selectionOptionsPath = Path.Combine(_settingsDirectory, "client-app-info.zh-CN.json");
         _originalSiteFactoryJson = File.Exists(_siteFactoryPath) ? File.ReadAllText(_siteFactoryPath) : null;
+        _originalSelectionOptionsJson = File.Exists(_selectionOptionsPath) ? File.ReadAllText(_selectionOptionsPath) : null;
         File.WriteAllText(_siteFactoryPath, """
 {
   "Factories": [
@@ -28,13 +34,22 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
   ]
 }
 """);
+                File.WriteAllText(_selectionOptionsPath, """
+{
+    "AreaOptions": ["阳极", "阴极"],
+    "ProcedureOptions": ["凹版", "热压/冷压", "X-ray"]
+}
+""");
     }
 
     [Fact]
     public async Task SaveCommand_ShouldOnlyEnableWhenFormIsDirty()
     {
         var service = new StubClientAppInfoService();
-        var viewModel = new ClientAppInfoViewModel(service);
+        var viewModel = new ClientAppInfoViewModel(
+            service,
+            new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
+            new UiBusyService());
 
         await viewModel.InitializeAsync();
 
@@ -75,11 +90,31 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             {
                 File.Delete(_siteFactoryPath);
             }
+        }
+
+        if (_originalSiteFactoryJson is null)
+        {
+            if (File.Exists(_siteFactoryPath))
+            {
+                File.Delete(_siteFactoryPath);
+            }
+        }
+        else
+        {
+            File.WriteAllText(_siteFactoryPath, _originalSiteFactoryJson);
+        }
+
+        if (_originalSelectionOptionsJson is null)
+        {
+            if (File.Exists(_selectionOptionsPath))
+            {
+                File.Delete(_selectionOptionsPath);
+            }
 
             return;
         }
 
-        File.WriteAllText(_siteFactoryPath, _originalSiteFactoryJson);
+        File.WriteAllText(_selectionOptionsPath, _originalSelectionOptionsJson);
     }
 
     private sealed class StubClientAppInfoService : IClientAppInfoService
@@ -126,5 +161,18 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
                 IsStringReverse = request.IsStringReverse
             });
         }
+    }
+
+    private sealed class StubLocalizationService : ILocalizationService
+    {
+        public string this[string name] => name;
+
+        public ApplicationServices.Localization.Generated.LocalizationCatalog Catalog { get; } = new(static key => key);
+
+        public ValueTask InitializeAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+
+        public ValueTask SetCultureAsync(string cultureName, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+
+        public System.Globalization.CultureInfo CurrentCulture { get; } = System.Globalization.CultureInfo.GetCultureInfo("zh-CN");
     }
 }

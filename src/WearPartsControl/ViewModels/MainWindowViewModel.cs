@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
@@ -20,6 +21,7 @@ namespace WearPartsControl.ViewModels
         private readonly ICurrentUserAccessor _currentUserAccessor;
         private readonly ILoginService _loginService;
         private readonly IAppSettingsService _appSettingsService;
+        private readonly IUiBusyService _uiBusyService;
         private readonly IReadOnlyList<string> _allTabs;
         private string _currentUserWorkIdText = "工号：--";
         private string _currentUserAccessLevelText = "权限：--";
@@ -32,7 +34,8 @@ namespace WearPartsControl.ViewModels
             IServiceProvider serviceProvider,
             ICurrentUserAccessor currentUserAccessor,
             ILoginService loginService,
-            IAppSettingsService appSettingsService)
+            IAppSettingsService appSettingsService,
+            IUiBusyService uiBusyService)
         {
             Title = localizationService["MainWindow.Title"];
             TabChangedCommand = new RelayCommand<int>(OnTabChanged);
@@ -41,6 +44,7 @@ namespace WearPartsControl.ViewModels
             _serviceProvider = serviceProvider;
             _currentUserAccessor = currentUserAccessor;
             _loginService = loginService;
+            _uiBusyService = uiBusyService;
             _selectedContent = _serviceProvider.GetRequiredService<ReplacePartUserControl>();
             _appSettingsService = appSettingsService;
             _allTabs = localizationService.Catalog.MainWindow.Tabs.ToArray();
@@ -48,6 +52,7 @@ namespace WearPartsControl.ViewModels
             SoftwareVersionText = $"软件版本：{ResolveVersion()}";
             _currentUserAccessor.CurrentUserChanged += OnCurrentUserChanged;
             _appSettingsService.SettingsSaved += OnAppSettingsSaved;
+            _uiBusyService.PropertyChanged += OnUiBusyServicePropertyChanged;
             UpdateCurrentUserState();
 
             var appSettings = _appSettingsService.GetAsync(default).GetAwaiter().GetResult();
@@ -71,6 +76,8 @@ namespace WearPartsControl.ViewModels
         }
 
         public string SoftwareVersionText { get; }
+
+        public bool IsBusy => _uiBusyService.IsBusy;
 
         public bool IsLoggedIn
         {
@@ -180,6 +187,14 @@ namespace WearPartsControl.ViewModels
         private void OnCurrentUserChanged(object? sender, EventArgs e)
         {
             UpdateCurrentUserState();
+        }
+
+        private void OnUiBusyServicePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IUiBusyService.IsBusy))
+            {
+                OnPropertyChanged(nameof(IsBusy));
+            }
         }
 
         private void UpdateCurrentUserState()

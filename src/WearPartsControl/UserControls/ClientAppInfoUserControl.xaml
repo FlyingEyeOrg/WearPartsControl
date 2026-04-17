@@ -4,9 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:ui="https://handyorg.github.io/handycontrol"
+             xmlns:vm="clr-namespace:WearPartsControl.ViewModels"
              mc:Ignorable="d"
              d:DesignHeight="450"
-             d:DesignWidth="800">
+             d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance Type=vm:ClientAppInfoViewModel}">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </UserControl.Resources>
@@ -41,8 +43,7 @@
                                   SelectedValue="{Binding SiteCode, UpdateSourceTrigger=PropertyChanged}"
                                   SelectedValuePath="Code" />
                     </Grid>
-                    <Grid Margin="0 8 0 0"
-                          Visibility="{Binding IsSiemensSlotVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="80" />
                             <ColumnDefinition />
@@ -120,7 +121,8 @@
                                  Text="{Binding PlcIpAddress, UpdateSourceTrigger=PropertyChanged}"
                                  ui:InfoElement.Placeholder="请输入 PLC 的 IP 地址" />
                     </Grid>
-                    <Grid Margin="0 8 0 0">
+                    <Grid Margin="0 8 0 0"
+                          Visibility="{Binding IsSiemensSlotVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="80" />
                             <ColumnDefinition />
@@ -171,7 +173,8 @@
                                  Text="{Binding PlcPort, UpdateSourceTrigger=PropertyChanged}"
                                  ui:InfoElement.Placeholder="请输入 PLC 端口" />
                     </Grid>
-                    <Grid Margin="0 8 0 0" Height="28">
+                    <Grid Margin="0 8 0 0"
+                          Height="28">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="80" />
                             <ColumnDefinition />
@@ -199,13 +202,5 @@
                         IsEnabled="False">测试 PLC 连接</Button>
             </Grid>
         </StackPanel>
-        <Border Background="#40FFFFFF"
-                Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <ui:LoadingCircle Width="80"
-                              Height="80"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center"
-                              IsRunning="{Binding IsBusy}" />
-        </Border>
     </Grid>
 </UserControl>

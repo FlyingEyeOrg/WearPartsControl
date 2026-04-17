@@ -51,6 +51,8 @@ public static class ServiceRegistration
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<PlcService>().As<IPlcService>().SingleInstance();
         builder.RegisterType<AppSettingsService>().As<IAppSettingsService>().SingleInstance();
+        builder.RegisterType<UiBusyService>().As<IUiBusyService>().SingleInstance();
+        builder.RegisterType<JsonClientAppInfoSelectionOptionsProvider>().As<IClientAppInfoSelectionOptionsProvider>().SingleInstance();
         builder.RegisterType<ClientAppInfoService>().As<IClientAppInfoService>().InstancePerLifetimeScope();
         builder.RegisterType<LegacyDatabaseImportService>().As<ILegacyDatabaseImportService>().SingleInstance();
         builder.RegisterType<WearPartManagementService>().As<IWearPartManagementService>().InstancePerLifetimeScope();

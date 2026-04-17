@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.Exceptions;
@@ -11,38 +12,9 @@ namespace WearPartsControl.ViewModels;
 
 public sealed class ClientAppInfoViewModel : ObservableObject
 {
-    private static readonly string[] FixedAreaOptions = ["阳极", "阴极"];
-    private static readonly string[] FixedProcedureOptions =
-    [
-        "搅拌",
-        "凹版",
-        "涂布",
-        "冷压预分切",
-        "冷压",
-        "预分切",
-        "模切分条",
-        "模切",
-        "分条",
-        "WCP",
-        "卷绕",
-        "热压/冷压",
-        "X-ray",
-        "配对",
-        "超声波",
-        "转接片焊接",
-        "包Mylar",
-        "顶盖焊接",
-        "一次氦检",
-        "Baking",
-        "一次注液",
-        "化成",
-        "二次注液",
-        "密封钉焊接",
-        "容量",
-        "包膜"
-    ];
-
     private readonly IClientAppInfoService _clientAppInfoService;
+    private readonly IClientAppInfoSelectionOptionsProvider _selectionOptionsProvider;
+    private readonly IUiBusyService _uiBusyService;
     private readonly List<SiteFactoryOption> _siteFactoryOptions = new();
     private Guid? _clientAppConfigurationId;
     private ClientAppInfoSnapshot _originalSnapshot = ClientAppInfoSnapshot.Empty;
@@ -64,20 +36,15 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     private string _statusMessage = "请先完善客户端信息。";
     private bool _isStringReverse = true;
 
-    public ClientAppInfoViewModel(IClientAppInfoService clientAppInfoService)
+    public ClientAppInfoViewModel(
+        IClientAppInfoService clientAppInfoService,
+        IClientAppInfoSelectionOptionsProvider selectionOptionsProvider,
+        IUiBusyService uiBusyService)
     {
         _clientAppInfoService = clientAppInfoService;
+        _selectionOptionsProvider = selectionOptionsProvider;
+        _uiBusyService = uiBusyService;
         SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
-
-        foreach (var area in FixedAreaOptions)
-        {
-            AreaOptions.Add(area);
-        }
-
-        foreach (var procedure in FixedProcedureOptions)
-        {
-            ProcedureOptions.Add(procedure);
-        }
 
         foreach (var plcProtocolType in Enum.GetNames<PlcProtocolType>())
         {
@@ -291,8 +258,10 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         }
 
         IsBusy = true;
+        using var _ = _uiBusyService.Enter();
         try
         {
+            await LoadSelectionOptionsAsync(cancellationToken).ConfigureAwait(true);
             await LoadSiteFactoryOptionsAsync(cancellationToken).ConfigureAwait(true);
             var model = await _clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(true);
             Apply(model);
@@ -316,6 +285,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     {
         IsBusy = true;
         StatusMessage = "正在保存客户端信息...";
+        using var _ = _uiBusyService.Enter();
 
         try
         {
@@ -373,7 +343,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             _clientAppConfigurationId = model.Id;
             SiteCode = model.SiteCode;
             FactoryCode = model.FactoryCode;
-            AreaCode = model.AreaCode;
+            AreaCode = ResolveAreaCode(model.AreaCode);
             ProcedureCode = model.ProcedureCode;
             EquipmentCode = model.EquipmentCode;
             ResourceNumber = model.ResourceNumber;
@@ -448,6 +418,23 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         }
     }
 
+    private async Task LoadSelectionOptionsAsync(CancellationToken cancellationToken)
+    {
+        var options = await _selectionOptionsProvider.GetAsync(cancellationToken).ConfigureAwait(true);
+
+        AreaOptions.Clear();
+        foreach (var area in options.AreaOptions)
+        {
+            AreaOptions.Add(area);
+        }
+
+        ProcedureOptions.Clear();
+        foreach (var procedure in options.ProcedureOptions)
+        {
+            ProcedureOptions.Add(procedure);
+        }
+    }
+
     private void UpdateFactoryOptions()
     {
         FactoryOptions.Clear();
@@ -515,6 +502,17 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     private static string Normalize(string? value)
     {
         return value?.Trim() ?? string.Empty;
+    }
+
+    private string ResolveAreaCode(string? areaCode)
+    {
+        var normalized = Normalize(areaCode);
+        if (!string.IsNullOrWhiteSpace(normalized))
+        {
+            return normalized;
+        }
+
+        return AreaOptions.FirstOrDefault() ?? string.Empty;
     }
 
     private sealed record ClientAppInfoSnapshot(

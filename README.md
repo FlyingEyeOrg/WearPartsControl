@@ -72,7 +72,7 @@
 ## 登录与配置
 
 - 客户端基础信息未配置完成前，主窗口仅保留基础信息页，右上角 `LoginBox` 禁用；保存成功后才会开放其余 tabs 与登录入口。
-- 客户端基础信息中的 `区域` 固定为 `阳极`、`阴极`；`工序` 固定沿用旧系统 `EProcedure` 业务词典。
+- 客户端基础信息中的 `区域`、`工序` 由 `PrivateData/Settings/client-app-info.<culture>.json` 提供；会按当前语言环境优先加载对应文件，例如 `client-app-info.zh-CN.json`。
 - PLC 相关配置遵循旧系统规则：西门子 PLC 显示并保存插槽号，`ModbusTcp` 与汇川 PLC 显示字符串反转开关。
 - 登录窗口通过刷卡器模拟键盘输入完成登录，窗口打开后会自动聚焦到密码输入框。
 - 登录窗口支持回车提交；当相邻输入间隔超过 `LoginInputMaxIntervalMilliseconds` 时，会判定为手工输入并拒绝登录。

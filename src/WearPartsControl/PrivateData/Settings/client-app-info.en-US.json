@@ -1,0 +1,34 @@
+{
+  "AreaOptions": [
+    "Anode",
+    "Cathode"
+  ],
+  "ProcedureOptions": [
+    "Mixing",
+    "Gravure",
+    "Coating",
+    "Cold Press Pre-Slitting",
+    "Cold Press",
+    "Pre-Slitting",
+    "Die Cutting Slitting",
+    "Die Cutting",
+    "Slitting",
+    "WCP",
+    "Winding",
+    "Hot Press/Cold Press",
+    "X-ray",
+    "Pairing",
+    "Ultrasonic",
+    "Adapter Tab Welding",
+    "Mylar Wrapping",
+    "Top Cover Welding",
+    "First Helium Leak Test",
+    "Baking",
+    "First Electrolyte Filling",
+    "Formation",
+    "Second Electrolyte Filling",
+    "Seal Pin Welding",
+    "Capacity",
+    "Film Wrapping"
+  ]
+}

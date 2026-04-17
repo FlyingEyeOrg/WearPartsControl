@@ -32,7 +32,8 @@ public sealed class MainWindowViewModelTests
             new StubServiceProvider(),
             accessor,
             new StubLoginService(),
-            appSettingsService);
+            appSettingsService,
+            new UiBusyService());
 
         Assert.True(viewModel.IsClientAppInfoConfigured);
         Assert.Equal("工号：--", viewModel.CurrentUserWorkIdText);
@@ -68,7 +69,8 @@ public sealed class MainWindowViewModelTests
             new StubServiceProvider(),
             new CurrentUserAccessor(),
             new StubLoginService(),
-            appSettingsService);
+            appSettingsService,
+            new UiBusyService());
 
         Assert.Single(viewModel.Tabs);
         Assert.False(viewModel.IsClientAppInfoConfigured);
