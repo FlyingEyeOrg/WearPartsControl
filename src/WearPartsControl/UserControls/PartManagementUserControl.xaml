@@ -23,12 +23,11 @@
             </Border>
 
             <Border Margin="8 8 8 0"
-                    Padding="10"
                     CornerRadius="6"
                     Background="#FFF5F7FA"
                     BorderBrush="#FFD9E2F2"
                     BorderThickness="1">
-                <Grid>
+                <Grid Margin="8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -45,9 +44,9 @@
                     </DockPanel>
 
                     <WrapPanel Grid.Row="1"
-                               Margin="0 10 0 0"
+                               Margin="0 8 0 0"
                                VerticalAlignment="Center">
-                        <Grid Margin="0 0 8 0">
+                        <Grid Margin="0 8 8 0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="80" />
                                 <ColumnDefinition Width="180" />
@@ -58,32 +57,32 @@
                                      Style="{StaticResource TextBoxExtend}"
                                      hc:InfoElement.Placeholder="请输入易损件名称" />
                         </Grid>
-
-                        <Button Margin="0 0 8 0"
+                        <Button Margin="0 8 8 0"
                                 Width="80"
                                 Command="{Binding SearchCommand}"
                                 Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource SearchGeometry}">查询</Button>
-                        <Button Margin="0 0 8 0"
+                        <Button Margin="0 8 8 0"
                                 Width="80"
                                 Command="{Binding RefreshCommand}"
                                 Style="{StaticResource ButtonPrimary}">刷新</Button>
-                        <Button Margin="0 0 8 0"
+                        <Button Margin="0 8 8 0"
                                 Width="80"
                                 Command="{Binding AddCommand}"
                                 Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource AddGeometry}">新增</Button>
-                        <Button Margin="0 0 8 0"
+                        <Button Margin="0 8 8 0"
                                 Width="80"
                                 Command="{Binding EditCommand}"
                                 Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource DropperGeometry}">编辑</Button>
-                        <Button Margin="0 0 8 0"
+                        <Button Margin="0 8 8 0"
                                 Width="80"
                                 Command="{Binding DeleteCommand}"
                                 Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource DeleteGeometry}">删除</Button>
-                        <Button IsEnabled="False"
+                        <Button Margin="0 8 8 0"
+                                IsEnabled="False"
                                 Style="{StaticResource ButtonPrimary}"
                                 ToolTip="导入功能保留原入口，当前未在本次 CRUD 范围内调整。"
                                 hc:IconElement.Geometry="{StaticResource AddGeometry}">从其他设备导入</Button>
