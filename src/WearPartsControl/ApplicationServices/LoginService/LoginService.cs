@@ -3,7 +3,8 @@ using System.Net.Http;
 using System.IO;
 using System.Globalization;
 using System.Net.Http.Headers;
-using System.Web;
+using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
@@ -138,50 +139,18 @@ public sealed class LoginService : ILoginService
 
     private async Task<MhrUserListResponse> GetUserListAsync(string getUsersUrl, string token, string factory, string resourceId, CancellationToken cancellationToken)
     {
-        try
-        {
-            return await SendGetUsersRequestAsync(getUsersUrl, token, factory, resourceId, cancellationToken).ConfigureAwait(false);
-        }
-        catch (UserFriendlyException ex) when (string.Equals(ex.Code, "Http:404", StringComparison.Ordinal)
-            && TryBuildGetUsersFallbackUrl(getUsersUrl, out var fallbackUrl))
-        {
-            return await SendGetUsersRequestAsync(fallbackUrl, token, factory, resourceId, cancellationToken).ConfigureAwait(false);
-        }
+        return await SendGetUsersRequestAsync(getUsersUrl, token, factory, resourceId, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<MhrUserListResponse> SendGetUsersRequestAsync(string getUsersUrl, string token, string factory, string resourceId, CancellationToken cancellationToken)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Get, BuildGetUsersRequestUri(getUsersUrl, factory, resourceId));
+        using var request = new HttpRequestMessage(HttpMethod.Post, getUsersUrl)
+        {
+            Content = JsonContent.Create(new GetUsersRequest(factory, resourceId))
+        };
         request.Headers.TryAddWithoutValidation("Authorization", NormalizeAuthorizationHeader(token));
         var response = await _httpJsonService.SendAsync<MhrUserListResponse>(request, cancellationToken).ConfigureAwait(false);
         return response;
-    }
-
-    private static string BuildGetUsersRequestUri(string getUsersUrl, string factory, string resourceId)
-    {
-        var builder = new UriBuilder(getUsersUrl);
-        var query = HttpUtility.ParseQueryString(builder.Query);
-        query["factory"] = factory;
-        query["resourceId"] = resourceId;
-        builder.Query = query.ToString() ?? string.Empty;
-        return builder.Uri.ToString();
-    }
-
-    private static bool TryBuildGetUsersFallbackUrl(string getUsersUrl, out string fallbackUrl)
-    {
-        fallbackUrl = string.Empty;
-        if (!Uri.TryCreate(getUsersUrl, UriKind.Absolute, out var originalUri))
-        {
-            return false;
-        }
-
-        if (!originalUri.AbsolutePath.Contains("/LeanManHour/ClinkGetPermissions", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        fallbackUrl = "https://mhrcatl.com/api/MHR/LeanManHour/GetClinkPermissions";
-        return !string.Equals(fallbackUrl, getUsersUrl, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string ParseAuthorizationValue(JsonElement response)
@@ -241,4 +210,8 @@ public sealed class LoginService : ILoginService
     private string L(string key) => _localizationService[key];
 
     private string LF(string key, params object[] args) => string.Format(CultureInfo.CurrentCulture, L(key), args);
+
+    private sealed record GetUsersRequest(
+        [property: JsonPropertyName("base_id")] string BaseId,
+        [property: JsonPropertyName("device_resource_id")] string DeviceResourceId);
 }

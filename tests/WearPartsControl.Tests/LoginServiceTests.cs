@@ -2,6 +2,7 @@ using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
@@ -99,6 +100,9 @@ public sealed class LoginServiceTests : IDisposable
         Assert.NotNull(cachedUser);
         Assert.Equal(1, httpJsonService.PostCallCount);
         Assert.Equal(1, httpJsonService.SendCallCount);
+        Assert.Equal(HttpMethod.Post, httpJsonService.LastRequestMethod);
+        Assert.Equal("S01", httpJsonService.LastRequestBody?["base_id"]?.GetValue<string>());
+        Assert.Equal("RES-02", httpJsonService.LastRequestBody?["device_resource_id"]?.GetValue<string>());
         Assert.True(File.Exists(cachePath));
     }
 
@@ -141,7 +145,7 @@ public sealed class LoginServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task LoginAsync_WhenLegacyGetUsersUrlReturns404_ShouldFallbackToModernEndpoint()
+    public async Task LoginAsync_ShouldPostGetUsersRequestWithBearerAuthorization()
     {
         var currentUserAccessor = new CurrentUserAccessor();
         var cache = new MhrUserDirectoryCache(Path.Combine(_settingsDirectory, "cache.json"));
@@ -158,8 +162,7 @@ public sealed class LoginServiceTests : IDisposable
                         new MhrUser { CardId = "CARD-04", WorkId = "WORK-04", AccessLevel = 2 }
                     ]
                 }
-            },
-            FailLegacyGetUsersUrlWith404 = true
+            }
         };
 
         var service = new LoginService(
@@ -169,13 +172,15 @@ public sealed class LoginServiceTests : IDisposable
             cache,
             CreateConfigPath(getUsersUrl: "http://ddm.catl.com/LeanManHour/ClinkGetPermissions"));
 
-        var user = await service.LoginAsync("CARD-04", "S01", "RES-04", isIdCard: true);
+        var user = await service.LoginAsync("CARD-04", "S01", "2EFX1024", isIdCard: true);
 
         Assert.NotNull(user);
-        Assert.Equal(2, httpJsonService.SendCallCount);
-        Assert.Contains(
-            httpJsonService.RequestUris,
-            uri => uri.StartsWith("https://mhrcatl.com/api/MHR/LeanManHour/GetClinkPermissions", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(1, httpJsonService.SendCallCount);
+        Assert.Equal(HttpMethod.Post, httpJsonService.LastRequestMethod);
+        Assert.Equal("Bearer token-04", httpJsonService.LastAuthorizationHeader);
+        Assert.Equal("S01", httpJsonService.LastRequestBody?["base_id"]?.GetValue<string>());
+        Assert.Equal("2EFX1024", httpJsonService.LastRequestBody?["device_resource_id"]?.GetValue<string>());
+        Assert.Equal("http://ddm.catl.com/LeanManHour/ClinkGetPermissions", httpJsonService.LastRequestUri);
     }
 
     public void Dispose()
@@ -196,7 +201,7 @@ public sealed class LoginServiceTests : IDisposable
   "CacheDays": 1,
   "LoginInfos": [
     {
-      "site": "S01",
+            "site": "S01",
       "loginUrl": "https://example.com/token",
         "getUsersUrl": "__GET_USERS_URL__"
     }
@@ -248,8 +253,6 @@ public sealed class LoginServiceTests : IDisposable
 
         public int SendCallCount { get; private set; }
 
-        public bool FailLegacyGetUsersUrlWith404 { get; set; }
-
         public JsonElement TokenPayload { get; set; } = JsonDocument.Parse("\"\"").RootElement.Clone();
 
         public MhrUserListResponse Response { get; set; } = new();
@@ -257,6 +260,12 @@ public sealed class LoginServiceTests : IDisposable
         public string? LastAuthorizationHeader { get; private set; }
 
         public List<string> RequestUris { get; } = [];
+
+        public string? LastRequestUri { get; private set; }
+
+        public HttpMethod? LastRequestMethod { get; private set; }
+
+        public JsonObject? LastRequestBody { get; private set; }
 
         public ValueTask<TResponse> GetAsync<TResponse>(string requestUri, CancellationToken cancellationToken = default)
         {
@@ -269,22 +278,22 @@ public sealed class LoginServiceTests : IDisposable
             return ValueTask.FromResult((TResponse)(object)TokenPayload);
         }
 
-        public ValueTask<TResponse> SendAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken = default)
+        public async ValueTask<TResponse> SendAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken = default)
         {
             SendCallCount++;
             RequestUris.Add(request.RequestUri?.ToString() ?? string.Empty);
+            LastRequestUri = request.RequestUri?.ToString();
+            LastRequestMethod = request.Method;
             LastAuthorizationHeader = request.Headers.Authorization?.ToString()
                 ?? (request.Headers.TryGetValues("Authorization", out var values) ? values.FirstOrDefault() : null);
 
-            if (FailLegacyGetUsersUrlWith404
-                && request.RequestUri is not null
-                && string.Equals(request.RequestUri.Host, "ddm.catl.com", StringComparison.OrdinalIgnoreCase)
-                && request.RequestUri.AbsolutePath.Contains("/LeanManHour/ClinkGetPermissions", StringComparison.OrdinalIgnoreCase))
+            if (request.Content is not null)
             {
-                throw new UserFriendlyException("{\"status\":404,\"error\":\"Not Found\"}", code: "Http:404");
+                var json = await request.Content.ReadAsStringAsync(cancellationToken);
+                LastRequestBody = JsonNode.Parse(json)?.AsObject();
             }
 
-            return ValueTask.FromResult((TResponse)(object)Response);
+            return (TResponse)(object)Response;
         }
 
         public ValueTask<HttpRawResponse> SendRawAsync(HttpRequestMessage request, HttpRequestExecutionOptions? options = null, CancellationToken cancellationToken = default)
