@@ -68,6 +68,9 @@
     "GetUsersUrlEmpty": "MHR get-users URL is empty for site {0}.",
     "LoginUrlEmpty": "MHR login URL is empty for site {0}.",
     "UserListEmpty": "No user list data found for current resource ID.",
+    "SiteCodeEmpty": "Current client site code is empty.",
+    "ResourceNumberEmpty": "Current device resource number is empty.",
+    "AuthIdEmpty": "Please swipe your card before logging in.",
     "ConfigFileNotFound": "MHR configuration file not found: {0}",
     "ConfigDeserializeFailed": "Failed to parse MHR configuration file."
   }

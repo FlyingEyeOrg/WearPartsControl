@@ -116,6 +116,41 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         Assert.False(viewModel.IsDirty);
     }
 
+    [Fact]
+    public async Task InitializeAsync_WhenControlIsRecreated_ShouldRestoreSavedFactoryCode()
+    {
+        var service = new StubClientAppInfoService
+        {
+            Model = new ClientAppInfoModel
+            {
+                Id = Guid.NewGuid(),
+                SiteCode = "S01",
+                FactoryCode = "F02",
+                AreaCode = "阳极",
+                ProcedureCode = "凹版",
+                EquipmentCode = "EQ01",
+                ResourceNumber = "RES01",
+                PlcProtocolType = "SiemensS1500",
+                PlcIpAddress = "127.0.0.1",
+                PlcPort = 102,
+                ShutdownPointAddress = "M0.0",
+                SiemensSlot = 1,
+                IsStringReverse = true
+            }
+        };
+
+        var viewModel = new ClientAppInfoViewModel(
+            service,
+            new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
+            new UiBusyService());
+
+        await viewModel.InitializeAsync();
+
+        Assert.Equal("F02", viewModel.FactoryCode);
+        Assert.Contains("F02", viewModel.FactoryOptions);
+        Assert.False(viewModel.IsDirty);
+    }
+
     public void Dispose()
     {
         if (_originalSiteFactoryJson is null)

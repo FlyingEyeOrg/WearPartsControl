@@ -40,6 +40,20 @@ public sealed class ClientAppConfigurationRepository : EfRepositoryBase<WearPart
             .ConfigureAwait(false);
     }
 
+    public Task<ClientAppConfigurationEntity?> GetForUpdateByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Queryable(asNoTracking: false)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    }
+
+    public Task<ClientAppConfigurationEntity?> GetForUpdateByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
+    {
+        var normalized = resourceNumber.Trim();
+
+        return Queryable(asNoTracking: false)
+            .FirstOrDefaultAsync(x => x.ResourceNumber == normalized, cancellationToken);
+    }
+
     public async Task<bool> ExistsByResourceNumberAsync(string resourceNumber, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {
         var normalized = resourceNumber.Trim();

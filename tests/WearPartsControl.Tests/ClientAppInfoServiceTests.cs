@@ -66,6 +66,82 @@ public sealed class ClientAppInfoServiceTests : IDisposable
         Assert.True(settings.IsSetClientAppInfo);
     }
 
+    [Fact]
+    public async Task SaveAsync_WhenTrackedChildEntitiesExist_ShouldUpdateWithoutDuplicateIdError()
+    {
+        var appSettingsService = new AppSettingsService(new TypeJsonSaveInfoStore(_settingsDirectory), _settingsDirectory);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var configurationId = Guid.NewGuid();
+        dbContext.ClientAppConfigurations.Add(new WearPartsControl.Domain.Entities.ClientAppConfigurationEntity
+        {
+            Id = configurationId,
+            SiteCode = "S01",
+            FactoryCode = "F01",
+            AreaCode = "A01",
+            ProcedureCode = "P01",
+            EquipmentCode = "EQ01",
+            ResourceNumber = "RES-CLIENT-02",
+            PlcProtocolType = "SiemensS1500",
+            PlcIpAddress = "127.0.0.1",
+            PlcPort = 102,
+            ShutdownPointAddress = "M0.0",
+            SiemensSlot = 1,
+            IsStringReverse = false,
+            WearPartDefinitions =
+            [
+                new WearPartsControl.Domain.Entities.WearPartDefinitionEntity
+                {
+                    Id = Guid.NewGuid(),
+                    ClientAppConfigurationId = configurationId,
+                    ResourceNumber = "RES-CLIENT-02",
+                    PartName = "Part-01",
+                    InputMode = "Manual",
+                    CurrentValueAddress = "DB1.0",
+                    CurrentValueDataType = "Int32",
+                    WarningValueAddress = "DB1.2",
+                    WarningValueDataType = "Int32",
+                    ShutdownValueAddress = "DB1.4",
+                    ShutdownValueDataType = "Int32",
+                    IsShutdown = true,
+                    CodeMinLength = 1,
+                    CodeMaxLength = 32,
+                    LifetimeType = "Count",
+                    PlcZeroClearAddress = "DB1.6",
+                    BarcodeWriteAddress = "DB1.8"
+                }
+            ]
+        });
+        await dbContext.SaveChangesAsync();
+
+        _ = await dbContext.WearPartDefinitions.SingleAsync();
+
+        var service = new ClientAppInfoService(
+            new WearPartsControl.Infrastructure.EntityFrameworkCore.Repositories.ClientAppConfigurationRepository(dbContext),
+            appSettingsService);
+
+        var saved = await service.SaveAsync(new ClientAppInfoSaveRequest
+        {
+            Id = configurationId,
+            SiteCode = "S01",
+            FactoryCode = "F02",
+            AreaCode = "A01",
+            ProcedureCode = "P01",
+            EquipmentCode = "EQ99",
+            ResourceNumber = "RES-CLIENT-02",
+            PlcProtocolType = "SiemensS1500",
+            PlcIpAddress = "127.0.0.2",
+            PlcPort = 102,
+            ShutdownPointAddress = "M10.0",
+            SiemensSlot = 1,
+            IsStringReverse = false
+        });
+
+        Assert.Equal(configurationId, saved.Id);
+        Assert.Equal("F02", saved.FactoryCode);
+        Assert.Equal("EQ99", saved.EquipmentCode);
+    }
+
     public void Dispose()
     {
         TryDeleteDirectory(_settingsDirectory);

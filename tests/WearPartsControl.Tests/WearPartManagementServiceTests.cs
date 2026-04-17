@@ -175,6 +175,11 @@ public sealed class WearPartManagementServiceTests
             return Task.FromResult(_entities.FirstOrDefault(x => x.Id == id));
         }
 
+        public Task<ClientAppConfigurationEntity?> GetForUpdateByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return GetByIdAsync(id, cancellationToken);
+        }
+
         public Task<IReadOnlyList<ClientAppConfigurationEntity>> ListAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult<IReadOnlyList<ClientAppConfigurationEntity>>(_entities.ToArray());
@@ -205,6 +210,11 @@ public sealed class WearPartManagementServiceTests
         public Task<ClientAppConfigurationEntity?> GetByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(_entities.FirstOrDefault(x => x.ResourceNumber == resourceNumber));
+        }
+
+        public Task<ClientAppConfigurationEntity?> GetForUpdateByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
+        {
+            return GetByResourceNumberAsync(resourceNumber, cancellationToken);
         }
 
         public Task<bool> ExistsByResourceNumberAsync(string resourceNumber, Guid? excludeId = null, CancellationToken cancellationToken = default)

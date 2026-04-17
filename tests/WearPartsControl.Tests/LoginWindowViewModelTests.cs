@@ -33,6 +33,21 @@ public sealed class LoginWindowViewModelTests
         Assert.True(dialogResult);
     }
 
+    [Fact]
+    public async Task InitializeAsync_WhenClientSiteCodeMissing_ShouldShowPromptAndKeepSiteEmpty()
+    {
+        var loginService = new StubLoginService();
+        var viewModel = new LoginWindowViewModel(
+            loginService,
+            new StubClientAppConfigurationRepository(siteCode: "  "),
+            new StubAppSettingsService());
+
+        await viewModel.InitializeAsync();
+
+        Assert.Equal(string.Empty, viewModel.SiteCode);
+        Assert.Equal("资源号 RES-001 的客户端配置未设置基地。", viewModel.StatusMessage);
+    }
+
     private sealed class StubLoginService : ILoginService
     {
         public string ResourceNumber { get; private set; } = string.Empty;
@@ -82,13 +97,20 @@ public sealed class LoginWindowViewModelTests
 
     private sealed class StubClientAppConfigurationRepository : IClientAppConfigurationRepository
     {
+        private readonly string _siteCode;
+
+        public StubClientAppConfigurationRepository(string siteCode = "SITE-01")
+        {
+            _siteCode = siteCode;
+        }
+
         public IUnitOfWork UnitOfWork => throw new NotSupportedException();
 
         public Task<ClientAppConfigurationEntity?> GetByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
         {
             return Task.FromResult<ClientAppConfigurationEntity?>(new ClientAppConfigurationEntity
             {
-                SiteCode = "SITE-01",
+                SiteCode = _siteCode,
                 FactoryCode = "FACTORY-01",
                 AreaCode = "AREA-01",
                 ProcedureCode = "PROC-01",
@@ -98,6 +120,11 @@ public sealed class LoginWindowViewModelTests
                 PlcIpAddress = "127.0.0.1",
                 PlcPort = 102
             });
+        }
+
+        public Task<ClientAppConfigurationEntity?> GetForUpdateByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
+        {
+            return GetByResourceNumberAsync(resourceNumber, cancellationToken);
         }
 
         public Task<bool> ExistsByResourceNumberAsync(string resourceNumber, Guid? excludeId = null, CancellationToken cancellationToken = default)
@@ -111,6 +138,11 @@ public sealed class LoginWindowViewModelTests
         }
 
         public Task<ClientAppConfigurationEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<ClientAppConfigurationEntity?> GetForUpdateByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
         }

@@ -121,6 +121,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         {
             if (SetProperty(ref _factoryCode, value))
             {
+                EnsureOption(FactoryOptions, value);
                 UpdateDirtyState();
             }
         }
@@ -342,7 +343,8 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         {
             _clientAppConfigurationId = model.Id;
             SiteCode = model.SiteCode;
-            FactoryCode = model.FactoryCode;
+            UpdateFactoryOptions();
+            FactoryCode = ResolveFactoryCode(model.FactoryCode);
             AreaCode = ResolveAreaCode(model.AreaCode);
             ProcedureCode = ResolveProcedureCode(model.ProcedureCode);
             EquipmentCode = model.EquipmentCode;
@@ -353,8 +355,6 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             ShutdownPointAddress = model.ShutdownPointAddress;
             SiemensSlot = model.SiemensSlot.ToString();
             IsStringReverse = model.IsStringReverse;
-
-            UpdateFactoryOptions();
             _originalSnapshot = CaptureSnapshot();
             IsDirty = false;
         }
@@ -524,6 +524,17 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         }
 
         return ProcedureOptions.FirstOrDefault() ?? string.Empty;
+    }
+
+    private string ResolveFactoryCode(string? factoryCode)
+    {
+        var normalized = Normalize(factoryCode);
+        if (!string.IsNullOrWhiteSpace(normalized))
+        {
+            return normalized;
+        }
+
+        return FactoryOptions.FirstOrDefault() ?? string.Empty;
     }
 
     private sealed record ClientAppInfoSnapshot(

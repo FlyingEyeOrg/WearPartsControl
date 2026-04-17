@@ -40,28 +40,44 @@ public sealed class LoginService : ILoginService
         var normalizedFactory = factory?.Trim() ?? string.Empty;
         var normalizedResourceId = resourceId?.Trim() ?? string.Empty;
         var normalizedAuthId = authId?.Trim() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(normalizedFactory))
+        {
+            throw new UserFriendlyException(L("LoginService.SiteCodeEmpty"));
+        }
+
+        if (string.IsNullOrWhiteSpace(normalizedResourceId))
+        {
+            throw new UserFriendlyException(L("LoginService.ResourceNumberEmpty"));
+        }
+
+        if (string.IsNullOrWhiteSpace(normalizedAuthId))
+        {
+            throw new UserFriendlyException(L("LoginService.AuthIdEmpty"));
+        }
+
         var loginInfo = config.LoginInfos.FirstOrDefault(x => x.Site.Equals(normalizedFactory, StringComparison.OrdinalIgnoreCase));
         if (loginInfo == null)
         {
             throw new UserFriendlyException(LF("LoginService.FactoryConfigNotFound", normalizedFactory));
         }
 
-        if (string.IsNullOrEmpty(config.Password))
+        if (string.IsNullOrWhiteSpace(config.Password))
         {
             throw new UserFriendlyException(LF("LoginService.PasswordEmpty", normalizedFactory));
         }
 
-        if (string.IsNullOrEmpty(config.LoginName))
+        if (string.IsNullOrWhiteSpace(config.LoginName))
         {
             throw new UserFriendlyException(LF("LoginService.LoginNameEmpty", normalizedFactory));
         }
 
-        if (string.IsNullOrEmpty(loginInfo.GetUsersUrl))
+        if (string.IsNullOrWhiteSpace(loginInfo.GetUsersUrl))
         {
             throw new UserFriendlyException(LF("LoginService.GetUsersUrlEmpty", normalizedFactory));
         }
 
-        if (string.IsNullOrEmpty(loginInfo.LoginUrl))
+        if (string.IsNullOrWhiteSpace(loginInfo.LoginUrl))
         {
             throw new UserFriendlyException(LF("LoginService.LoginUrlEmpty", normalizedFactory));
         }

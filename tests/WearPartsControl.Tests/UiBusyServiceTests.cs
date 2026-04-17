@@ -6,6 +6,14 @@ namespace WearPartsControl.Tests;
 public sealed class UiBusyServiceTests
 {
     [Fact]
+    public void Constructor_WithoutOverride_ShouldUseOneSecondMinimumDuration()
+    {
+        var service = new UiBusyService();
+
+        Assert.Equal(TimeSpan.FromSeconds(1), service.MinimumBusyDuration);
+    }
+
+    [Fact]
     public void Enter_ShouldSetBusyImmediately()
     {
         var service = new UiBusyService(TimeSpan.FromMilliseconds(50));

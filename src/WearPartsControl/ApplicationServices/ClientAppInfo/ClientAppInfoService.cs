@@ -40,10 +40,10 @@ public sealed class ClientAppInfoService : IClientAppInfoService
 
         if (request.Id.HasValue && request.Id.Value != Guid.Empty)
         {
-            entity = await _clientAppConfigurationRepository.GetByIdAsync(request.Id.Value, cancellationToken).ConfigureAwait(false);
+            entity = await _clientAppConfigurationRepository.GetForUpdateByIdAsync(request.Id.Value, cancellationToken).ConfigureAwait(false);
         }
 
-        entity ??= await _clientAppConfigurationRepository.GetByResourceNumberAsync(normalizedResourceNumber, cancellationToken).ConfigureAwait(false);
+        entity ??= await _clientAppConfigurationRepository.GetForUpdateByResourceNumberAsync(normalizedResourceNumber, cancellationToken).ConfigureAwait(false);
 
         if (entity is not null)
         {
@@ -66,11 +66,7 @@ public sealed class ClientAppInfoService : IClientAppInfoService
 
         Apply(entity, request, normalizedResourceNumber);
 
-        if (request.Id.HasValue && request.Id.Value != Guid.Empty)
-        {
-            await _clientAppConfigurationRepository.UpdateAsync(entity, cancellationToken).ConfigureAwait(false);
-        }
-        else if (entity.CreatedAt == default || entity.Id == Guid.Empty)
+        if (entity.CreatedAt == default || entity.Id == Guid.Empty)
         {
             await _clientAppConfigurationRepository.AddAsync(entity, cancellationToken).ConfigureAwait(false);
         }

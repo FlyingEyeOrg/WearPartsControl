@@ -68,6 +68,9 @@
     "GetUsersUrlEmpty": "基地 {0} 的 MHR 用户认证 URL 为空。",
     "LoginUrlEmpty": "基地 {0} 的 MHR 用户登录 URL 为空。",
     "UserListEmpty": "未获取到当前资源号的用户列表信息。",
+    "SiteCodeEmpty": "当前客户端配置的基地不能为空。",
+    "ResourceNumberEmpty": "当前设备资源号不能为空。",
+    "AuthIdEmpty": "请先刷卡后再登录。",
     "ConfigFileNotFound": "未找到 MHR 配置文件: {0}",
     "ConfigDeserializeFailed": "MHR 配置文件解析失败。"
   }

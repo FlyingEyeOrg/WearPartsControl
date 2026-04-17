@@ -107,7 +107,14 @@ namespace WearPartsControl.ViewModels
                 return;
             }
 
-            SiteCode = clientAppConfiguration.SiteCode;
+            if (string.IsNullOrWhiteSpace(clientAppConfiguration.SiteCode))
+            {
+                SiteCode = string.Empty;
+                StatusMessage = $"资源号 {ResourceNumber} 的客户端配置未设置基地。";
+                return;
+            }
+
+            SiteCode = clientAppConfiguration.SiteCode.Trim();
             StatusMessage = "请刷卡登录";
         }
 
