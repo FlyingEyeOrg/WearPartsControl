@@ -172,13 +172,5 @@
             </DataGrid>
         </Border>
 
-        <Border Background="#40FFFFFF"
-                Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <hc:LoadingCircle Width="60"
-                              Height="60"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center"
-                              IsRunning="{Binding IsBusy}" />
-        </Border>
     </Grid>
 </UserControl>
