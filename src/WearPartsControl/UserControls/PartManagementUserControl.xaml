@@ -3,16 +3,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:WearPartsControl.UserControls"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              mc:Ignorable="d"
              d:DesignHeight="450"
-             d:DesignWidth="800">
+             d:DesignWidth="1000">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+
         <StackPanel>
             <Border Background="#FF365082"
                     Padding="0 4">
@@ -21,75 +21,156 @@
                            FontSize="16"
                            Foreground="White">易损件管理</TextBlock>
             </Border>
-            <StackPanel Orientation="Horizontal"
-                        Margin="8 8 8 0">
+
+            <Border Margin="8 8 8 0"
+                    Padding="10"
+                    CornerRadius="6"
+                    Background="#FFF5F7FA"
+                    BorderBrush="#FFD9E2F2"
+                    BorderThickness="1">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="80" />
-                        <ColumnDefinition Width="120" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock HorizontalAlignment="Left"
-                               VerticalAlignment="Center">易损件名称：</TextBlock>
-                    <TextBox Style="{StaticResource TextBoxExtend}"
-                             hc:InfoElement.Placeholder="请输入易损件名称"
-                             Grid.Column="1"></TextBox>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <DockPanel LastChildFill="False">
+                        <TextBlock VerticalAlignment="Center"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding StatusMessage}" />
+                        <TextBlock Margin="24 0 0 0"
+                                   VerticalAlignment="Center"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding ResourceNumber, StringFormat=当前资源号：{0}}" />
+                    </DockPanel>
+
+                    <WrapPanel Grid.Row="1"
+                               Margin="0 10 0 0"
+                               VerticalAlignment="Center">
+                        <Grid Margin="0 0 8 0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="180" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center">易损件名称：</TextBlock>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding PartNameFilter, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     hc:InfoElement.Placeholder="请输入易损件名称" />
+                        </Grid>
+
+                        <Button Margin="0 0 8 0"
+                                Width="80"
+                                Command="{Binding SearchCommand}"
+                                Style="{StaticResource ButtonPrimary}"
+                                hc:IconElement.Geometry="{StaticResource SearchGeometry}">查询</Button>
+                        <Button Margin="0 0 8 0"
+                                Width="80"
+                                Command="{Binding RefreshCommand}"
+                                Style="{StaticResource ButtonPrimary}">刷新</Button>
+                        <Button Margin="0 0 8 0"
+                                Width="80"
+                                Command="{Binding AddCommand}"
+                                Style="{StaticResource ButtonPrimary}"
+                                hc:IconElement.Geometry="{StaticResource AddGeometry}">新增</Button>
+                        <Button Margin="0 0 8 0"
+                                Width="80"
+                                Command="{Binding EditCommand}"
+                                Style="{StaticResource ButtonPrimary}"
+                                hc:IconElement.Geometry="{StaticResource DropperGeometry}">编辑</Button>
+                        <Button Margin="0 0 8 0"
+                                Width="80"
+                                Command="{Binding DeleteCommand}"
+                                Style="{StaticResource ButtonPrimary}"
+                                hc:IconElement.Geometry="{StaticResource DeleteGeometry}">删除</Button>
+                        <Button IsEnabled="False"
+                                Style="{StaticResource ButtonPrimary}"
+                                ToolTip="导入功能保留原入口，当前未在本次 CRUD 范围内调整。"
+                                hc:IconElement.Geometry="{StaticResource AddGeometry}">从其他设备导入</Button>
+                    </WrapPanel>
                 </Grid>
-                <Button Margin="8 0 0 0"
-                        Width="80"
-                        Style="{StaticResource ButtonPrimary}"
-                        hc:IconElement.Geometry="{StaticResource SearchGeometry}">查询</Button>
-                <Button Margin="8 0 0 0"
-                        Width="80"
-                        Style="{StaticResource ButtonPrimary}"
-                        hc:IconElement.Geometry="{StaticResource AddGeometry}">新增</Button>
-                <Button Margin="8 0 0 0"
-                        Width="80"
-                        Style="{StaticResource ButtonPrimary}"
-                        hc:IconElement.Geometry="{StaticResource DropperGeometry}">编辑</Button>
-                <Button Margin="8 0 0 0"
-                        Width="80"
-                        Style="{StaticResource ButtonPrimary}"
-                        hc:IconElement.Geometry="{StaticResource DeleteGeometry}">删除</Button>
-                <Button Margin="8 0 0 0"
-                        Style="{StaticResource ButtonPrimary}"
-                        hc:IconElement.Geometry="{StaticResource AddGeometry}">从其他设备导入</Button>
-            </StackPanel>
+            </Border>
         </StackPanel>
+
         <DataGrid Grid.Row="1"
-                  Margin="0 8 0 0">
+                  Margin="8"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True"
+                  ItemsSource="{Binding Definitions}"
+                  SelectedItem="{Binding SelectedDefinition, Mode=TwoWay}"
+                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                  ScrollViewer.CanContentScroll="True">
             <DataGrid.Columns>
+                <DataGridTextColumn Header="资源号"
+                                    Binding="{Binding ResourceNumber}"
+                                    Width="120" />
                 <DataGridTextColumn Header="名称"
-                                    Width="Auto"></DataGridTextColumn>
+                                    Binding="{Binding PartName}"
+                                    Width="140" />
                 <DataGridTextColumn Header="寿命类型"
-                                    Width="Auto"></DataGridTextColumn>
+                                    Binding="{Binding LifetimeType}"
+                                    Width="90" />
+                <DataGridCheckBoxColumn Header="到期停机"
+                                        Binding="{Binding IsShutdown}"
+                                        Width="80" />
                 <DataGridTextColumn Header="当前寿命地址"
-                                    Width="Auto"></DataGridTextColumn>
+                                    Binding="{Binding CurrentValueAddress}"
+                                    Width="120" />
                 <DataGridTextColumn Header="当前寿命数据类型"
-                                    Width="Auto"></DataGridTextColumn>
+                                    Binding="{Binding CurrentValueDataType}"
+                                    Width="120" />
                 <DataGridTextColumn Header="预警寿命地址"
-                                    Width="Auto"></DataGridTextColumn>
+                                    Binding="{Binding WarningValueAddress}"
+                                    Width="120" />
                 <DataGridTextColumn Header="预警寿命数据类型"
-                                    Width="Auto"></DataGridTextColumn>
+                                    Binding="{Binding WarningValueDataType}"
+                                    Width="120" />
                 <DataGridTextColumn Header="停机寿命地址"
-                                    Width="Auto"></DataGridTextColumn>
+                                    Binding="{Binding ShutdownValueAddress}"
+                                    Width="120" />
                 <DataGridTextColumn Header="停机寿命数据类型"
-                                    Width="Auto"></DataGridTextColumn>
+                                    Binding="{Binding ShutdownValueDataType}"
+                                    Width="120" />
                 <DataGridTextColumn Header="输入方式"
-                                    Width="Auto"></DataGridTextColumn>
+                                    Binding="{Binding InputMode}"
+                                    Width="90" />
                 <DataGridTextColumn Header="条码最小长度"
-                                    Width="Auto"></DataGridTextColumn>
+                                    Binding="{Binding CodeMinLength}"
+                                    Width="90" />
                 <DataGridTextColumn Header="条码最大长度"
-                                    Width="Auto"></DataGridTextColumn>
+                                    Binding="{Binding CodeMaxLength}"
+                                    Width="90" />
                 <DataGridTextColumn Header="附加清零地址"
-                                    Width="Auto"></DataGridTextColumn>
+                                    Binding="{Binding PlcZeroClearAddress}"
+                                    Width="120" />
                 <DataGridTextColumn Header="易损件条码地址"
-                                    Width="Auto"></DataGridTextColumn>
-                <DataGridTextColumn Header="录入时间"
-                                    Width="Auto"></DataGridTextColumn>
-                <DataGridTextColumn Header="操作员"
-                                    Width="Auto"></DataGridTextColumn>
-                <DataGridCheckBoxColumn Width="Auto"></DataGridCheckBoxColumn>
+                                    Binding="{Binding BarcodeWriteAddress}"
+                                    Width="120" />
+                <DataGridTextColumn Header="创建时间"
+                                    Binding="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                    Width="150" />
+                <DataGridTextColumn Header="创建人"
+                                    Binding="{Binding CreatedBy}"
+                                    Width="100" />
+                <DataGridTextColumn Header="更新时间"
+                                    Binding="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                    Width="150" />
+                <DataGridTextColumn Header="更新人"
+                                    Binding="{Binding UpdatedBy}"
+                                    Width="100" />
             </DataGrid.Columns>
         </DataGrid>
+
+        <Border Background="#40FFFFFF"
+                Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <hc:LoadingCircle Width="60"
+                              Height="60"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              IsRunning="{Binding IsBusy}" />
+        </Border>
     </Grid>
 </UserControl>

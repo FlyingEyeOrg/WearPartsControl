@@ -40,6 +40,23 @@ public sealed class WearPartManagementServiceTests
     }
 
     [Fact]
+    public async Task CreateDefinitionAsync_WhenBarcodeWriteAddressEmpty_ShouldAllowCreate()
+    {
+        var currentUserAccessor = CreateLoggedInAccessor();
+        var basicConfiguration = CreateClientAppConfiguration("R110");
+        var basicRepository = new FakeClientAppConfigurationRepository(basicConfiguration);
+        var wearPartRepository = new FakeWearPartRepository();
+        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository);
+        var definition = CreateDefinitionModel(basicConfiguration.Id, basicConfiguration.ResourceNumber);
+        definition.BarcodeWriteAddress = string.Empty;
+
+        var created = await service.CreateDefinitionAsync(definition);
+
+        Assert.Equal(string.Empty, created.BarcodeWriteAddress);
+        Assert.Equal(string.Empty, wearPartRepository.Entities[0].BarcodeWriteAddress);
+    }
+
+    [Fact]
     public async Task UpdateDefinitionAsync_WhenPartNameDuplicated_ShouldThrowUserFriendlyException()
     {
         var currentUserAccessor = CreateLoggedInAccessor();

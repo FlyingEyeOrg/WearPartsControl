@@ -250,7 +250,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         entity.CodeMaxLength = definition.CodeMaxLength;
         entity.LifetimeType = definition.LifetimeType.Trim();
         entity.PlcZeroClearAddress = definition.PlcZeroClearAddress.Trim();
-        entity.BarcodeWriteAddress = definition.BarcodeWriteAddress.Trim();
+        entity.BarcodeWriteAddress = NormalizeOptional(definition.BarcodeWriteAddress);
     }
 
     private static WearPartDefinition MapToModel(WearPartDefinitionEntity entity)
@@ -274,6 +274,9 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
             LifetimeType = entity.LifetimeType,
             PlcZeroClearAddress = entity.PlcZeroClearAddress,
             BarcodeWriteAddress = entity.BarcodeWriteAddress,
+            CreatedAt = entity.CreatedAt,
+            CreatedBy = entity.CreatedBy ?? string.Empty,
+            UpdatedBy = entity.UpdatedBy ?? string.Empty,
             UpdatedAt = entity.UpdatedAt
         };
     }
@@ -290,7 +293,6 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         NormalizeRequired(definition.ShutdownValueDataType, "停机值点位类型不能为空。");
         NormalizeRequired(definition.LifetimeType, "寿命类型不能为空。");
         NormalizeRequired(definition.PlcZeroClearAddress, "PLC 清零点位不能为空。");
-        NormalizeRequired(definition.BarcodeWriteAddress, "条码写入点位不能为空。");
 
         if (definition.CodeMinLength < 0)
         {
@@ -316,5 +318,10 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         }
 
         return value.Trim();
+    }
+
+    private static string NormalizeOptional(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
     }
 }

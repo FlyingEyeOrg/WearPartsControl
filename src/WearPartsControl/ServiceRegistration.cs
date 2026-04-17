@@ -61,10 +61,15 @@ public static class ServiceRegistration
         builder.RegisterType<WearPartMonitoringHostedService>().As<IHostedService>().SingleInstance();
         EntityFrameworkCoreServiceRegistration.RegisterServices(builder);
         builder.RegisterType<WearPartDefinitionDomainService>().AsSelf().SingleInstance();
+        builder.RegisterType<PartManagementViewModel>().AsSelf().InstancePerDependency();
+        builder.RegisterType<AddPartWindowViewModel>().AsSelf().InstancePerDependency();
+        builder.RegisterType<EditPartWindowViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<ClientAppInfoViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<MainWindowViewModel>().AsSelf().InstancePerDependency();
         // Add other services as needed
 
+        builder.RegisterType<AddPartWindow>().AsSelf().InstancePerDependency();
+        builder.RegisterType<EditPartWindow>().AsSelf().InstancePerDependency();
         builder.RegisterType<ReplacePartUserControl>().AsSelf();
         builder.RegisterType<ClientAppInfoUserControl>().AsSelf();
         builder.RegisterType<UserConfigUserControl>().AsSelf();

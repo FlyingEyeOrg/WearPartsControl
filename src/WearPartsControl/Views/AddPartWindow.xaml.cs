@@ -1,27 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿using System.Windows;
+using WearPartsControl.ViewModels;
 
-namespace WearPartsControl.Views
+namespace WearPartsControl.Views;
+
+/// <summary>
+/// AddPartWindow.xaml 的交互逻辑
+/// </summary>
+public partial class AddPartWindow : Window
 {
-    /// <summary>
-    /// AddPartWindow.xaml 的交互逻辑
-    /// </summary>
-    public partial class AddPartWindow : Window
+    public AddPartWindow(AddPartWindowViewModel viewModel)
     {
-        public AddPartWindow()
-        {
-            InitializeComponent();
-        }
+        ViewModel = viewModel;
+        DataContext = viewModel;
+        InitializeComponent();
+
+        Closed += OnClosed;
+        viewModel.RequestClose += OnRequestClose;
+    }
+
+    public AddPartWindowViewModel ViewModel { get; }
+
+    private void OnClosed(object? sender, EventArgs e)
+    {
+        Closed -= OnClosed;
+        ViewModel.RequestClose -= OnRequestClose;
+    }
+
+    private void OnRequestClose(object? sender, bool? dialogResult)
+    {
+        DialogResult = dialogResult;
+        Close();
     }
 }
