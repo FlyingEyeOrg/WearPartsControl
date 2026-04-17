@@ -172,9 +172,21 @@
                                  Text="{Binding PlcPort, UpdateSourceTrigger=PropertyChanged}"
                                  ui:InfoElement.Placeholder="请输入 PLC 端口" />
                     </Grid>
+                    <Grid Margin="0 8 0 0" Height="28">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">字符串反转：</TextBlock>
+                        <CheckBox Grid.Column="1"
+                                  Style="{StaticResource ToggleButtonSwitch}"
+                                  Width="80"
+                                  ui:InfoElement.Placeholder="请输入 PLC 端口" />
+                    </Grid>
                 </StackPanel>
             </Grid>
-            <TextBlock Margin="8 0 8 16"
+            <TextBlock Margin="8 16 0 0"
                        Foreground="#FF365082"
                        Text="{Binding StatusMessage}" />
             <Grid    Margin="8 16 8 8">
