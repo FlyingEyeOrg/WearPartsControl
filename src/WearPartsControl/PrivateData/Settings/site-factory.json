@@ -93,13 +93,7 @@
         "HDC01",
         "HDC02",
         "HDC03",
-        "HDM01"
-      ]
-    },
-    {
-      "Site": "HX",
-      "SiteName": "湖西基地",
-      "FactoryNames": [
+        "HDM01",
         "HDC02A1"
       ]
     },
