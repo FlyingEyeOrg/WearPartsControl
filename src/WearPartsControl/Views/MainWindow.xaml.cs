@@ -11,6 +11,7 @@ namespace WearPartsControl.Views
     {
         private readonly MainWindowViewModel _viewModel;
         private readonly IServiceProvider _serviceProvider;
+        private CancellationTokenSource? _startupCancellationTokenSource;
 
         public MainWindow(MainWindowViewModel viewModel, IServiceProvider serviceProvider)
         {
@@ -19,8 +20,23 @@ namespace WearPartsControl.Views
             DataContext = viewModel;
             InitializeComponent();
 
+            Loaded += OnMainWindowLoaded;
             _viewModel.LoginRequested += OnLoginRequested;
             Closed += OnMainWindowClosed;
+        }
+
+        private async void OnMainWindowLoaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= OnMainWindowLoaded;
+            _startupCancellationTokenSource = new CancellationTokenSource();
+
+            try
+            {
+                await _viewModel.InitializeAsync(_startupCancellationTokenSource.Token).ConfigureAwait(true);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
 
         private void OnLoginRequested(object? sender, EventArgs e)
@@ -33,6 +49,10 @@ namespace WearPartsControl.Views
 
         private void OnMainWindowClosed(object? sender, EventArgs e)
         {
+            _startupCancellationTokenSource?.Cancel();
+            _startupCancellationTokenSource?.Dispose();
+            _startupCancellationTokenSource = null;
+            Loaded -= OnMainWindowLoaded;
             _viewModel.LoginRequested -= OnLoginRequested;
             Closed -= OnMainWindowClosed;
         }

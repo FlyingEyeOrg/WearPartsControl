@@ -15,7 +15,7 @@
         Background="AliceBlue"
         d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}">
     <Grid>
-        <Grid>
+        <Grid IsEnabled="{Binding IsNotBusy}">
             <Grid.RowDefinitions>
                 <RowDefinition  Height="Auto" />
                 <RowDefinition Height="*" />

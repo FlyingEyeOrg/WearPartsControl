@@ -8,6 +8,7 @@ using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.Localization.Generated;
 using WearPartsControl.ApplicationServices.LoginService;
+using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.UserControls;
 using WearPartsControl.ViewModels;
 using Xunit;
@@ -34,7 +35,8 @@ public sealed class MainWindowViewModelTests
             accessor,
             new StubLoginService(),
             appSettingsService,
-            new UiBusyService());
+            new UiBusyService(),
+            new StubPlcStartupConnectionService());
 
         Assert.True(viewModel.IsClientAppInfoConfigured);
         Assert.Equal("工号：--", viewModel.CurrentUserWorkIdText);
@@ -74,7 +76,8 @@ public sealed class MainWindowViewModelTests
             new CurrentUserAccessor(),
             new StubLoginService(),
             appSettingsService,
-            new UiBusyService());
+            new UiBusyService(),
+            new StubPlcStartupConnectionService());
 
         Assert.False(viewModel.IsLoggedIn);
         Assert.True(viewModel.ShowLoginButton);
@@ -100,7 +103,8 @@ public sealed class MainWindowViewModelTests
             new CurrentUserAccessor(),
             new StubLoginService(),
             appSettingsService,
-            new UiBusyService());
+            new UiBusyService(),
+            new StubPlcStartupConnectionService());
 
         Assert.Single(viewModel.Tabs);
         Assert.False(viewModel.IsClientAppInfoConfigured);
@@ -136,6 +140,7 @@ public sealed class MainWindowViewModelTests
             loginService,
             appSettingsService,
             new UiBusyService(),
+            new StubPlcStartupConnectionService(),
             (delay, cancellationToken) =>
             {
                 var signal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -161,6 +166,70 @@ public sealed class MainWindowViewModelTests
 
         Assert.Equal(1, loginService.LogoutCount);
         Assert.Equal("权限：--", viewModel.CurrentUserAccessLevelText);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WhenClientAppConfigured_ShouldConnectWithBusyState()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+        var startupConnectionService = new StubPlcStartupConnectionService
+        {
+            PendingResult = new TaskCompletionSource<PlcStartupConnectionResult>(TaskCreationOptions.RunContinuationsAsynchronously)
+        };
+        var viewModel = new MainWindowViewModel(
+            new StubLocalizationService(),
+            new StubServiceProvider(),
+            new CurrentUserAccessor(),
+            new StubLoginService(),
+            appSettingsService,
+            new UiBusyService(TimeSpan.Zero),
+            startupConnectionService);
+
+        var initializeTask = viewModel.InitializeAsync();
+
+        Assert.True(viewModel.IsBusy);
+        Assert.False(viewModel.IsNotBusy);
+        Assert.Equal(1, startupConnectionService.CallCount);
+
+        startupConnectionService.PendingResult.SetResult(PlcStartupConnectionResult.Connected());
+        await initializeTask;
+
+        Assert.False(viewModel.IsBusy);
+        Assert.True(viewModel.IsNotBusy);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_ShouldOnlyRunOnce()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+        var startupConnectionService = new StubPlcStartupConnectionService();
+        var viewModel = new MainWindowViewModel(
+            new StubLocalizationService(),
+            new StubServiceProvider(),
+            new CurrentUserAccessor(),
+            new StubLoginService(),
+            appSettingsService,
+            new UiBusyService(TimeSpan.Zero),
+            startupConnectionService);
+
+        await viewModel.InitializeAsync();
+        await viewModel.InitializeAsync();
+
+        Assert.Equal(1, startupConnectionService.CallCount);
     }
 
     private sealed class StubLoginService : ILoginService
@@ -211,6 +280,28 @@ public sealed class MainWindowViewModelTests
             Current = settings;
             SettingsSaved?.Invoke(this, settings);
             return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class StubPlcStartupConnectionService : IPlcStartupConnectionService
+    {
+        public int CallCount { get; private set; }
+
+        public PlcStartupConnectionResult Result { get; set; } = PlcStartupConnectionResult.Connected();
+
+        public TaskCompletionSource<PlcStartupConnectionResult>? PendingResult { get; set; }
+
+        public Task<PlcStartupConnectionResult> EnsureConnectedAsync(CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+
+            if (PendingResult is not null)
+            {
+                cancellationToken.Register(() => PendingResult.TrySetCanceled(cancellationToken));
+                return PendingResult.Task;
+            }
+
+            return Task.FromResult(Result);
         }
     }
 

@@ -50,6 +50,7 @@ public static class ServiceRegistration
         builder.RegisterType<ComNotificationService>().As<IComNotificationService>().SingleInstance();
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<PlcService>().As<IPlcService>().SingleInstance();
+        builder.RegisterType<PlcConnectionStatusService>().As<IPlcConnectionStatusService>().SingleInstance();
         builder.RegisterType<PlcStartupConnectionService>().As<IPlcStartupConnectionService>().InstancePerDependency();
         builder.RegisterType<AppSettingsService>().As<IAppSettingsService>().SingleInstance();
         builder.RegisterType<UiBusyService>().As<IUiBusyService>().SingleInstance();
@@ -66,7 +67,7 @@ public static class ServiceRegistration
         builder.RegisterType<AddPartWindowViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<EditPartWindowViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<ClientAppInfoViewModel>().AsSelf().InstancePerDependency();
-        builder.RegisterType<ReplacePartViewModel>().AsSelf().InstancePerDependency();
+        builder.RegisterType<ReplacePartViewModel>().AsSelf().SingleInstance();
         builder.RegisterType<MainWindowViewModel>().AsSelf().InstancePerDependency();
         // Add other services as needed
 

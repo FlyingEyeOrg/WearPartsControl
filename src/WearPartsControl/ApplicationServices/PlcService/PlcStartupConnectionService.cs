@@ -10,15 +10,18 @@ public sealed class PlcStartupConnectionService : IPlcStartupConnectionService
     private readonly IAppSettingsService _appSettingsService;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IPlcService _plcService;
+    private readonly IPlcConnectionStatusService _plcConnectionStatusService;
 
     public PlcStartupConnectionService(
         IAppSettingsService appSettingsService,
         IServiceScopeFactory serviceScopeFactory,
-        IPlcService plcService)
+        IPlcService plcService,
+        IPlcConnectionStatusService plcConnectionStatusService)
     {
         _appSettingsService = appSettingsService;
         _serviceScopeFactory = serviceScopeFactory;
         _plcService = plcService;
+        _plcConnectionStatusService = plcConnectionStatusService;
     }
 
     public async Task<PlcStartupConnectionResult> EnsureConnectedAsync(CancellationToken cancellationToken = default)
@@ -26,7 +29,9 @@ public sealed class PlcStartupConnectionService : IPlcStartupConnectionService
         var settings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
         if (!settings.IsSetClientAppInfo || string.IsNullOrWhiteSpace(settings.ResourceNumber))
         {
-            return PlcStartupConnectionResult.NotConfigured();
+            var notConfigured = PlcStartupConnectionResult.NotConfigured();
+            _plcConnectionStatusService.Set(notConfigured);
+            return notConfigured;
         }
 
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
@@ -36,19 +41,26 @@ public sealed class PlcStartupConnectionService : IPlcStartupConnectionService
             || string.IsNullOrWhiteSpace(clientAppInfo.PlcProtocolType)
             || string.IsNullOrWhiteSpace(clientAppInfo.PlcIpAddress))
         {
-            return PlcStartupConnectionResult.NotConfigured();
+            var notConfigured = PlcStartupConnectionResult.NotConfigured();
+            _plcConnectionStatusService.Set(notConfigured);
+            return notConfigured;
         }
 
         try
         {
+            _plcConnectionStatusService.Set(PlcStartupConnectionResult.Connecting());
             var connectionOptions = PlcConnectionOptionsFactory.Create(clientAppInfo);
             await Task.Run(() => _plcService.Connect(connectionOptions), cancellationToken).ConfigureAwait(false);
-            return PlcStartupConnectionResult.Connected();
+            var connected = PlcStartupConnectionResult.Connected();
+            _plcConnectionStatusService.Set(connected);
+            return connected;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             Log.Warning(ex, "Failed to connect PLC during startup for resource {ResourceNumber}", clientAppInfo.ResourceNumber);
-            return PlcStartupConnectionResult.Failed($"连接失败：{ex.Message}");
+            var failed = PlcStartupConnectionResult.Failed($"连接失败：{ex.Message}");
+            _plcConnectionStatusService.Set(failed);
+            return failed;
         }
     }
 }

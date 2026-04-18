@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using System.ComponentModel;
 using System.Windows.Media;
 using WearPartsControl.ApplicationServices.PlcService;
 
@@ -6,14 +7,15 @@ namespace WearPartsControl.ViewModels;
 
 public sealed class ReplacePartViewModel : ObservableObject
 {
-    private readonly IPlcStartupConnectionService _plcStartupConnectionService;
-    private bool _isInitialized;
+    private readonly IPlcConnectionStatusService _plcConnectionStatusService;
     private string _plcConnectionStatusText = "未初始化";
     private Brush _plcConnectionStatusBackground = Brushes.Gray;
 
-    public ReplacePartViewModel(IPlcStartupConnectionService plcStartupConnectionService)
+    public ReplacePartViewModel(IPlcConnectionStatusService plcConnectionStatusService)
     {
-        _plcStartupConnectionService = plcStartupConnectionService;
+        _plcConnectionStatusService = plcConnectionStatusService;
+        _plcConnectionStatusService.PropertyChanged += OnPlcConnectionStatusChanged;
+        Apply(_plcConnectionStatusService.Current);
     }
 
     public string PlcConnectionStatusText
@@ -28,19 +30,14 @@ public sealed class ReplacePartViewModel : ObservableObject
         private set => SetProperty(ref _plcConnectionStatusBackground, value);
     }
 
-    public async Task InitializeAsync(CancellationToken cancellationToken = default)
+    private void OnPlcConnectionStatusChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (_isInitialized)
+        if (e.PropertyName != nameof(IPlcConnectionStatusService.Current))
         {
             return;
         }
 
-        _isInitialized = true;
-        PlcConnectionStatusText = "连接中";
-        PlcConnectionStatusBackground = Brushes.Goldenrod;
-
-        var result = await _plcStartupConnectionService.EnsureConnectedAsync(cancellationToken).ConfigureAwait(true);
-        Apply(result);
+        Apply(_plcConnectionStatusService.Current);
     }
 
     private void Apply(PlcStartupConnectionResult result)
@@ -48,8 +45,10 @@ public sealed class ReplacePartViewModel : ObservableObject
         PlcConnectionStatusText = result.Message;
         PlcConnectionStatusBackground = result.Status switch
         {
+            PlcStartupConnectionStatus.Connecting => Brushes.Goldenrod,
             PlcStartupConnectionStatus.Connected => Brushes.ForestGreen,
             PlcStartupConnectionStatus.NotConfigured => Brushes.DimGray,
+            PlcStartupConnectionStatus.Uninitialized => Brushes.Gray,
             _ => Brushes.Firebrick
         };
     }

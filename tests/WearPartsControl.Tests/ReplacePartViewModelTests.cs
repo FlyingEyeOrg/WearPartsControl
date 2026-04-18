@@ -14,6 +14,7 @@ public sealed class ReplacePartViewModelTests
     public async Task EnsureConnectedAsync_WhenClientAppNotConfigured_ShouldSkipConnection()
     {
         var plcService = new StubPlcService();
+        var plcConnectionStatusService = new PlcConnectionStatusService();
         var service = new PlcStartupConnectionService(
             new StubAppSettingsService
             {
@@ -24,19 +25,22 @@ public sealed class ReplacePartViewModelTests
                 }
             },
             new StubServiceScopeFactory(new StubClientAppInfoService()),
-            plcService);
+            plcService,
+            plcConnectionStatusService);
 
         var result = await service.EnsureConnectedAsync();
 
         Assert.Equal(PlcStartupConnectionStatus.NotConfigured, result.Status);
         Assert.Equal("未配置 ClientApp，未连接 PLC。", result.Message);
         Assert.Equal(0, plcService.ConnectCount);
+        Assert.Equal(PlcStartupConnectionStatus.NotConfigured, plcConnectionStatusService.Current.Status);
     }
 
     [Fact]
     public async Task EnsureConnectedAsync_WhenClientAppConfigured_ShouldConnectPlc()
     {
         var plcService = new StubPlcService();
+        var plcConnectionStatusService = new PlcConnectionStatusService();
         var service = new PlcStartupConnectionService(
             new StubAppSettingsService
             {
@@ -59,13 +63,15 @@ public sealed class ReplacePartViewModelTests
                         IsStringReverse = false
                     }
                 }),
-            plcService);
+            plcService,
+            plcConnectionStatusService);
 
         var result = await service.EnsureConnectedAsync();
 
         Assert.Equal(PlcStartupConnectionStatus.Connected, result.Status);
         Assert.Equal("已连接", result.Message);
         Assert.Equal(1, plcService.ConnectCount);
+        Assert.Equal(PlcStartupConnectionStatus.Connected, plcConnectionStatusService.Current.Status);
         Assert.NotNull(plcService.LastOptions);
         Assert.Equal(PlcProtocolType.ModbusTcp, plcService.LastOptions!.PlcType);
         Assert.Equal("192.168.0.10", plcService.LastOptions.IpAddress);
@@ -73,42 +79,27 @@ public sealed class ReplacePartViewModelTests
     }
 
     [Fact]
-    public async Task InitializeAsync_ShouldUpdateStatusWhenClientAppNotConfigured()
+    public void StatusChanged_ShouldUpdateStatusWhenClientAppNotConfigured()
     {
-        var viewModel = new ReplacePartViewModel(new StubPlcStartupConnectionService(
-            PlcStartupConnectionResult.NotConfigured()));
+        var plcConnectionStatusService = new PlcConnectionStatusService();
+        var viewModel = new ReplacePartViewModel(plcConnectionStatusService);
 
-        await viewModel.InitializeAsync();
+        plcConnectionStatusService.Set(PlcStartupConnectionResult.NotConfigured());
 
         Assert.Equal("未配置 ClientApp，未连接 PLC。", viewModel.PlcConnectionStatusText);
         Assert.Same(Brushes.DimGray, viewModel.PlcConnectionStatusBackground);
     }
 
     [Fact]
-    public async Task InitializeAsync_ShouldUpdateStatusWhenConnectionSucceeded()
+    public void StatusChanged_ShouldUpdateStatusWhenConnectionSucceeded()
     {
-        var viewModel = new ReplacePartViewModel(new StubPlcStartupConnectionService(
-            PlcStartupConnectionResult.Connected()));
+        var plcConnectionStatusService = new PlcConnectionStatusService();
+        var viewModel = new ReplacePartViewModel(plcConnectionStatusService);
 
-        await viewModel.InitializeAsync();
+        plcConnectionStatusService.Set(PlcStartupConnectionResult.Connected());
 
         Assert.Equal("已连接", viewModel.PlcConnectionStatusText);
         Assert.Same(Brushes.ForestGreen, viewModel.PlcConnectionStatusBackground);
-    }
-
-    private sealed class StubPlcStartupConnectionService : IPlcStartupConnectionService
-    {
-        private readonly PlcStartupConnectionResult _result;
-
-        public StubPlcStartupConnectionService(PlcStartupConnectionResult result)
-        {
-            _result = result;
-        }
-
-        public Task<PlcStartupConnectionResult> EnsureConnectedAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(_result);
-        }
     }
 
     private sealed class StubAppSettingsService : IAppSettingsService

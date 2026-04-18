@@ -11,6 +11,7 @@ using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.LoginService;
+using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.UserControls;
 
 namespace WearPartsControl.ViewModels
@@ -23,6 +24,7 @@ namespace WearPartsControl.ViewModels
         private readonly ILoginService _loginService;
         private readonly IAppSettingsService _appSettingsService;
         private readonly IUiBusyService _uiBusyService;
+        private readonly IPlcStartupConnectionService _plcStartupConnectionService;
         private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
         private readonly IReadOnlyList<string> _allTabs;
         private string _currentUserWorkIdText = "工号：--";
@@ -33,6 +35,7 @@ namespace WearPartsControl.ViewModels
         private int _autoLogoutCountdownSeconds = 360;
         private int _remainingAutoLogoutSeconds;
         private CancellationTokenSource? _autoLogoutCancellationTokenSource;
+        private int _initializeStarted;
 
         public MainWindowViewModel(
             ILocalizationService localizationService,
@@ -41,6 +44,7 @@ namespace WearPartsControl.ViewModels
             ILoginService loginService,
             IAppSettingsService appSettingsService,
             IUiBusyService uiBusyService,
+            IPlcStartupConnectionService plcStartupConnectionService,
             Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
         {
             Title = localizationService["MainWindow.Title"];
@@ -51,6 +55,7 @@ namespace WearPartsControl.ViewModels
             _currentUserAccessor = currentUserAccessor;
             _loginService = loginService;
             _uiBusyService = uiBusyService;
+            _plcStartupConnectionService = plcStartupConnectionService;
             _delayAsync = delayAsync ?? Task.Delay;
             _selectedContent = _serviceProvider.GetRequiredService<ReplacePartUserControl>();
             _appSettingsService = appSettingsService;
@@ -86,6 +91,8 @@ namespace WearPartsControl.ViewModels
         public string SoftwareVersionText { get; }
 
         public bool IsBusy => _uiBusyService.IsBusy;
+
+        public bool IsNotBusy => !IsBusy;
 
         public bool IsLoggedIn
         {
@@ -145,6 +152,25 @@ namespace WearPartsControl.ViewModels
         public ICommand OpenLoginCommand { get; }
 
         public IAsyncRelayCommand LogoutCommand { get; }
+
+        public async Task InitializeAsync(CancellationToken cancellationToken = default)
+        {
+            if (Interlocked.Exchange(ref _initializeStarted, 1) == 1)
+            {
+                return;
+            }
+
+            if (!IsClientAppInfoConfigured)
+            {
+                await _plcStartupConnectionService.EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
+                return;
+            }
+
+            using (_uiBusyService.Enter())
+            {
+                await _plcStartupConnectionService.EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
+            }
+        }
 
         private bool CanLogout() => IsLoggedIn;
 
@@ -214,6 +240,7 @@ namespace WearPartsControl.ViewModels
                 RunOnUiThread(() =>
                 {
                     OnPropertyChanged(nameof(IsBusy));
+                    OnPropertyChanged(nameof(IsNotBusy));
                     LogoutCommand.NotifyCanExecuteChanged();
                 });
             }
