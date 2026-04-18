@@ -2,6 +2,8 @@ using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.ViewModels;
 using Xunit;
@@ -82,7 +84,7 @@ public sealed class ReplacePartViewModelTests
     public void StatusChanged_ShouldUpdateStatusWhenClientAppNotConfigured()
     {
         var plcConnectionStatusService = new PlcConnectionStatusService();
-        var viewModel = new ReplacePartViewModel(plcConnectionStatusService);
+        var viewModel = CreateViewModel(plcConnectionStatusService);
 
         plcConnectionStatusService.Set(PlcStartupConnectionResult.NotConfigured());
 
@@ -94,12 +96,22 @@ public sealed class ReplacePartViewModelTests
     public void StatusChanged_ShouldUpdateStatusWhenConnectionSucceeded()
     {
         var plcConnectionStatusService = new PlcConnectionStatusService();
-        var viewModel = new ReplacePartViewModel(plcConnectionStatusService);
+        var viewModel = CreateViewModel(plcConnectionStatusService);
 
         plcConnectionStatusService.Set(PlcStartupConnectionResult.Connected());
 
         Assert.Equal("已连接", viewModel.PlcConnectionStatusText);
         Assert.Same(Brushes.ForestGreen, viewModel.PlcConnectionStatusBackground);
+    }
+
+    private static ReplacePartViewModel CreateViewModel(IPlcConnectionStatusService plcConnectionStatusService)
+    {
+        return new ReplacePartViewModel(
+            new StubAppSettingsService(),
+            new StubWearPartManagementService(),
+            new StubWearPartReplacementService(),
+            new UiBusyService(TimeSpan.Zero),
+            plcConnectionStatusService);
     }
 
     private sealed class StubAppSettingsService : IAppSettingsService
@@ -170,6 +182,62 @@ public sealed class ReplacePartViewModelTests
         public void Write<TValue>(string address, TValue value, int retryCount = 1)
         {
             throw new NotSupportedException();
+        }
+    }
+
+    private sealed class StubWearPartManagementService : IWearPartManagementService
+    {
+        public Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<WearPartDefinition>>([]);
+        }
+
+        public Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<WearPartDefinition>>([]);
+        }
+
+        public Task<WearPartDefinition?> GetDefinitionAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<WearPartDefinition?>(null);
+        }
+
+        public Task<WearPartDefinition> CreateDefinitionAsync(WearPartDefinition definition, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<WearPartDefinition> UpdateDefinitionAsync(WearPartDefinition definition, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task DeleteDefinitionAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<int> CopyDefinitionsAsync(string sourceResourceNumber, string targetResourceNumber, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    private sealed class StubWearPartReplacementService : IWearPartReplacementService
+    {
+        public Task<WearPartReplacementPreview> GetReplacementPreviewAsync(Guid wearPartDefinitionId, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<WearPartReplacementRecord> ReplaceByScanAsync(WearPartReplacementRequest request, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<IReadOnlyList<WearPartReplacementRecord>> GetReplacementHistoryAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<WearPartReplacementRecord>>([]);
         }
     }
 

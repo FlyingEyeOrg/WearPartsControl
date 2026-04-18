@@ -57,7 +57,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         var seeded = await SeedAsync("R-OPS-02", "M0.1");
         var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
         var plcService = new FakePlcService();
-        plcService.SetValue("DB1.0", 12);
+        plcService.SetValue("DB1.0", 30);
         plcService.SetValue("DB1.1", 20);
         plcService.SetValue("DB1.2", 30);
 

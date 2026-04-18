@@ -49,7 +49,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         _uiBusyService = uiBusyService;
         _plcConnectionStatusService = plcConnectionStatusService;
         _plcConnectionStatusService.PropertyChanged += OnPlcConnectionStatusChanged;
-        RefreshCommand = new AsyncRelayCommand(RefreshAsync, CanRefresh);
+        RefreshCommand = new AsyncRelayCommand(() => RefreshAsync(), CanRefresh);
         ReplaceCommand = new AsyncRelayCommand(ReplaceAsync, CanReplace);
 
         foreach (var reason in WearPartReplacementReason.All)
