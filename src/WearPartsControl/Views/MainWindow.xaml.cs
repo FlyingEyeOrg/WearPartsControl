@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using WearPartsControl.ViewModels;
 
@@ -32,6 +33,7 @@ namespace WearPartsControl.Views
 
             try
             {
+                await Dispatcher.Yield(DispatcherPriority.Background);
                 await _viewModel.InitializeAsync(_startupCancellationTokenSource.Token).ConfigureAwait(true);
             }
             catch (OperationCanceledException)

@@ -194,6 +194,9 @@ public sealed class MainWindowViewModelTests
 
         var initializeTask = viewModel.InitializeAsync();
 
+    await WaitUntilAsync(() => startupConnectionService.CallCount == 1);
+    await WaitUntilAsync(() => viewModel.IsBusy);
+
         Assert.True(viewModel.IsBusy);
         Assert.False(viewModel.IsNotBusy);
         Assert.Equal(1, startupConnectionService.CallCount);

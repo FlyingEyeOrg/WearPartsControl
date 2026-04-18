@@ -18,6 +18,8 @@ namespace WearPartsControl.ViewModels
 {
     public class MainWindowViewModel : ObservableObject
     {
+        private static readonly object PlaceholderContent = new();
+
         private string? _selectedTabHeader;
         private readonly IServiceProvider _serviceProvider;
         private readonly ICurrentUserAccessor _currentUserAccessor;
@@ -36,6 +38,7 @@ namespace WearPartsControl.ViewModels
         private int _remainingAutoLogoutSeconds;
         private CancellationTokenSource? _autoLogoutCancellationTokenSource;
         private int _initializeStarted;
+        private bool _defaultContentPending;
 
         public MainWindowViewModel(
             ILocalizationService localizationService,
@@ -57,7 +60,7 @@ namespace WearPartsControl.ViewModels
             _uiBusyService = uiBusyService;
             _plcStartupConnectionService = plcStartupConnectionService;
             _delayAsync = delayAsync ?? Task.Delay;
-            _selectedContent = _serviceProvider.GetRequiredService<ReplacePartUserControl>();
+            _selectedContent = PlaceholderContent;
             _appSettingsService = appSettingsService;
             _allTabs = localizationService.Catalog.MainWindow.Tabs.ToArray();
 
@@ -159,6 +162,9 @@ namespace WearPartsControl.ViewModels
             {
                 return;
             }
+
+            await Task.Yield();
+            EnsureDefaultContentLoaded();
 
             if (!IsClientAppInfoConfigured)
             {
@@ -335,24 +341,36 @@ namespace WearPartsControl.ViewModels
 
         private void ApplyClientAppInfoState(bool isConfigured)
         {
-            var stateChanged = _isClientAppInfoConfigured != isConfigured;
             IsClientAppInfoConfigured = isConfigured;
 
             if (isConfigured)
             {
                 Tabs = _allTabs.ToArray();
-                if (stateChanged || SelectedContent is ClientAppInfoUserControl)
+                _defaultContentPending = true;
+                if (Volatile.Read(ref _initializeStarted) == 1)
                 {
-                    SelectedContent = _serviceProvider.GetRequiredService<ReplacePartUserControl>();
+                    EnsureDefaultContentLoaded();
                 }
 
                 return;
             }
 
+            _defaultContentPending = false;
             Tabs = _allTabs.Count > 1
                 ? new[] { _allTabs[1] }
                 : _allTabs.ToArray();
             SelectedContent = _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
+        }
+
+        private void EnsureDefaultContentLoaded()
+        {
+            if (!_defaultContentPending)
+            {
+                return;
+            }
+
+            SelectedContent = _serviceProvider.GetRequiredService<ReplacePartUserControl>();
+            _defaultContentPending = false;
         }
 
         private static string ResolveVersion()

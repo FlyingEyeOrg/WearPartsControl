@@ -21,6 +21,7 @@ public partial class App : Application
 {
     private IHost? _host;
     private ILocalizationService? _localizationService;
+    private Task? _hostStartTask;
 
     public App()
     {
@@ -106,15 +107,33 @@ public partial class App : Application
                 return;
             }
 
-            _host.StartAsync().GetAwaiter().GetResult();
-
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+            MainWindow = mainWindow;
             mainWindow.Show();
+
+            _hostStartTask = StartHostAsync(_host);
         }
         catch (Exception ex)
         {
             Log.Fatal(ex, "Host terminated unexpectedly");
             throw;
+        }
+    }
+
+    private async Task StartHostAsync(IHost host)
+    {
+        try
+        {
+            await host.StartAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Host terminated unexpectedly during startup");
+            Dispatcher.Invoke(() =>
+            {
+                HandleFriendlyException(ex);
+                Shutdown();
+            });
         }
     }
 
