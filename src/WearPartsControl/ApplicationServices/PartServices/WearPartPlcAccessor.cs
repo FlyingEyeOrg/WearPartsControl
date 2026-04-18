@@ -57,6 +57,48 @@ internal static class WearPartPlcAccessor
         plcService.Write(address, 0);
     }
 
+    public static void PulseZeroClearSignal(IPlcService plcService, string address)
+    {
+        if (ShouldSkip(address))
+        {
+            return;
+        }
+
+        plcService.Write(address, true);
+        plcService.Write(address, false);
+    }
+
+    public static void WriteCurrentValue(IPlcService plcService, string address, string dataType, double value)
+    {
+        if (ShouldSkip(address))
+        {
+            return;
+        }
+
+        switch (NormalizeDataType(dataType))
+        {
+            case "INT":
+            case "INT32":
+                plcService.Write(address, Convert.ToInt32(Math.Round(value, MidpointRounding.AwayFromZero), System.Globalization.CultureInfo.InvariantCulture));
+                break;
+            case "FLOAT":
+            case "SINGLE":
+                plcService.Write(address, Convert.ToSingle(value, System.Globalization.CultureInfo.InvariantCulture));
+                break;
+            case "DOUBLE":
+            case "DECIMAL":
+                plcService.Write(address, value);
+                break;
+            case "BOOL":
+            case "BOOLEAN":
+                plcService.Write(address, value > 0d);
+                break;
+            default:
+                plcService.Write(address, value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                break;
+        }
+    }
+
     public static void WriteBarcode(IPlcService plcService, string address, string barcode)
     {
         if (ShouldSkip(address))

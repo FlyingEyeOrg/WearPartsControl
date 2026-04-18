@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using HslCommunication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -75,6 +76,8 @@ public partial class App : Application
 
         try
         {
+            Authorization.SetAuthorizationCode("7525828d-68c9-4d31-b6db-e5162b91ef7b");
+
             _host = Host.CreateDefaultBuilder()
                 .UseServiceProviderFactory(new AutofacServiceProviderFactory())
                 .ConfigureContainer<ContainerBuilder>(builder =>

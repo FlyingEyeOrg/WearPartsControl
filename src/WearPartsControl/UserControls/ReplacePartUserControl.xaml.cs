@@ -12,6 +12,15 @@ namespace WearPartsControl.UserControls
         {
             InitializeComponent();
             DataContext = viewModel;
+            Loaded += OnLoaded;
+        }
+
+        private async void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (DataContext is ReplacePartViewModel viewModel)
+            {
+                await viewModel.InitializeAsync().ConfigureAwait(true);
+            }
         }
     }
 }

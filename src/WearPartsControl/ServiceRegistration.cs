@@ -59,6 +59,10 @@ public static class ServiceRegistration
         builder.RegisterType<LegacyDatabaseImportService>().As<ILegacyDatabaseImportService>().SingleInstance();
         builder.RegisterType<WearPartManagementService>().As<IWearPartManagementService>().InstancePerLifetimeScope();
         builder.RegisterType<WearPartReplacementService>().As<IWearPartReplacementService>().InstancePerLifetimeScope();
+        builder.RegisterType<BarcodeLengthReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
+        builder.RegisterType<BarcodeReuseReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
+        builder.RegisterType<LifetimeReachedReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
+        builder.RegisterType<ChangePositionReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<WearPartMonitorService>().As<IWearPartMonitorService>().InstancePerLifetimeScope();
         builder.RegisterType<WearPartMonitoringHostedService>().As<IHostedService>().SingleInstance();
         EntityFrameworkCoreServiceRegistration.RegisterServices(builder);
@@ -67,7 +71,7 @@ public static class ServiceRegistration
         builder.RegisterType<AddPartWindowViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<EditPartWindowViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<ClientAppInfoViewModel>().AsSelf().InstancePerDependency();
-        builder.RegisterType<ReplacePartViewModel>().AsSelf().SingleInstance();
+        builder.RegisterType<ReplacePartViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<MainWindowViewModel>().AsSelf().InstancePerDependency();
         // Add other services as needed
 

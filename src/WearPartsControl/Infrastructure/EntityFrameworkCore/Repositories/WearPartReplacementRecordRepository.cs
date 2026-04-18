@@ -40,6 +40,17 @@ public sealed class WearPartReplacementRecordRepository : EfRepositoryBase<WearP
             .ConfigureAwait(false);
     }
 
+    public async Task<WearPartReplacementRecordEntity?> GetLatestByOldBarcodeAsync(Guid wearPartDefinitionId, string oldBarcode, CancellationToken cancellationToken = default)
+    {
+        var normalizedBarcode = oldBarcode.Trim();
+
+        return await Queryable(asNoTracking: true)
+            .Where(x => x.WearPartDefinitionId == wearPartDefinitionId && x.OldBarcode == normalizedBarcode)
+            .OrderByDescending(x => x.ReplacedAt)
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     public async Task<bool> ExistsNewBarcodeAsync(Guid wearPartDefinitionId, string newBarcode, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {
         var normalizedBarcode = newBarcode.Trim();

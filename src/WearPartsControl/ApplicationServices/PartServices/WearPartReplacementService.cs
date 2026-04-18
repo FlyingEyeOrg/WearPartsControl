@@ -11,19 +11,22 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
     private readonly IWearPartRepository _wearPartRepository;
     private readonly IWearPartReplacementRecordRepository _replacementRecordRepository;
     private readonly IPlcService _plcService;
+    private readonly IReadOnlyList<IWearPartReplacementGuard> _replacementGuards;
 
     public WearPartReplacementService(
         ICurrentUserAccessor currentUserAccessor,
         IClientAppConfigurationRepository clientAppConfigurationRepository,
         IWearPartRepository wearPartRepository,
         IWearPartReplacementRecordRepository replacementRecordRepository,
-        IPlcService plcService)
+        IPlcService plcService,
+        IEnumerable<IWearPartReplacementGuard> replacementGuards)
         : base(currentUserAccessor)
     {
         _clientAppConfigurationRepository = clientAppConfigurationRepository;
         _wearPartRepository = wearPartRepository;
         _replacementRecordRepository = replacementRecordRepository;
         _plcService = plcService;
+        _replacementGuards = replacementGuards.OrderBy(x => x.Order).ToArray();
     }
 
     public async Task<WearPartReplacementPreview> GetReplacementPreviewAsync(Guid wearPartDefinitionId, CancellationToken cancellationToken = default)
@@ -58,13 +61,6 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
         var normalizedBarcode = NormalizeRequired(request.NewBarcode, "新条码不能为空。");
         var normalizedReason = NormalizeRequired(request.ReplacementReason, "更换原因不能为空。");
 
-        ValidateBarcode(definition, normalizedBarcode);
-
-        if (await _replacementRecordRepository.ExistsNewBarcodeAsync(definition.Id, normalizedBarcode, cancellationToken: cancellationToken).ConfigureAwait(false))
-        {
-            throw new UserFriendlyException($"易损件 {definition.PartName} 已存在条码 {normalizedBarcode} 的更换记录，不允许重复使用。", code: "WearPartReplacement:BarcodeDuplicated");
-        }
-
         _plcService.Connect(WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration));
 
         var currentValue = WearPartPlcAccessor.ReadAsString(_plcService, definition.CurrentValueAddress, definition.CurrentValueDataType);
@@ -72,9 +68,49 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
         var shutdownValue = WearPartPlcAccessor.ReadAsString(_plcService, definition.ShutdownValueAddress, definition.ShutdownValueDataType);
         var latestRecord = await _replacementRecordRepository.GetLatestByDefinitionAsync(definition.Id, cancellationToken).ConfigureAwait(false);
 
-        WearPartPlcAccessor.ClearCounter(_plcService, definition.PlcZeroClearAddress);
+        var guardContext = new WearPartReplacementGuardContext
+        {
+            Request = request,
+            CurrentUser = currentUser,
+            ClientAppConfiguration = clientAppConfiguration,
+            Definition = definition,
+            NormalizedBarcode = normalizedBarcode,
+            NormalizedReason = normalizedReason,
+            CurrentValueText = currentValue,
+            WarningValueText = warningValue,
+            ShutdownValueText = shutdownValue,
+            CurrentValue = WearPartReplacementValueParser.ParseDouble(currentValue, definition.CurrentValueDataType, definition.CurrentValueAddress),
+            WarningValue = WearPartReplacementValueParser.ParseDouble(warningValue, definition.WarningValueDataType, definition.WarningValueAddress),
+            ShutdownValue = WearPartReplacementValueParser.ParseDouble(shutdownValue, definition.ShutdownValueDataType, definition.ShutdownValueAddress),
+            LatestRecord = latestRecord,
+            PlcWriteValue = 0d
+        };
+
+        foreach (var guard in _replacementGuards)
+        {
+            await guard.ValidateAsync(guardContext, cancellationToken).ConfigureAwait(false);
+        }
+
+        if (HasAddress(definition.PlcZeroClearAddress))
+        {
+            WearPartPlcAccessor.PulseZeroClearSignal(_plcService, definition.PlcZeroClearAddress);
+            guardContext.PlcWriteValue = 0d;
+        }
+        else
+        {
+            WearPartPlcAccessor.WriteCurrentValue(_plcService, definition.CurrentValueAddress, definition.CurrentValueDataType, guardContext.PlcWriteValue);
+        }
+
         WearPartPlcAccessor.WriteBarcode(_plcService, definition.BarcodeWriteAddress, normalizedBarcode);
         WearPartPlcAccessor.WriteShutdownSignal(_plcService, clientAppConfiguration.ShutdownPointAddress, shutdown: false);
+
+        var oldBarcode = latestRecord?.NewBarcode;
+        if (latestRecord is null
+            && (string.Equals(normalizedReason, WearPartReplacementReason.ChangePosition, StringComparison.Ordinal)
+                || string.Equals(normalizedReason, WearPartReplacementReason.Maintenance, StringComparison.Ordinal)))
+        {
+            oldBarcode = normalizedBarcode;
+        }
 
         var entity = new WearPartReplacementRecordEntity
         {
@@ -82,7 +118,7 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
             WearPartDefinitionId = definition.Id,
             SiteCode = clientAppConfiguration.SiteCode,
             PartName = definition.PartName,
-            OldBarcode = latestRecord?.NewBarcode,
+            OldBarcode = oldBarcode,
             NewBarcode = normalizedBarcode,
             CurrentValue = currentValue,
             WarningValue = warningValue,
@@ -93,7 +129,7 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
             ReplacementMessage = request.ReplacementMessage?.Trim() ?? string.Empty,
             ReplacedAt = DateTime.UtcNow,
             DataType = definition.CurrentValueDataType,
-            DataValue = currentValue
+            DataValue = guardContext.PlcWriteValue.ToString(System.Globalization.CultureInfo.InvariantCulture)
         };
 
         await _replacementRecordRepository.AddAsync(entity, cancellationToken).ConfigureAwait(false);
@@ -123,19 +159,6 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
     {
         return await _clientAppConfigurationRepository.GetByIdAsync(clientAppConfigurationId, cancellationToken).ConfigureAwait(false)
             ?? throw new EntityNotFoundException($"未找到主键为 {clientAppConfigurationId} 的客户端配置。");
-    }
-
-    private static void ValidateBarcode(WearPartDefinitionEntity definition, string barcode)
-    {
-        if (barcode.Length < definition.CodeMinLength)
-        {
-            throw new UserFriendlyException($"条码长度不能小于 {definition.CodeMinLength}。", code: "WearPartReplacement:BarcodeTooShort");
-        }
-
-        if (barcode.Length > definition.CodeMaxLength)
-        {
-            throw new UserFriendlyException($"条码长度不能大于 {definition.CodeMaxLength}。", code: "WearPartReplacement:BarcodeTooLong");
-        }
     }
 
     private static WearPartReplacementRecord MapToRecord(WearPartReplacementRecordEntity entity)
@@ -170,5 +193,10 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
         }
 
         return value.Trim();
+    }
+
+    private static bool HasAddress(string address)
+    {
+        return !string.IsNullOrWhiteSpace(address) && !string.Equals(address.Trim(), "######", StringComparison.OrdinalIgnoreCase);
     }
 }

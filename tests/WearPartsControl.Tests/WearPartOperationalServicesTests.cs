@@ -68,12 +68,13 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         {
             WearPartDefinitionId = seeded.DefinitionId,
             NewBarcode = "BARCODE-0002",
-            ReplacementReason = "寿命到期正常更换",
+            ReplacementReason = WearPartReplacementReason.Normal,
             ReplacementMessage = "扫码更换"
         });
 
         Assert.Equal("BARCODE-0002", result.NewBarcode);
-        Assert.Contains(plcService.Writes, x => x.Address == "DB1.3" && Equals(x.Value, 0));
+        Assert.Contains(plcService.Writes, x => x.Address == "DB1.3" && Equals(x.Value, true));
+        Assert.Contains(plcService.Writes, x => x.Address == "DB1.3" && Equals(x.Value, false));
         Assert.Contains(plcService.Writes, x => x.Address == "DB1.4" && Equals(x.Value, "BARCODE-0002"));
         Assert.Contains(plcService.Writes, x => x.Address == "M0.1" && Equals(x.Value, false));
 
@@ -81,7 +82,133 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         var repository = new WearPartReplacementRecordRepository(verifyContext);
         var records = await repository.ListByClientAppConfigurationAsync(seeded.BasicConfigurationId);
         Assert.Single(records);
-        Assert.Equal("寿命到期正常更换", records[0].ReplacementReason);
+        Assert.Equal(WearPartReplacementReason.Normal, records[0].ReplacementReason);
+    }
+
+    [Fact]
+    public async Task ReplaceByScanAsync_WhenLifetimeNotReached_ShouldThrowUserFriendlyException()
+    {
+        var seeded = await SeedAsync("R-OPS-05", "M0.5");
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 12);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService);
+
+        var exception = await Assert.ThrowsAsync<UserFriendlyException>(() => service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "BARCODE-0005",
+            ReplacementReason = WearPartReplacementReason.Normal
+        }));
+
+        Assert.Equal("检测到当前易损件未达到停机寿命，不允许更换。", exception.Message);
+    }
+
+    [Fact]
+    public async Task ReplaceByScanAsync_WhenChangePositionWithoutMe_ShouldThrowAuthorizationException()
+    {
+        var seeded = await SeedAsync("R-OPS-06", "M0.6");
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 30);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        await using var seedContext = await _dbContextFactory.CreateDbContextAsync();
+        seedContext.WearPartReplacementRecords.Add(new WearPartReplacementRecordEntity
+        {
+            ClientAppConfigurationId = seeded.BasicConfigurationId,
+            WearPartDefinitionId = seeded.DefinitionId,
+            SiteCode = "S01",
+            PartName = "刀具A",
+            OldBarcode = "OLD-0001",
+            NewBarcode = "BARCODE-0006",
+            CurrentValue = "30",
+            WarningValue = "20",
+            ShutdownValue = "30",
+            OperatorWorkNumber = "WORK-OPS",
+            OperatorUserName = "WORK-OPS",
+            ReplacementReason = WearPartReplacementReason.Normal,
+            ReplacementMessage = string.Empty,
+            ReplacedAt = DateTime.UtcNow.AddMinutes(-5)
+        });
+        await seedContext.SaveChangesAsync();
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService);
+
+        await Assert.ThrowsAsync<AuthorizationException>(() => service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "BARCODE-0006",
+            ReplacementReason = WearPartReplacementReason.ChangePosition
+        }));
+    }
+
+    [Fact]
+    public async Task ReplaceByScanAsync_WhenBarcodeRemovedByProcessDamage_ShouldAllowReuseAndWritePreviousCurrentValue()
+    {
+        var seeded = await SeedAsync("R-OPS-07", "M0.7", plcZeroClearAddress: "######");
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 5);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        await using var seedContext = await _dbContextFactory.CreateDbContextAsync();
+        seedContext.WearPartReplacementRecords.AddRange(
+            new WearPartReplacementRecordEntity
+            {
+                ClientAppConfigurationId = seeded.BasicConfigurationId,
+                WearPartDefinitionId = seeded.DefinitionId,
+                SiteCode = "S01",
+                PartName = "刀具A",
+                OldBarcode = null,
+                NewBarcode = "BARCODE-REUSE",
+                CurrentValue = "18",
+                WarningValue = "20",
+                ShutdownValue = "30",
+                OperatorWorkNumber = "WORK-OPS",
+                OperatorUserName = "WORK-OPS",
+                ReplacementReason = WearPartReplacementReason.Normal,
+                ReplacementMessage = string.Empty,
+                ReplacedAt = DateTime.UtcNow.AddMinutes(-10)
+            },
+            new WearPartReplacementRecordEntity
+            {
+                ClientAppConfigurationId = seeded.BasicConfigurationId,
+                WearPartDefinitionId = seeded.DefinitionId,
+                SiteCode = "S01",
+                PartName = "刀具A",
+                OldBarcode = "BARCODE-REUSE",
+                NewBarcode = "BARCODE-NEWER",
+                CurrentValue = "18",
+                WarningValue = "20",
+                ShutdownValue = "30",
+                OperatorWorkNumber = "WORK-OPS",
+                OperatorUserName = "WORK-OPS",
+                ReplacementReason = WearPartReplacementReason.ProcessDamage,
+                ReplacementMessage = string.Empty,
+                ReplacedAt = DateTime.UtcNow.AddMinutes(-5)
+            });
+        await seedContext.SaveChangesAsync();
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService);
+
+        var result = await service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "BARCODE-REUSE",
+            ReplacementReason = WearPartReplacementReason.ProcessDamage
+        });
+
+        Assert.Equal("BARCODE-REUSE", result.NewBarcode);
+        Assert.Contains(plcService.Writes, x => x.Address == "DB1.0" && Equals(x.Value, 18));
     }
 
     [Fact]
@@ -133,7 +260,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         Assert.Single(notificationService.WorkNotifications);
     }
 
-    private async Task<(Guid BasicConfigurationId, Guid DefinitionId)> SeedAsync(string resourceNumber, string shutdownPointAddress)
+    private async Task<(Guid BasicConfigurationId, Guid DefinitionId)> SeedAsync(string resourceNumber, string shutdownPointAddress, string plcZeroClearAddress = "DB1.3")
     {
         var basicConfigurationId = Guid.NewGuid();
         var definitionId = Guid.NewGuid();
@@ -173,7 +300,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             CodeMinLength = 8,
             CodeMaxLength = 32,
             LifetimeType = "Count",
-            PlcZeroClearAddress = "DB1.3",
+            PlcZeroClearAddress = plcZeroClearAddress,
             BarcodeWriteAddress = "DB1.4"
         });
 
@@ -200,7 +327,13 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             new ClientAppConfigurationRepository(dbContext),
             new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
             new WearPartReplacementRecordRepository(dbContext),
-            plcService);
+            plcService,
+            [
+                new BarcodeLengthReplacementGuard(),
+                new BarcodeReuseReplacementGuard(new WearPartReplacementRecordRepository(dbContext)),
+                new LifetimeReachedReplacementGuard(),
+                new ChangePositionReplacementGuard()
+            ]);
     }
 
     private static WearPartMonitorService CreateMonitorService(WearPartsControlDbContext dbContext, IPlcService plcService, IComNotificationService notificationService)
