@@ -41,6 +41,9 @@
 		<None Update="PrivateData\Settings\app-settings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="PrivateData\Settings\user-config.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="PrivateData\Settings\client-app-info.zh-CN.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

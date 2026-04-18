@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:WearPartsControl.UserControls"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              mc:Ignorable="d"
              d:DesignHeight="450"
@@ -24,6 +23,7 @@
             <TextBlock HorizontalAlignment="Left"
                        VerticalAlignment="Center">ME 负责人工号：</TextBlock>
             <TextBox Style="{StaticResource TextBoxExtend}"
+                     Text="{Binding MeResponsibleWorkId, UpdateSourceTrigger=PropertyChanged}"
                      hc:InfoElement.Placeholder="请输入 ME 负责人工号"
                      Grid.Column="1"></TextBox>
         </Grid>
@@ -35,6 +35,7 @@
             <TextBlock HorizontalAlignment="Left"
                        VerticalAlignment="Center">PRD 负责人工号：</TextBlock>
             <TextBox Style="{StaticResource TextBoxExtend}"
+                     Text="{Binding PrdResponsibleWorkId, UpdateSourceTrigger=PropertyChanged}"
                      hc:InfoElement.Placeholder="请输入 PRD 负责人工号"
                      Grid.Column="1"></TextBox>
         </Grid>
@@ -46,6 +47,7 @@
             <TextBlock HorizontalAlignment="Left"
                        VerticalAlignment="Center">ComAccessToken：</TextBlock>
             <TextBox Style="{StaticResource TextBoxExtend}"
+                     Text="{Binding ComAccessToken, UpdateSourceTrigger=PropertyChanged}"
                      hc:InfoElement.Placeholder="请输入 Com 群访问令牌"
                      Grid.Column="1"></TextBox>
         </Grid>
@@ -57,14 +59,21 @@
             <TextBlock HorizontalAlignment="Left"
                        VerticalAlignment="Center">ComSecret：</TextBlock>
             <TextBox Style="{StaticResource TextBoxExtend}"
+                     Text="{Binding ComSecret, UpdateSourceTrigger=PropertyChanged}"
                      hc:InfoElement.Placeholder="请输入 Com 群 Secret"
                      Grid.Column="1"></TextBox>
         </Grid>
         <Grid Margin="8 16 8 8">
             <Button Width="80"
-                    Style="{StaticResource ButtonPrimary}">保存信息</Button>
+                    Style="{StaticResource ButtonPrimary}"
+                    Command="{Binding SaveCommand}">保存信息</Button>
             <Button Width="120"
-                    HorizontalAlignment="Right">测试 COM 通知</Button>
+                    HorizontalAlignment="Right"
+                    Command="{Binding TestComNotificationCommand}">测试 COM 通知</Button>
         </Grid>
+        <TextBlock Margin="8 0 8 8"
+                   Foreground="#FF365082"
+                   TextWrapping="Wrap"
+                   Text="{Binding StatusMessage}" />
     </StackPanel>
 </UserControl>

@@ -13,6 +13,7 @@ using WearPartsControl.ApplicationServices.SpacerManagement;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.LoginService;
+using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.Domain.Services;
 using WearPartsControl.Infrastructure.EntityFrameworkCore;
 using WearPartsControl.Exceptions;
@@ -47,6 +48,7 @@ public static class ServiceRegistration
             .SingleInstance();
         builder.RegisterType<MhrUserDirectoryCache>().As<IMhrUserDirectoryCache>().SingleInstance();
         builder.RegisterType<LoginService>().As<ILoginService>().SingleInstance();
+        builder.RegisterType<UserConfigService>().As<IUserConfigService>().SingleInstance();
         builder.RegisterType<ComNotificationService>().As<IComNotificationService>().SingleInstance();
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<PlcService>().As<IPlcService>().SingleInstance();
@@ -72,6 +74,7 @@ public static class ServiceRegistration
         builder.RegisterType<EditPartWindowViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<ClientAppInfoViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<ReplacePartViewModel>().AsSelf().InstancePerDependency();
+        builder.RegisterType<UserConfigViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<MainWindowViewModel>().AsSelf().InstancePerDependency();
         // Add other services as needed
 

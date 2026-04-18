@@ -11,7 +11,9 @@ using Serilog;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
+using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.Exceptions;
+using UserConfigModel = WearPartsControl.ApplicationServices.UserConfig.UserConfig;
 
 namespace WearPartsControl.ApplicationServices.ComNotification;
 
@@ -25,30 +27,35 @@ public sealed class ComNotificationService : IComNotificationService
     private readonly ILocalizationService _localizationService;
     private readonly IHttpJsonService _httpJsonService;
     private readonly ISaveInfoStore _saveInfoStore;
+    private readonly IUserConfigService _userConfigService;
 
-    public ComNotificationService(ISaveInfoStore saveInfoStore, ILocalizationService localizationService, IHttpJsonService httpJsonService)
+    public ComNotificationService(ISaveInfoStore saveInfoStore, ILocalizationService localizationService, IHttpJsonService httpJsonService, IUserConfigService userConfigService)
     {
         _saveInfoStore = saveInfoStore;
         _localizationService = localizationService;
         _httpJsonService = httpJsonService;
+        _userConfigService = userConfigService;
     }
 
     public async ValueTask NotifyGroupAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default)
     {
         var options = await _saveInfoStore.ReadAsync<ComNotificationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
+        var userConfig = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
         if (!options.Enabled)
         {
             return;
         }
 
         ValidateBaseSettings(options);
-        var users = ResolveUsers(options, toUsers);
+        var users = ResolveUsers(options, userConfig, toUsers);
         if (users.Count == 0)
         {
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(options.AccessToken) || string.IsNullOrWhiteSpace(options.Secret))
+        var accessToken = ResolveAccessToken(options, userConfig);
+        var secret = ResolveSecret(options, userConfig);
+        if (string.IsNullOrWhiteSpace(accessToken) || string.IsNullOrWhiteSpace(secret))
         {
             throw new UserFriendlyException(L("ComNotification.GroupTokenMissing"));
         }
@@ -64,8 +71,8 @@ public sealed class ComNotificationService : IComNotificationService
             {
                 Title = title,
                 Text = text,
-                AccessToken = options.AccessToken,
-                Secret = options.Secret
+                AccessToken = accessToken,
+                Secret = secret
             }
         };
 
@@ -75,13 +82,14 @@ public sealed class ComNotificationService : IComNotificationService
     public async ValueTask NotifyWorkAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default)
     {
         var options = await _saveInfoStore.ReadAsync<ComNotificationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
+        var userConfig = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
         if (!options.Enabled)
         {
             return;
         }
 
         ValidateBaseSettings(options);
-        var users = ResolveUsers(options, toUsers);
+        var users = ResolveUsers(options, userConfig, toUsers);
         if (users.Count == 0)
         {
             return;
@@ -105,7 +113,7 @@ public sealed class ComNotificationService : IComNotificationService
         await SendAsync(request, options, "工作消息", cancellationToken).ConfigureAwait(false);
     }
 
-    private static List<string> ResolveUsers(ComNotificationOptionsSaveInfo options, IReadOnlyCollection<string>? toUsers)
+    private static List<string> ResolveUsers(ComNotificationOptionsSaveInfo options, UserConfigModel userConfig, IReadOnlyCollection<string>? toUsers)
     {
         if (toUsers is { Count: > 0 })
         {
@@ -116,6 +124,21 @@ public sealed class ComNotificationService : IComNotificationService
                 .ToList();
         }
 
+        var userConfiguredRecipients = new[]
+        {
+            userConfig.MeResponsibleWorkId,
+            userConfig.PrdResponsibleWorkId
+        }
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (userConfiguredRecipients.Count > 0)
+        {
+            return userConfiguredRecipients;
+        }
+
         if (string.IsNullOrWhiteSpace(options.DefaultUserWorkId))
         {
             return new List<string>();
@@ -123,6 +146,12 @@ public sealed class ComNotificationService : IComNotificationService
 
         return new List<string> { options.DefaultUserWorkId.Trim() };
     }
+
+    private static string ResolveAccessToken(ComNotificationOptionsSaveInfo options, UserConfigModel userConfig)
+        => string.IsNullOrWhiteSpace(userConfig.ComAccessToken) ? options.AccessToken : userConfig.ComAccessToken;
+
+    private static string ResolveSecret(ComNotificationOptionsSaveInfo options, UserConfigModel userConfig)
+        => string.IsNullOrWhiteSpace(userConfig.ComSecret) ? options.Secret : userConfig.ComSecret;
 
     private void ValidateBaseSettings(ComNotificationOptionsSaveInfo options)
     {
