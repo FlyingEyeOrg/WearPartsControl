@@ -8,6 +8,7 @@ using System.Windows;
 using WearPartsControl.ApplicationServices.LegacyImport;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
+using WearPartsControl.ApplicationServices.Startup;
 using WearPartsControl.Infrastructure.EntityFrameworkCore;
 using WearPartsControl.Exceptions;
 using WearPartsControl.Views;
@@ -21,30 +22,20 @@ public partial class App : Application
 {
     private IHost? _host;
     private ILocalizationService? _localizationService;
+    private IAppStartupCoordinator? _appStartupCoordinator;
     private Task? _hostStartTask;
+    private CancellationTokenSource? _startupCancellationTokenSource;
 
     public App()
     {
         ConfigureLogging();
-        // Setup global exception handling
-        AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
-        {
-            var exception = (Exception)args.ExceptionObject;
-            Log.Fatal(exception, "Unhandled exception");
-            HandleFriendlyException(exception);
-        };
-
-        DispatcherUnhandledException += (sender, args) =>
-        {
-            Log.Error(args.Exception, "Dispatcher unhandled exception");
-            HandleFriendlyException(args.Exception);
-            args.Handled = true; // Prevent app from crashing
-        };
+        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+        DispatcherUnhandledException += OnDispatcherUnhandledException;
     }
 
     private void HandleFriendlyException(Exception exception)
     {
-        var title = _localizationService?["FriendlyErrorTitle"] ?? "提示";
+        var title = GetLocalizedText("FriendlyErrorTitle");
 
         if (exception is UserFriendlyException userFriendlyException)
         {
@@ -55,7 +46,10 @@ public partial class App : Application
         if (exception is BusinessException businessException)
         {
             MessageBox.Show(businessException.Message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
         }
+
+        MessageBox.Show(GetLocalizedText("UnexpectedError"), title, MessageBoxButton.OK, MessageBoxImage.Error);
     }
 
     private static void ConfigureLogging()
@@ -71,7 +65,7 @@ public partial class App : Application
             .CreateLogger();
     }
 
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
@@ -79,31 +73,19 @@ public partial class App : Application
         {
             Authorization.SetAuthorizationCode("7525828d-68c9-4d31-b6db-e5162b91ef7b");
 
-            _host = Host.CreateDefaultBuilder()
-                .UseServiceProviderFactory(new AutofacServiceProviderFactory())
-                .ConfigureContainer<ContainerBuilder>(builder =>
-                {
-                    ServiceRegistration.RegisterServices(builder);
-                })
-                .UseSerilog(Log.Logger, dispose: true)
-                .Build();
+            _host = BuildHost();
 
             var saveInfoStore = _host.Services.GetRequiredService<ISaveInfoStore>();
             SaveInfo.SetStore(saveInfoStore);
 
             _localizationService = _host.Services.GetRequiredService<ILocalizationService>();
-            _localizationService.InitializeAsync().GetAwaiter().GetResult();
-
-            var databaseInitializer = _host.Services.GetRequiredService<IDatabaseInitializer>();
-            databaseInitializer.InitializeAsync().GetAwaiter().GetResult();
+            await _localizationService.InitializeAsync().ConfigureAwait(true);
+            _appStartupCoordinator = _host.Services.GetRequiredService<IAppStartupCoordinator>();
 
             var legacyDatabasePath = LegacyImportCommandLine.GetLegacyDatabasePathOrDefault(e.Args);
             if (!string.IsNullOrWhiteSpace(legacyDatabasePath))
             {
-                var importService = _host.Services.GetRequiredService<ILegacyDatabaseImportService>();
-                var importResult = importService.ImportAsync(legacyDatabasePath).GetAwaiter().GetResult();
-                MessageBox.Show(importResult.ToSummary(), "旧库导入完成", MessageBoxButton.OK, MessageBoxImage.Information);
-                Shutdown();
+                await RunLegacyImportAsync(legacyDatabasePath).ConfigureAwait(true);
                 return;
             }
 
@@ -111,20 +93,58 @@ public partial class App : Application
             MainWindow = mainWindow;
             mainWindow.Show();
 
-            _hostStartTask = StartHostAsync(_host);
+            _startupCancellationTokenSource = new CancellationTokenSource();
+            _hostStartTask = StartHostAsync(_host, _startupCancellationTokenSource.Token);
         }
         catch (Exception ex)
         {
             Log.Fatal(ex, "Host terminated unexpectedly");
-            throw;
+            HandleFriendlyException(ex);
+            Shutdown();
         }
     }
 
-    private async Task StartHostAsync(IHost host)
+    private static IHost BuildHost()
+    {
+        return Host.CreateDefaultBuilder()
+            .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+            .ConfigureContainer<ContainerBuilder>(builder =>
+            {
+                ServiceRegistration.RegisterServices(builder);
+            })
+            .UseSerilog(Log.Logger, dispose: true)
+            .Build();
+    }
+
+    private async Task RunLegacyImportAsync(string legacyDatabasePath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(legacyDatabasePath);
+
+        if (_host is null || _appStartupCoordinator is null)
+        {
+            throw new InvalidOperationException("Application host is not initialized.");
+        }
+
+        await _appStartupCoordinator.EnsureInitializedAsync().ConfigureAwait(true);
+        var importService = _host.Services.GetRequiredService<ILegacyDatabaseImportService>();
+        var importResult = await importService.ImportAsync(legacyDatabasePath).ConfigureAwait(true);
+        MessageBox.Show(importResult.ToSummary(), GetLocalizedText("App.LegacyImportCompletedTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
+        Shutdown();
+    }
+
+    private async Task StartHostAsync(IHost host, CancellationToken cancellationToken)
     {
         try
         {
-            await host.StartAsync().ConfigureAwait(false);
+            if (_appStartupCoordinator is not null)
+            {
+                await _appStartupCoordinator.EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            await host.StartAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
         }
         catch (Exception ex)
         {
@@ -137,9 +157,49 @@ public partial class App : Application
         }
     }
 
+    private void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
+    {
+        if (args.ExceptionObject is not Exception exception)
+        {
+            return;
+        }
+
+        Log.Fatal(exception, "Unhandled exception");
+        HandleFriendlyException(exception);
+    }
+
+    private void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs args)
+    {
+        Log.Error(args.Exception, "Dispatcher unhandled exception");
+        HandleFriendlyException(args.Exception);
+        args.Handled = true;
+    }
+
+    private string GetLocalizedText(string key)
+    {
+        return _localizationService?[key] ?? LocalizedText.Get(key);
+    }
+
     protected override void OnExit(ExitEventArgs e)
     {
         base.OnExit(e);
+
+        _startupCancellationTokenSource?.Cancel();
+
+        if (_hostStartTask is not null)
+        {
+            try
+            {
+                _hostStartTask.GetAwaiter().GetResult();
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error awaiting host startup task");
+            }
+        }
 
         if (_host is not null)
         {
@@ -153,6 +213,9 @@ public partial class App : Application
                 Log.Error(ex, "Error stopping host");
             }
         }
+
+        _startupCancellationTokenSource?.Dispose();
+        _startupCancellationTokenSource = null;
 
         Log.CloseAndFlush();
     }

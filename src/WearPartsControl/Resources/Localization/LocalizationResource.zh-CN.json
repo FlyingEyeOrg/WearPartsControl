@@ -1,6 +1,9 @@
 {
   "FriendlyErrorTitle": "提示",
   "UnexpectedError": "发生了未处理的异常。",
+  "App": {
+    "LegacyImportCompletedTitle": "旧库导入完成"
+  },
   "MainWindow": {
     "Title": "易损件防呆管控系统",
     "Tabs": [

@@ -13,6 +13,7 @@ using WearPartsControl.ApplicationServices.SpacerManagement;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.LoginService;
+using WearPartsControl.ApplicationServices.Startup;
 using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.Domain.Services;
 using WearPartsControl.Infrastructure.EntityFrameworkCore;
@@ -31,6 +32,7 @@ public static class ServiceRegistration
         builder.RegisterType<MainWindow>().SingleInstance();
         builder.RegisterType<TypeJsonSaveInfoStore>().As<ISaveInfoStore>().SingleInstance();
         builder.RegisterType<LocalizationService>().As<ILocalizationService>().SingleInstance();
+        builder.RegisterType<AppStartupCoordinator>().As<IAppStartupCoordinator>().SingleInstance();
         builder.RegisterType<ExceptionToStatusCodeMapper>().As<WearPartsControl.Exceptions.IExceptionToStatusCodeMapper>().SingleInstance();
         builder.Register(_ =>
             {

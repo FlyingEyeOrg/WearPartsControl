@@ -1,6 +1,9 @@
 {
   "FriendlyErrorTitle": "Notice",
   "UnexpectedError": "An unexpected error occurred.",
+  "App": {
+    "LegacyImportCompletedTitle": "Legacy import completed"
+  },
   "MainWindow": {
     "Title": "WearPartsControl",
     "Tabs": [

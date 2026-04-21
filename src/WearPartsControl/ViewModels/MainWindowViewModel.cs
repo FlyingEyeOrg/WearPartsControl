@@ -11,6 +11,7 @@ using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PlcService;
+using WearPartsControl.ApplicationServices.Startup;
 using WearPartsControl.UserControls;
 
 namespace WearPartsControl.ViewModels
@@ -27,6 +28,7 @@ namespace WearPartsControl.ViewModels
         private readonly IPlcStartupConnectionService _plcStartupConnectionService;
         private readonly ILoginSessionStateMachine _loginSessionStateMachine;
         private readonly IUiDispatcher _uiDispatcher;
+        private readonly IAppStartupCoordinator _appStartupCoordinator;
         private readonly IReadOnlyList<string> _allTabs;
         private string _currentUserWorkIdText = LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserWorkIdEmpty");
         private string _currentUserAccessLevelText = LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserAccessLevelEmpty");
@@ -44,7 +46,8 @@ namespace WearPartsControl.ViewModels
             IUiBusyService uiBusyService,
             IPlcStartupConnectionService plcStartupConnectionService,
             ILoginSessionStateMachine loginSessionStateMachine,
-            IUiDispatcher uiDispatcher)
+            IUiDispatcher uiDispatcher,
+            IAppStartupCoordinator appStartupCoordinator)
         {
             Title = localizationService["MainWindow.Title"];
             TabChangedCommand = new RelayCommand<int>(OnTabChanged);
@@ -56,6 +59,7 @@ namespace WearPartsControl.ViewModels
             _plcStartupConnectionService = plcStartupConnectionService;
             _loginSessionStateMachine = loginSessionStateMachine;
             _uiDispatcher = uiDispatcher;
+            _appStartupCoordinator = appStartupCoordinator;
             _selectedContent = PlaceholderContent;
             _appSettingsService = appSettingsService;
             _allTabs = localizationService.Catalog.MainWindow.Tabs.ToArray();
@@ -161,6 +165,7 @@ namespace WearPartsControl.ViewModels
 
             await Task.Yield();
             EnsureDefaultContentLoaded();
+            await _appStartupCoordinator.EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 
             if (!IsClientAppInfoConfigured)
             {

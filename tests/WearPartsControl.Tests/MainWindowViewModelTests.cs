@@ -10,6 +10,7 @@ using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.Localization.Generated;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PlcService;
+using WearPartsControl.ApplicationServices.Startup;
 using WearPartsControl.UserControls;
 using WearPartsControl.ViewModels;
 using Xunit;
@@ -305,8 +306,14 @@ public sealed class MainWindowViewModelTests
             uiBusyService,
             startupConnectionService,
             stateMachine,
-            new StubUiDispatcher());
+                new StubUiDispatcher(),
+                new StubAppStartupCoordinator());
     }
+
+            private sealed class StubAppStartupCoordinator : IAppStartupCoordinator
+            {
+            public Task EnsureInitializedAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+            }
 
     private sealed class StubLocalizationService : ILocalizationService
     {
