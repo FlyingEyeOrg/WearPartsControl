@@ -17,28 +17,28 @@ public static class EntityFrameworkCoreServiceRegistration
         builder.Register(ctx => ctx.Resolve<WearPartsControlDbContextFactory>().CreateDbContext())
             .As<WearPartsControlDbContext>()
             .As<DbContextBase>()
-            .InstancePerLifetimeScope();
+            .InstancePerDependency();
 
         builder.Register(ctx => new EfUnitOfWork<WearPartsControlDbContext>(ctx.Resolve<WearPartsControlDbContext>()))
             .As<IUnitOfWork<WearPartsControlDbContext>>()
             .As<WearPartsControl.Domain.Repositories.IUnitOfWork>()
-            .InstancePerLifetimeScope();
+            .InstancePerDependency();
 
         builder.RegisterType<ClientAppConfigurationRepository>()
             .As<IClientAppConfigurationRepository>()
-            .InstancePerLifetimeScope();
+            .InstancePerDependency();
 
         builder.RegisterType<WearPartRepository>()
             .As<IWearPartRepository>()
-            .InstancePerLifetimeScope();
+            .InstancePerDependency();
 
         builder.RegisterType<WearPartReplacementRecordRepository>()
             .As<IWearPartReplacementRecordRepository>()
-            .InstancePerLifetimeScope();
+            .InstancePerDependency();
 
         builder.RegisterType<ExceedLimitRecordRepository>()
             .As<IExceedLimitRecordRepository>()
-            .InstancePerLifetimeScope();
+            .InstancePerDependency();
 
         builder.RegisterType<SqliteDatabaseInitializer>()
             .As<IDatabaseInitializer>()

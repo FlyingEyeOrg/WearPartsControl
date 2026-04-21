@@ -21,6 +21,7 @@
 
 - 位置：`src/WearPartsControl/Infrastructure`
 - 职责：实现所有 I/O 与持久化细节，依赖 Domain 契约并提供具体实现。
+- 当前桌面端 DI 策略中，数据库相关服务按独立实例解析，仓储内部 `UnitOfWork` 始终绑定当前仓储自己的 `DbContext`，避免根容器长期持有同一 `DbContext` 引发并发访问异常。
 - 关键内容：
 	- `WearPartsControlDbContext`
 	- EF Core 映射配置：
@@ -69,11 +70,13 @@
 	- `Settings`：所有设置与配置 JSON（SaveInfo、登录配置等）
 	- `LocalDB`：SQLite 数据库文件（`wear-parts-control.db`）
 - 日志为临时运行文件，保留在应用根目录：`{应用程序目录}/logs/app-*.log`
+- 启动性能日志会以 `启动阶段:` 前缀写入同一日志文件，记录每个关键阶段的增量耗时与累计耗时，便于拆分首屏前后性能瓶颈。
 
 ## 登录与配置
 
 - 客户端基础信息未配置完成前，主窗口仅保留基础信息页，右上角 `LoginBox` 禁用；保存成功后才会开放其余 tabs 与登录入口。
 - 应用启动时会优先完成 Host 构建和本地化初始化，主窗口会尽早显示；数据库初始化改为通过 `AppStartupCoordinator` 在后台串行完成，主窗口在真正访问数据前等待该初始化任务结束，以缩短首屏可见时间。
+- 启动阶段当前会额外记录这些关键节点：Host 构建、本地化初始化、主窗口解析、主窗口显示、主窗口视图模型初始化、数据库初始化、PLC 启动连接完成，可直接通过日志量化首屏前后的耗时拆分。
 - 启动进入易损件更换页时，如果已经配置 `ClientApp`，程序会按当前资源号自动建立 PLC 连接，并在更换页显示连接状态；如果尚未配置，则不会尝试连接 PLC。
 - 客户端基础信息中的 `区域`、`工序` 由 `PrivateData/Settings/client-app-info.<culture>.json` 提供；会按当前语言环境优先加载对应文件，例如 `client-app-info.zh-CN.json`。
 - PLC 相关配置遵循旧系统规则：西门子 PLC 显示并保存插槽号，`ModbusTcp` 与汇川 PLC 显示字符串反转开关。

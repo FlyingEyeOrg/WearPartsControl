@@ -1,6 +1,7 @@
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.UserConfig;
+using WearPartsControl.ApplicationServices;
 using WearPartsControl.ViewModels;
 using Xunit;
 

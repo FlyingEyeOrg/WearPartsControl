@@ -163,11 +163,12 @@ public sealed class ReplacePartViewModelTests
 
         public PlcConnectionOptions? LastOptions { get; private set; }
 
-        public void Connect(PlcConnectionOptions options)
+        public Task ConnectAsync(PlcConnectionOptions options, CancellationToken cancellationToken = default)
         {
             LastOptions = options;
             ConnectCount++;
             IsConnected = true;
+            return Task.CompletedTask;
         }
 
         public void Disconnect()

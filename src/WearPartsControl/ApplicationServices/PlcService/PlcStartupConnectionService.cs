@@ -51,7 +51,7 @@ public sealed class PlcStartupConnectionService : IPlcStartupConnectionService
         {
             _plcConnectionStatusService.Set(PlcStartupConnectionResult.Connecting());
             var connectionOptions = PlcConnectionOptionsFactory.Create(clientAppInfo);
-            await Task.Run(() => _plcService.Connect(connectionOptions), cancellationToken).ConfigureAwait(false);
+            await _plcService.ConnectAsync(connectionOptions, cancellationToken).ConfigureAwait(false);
             var connected = PlcStartupConnectionResult.Connected();
             _plcConnectionStatusService.Set(connected);
             return connected;

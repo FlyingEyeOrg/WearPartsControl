@@ -34,15 +34,17 @@ public sealed class PlcService : IPlcService, IDisposable
 
     public bool IsConnected { get; private set; }
 
-    public void Connect(PlcConnectionOptions options)
+    public async Task ConnectAsync(PlcConnectionOptions options, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(options);
+
+        var resolvedOptions = await NormalizeConnectionOptionsAsync(options, cancellationToken).ConfigureAwait(false);
 
         lock (_syncRoot)
         {
             ThrowIfDisposed();
 
-            if (IsConnected && _currentOptions == options)
+            if (IsConnected && _currentOptions == resolvedOptions)
             {
                 return;
             }
@@ -51,9 +53,9 @@ public sealed class PlcService : IPlcService, IDisposable
 
             try
             {
-                InitializeClient(options);
-                ConnectInternal(options.ConnectTimeoutMilliseconds);
-                _currentOptions = options;
+                InitializeClient(resolvedOptions);
+                ConnectInternal(resolvedOptions.ConnectTimeoutMilliseconds);
+                _currentOptions = resolvedOptions;
             }
             catch
             {
@@ -220,6 +222,27 @@ public sealed class PlcService : IPlcService, IDisposable
         return new InovanceEIPDriver(hostIpAddress, targetIpAddress);
     }
 
+    private async Task<PlcConnectionOptions> NormalizeConnectionOptionsAsync(PlcConnectionOptions options, CancellationToken cancellationToken)
+    {
+        if (options.PlcType != PlcProtocolType.InovanceEip || !string.IsNullOrWhiteSpace(options.HostIpAddress))
+        {
+            return options;
+        }
+
+        if (!IPAddress.TryParse(options.IpAddress, out var targetIpAddress))
+        {
+            throw new BusinessException(L("PlcService.Errors.TargetIpInvalid"));
+        }
+
+        var scannedAddress = await NetworkAddressScanner.TryScanAsync(targetIpAddress).WaitAsync(cancellationToken).ConfigureAwait(false);
+        if (scannedAddress is null)
+        {
+            throw new BusinessException(L("PlcService.Errors.HostIpNotFoundInSubnet"));
+        }
+
+        return options with { HostIpAddress = scannedAddress.ToString() };
+    }
+
     private IPAddress ResolveHostIpAddress(string? configuredHostIp, IPAddress targetIpAddress)
     {
         if (!string.IsNullOrWhiteSpace(configuredHostIp))
@@ -232,13 +255,7 @@ public sealed class PlcService : IPlcService, IDisposable
             throw new BusinessException(L("PlcService.Errors.HostIpInvalid"));
         }
 
-        var scannedAddress = NetworkAddressScanner.TryScanAsync(targetIpAddress).GetAwaiter().GetResult();
-        if (scannedAddress is null)
-        {
-            throw new BusinessException(L("PlcService.Errors.HostIpNotFoundInSubnet"));
-        }
-
-        return scannedAddress;
+        throw new BusinessException(L("PlcService.Errors.HostIpNotFoundInSubnet"));
     }
 
     private void ConnectInternal(int timeoutMilliseconds)

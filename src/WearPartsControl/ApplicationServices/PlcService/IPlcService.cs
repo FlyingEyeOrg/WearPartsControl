@@ -4,7 +4,7 @@ public interface IPlcService
 {
     bool IsConnected { get; }
 
-    void Connect(PlcConnectionOptions options);
+    Task ConnectAsync(PlcConnectionOptions options, CancellationToken cancellationToken = default);
 
     void Disconnect();
 

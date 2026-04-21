@@ -161,15 +161,20 @@ namespace WearPartsControl.ViewModels
             }
 
             await Task.Yield();
+            StartupPerformanceTracker.Mark("主窗口初始化开始");
             var appSettings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
             _loginSessionStateMachine.UpdateSettings(appSettings);
             await _uiDispatcher.RunAsync(() => ApplyClientAppInfoState(appSettings.IsSetClientAppInfo)).ConfigureAwait(false);
+            StartupPerformanceTracker.Mark("应用设置加载完成");
             EnsureDefaultContentLoaded();
+            StartupPerformanceTracker.Mark("默认内容装载完成");
             await _appStartupCoordinator.EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
+            StartupPerformanceTracker.Mark("启动协调器初始化完成");
 
             if (!IsClientAppInfoConfigured)
             {
                 await _plcStartupConnectionService.EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
+                StartupPerformanceTracker.Mark("首屏前PLC启动连接检查完成（未配置客户端信息）");
                 return;
             }
 
@@ -177,6 +182,8 @@ namespace WearPartsControl.ViewModels
             {
                 await _plcStartupConnectionService.EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
             }
+
+            StartupPerformanceTracker.Mark("首屏后PLC启动连接完成");
         }
 
         private bool CanLogout() => IsLoggedIn;

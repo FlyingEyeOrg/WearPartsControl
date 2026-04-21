@@ -30,14 +30,14 @@ public sealed class SpacerManagementService : ISpacerManagementService
         _httpJsonService = httpJsonService;
     }
 
-    public SpacerInfo ParseCode(string code, string site, string resourceId, string cardId)
+    public async ValueTask<SpacerInfo> ParseCodeAsync(string code, string site, string resourceId, string cardId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(code))
         {
             throw new UserFriendlyException(L("SpacerManagement.CodeEmpty"));
         }
 
-        var options = _saveInfoStore.ReadAsync<SpacerValidationOptionsSaveInfo>().AsTask().GetAwaiter().GetResult();
+        var options = await _saveInfoStore.ReadAsync<SpacerValidationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
         var separator = string.IsNullOrWhiteSpace(options.CodeSeparator) ? "/" : options.CodeSeparator;
         var expectedCount = options.ExpectedSegmentCount > 0 ? options.ExpectedSegmentCount : 8;
 
@@ -123,7 +123,7 @@ public sealed class SpacerManagementService : ISpacerManagementService
                     apiError.Error.Details);
             }
 
-                    throw new UserFriendlyException(string.Format(L("SpacerManagement.HttpFailed"), response.StatusCode));
+            throw new UserFriendlyException(string.Format(L("SpacerManagement.HttpFailed"), response.StatusCode));
         }
         catch (UserFriendlyException)
         {

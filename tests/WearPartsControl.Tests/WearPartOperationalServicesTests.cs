@@ -380,9 +380,10 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             _values[address] = value;
         }
 
-        public void Connect(PlcConnectionOptions options)
+        public Task ConnectAsync(PlcConnectionOptions options, CancellationToken cancellationToken = default)
         {
             IsConnected = true;
+            return Task.CompletedTask;
         }
 
         public void Disconnect()

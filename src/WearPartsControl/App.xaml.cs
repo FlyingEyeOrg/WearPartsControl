@@ -71,15 +71,18 @@ public partial class App : Application
 
         try
         {
+            StartupPerformanceTracker.Restart("应用启动入口");
             Authorization.SetAuthorizationCode("7525828d-68c9-4d31-b6db-e5162b91ef7b");
 
             _host = BuildHost();
+            StartupPerformanceTracker.Mark("主机构建完成");
 
             var saveInfoStore = _host.Services.GetRequiredService<ISaveInfoStore>();
             SaveInfo.SetStore(saveInfoStore);
 
             _localizationService = _host.Services.GetRequiredService<ILocalizationService>();
             await _localizationService.InitializeAsync().ConfigureAwait(true);
+            StartupPerformanceTracker.Mark("本地化初始化完成");
             _appStartupCoordinator = _host.Services.GetRequiredService<IAppStartupCoordinator>();
 
             var legacyDatabasePath = LegacyImportCommandLine.GetLegacyDatabasePathOrDefault(e.Args);
@@ -90,8 +93,10 @@ public partial class App : Application
             }
 
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+            StartupPerformanceTracker.Mark("主窗口解析完成");
             MainWindow = mainWindow;
             mainWindow.Show();
+            StartupPerformanceTracker.Mark("主窗口已显示（首屏）");
 
             _startupCancellationTokenSource = new CancellationTokenSource();
             _hostStartTask = StartHostAsync(_host, _startupCancellationTokenSource.Token);
@@ -139,9 +144,11 @@ public partial class App : Application
             if (_appStartupCoordinator is not null)
             {
                 await _appStartupCoordinator.EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
+                StartupPerformanceTracker.Mark("数据库初始化完成");
             }
 
             await host.StartAsync(cancellationToken).ConfigureAwait(false);
+            StartupPerformanceTracker.Mark("宿主后台启动完成");
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

@@ -46,7 +46,7 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
             return [];
         }
 
-        _plcService.Connect(WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration));
+        await _plcService.ConnectAsync(WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration), cancellationToken).ConfigureAwait(false);
 
         var now = DateTime.UtcNow;
         var shouldSaveChanges = false;
