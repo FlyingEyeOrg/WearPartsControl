@@ -5,8 +5,14 @@ using Xunit;
 
 namespace WearPartsControl.Tests;
 
-public sealed class LocalizationServiceTests
+[Collection(LocalizationSensitiveTestCollection.Name)]
+public sealed class LocalizationServiceTests : IDisposable
 {
+    private readonly CultureInfo _originalCurrentCulture = CultureInfo.CurrentCulture;
+    private readonly CultureInfo _originalCurrentUiCulture = CultureInfo.CurrentUICulture;
+    private readonly CultureInfo? _originalDefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentCulture;
+    private readonly CultureInfo? _originalDefaultThreadCurrentUiCulture = CultureInfo.DefaultThreadCurrentUICulture;
+
     [Fact]
     public async Task Catalog_ShouldReturnStructuredTabs_ForEnglishCulture()
     {
@@ -67,6 +73,14 @@ public sealed class LocalizationServiceTests
         await service.SetCultureAsync("en-US");
 
         Assert.Equal("Missing.Key", service["Missing.Key"]);
+    }
+
+    public void Dispose()
+    {
+        CultureInfo.CurrentCulture = _originalCurrentCulture;
+        CultureInfo.CurrentUICulture = _originalCurrentUiCulture;
+        CultureInfo.DefaultThreadCurrentCulture = _originalDefaultThreadCurrentCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = _originalDefaultThreadCurrentUiCulture;
     }
 
     private sealed class FakeSaveInfoStore : ISaveInfoStore

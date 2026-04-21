@@ -17,8 +17,11 @@ using Xunit;
 
 namespace WearPartsControl.Tests;
 
-public sealed class MainWindowViewModelTests
+[Collection(LocalizationSensitiveTestCollection.Name)]
+public sealed class MainWindowViewModelTests : IDisposable
 {
+    private readonly TestCultureScope _cultureScope = new("zh-CN");
+
     [Fact]
     public async Task CurrentUserChanged_ShouldRefreshLoginStatus()
     {
@@ -230,6 +233,11 @@ public sealed class MainWindowViewModelTests
         await viewModel.InitializeAsync();
 
         Assert.Equal(1, appSettingsService.GetAsyncCallCount);
+    }
+
+    public void Dispose()
+    {
+        _cultureScope.Dispose();
     }
 
     private sealed class StubLoginService : ILoginService
