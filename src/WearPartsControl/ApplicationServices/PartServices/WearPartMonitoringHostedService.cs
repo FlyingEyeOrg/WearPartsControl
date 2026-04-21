@@ -65,6 +65,10 @@ public sealed class WearPartMonitoringHostedService : BackgroundService
         {
             _logger.LogWarning(ex, "后台易损件监控失败：{Message}", ex.Message);
         }
+        catch (BusinessException ex)
+        {
+            _logger.LogWarning(ex, "后台易损件监控失败：{Message}", ex.Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "后台易损件监控发生未处理异常。");
