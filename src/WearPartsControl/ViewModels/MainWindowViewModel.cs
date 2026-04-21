@@ -68,11 +68,8 @@ namespace WearPartsControl.ViewModels
             _loginSessionStateMachine.StateChanged += OnLoginSessionStateChanged;
             _appSettingsService.SettingsSaved += OnAppSettingsSaved;
             _uiBusyService.PropertyChanged += OnUiBusyServicePropertyChanged;
-
-            var appSettings = _appSettingsService.GetAsync(default).GetAwaiter().GetResult();
-            _loginSessionStateMachine.UpdateSettings(appSettings);
             ApplyLoginState(_loginSessionStateMachine.Current);
-            ApplyClientAppInfoState(appSettings.IsSetClientAppInfo);
+            ApplyClientAppInfoState(false);
         }
 
         public event EventHandler? LoginRequested;
@@ -164,6 +161,9 @@ namespace WearPartsControl.ViewModels
             }
 
             await Task.Yield();
+            var appSettings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
+            _loginSessionStateMachine.UpdateSettings(appSettings);
+            await _uiDispatcher.RunAsync(() => ApplyClientAppInfoState(appSettings.IsSetClientAppInfo)).ConfigureAwait(false);
             EnsureDefaultContentLoaded();
             await _appStartupCoordinator.EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
 

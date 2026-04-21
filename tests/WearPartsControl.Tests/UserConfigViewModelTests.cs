@@ -21,7 +21,7 @@ public sealed class UserConfigViewModelTests
                 ComSecret = "secret"
             }
         };
-        var viewModel = new UserConfigViewModel(service, new StubComNotificationService());
+        var viewModel = new UserConfigViewModel(service, new StubComNotificationService(), new StubUiDispatcher());
 
         await viewModel.InitializeAsync();
 
@@ -31,13 +31,14 @@ public sealed class UserConfigViewModelTests
         Assert.Equal("secret", viewModel.ComSecret);
         Assert.False(viewModel.IsDirty);
         Assert.Equal(LocalizedText.Get("ViewModels.UserConfigVm.Loaded"), viewModel.StatusMessage);
+        Assert.False(viewModel.IsBusy);
     }
 
     [Fact]
     public async Task SaveCommand_ShouldPersistCurrentValuesAndClearDirtyFlag()
     {
         var service = new StubUserConfigService();
-        var viewModel = new UserConfigViewModel(service, new StubComNotificationService());
+        var viewModel = new UserConfigViewModel(service, new StubComNotificationService(), new StubUiDispatcher());
         await viewModel.InitializeAsync();
 
         viewModel.MeResponsibleWorkId = "ME002";
@@ -62,7 +63,7 @@ public sealed class UserConfigViewModelTests
     {
         var service = new StubUserConfigService();
         var notificationService = new StubComNotificationService();
-        var viewModel = new UserConfigViewModel(service, notificationService);
+        var viewModel = new UserConfigViewModel(service, notificationService, new StubUiDispatcher());
         await viewModel.InitializeAsync();
 
         viewModel.MeResponsibleWorkId = "ME003";
@@ -126,5 +127,18 @@ public sealed class UserConfigViewModelTests
             LastUsers = toUsers;
             return ValueTask.CompletedTask;
         }
+    }
+
+    private sealed class StubUiDispatcher : IUiDispatcher
+    {
+        public void Run(Action action) => action();
+
+        public Task RunAsync(Action action, System.Windows.Threading.DispatcherPriority priority = System.Windows.Threading.DispatcherPriority.Normal)
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        public Task RenderAsync() => Task.CompletedTask;
     }
 }

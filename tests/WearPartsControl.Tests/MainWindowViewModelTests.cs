@@ -20,7 +20,7 @@ namespace WearPartsControl.Tests;
 public sealed class MainWindowViewModelTests
 {
     [Fact]
-    public void CurrentUserChanged_ShouldRefreshLoginStatus()
+    public async Task CurrentUserChanged_ShouldRefreshLoginStatus()
     {
         var appSettingsService = new StubAppSettingsService
         {
@@ -33,6 +33,8 @@ public sealed class MainWindowViewModelTests
         var accessor = new CurrentUserAccessor();
         var loginService = new StubLoginService();
         var viewModel = CreateViewModel(accessor, loginService, appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
+
+        await viewModel.InitializeAsync();
 
         Assert.True(viewModel.IsClientAppInfoConfigured);
         Assert.Equal(LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserWorkIdEmpty"), viewModel.CurrentUserWorkIdText);
@@ -55,7 +57,7 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
-    public void InitialState_WhenNoUser_ShouldShowLoginAndDisableLogout()
+    public async Task InitialState_WhenNoUser_ShouldShowLoginAndDisableLogout()
     {
         var appSettingsService = new StubAppSettingsService
         {
@@ -67,6 +69,8 @@ public sealed class MainWindowViewModelTests
         };
 
         var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
+
+        await viewModel.InitializeAsync();
 
         Assert.False(viewModel.IsLoggedIn);
         Assert.True(viewModel.ShowLoginButton);
@@ -87,6 +91,10 @@ public sealed class MainWindowViewModelTests
         };
 
         var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
+
+        Assert.False(viewModel.IsClientAppInfoConfigured);
+
+        await viewModel.InitializeAsync();
 
         Assert.Single(viewModel.Tabs);
         Assert.False(viewModel.IsClientAppInfoConfigured);
@@ -128,6 +136,8 @@ public sealed class MainWindowViewModelTests
                 cancellationToken.Register(() => signal.TrySetCanceled(cancellationToken));
                 return signal.Task;
             });
+
+        await viewModel.InitializeAsync();
 
         accessor.SetCurrentUser(new MhrUser
         {
@@ -201,6 +211,27 @@ public sealed class MainWindowViewModelTests
         Assert.Equal(1, startupConnectionService.CallCount);
     }
 
+    [Fact]
+    public async Task Constructor_ShouldNotReadAppSettingsSynchronously()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+
+        var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(TimeSpan.Zero), new StubPlcStartupConnectionService());
+
+        Assert.Equal(0, appSettingsService.GetAsyncCallCount);
+
+        await viewModel.InitializeAsync();
+
+        Assert.Equal(1, appSettingsService.GetAsyncCallCount);
+    }
+
     private sealed class StubLoginService : ILoginService
     {
         private readonly CurrentUserAccessor? _currentUserAccessor;
@@ -231,10 +262,13 @@ public sealed class MainWindowViewModelTests
     {
         public AppSettings Current { get; set; } = new();
 
+        public int GetAsyncCallCount { get; private set; }
+
         public event EventHandler<AppSettings>? SettingsSaved;
 
         public ValueTask<AppSettings> GetAsync(CancellationToken cancellationToken = default)
         {
+            GetAsyncCallCount++;
             return ValueTask.FromResult(new AppSettings
             {
                 ResourceNumber = Current.ResourceNumber,

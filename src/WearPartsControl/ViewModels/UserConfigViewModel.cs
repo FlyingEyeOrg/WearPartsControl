@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.UserConfig;
@@ -10,6 +11,7 @@ public sealed class UserConfigViewModel : ObservableObject
 {
     private readonly IUserConfigService _userConfigService;
     private readonly IComNotificationService _comNotificationService;
+    private readonly IUiDispatcher _uiDispatcher;
     private UserConfigSnapshot _originalSnapshot = UserConfigSnapshot.Empty;
     private bool _isBusy;
     private bool _isDirty;
@@ -21,10 +23,11 @@ public sealed class UserConfigViewModel : ObservableObject
     private string _comSecret = string.Empty;
     private string _statusMessage = LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain");
 
-    public UserConfigViewModel(IUserConfigService userConfigService, IComNotificationService comNotificationService)
+    public UserConfigViewModel(IUserConfigService userConfigService, IComNotificationService comNotificationService, IUiDispatcher uiDispatcher)
     {
         _userConfigService = userConfigService;
         _comNotificationService = comNotificationService;
+        _uiDispatcher = uiDispatcher;
         SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
         TestComNotificationCommand = new AsyncRelayCommand(TestComNotificationAsync, CanTestComNotification);
     }
@@ -125,11 +128,14 @@ public sealed class UserConfigViewModel : ObservableObject
         await ExecuteBusyAsync(async () =>
         {
             var config = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
-            ApplyConfig(config);
-            _originalSnapshot = CaptureSnapshot();
-            IsDirty = false;
-            _isInitialized = true;
-            StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.Loaded");
+            await _uiDispatcher.RunAsync(() =>
+            {
+                ApplyConfig(config);
+                _originalSnapshot = CaptureSnapshot();
+                IsDirty = false;
+                _isInitialized = true;
+                StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.Loaded");
+            }).ConfigureAwait(false);
         }, LocalizedText.Get("ViewModels.UserConfigVm.LoadFailedPrefix"), cancellationToken).ConfigureAwait(false);
     }
 
@@ -143,10 +149,13 @@ public sealed class UserConfigViewModel : ObservableObject
         {
             var config = BuildConfig();
             await _userConfigService.SaveAsync(config).ConfigureAwait(false);
-            _originalSnapshot = CaptureSnapshot();
-            IsDirty = false;
-            StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.Saved");
-            _isInitialized = true;
+            await _uiDispatcher.RunAsync(() =>
+            {
+                _originalSnapshot = CaptureSnapshot();
+                IsDirty = false;
+                StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.Saved");
+                _isInitialized = true;
+            }).ConfigureAwait(false);
         }, LocalizedText.Get("ViewModels.UserConfigVm.SaveFailedPrefix")).ConfigureAwait(false);
     }
 
@@ -157,8 +166,11 @@ public sealed class UserConfigViewModel : ObservableObject
             if (IsDirty)
             {
                 await _userConfigService.SaveAsync(BuildConfig()).ConfigureAwait(false);
-                _originalSnapshot = CaptureSnapshot();
-                IsDirty = false;
+                await _uiDispatcher.RunAsync(() =>
+                {
+                    _originalSnapshot = CaptureSnapshot();
+                    IsDirty = false;
+                }).ConfigureAwait(false);
             }
 
             var recipients = ResolveRecipients();
@@ -172,7 +184,7 @@ public sealed class UserConfigViewModel : ObservableObject
                 LocalizedText.Get("ViewModels.UserConfigVm.TestNotificationBody"),
                 recipients).ConfigureAwait(false);
 
-            StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.TestSucceeded");
+            await _uiDispatcher.RunAsync(() => StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.TestSucceeded")).ConfigureAwait(false);
         }, LocalizedText.Get("ViewModels.UserConfigVm.TestFailedPrefix")).ConfigureAwait(false);
     }
 
@@ -239,16 +251,16 @@ public sealed class UserConfigViewModel : ObservableObject
     {
         try
         {
-            IsBusy = true;
+            await _uiDispatcher.RunAsync(() => IsBusy = true).ConfigureAwait(false);
             await action().ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
-            StatusMessage = errorPrefix + ex.Message;
+            await _uiDispatcher.RunAsync(() => StatusMessage = errorPrefix + ex.Message).ConfigureAwait(false);
         }
         finally
         {
-            IsBusy = false;
+            await _uiDispatcher.RunAsync(() => IsBusy = false).ConfigureAwait(false);
         }
     }
 
