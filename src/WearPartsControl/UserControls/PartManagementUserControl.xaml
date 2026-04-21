@@ -16,7 +16,7 @@
 
         <StackPanel>
             <Border Background="#FF365082"
-                    Padding="0 4">
+                    Padding="0 8">
                 <TextBlock HorizontalAlignment="Center"
                            FontWeight="Bold"
                            FontSize="16"
