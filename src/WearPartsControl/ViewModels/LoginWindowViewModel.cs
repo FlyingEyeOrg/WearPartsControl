@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.Domain.Repositories;
 
@@ -16,9 +16,10 @@ namespace WearPartsControl.ViewModels
         private readonly ILoginService _loginService;
         private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
         private readonly IAppSettingsService _appSettingsService;
+        private readonly IUiDispatcher _uiDispatcher;
         private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
         private string _authId = string.Empty;
-        private string _statusMessage = "请刷卡登录";
+        private string _statusMessage = LocalizedText.Get("ViewModels.LoginWindow.PromptSwipeCard");
         private string _resourceNumber = string.Empty;
         private string _siteCode = string.Empty;
         private int _loginInputMaxIntervalMilliseconds = 80;
@@ -28,12 +29,14 @@ namespace WearPartsControl.ViewModels
             ILoginService loginService,
             IClientAppConfigurationRepository clientAppConfigurationRepository,
             IAppSettingsService appSettingsService,
+            IUiDispatcher uiDispatcher,
             TimeSpan? minimumBusyDuration = null,
             Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
         {
             _loginService = loginService;
             _clientAppConfigurationRepository = clientAppConfigurationRepository;
             _appSettingsService = appSettingsService;
+            _uiDispatcher = uiDispatcher;
             _delayAsync = delayAsync ?? Task.Delay;
             MinimumBusyDuration = minimumBusyDuration ?? TimeSpan.FromMilliseconds(500);
             LoginCommand = new AsyncRelayCommand(LoginAsync, CanLogin);
@@ -104,7 +107,7 @@ namespace WearPartsControl.ViewModels
             if (string.IsNullOrWhiteSpace(ResourceNumber))
             {
                 SiteCode = string.Empty;
-                StatusMessage = "请先在配置中设置资源号。";
+                StatusMessage = LocalizedText.Get("ViewModels.LoginWindow.ResourceNumberMissing");
                 return;
             }
 
@@ -112,25 +115,25 @@ namespace WearPartsControl.ViewModels
             if (clientAppConfiguration is null)
             {
                 SiteCode = string.Empty;
-                StatusMessage = $"未找到资源号 {ResourceNumber} 对应的客户端配置。";
+                StatusMessage = LocalizedText.Format("ViewModels.LoginWindow.ClientConfigurationNotFound", ResourceNumber);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(clientAppConfiguration.SiteCode))
             {
                 SiteCode = string.Empty;
-                StatusMessage = $"资源号 {ResourceNumber} 的客户端配置未设置基地。";
+                StatusMessage = LocalizedText.Format("ViewModels.LoginWindow.ClientConfigurationSiteMissing", ResourceNumber);
                 return;
             }
 
             SiteCode = clientAppConfiguration.SiteCode.Trim();
-            StatusMessage = "请刷卡登录";
+            StatusMessage = LocalizedText.Get("ViewModels.LoginWindow.PromptSwipeCard");
         }
 
         public void RejectManualInput()
         {
             AuthId = string.Empty;
-            StatusMessage = $"检测到输入间隔超过 {LoginInputMaxIntervalMilliseconds} ms，请使用刷卡器登录。";
+            StatusMessage = LocalizedText.Format("ViewModels.LoginWindow.ManualInputRejected", LoginInputMaxIntervalMilliseconds);
         }
 
         public void ClearInput()
@@ -157,19 +160,19 @@ namespace WearPartsControl.ViewModels
             var authId = AuthId.Trim();
             if (string.IsNullOrWhiteSpace(authId))
             {
-                await RunOnUiThreadAsync(() => StatusMessage = "请先刷卡后再登录。");
+                await _uiDispatcher.RunAsync(() => StatusMessage = LocalizedText.Get("ViewModels.LoginWindow.AuthIdMissing"));
                 return;
             }
 
             var busyEnteredAt = DateTimeOffset.UtcNow;
 
-            await RunOnUiThreadAsync(() =>
+            await _uiDispatcher.RunAsync(() =>
             {
                 IsBusy = true;
-                StatusMessage = "正在登录...";
+                StatusMessage = LocalizedText.Get("ViewModels.LoginWindow.LoggingIn");
             });
 
-            await EnsureLoadingRenderedAsync();
+            await _uiDispatcher.RenderAsync();
 
             try
             {
@@ -178,24 +181,24 @@ namespace WearPartsControl.ViewModels
 
                 if (user is null)
                 {
-                    await RunOnUiThreadAsync(() => StatusMessage = "未找到对应用户，请确认卡号或权限配置。");
+                    await _uiDispatcher.RunAsync(() => StatusMessage = LocalizedText.Get("ViewModels.LoginWindow.UserNotFound"));
                     return;
                 }
 
-                await RunOnUiThreadAsync(() =>
+                await _uiDispatcher.RunAsync(() =>
                 {
-                    StatusMessage = $"登录成功，工号 {user.WorkId}";
+                    StatusMessage = LocalizedText.Format("ViewModels.LoginWindow.LoginSucceeded", user.WorkId);
                     RequestClose?.Invoke(this, true);
                 });
             }
             catch (Exception ex)
             {
                 await EnsureMinimumBusyDurationAsync(busyEnteredAt);
-                await RunOnUiThreadAsync(() => StatusMessage = ex.Message);
+                await _uiDispatcher.RunAsync(() => StatusMessage = ex.Message);
             }
             finally
             {
-                await RunOnUiThreadAsync(() => IsBusy = false);
+                await _uiDispatcher.RunAsync(() => IsBusy = false);
             }
         }
 
@@ -211,43 +214,9 @@ namespace WearPartsControl.ViewModels
             await _delayAsync(remaining, cancellationToken);
         }
 
-        private static async Task EnsureLoadingRenderedAsync()
-        {
-            if (Application.Current?.Dispatcher is { } dispatcher)
-            {
-                await dispatcher.InvokeAsync(static () => { }, DispatcherPriority.Render);
-                return;
-            }
-
-            await Task.Yield();
-        }
-
         private void NotifyLoginCommandCanExecuteChanged()
         {
-            if (Application.Current?.Dispatcher is { } dispatcher && !dispatcher.CheckAccess())
-            {
-                _ = dispatcher.BeginInvoke(LoginCommand.NotifyCanExecuteChanged, DispatcherPriority.Normal);
-                return;
-            }
-
-            LoginCommand.NotifyCanExecuteChanged();
-        }
-
-        private static Task RunOnUiThreadAsync(Action action)
-        {
-            if (Application.Current?.Dispatcher is { } dispatcher)
-            {
-                if (dispatcher.CheckAccess())
-                {
-                    action();
-                    return Task.CompletedTask;
-                }
-
-                return dispatcher.InvokeAsync(action, DispatcherPriority.Normal).Task;
-            }
-
-            action();
-            return Task.CompletedTask;
+            _ = _uiDispatcher.RunAsync(LoginCommand.NotifyCanExecuteChanged);
         }
     }
 }

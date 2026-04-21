@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices.ComNotification;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.UserConfig;
 
 namespace WearPartsControl.ViewModels;
@@ -18,7 +19,7 @@ public sealed class UserConfigViewModel : ObservableObject
     private string _prdResponsibleWorkId = string.Empty;
     private string _comAccessToken = string.Empty;
     private string _comSecret = string.Empty;
-    private string _statusMessage = "请先维护用户配置。";
+    private string _statusMessage = LocalizedText.Get("ViewModels.UserConfig.PromptMaintain");
 
     public UserConfigViewModel(IUserConfigService userConfigService, IComNotificationService comNotificationService)
     {
@@ -128,8 +129,8 @@ public sealed class UserConfigViewModel : ObservableObject
             _originalSnapshot = CaptureSnapshot();
             IsDirty = false;
             _isInitialized = true;
-            StatusMessage = "用户配置已加载。";
-        }, "用户配置加载失败：", cancellationToken).ConfigureAwait(false);
+            StatusMessage = LocalizedText.Get("ViewModels.UserConfig.Loaded");
+        }, LocalizedText.Get("ViewModels.UserConfig.LoadFailedPrefix"), cancellationToken).ConfigureAwait(false);
     }
 
     private bool CanSave() => IsDirty && !IsBusy;
@@ -144,9 +145,9 @@ public sealed class UserConfigViewModel : ObservableObject
             await _userConfigService.SaveAsync(config).ConfigureAwait(false);
             _originalSnapshot = CaptureSnapshot();
             IsDirty = false;
-            StatusMessage = "用户配置保存成功。";
+            StatusMessage = LocalizedText.Get("ViewModels.UserConfig.Saved");
             _isInitialized = true;
-        }, "用户配置保存失败：").ConfigureAwait(false);
+        }, LocalizedText.Get("ViewModels.UserConfig.SaveFailedPrefix")).ConfigureAwait(false);
     }
 
     private async Task TestComNotificationAsync()
@@ -163,16 +164,16 @@ public sealed class UserConfigViewModel : ObservableObject
             var recipients = ResolveRecipients();
             if (recipients.Length == 0)
             {
-                throw new InvalidOperationException("请至少配置一个负责人。");
+                throw new InvalidOperationException(LocalizedText.Get("ViewModels.UserConfig.ResponsibleMissing"));
             }
 
             await _comNotificationService.NotifyGroupAsync(
-                "WearPartsControl 测试通知",
-                "这是一条来自用户配置页面的测试通知。",
+                LocalizedText.Get("ViewModels.UserConfig.TestNotificationTitle"),
+                LocalizedText.Get("ViewModels.UserConfig.TestNotificationBody"),
                 recipients).ConfigureAwait(false);
 
-            StatusMessage = "COM 通知测试发送成功。";
-        }, "COM 通知测试失败：").ConfigureAwait(false);
+            StatusMessage = LocalizedText.Get("ViewModels.UserConfig.TestSucceeded");
+        }, LocalizedText.Get("ViewModels.UserConfig.TestFailedPrefix")).ConfigureAwait(false);
     }
 
     private string[] ResolveRecipients()

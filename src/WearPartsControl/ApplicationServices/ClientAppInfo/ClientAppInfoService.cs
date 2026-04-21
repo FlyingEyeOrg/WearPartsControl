@@ -1,4 +1,5 @@
 using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Domain.Repositories;
 using WearPartsControl.Exceptions;
@@ -35,7 +36,7 @@ public sealed class ClientAppInfoService : IClientAppInfoService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var normalizedResourceNumber = NormalizeRequired(request.ResourceNumber, "设备资源号不能为空。");
+        var normalizedResourceNumber = NormalizeRequired(request.ResourceNumber, LocalizedText.Get("Services.ClientAppInfo.ResourceNumberRequired"));
         ClientAppConfigurationEntity? entity = null;
 
         if (request.Id.HasValue && request.Id.Value != Guid.Empty)
@@ -50,7 +51,7 @@ public sealed class ClientAppInfoService : IClientAppInfoService
             var duplicated = await _clientAppConfigurationRepository.ExistsByResourceNumberAsync(normalizedResourceNumber, entity.Id, cancellationToken).ConfigureAwait(false);
             if (duplicated)
             {
-                throw new UserFriendlyException($"资源号 {normalizedResourceNumber} 已存在客户端信息配置。", code: "ClientAppInfo:DuplicatedResourceNumber");
+                throw new UserFriendlyException(LocalizedText.Format("Services.ClientAppInfo.DuplicatedResourceNumber", normalizedResourceNumber), code: "ClientAppInfo:DuplicatedResourceNumber");
             }
         }
         else
@@ -58,7 +59,7 @@ public sealed class ClientAppInfoService : IClientAppInfoService
             var duplicated = await _clientAppConfigurationRepository.ExistsByResourceNumberAsync(normalizedResourceNumber, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (duplicated)
             {
-                throw new UserFriendlyException($"资源号 {normalizedResourceNumber} 已存在客户端信息配置。", code: "ClientAppInfo:DuplicatedResourceNumber");
+                throw new UserFriendlyException(LocalizedText.Format("Services.ClientAppInfo.DuplicatedResourceNumber", normalizedResourceNumber), code: "ClientAppInfo:DuplicatedResourceNumber");
             }
 
             entity = new ClientAppConfigurationEntity();
@@ -87,16 +88,16 @@ public sealed class ClientAppInfoService : IClientAppInfoService
 
     private static void Apply(ClientAppConfigurationEntity entity, ClientAppInfoSaveRequest request, string normalizedResourceNumber)
     {
-        entity.SiteCode = NormalizeRequired(request.SiteCode, "基地不能为空。");
-        entity.FactoryCode = NormalizeRequired(request.FactoryCode, "工厂不能为空。");
-        entity.AreaCode = NormalizeRequired(request.AreaCode, "区域不能为空。");
-        entity.ProcedureCode = NormalizeRequired(request.ProcedureCode, "工序不能为空。");
-        entity.EquipmentCode = NormalizeRequired(request.EquipmentCode, "设备编号不能为空。");
+        entity.SiteCode = NormalizeRequired(request.SiteCode, LocalizedText.Get("Services.ClientAppInfo.SiteCodeRequired"));
+        entity.FactoryCode = NormalizeRequired(request.FactoryCode, LocalizedText.Get("Services.ClientAppInfo.FactoryCodeRequired"));
+        entity.AreaCode = NormalizeRequired(request.AreaCode, LocalizedText.Get("Services.ClientAppInfo.AreaCodeRequired"));
+        entity.ProcedureCode = NormalizeRequired(request.ProcedureCode, LocalizedText.Get("Services.ClientAppInfo.ProcedureCodeRequired"));
+        entity.EquipmentCode = NormalizeRequired(request.EquipmentCode, LocalizedText.Get("Services.ClientAppInfo.EquipmentCodeRequired"));
         entity.ResourceNumber = normalizedResourceNumber;
-        entity.PlcProtocolType = NormalizeRequired(request.PlcProtocolType, "PLC 类型不能为空。");
-        entity.PlcIpAddress = NormalizeRequired(request.PlcIpAddress, "PLC IP 地址不能为空。");
+        entity.PlcProtocolType = NormalizeRequired(request.PlcProtocolType, LocalizedText.Get("Services.ClientAppInfo.PlcProtocolRequired"));
+        entity.PlcIpAddress = NormalizeRequired(request.PlcIpAddress, LocalizedText.Get("Services.ClientAppInfo.PlcIpRequired"));
         entity.PlcPort = request.PlcPort;
-        entity.ShutdownPointAddress = NormalizeRequired(request.ShutdownPointAddress, "停机地址不能为空。");
+        entity.ShutdownPointAddress = NormalizeRequired(request.ShutdownPointAddress, LocalizedText.Get("Services.ClientAppInfo.ShutdownPointAddressRequired"));
         entity.SiemensSlot = request.SiemensSlot;
         entity.IsStringReverse = request.IsStringReverse;
         entity.EnsureValid();

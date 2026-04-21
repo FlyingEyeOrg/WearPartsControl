@@ -1,4 +1,5 @@
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Exceptions;
 
@@ -51,7 +52,7 @@ public static class PlcConnectionOptionsFactory
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new UserFriendlyException("PLC 协议类型不能为空。");
+            throw new UserFriendlyException(LocalizedText.Get("Services.PlcConnection.ProtocolTypeRequired"));
         }
 
         var normalized = value.Trim().ToUpperInvariant();
@@ -61,7 +62,7 @@ public static class PlcConnectionOptionsFactory
             "SIEMENSS1200" => PlcProtocolType.SiemensS1200,
             "MODBUSTCP" => PlcProtocolType.ModbusTcp,
             _ when Enum.TryParse<PlcProtocolType>(value, true, out var protocolType) => protocolType,
-            _ => throw new UserFriendlyException($"不支持的 PLC 协议类型：{value}。")
+            _ => throw new UserFriendlyException(LocalizedText.Format("Services.PlcConnection.ProtocolTypeNotSupported", value))
         };
     }
 }

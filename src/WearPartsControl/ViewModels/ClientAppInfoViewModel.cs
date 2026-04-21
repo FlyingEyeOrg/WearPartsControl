@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.Exceptions;
 
@@ -33,7 +34,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     private string _plcPort = "102";
     private string _shutdownPointAddress = string.Empty;
     private string _siemensSlot = "1";
-    private string _statusMessage = "请先完善客户端信息。";
+    private string _statusMessage = LocalizedText.Get("ViewModels.ClientAppInfo.PromptComplete");
     private bool _isStringReverse = true;
 
     public ClientAppInfoViewModel(
@@ -268,8 +269,8 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             Apply(model);
             _isInitialized = true;
             StatusMessage = string.IsNullOrWhiteSpace(model.ResourceNumber)
-                ? "请先完善客户端信息。"
-                : "客户端信息已加载。";
+                ? LocalizedText.Get("ViewModels.ClientAppInfo.PromptComplete")
+                : LocalizedText.Get("ViewModels.ClientAppInfo.Loaded");
         }
         finally
         {
@@ -285,7 +286,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     private async Task SaveAsync()
     {
         IsBusy = true;
-        StatusMessage = "正在保存客户端信息...";
+        StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfo.Saving");
         using var _ = _uiBusyService.Enter();
 
         try
@@ -293,7 +294,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             var request = BuildSaveRequest();
             var saved = await _clientAppInfoService.SaveAsync(request).ConfigureAwait(true);
             Apply(saved);
-            StatusMessage = "客户端信息保存成功。";
+            StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfo.Saved");
         }
         catch (Exception ex)
         {
@@ -309,13 +310,13 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     {
         if (!int.TryParse(PlcPort?.Trim(), out var plcPort))
         {
-            throw new UserFriendlyException("PLC 端口必须是整数。");
+            throw new UserFriendlyException(LocalizedText.Get("ViewModels.ClientAppInfo.PlcPortInvalid"));
         }
 
         var siemensSlot = 1;
         if (IsSiemensSlotVisible && !int.TryParse(SiemensSlot?.Trim(), out siemensSlot))
         {
-            throw new UserFriendlyException("PLC 插槽号必须是整数。");
+            throw new UserFriendlyException(LocalizedText.Get("ViewModels.ClientAppInfo.PlcSlotInvalid"));
         }
 
         return new ClientAppInfoSaveRequest

@@ -1,3 +1,4 @@
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices.PartServices;
@@ -10,12 +11,12 @@ public sealed class BarcodeLengthReplacementGuard : IWearPartReplacementGuard
     {
         if (context.NormalizedBarcode.Length < context.Definition.CodeMinLength)
         {
-            throw new UserFriendlyException($"条码长度不能小于 {context.Definition.CodeMinLength}。", code: "WearPartReplacement:BarcodeTooShort");
+            throw new UserFriendlyException(LocalizedText.Format("Services.WearPartReplacement.BarcodeTooShort", context.Definition.CodeMinLength), code: "WearPartReplacement:BarcodeTooShort");
         }
 
         if (context.NormalizedBarcode.Length > context.Definition.CodeMaxLength)
         {
-            throw new UserFriendlyException($"条码长度不能大于 {context.Definition.CodeMaxLength}。", code: "WearPartReplacement:BarcodeTooLong");
+            throw new UserFriendlyException(LocalizedText.Format("Services.WearPartReplacement.BarcodeTooLong", context.Definition.CodeMaxLength), code: "WearPartReplacement:BarcodeTooLong");
         }
 
         return Task.CompletedTask;

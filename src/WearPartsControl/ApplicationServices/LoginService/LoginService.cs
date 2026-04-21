@@ -186,7 +186,7 @@ public sealed class LoginService : ILoginService
             }
         }
 
-        throw new UserFriendlyException("登录接口返回的 token 格式不正确。", code: "LoginService:InvalidTokenPayload");
+        throw new UserFriendlyException(LocalizedText.Get("Services.Login.InvalidTokenPayload"), code: "LoginService:InvalidTokenPayload");
     }
 
     private static bool TryGetStringProperty(JsonElement element, string propertyName, out string value)

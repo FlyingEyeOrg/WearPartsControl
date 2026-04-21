@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Windows.Media;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.PlcService;
 
@@ -18,7 +19,7 @@ public sealed class ReplacePartViewModel : ObservableObject
     private readonly IUiBusyService _uiBusyService;
     private readonly IPlcConnectionStatusService _plcConnectionStatusService;
     private readonly List<WearPartDefinition> _allDefinitions = new();
-    private string _plcConnectionStatusText = "未初始化";
+    private string _plcConnectionStatusText = LocalizedText.Get("Services.PlcStartupConnection.Uninitialized");
     private Brush _plcConnectionStatusBackground = Brushes.Gray;
     private WearPartDefinition? _selectedDefinition;
     private string _resourceNumber = string.Empty;
@@ -32,7 +33,7 @@ public sealed class ReplacePartViewModel : ObservableObject
     private string _newBarcode = string.Empty;
     private string _selectedReplacementReason = string.Empty;
     private string _replacementMessage = string.Empty;
-    private string _statusMessage = "请先选择易损件并加载预览。";
+    private string _statusMessage = LocalizedText.Get("ViewModels.ReplacePart.PromptSelectAndLoadPreview");
     private bool _isBusy;
     private bool _isInitialized;
 
@@ -244,7 +245,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         }
 
         IsBusy = true;
-        StatusMessage = "正在加载易损件更换信息...";
+        StatusMessage = LocalizedText.Get("ViewModels.ReplacePart.Loading");
         using var _ = _uiBusyService.Enter();
 
         try
@@ -258,7 +259,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             if (string.IsNullOrWhiteSpace(ResourceNumber))
             {
                 SelectedDefinition = null;
-                StatusMessage = "当前客户端未配置资源号，无法执行易损件更换。";
+                StatusMessage = LocalizedText.Get("ViewModels.ReplacePart.ResourceNumberMissing");
                 return;
             }
 
@@ -272,12 +273,12 @@ public sealed class ReplacePartViewModel : ObservableObject
             if (Definitions.Count == 0)
             {
                 SelectedDefinition = null;
-                StatusMessage = $"资源号 {ResourceNumber} 暂无易损件定义。";
+                StatusMessage = LocalizedText.Format("ViewModels.ReplacePart.DefinitionsEmpty", ResourceNumber);
                 return;
             }
 
             SelectedDefinition ??= Definitions[0];
-            StatusMessage = $"已加载资源号 {ResourceNumber} 的 {Definitions.Count} 条易损件定义。";
+            StatusMessage = LocalizedText.Format("ViewModels.ReplacePart.DefinitionsLoaded", ResourceNumber, Definitions.Count);
             await LoadPreviewAndHistoryAsync(cancellationToken).ConfigureAwait(true);
         }
         catch (Exception ex)
@@ -298,7 +299,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         }
 
         IsBusy = true;
-        StatusMessage = $"正在更换易损件 {SelectedDefinition.PartName}...";
+        StatusMessage = LocalizedText.Format("ViewModels.ReplacePart.Replacing", SelectedDefinition.PartName);
         using var _ = _uiBusyService.Enter();
 
         try
@@ -314,7 +315,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             NewBarcode = string.Empty;
             ReplacementMessage = string.Empty;
             await LoadPreviewAndHistoryAsync(CancellationToken.None).ConfigureAwait(true);
-            StatusMessage = $"易损件 {record.PartName} 更换成功，新条码：{record.NewBarcode}。";
+            StatusMessage = LocalizedText.Format("ViewModels.ReplacePart.ReplaceSucceeded", record.PartName, record.NewBarcode);
         }
         catch (Exception ex)
         {

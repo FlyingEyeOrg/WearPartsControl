@@ -1,3 +1,4 @@
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.Domain.Repositories;
 using WearPartsControl.Exceptions;
 
@@ -38,13 +39,13 @@ public sealed class BarcodeReuseReplacementGuard : IWearPartReplacementGuard
         if (latestRemovalRecord is null)
         {
             throw new UserFriendlyException(
-                $"易损件 {context.Definition.PartName} 已存在条码 {context.NormalizedBarcode} 的更换记录，不允许重复使用。",
+                LocalizedText.Format("Services.WearPartReplacement.BarcodeAlreadyUsed", context.Definition.PartName, context.NormalizedBarcode),
                 code: "WearPartReplacement:BarcodeDuplicated");
         }
 
         if (!WearPartReplacementReason.AllowsBarcodeReuseAfterRemoval(latestRemovalRecord.ReplacementReason))
         {
-            throw new UserFriendlyException("条码重复，请更换其他条码。", code: "WearPartReplacement:BarcodeDuplicated");
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.BarcodeDuplicated"), code: "WearPartReplacement:BarcodeDuplicated");
         }
 
         context.LatestRemovalRecord = latestRemovalRecord;

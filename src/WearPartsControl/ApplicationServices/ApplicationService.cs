@@ -1,4 +1,5 @@
 using WearPartsControl.ApplicationServices.LoginService;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices;
@@ -18,7 +19,7 @@ public abstract class ApplicationService
 
     protected MhrUser GetRequiredCurrentUser()
     {
-        return CurrentUser ?? throw new AuthorizationException("当前没有已登录用户。");
+        return CurrentUser ?? throw new AuthorizationException(LocalizedText.Get("Services.Authorization.CurrentUserMissing"));
     }
 
     protected string GetRequiredCurrentUserId()
@@ -26,7 +27,7 @@ public abstract class ApplicationService
         var userId = CurrentUserId;
         if (string.IsNullOrWhiteSpace(userId))
         {
-            throw new AuthorizationException("当前没有已登录用户。");
+            throw new AuthorizationException(LocalizedText.Get("Services.Authorization.CurrentUserMissing"));
         }
 
         return userId;
@@ -42,7 +43,7 @@ public abstract class ApplicationService
         var user = GetRequiredCurrentUser();
         if (user.AccessLevel < minimumAccessLevel)
         {
-            throw new AuthorizationException($"当前用户权限不足，要求权限等级不低于 {minimumAccessLevel}。", code: "Authorization:AccessLevelDenied");
+            throw new AuthorizationException(LocalizedText.Format("Services.Authorization.AccessLevelDenied", minimumAccessLevel), code: "Authorization:AccessLevelDenied");
         }
 
         return user;

@@ -1,3 +1,4 @@
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices.PartServices;
@@ -21,6 +22,6 @@ internal static class WearPartReplacementValueParser
             return localValue;
         }
 
-        throw new UserFriendlyException($"PLC 地址 {address} 的值无法转换为数值：{rawValue}。", code: "WearPartReplacement:ValueInvalid");
+        throw new UserFriendlyException(LocalizedText.Format("Services.WearPartReplacement.ValueCannotConvert", address, rawValue), code: "WearPartReplacement:ValueInvalid");
     }
 }

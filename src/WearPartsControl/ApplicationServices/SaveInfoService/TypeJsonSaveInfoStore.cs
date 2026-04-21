@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using WearPartsControl.ApplicationServices.Localization;
 
 namespace WearPartsControl.ApplicationServices.SaveInfoService;
 
@@ -127,7 +128,7 @@ public sealed class TypeJsonSaveInfoStore : ISaveInfoStore
         var fullPath = Path.GetFullPath(combined);
         if (!fullPath.StartsWith(_rootDirectory, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException($"{modelType.FullName} 的 SaveInfo 映射路径越界，已拒绝访问。");
+            throw new InvalidOperationException(LocalizedText.Format("Services.SaveInfo.PathEscaped", modelType.FullName ?? modelType.Name));
         }
 
         return fullPath;
@@ -137,13 +138,13 @@ public sealed class TypeJsonSaveInfoStore : ISaveInfoStore
     {
         if (Path.IsPathRooted(value) || value.Contains("..", StringComparison.Ordinal))
         {
-            throw new InvalidOperationException($"{modelType.FullName} 的 SaveInfo 路径必须是相对路径且不允许包含 '..'。");
+            throw new InvalidOperationException(LocalizedText.Format("Services.SaveInfo.PathMustBeRelative", modelType.FullName ?? modelType.Name));
         }
 
         var invalidChars = Path.GetInvalidPathChars();
         if (value.Any(invalidChars.Contains))
         {
-            throw new InvalidOperationException($"{modelType.FullName} 的 SaveInfo 路径包含非法字符。");
+            throw new InvalidOperationException(LocalizedText.Format("Services.SaveInfo.PathContainsInvalidChars", modelType.FullName ?? modelType.Name));
         }
     }
 }

@@ -73,5 +73,163 @@
     "AuthIdEmpty": "Please swipe your card before logging in.",
     "ConfigFileNotFound": "MHR configuration file not found: {0}",
     "ConfigDeserializeFailed": "Failed to parse MHR configuration file."
+  },
+  "ViewModels": {
+    "MainWindow": {
+      "CurrentUserWorkIdEmpty": "Work ID: --",
+      "CurrentUserWorkId": "Work ID: {0}",
+      "CurrentUserAccessLevelEmpty": "Access: --",
+      "CurrentUserAccessLevelCountdown": "Access: {0} | Auto logout: {1}",
+      "SoftwareVersion": "Version: {0}"
+    },
+    "LoginWindow": {
+      "PromptSwipeCard": "Please swipe card to log in",
+      "ResourceNumberMissing": "Please set the resource number in configuration first.",
+      "ClientConfigurationNotFound": "No client configuration found for resource number {0}.",
+      "ClientConfigurationSiteMissing": "The client configuration for resource number {0} has no site code.",
+      "ManualInputRejected": "Input interval exceeded {0} ms. Please use the card reader to log in.",
+      "AuthIdMissing": "Please swipe your card before logging in.",
+      "LoggingIn": "Logging in...",
+      "UserNotFound": "No matching user found. Please verify card number or permission settings.",
+      "LoginSucceeded": "Login succeeded, work ID {0}"
+    },
+    "ClientAppInfo": {
+      "PromptComplete": "Please complete the client information first.",
+      "Loaded": "Client information loaded.",
+      "Saving": "Saving client information...",
+      "Saved": "Client information saved successfully.",
+      "PlcPortInvalid": "PLC port must be an integer.",
+      "PlcSlotInvalid": "PLC slot must be an integer."
+    },
+    "PartManagement": {
+      "PromptLoadCurrent": "Please load wear parts for the current device first.",
+      "Loading": "Loading wear part list...",
+      "ResourceNumberMissing": "The current client has no resource number configured, so wear parts cannot be managed.",
+      "DefinitionsEmpty": "No wear part definitions found for resource number {0}.",
+      "DefinitionsLoaded": "Loaded {1} wear part definitions for resource number {0}.",
+      "DeleteConfirmationMessage": "Delete wear part \"{0}\"?",
+      "DeleteConfirmationTitle": "Delete Confirmation",
+      "Deleting": "Deleting wear part...",
+      "Deleted": "Wear part {0} deleted.",
+      "NoMatchedDefinitions": "No wear parts matching \"{1}\" for resource number {0}.",
+      "FilteredDefinitionsCount": "Showing {0} wear part definitions."
+    },
+    "ReplacePart": {
+      "PromptSelectAndLoadPreview": "Please select a wear part and load the preview first.",
+      "Loading": "Loading wear part replacement information...",
+      "ResourceNumberMissing": "The current client has no resource number configured, so replacement cannot proceed.",
+      "DefinitionsEmpty": "No wear part definitions found for resource number {0}.",
+      "DefinitionsLoaded": "Loaded {1} wear part definitions for resource number {0}.",
+      "Replacing": "Replacing wear part {0}...",
+      "ReplaceSucceeded": "Wear part {0} replaced successfully. New barcode: {1}."
+    },
+    "UserConfig": {
+      "PromptMaintain": "Please maintain user configuration first.",
+      "Loaded": "User configuration loaded.",
+      "LoadFailedPrefix": "Failed to load user configuration: ",
+      "Saved": "User configuration saved successfully.",
+      "SaveFailedPrefix": "Failed to save user configuration: ",
+      "ResponsibleMissing": "Please configure at least one responsible person.",
+      "TestNotificationTitle": "WearPartsControl test notification",
+      "TestNotificationBody": "This is a test notification from the user configuration page.",
+      "TestSucceeded": "COM notification test sent successfully.",
+      "TestFailedPrefix": "COM notification test failed: "
+    },
+    "WearPartEditor": {
+      "ResourceNumberMissing": "No resource number is configured, so the wear part cannot be saved.",
+      "CurrentResourceNumber": "Current resource number: {0}",
+      "Editing": "Editing wear parts for resource number {0}.",
+      "Saving": "Saving wear part...",
+      "Saved": "Saved successfully.",
+      "CodeMinInvalid": "Minimum barcode length must be an integer.",
+      "CodeMaxInvalid": "Maximum barcode length must be an integer."
+    }
+  },
+  "Services": {
+    "Common": {
+      "ResourceNumberRequired": "Resource number cannot be empty."
+    },
+    "Authorization": {
+      "CurrentUserMissing": "There is no logged-in user.",
+      "AccessLevelDenied": "Current user permissions are insufficient. Minimum required access level is {0}."
+    },
+    "ClientAppInfo": {
+      "ResourceNumberRequired": "Device resource number cannot be empty.",
+      "DuplicatedResourceNumber": "A client configuration already exists for resource number {0}.",
+      "SiteCodeRequired": "Site cannot be empty.",
+      "FactoryCodeRequired": "Factory cannot be empty.",
+      "AreaCodeRequired": "Area cannot be empty.",
+      "ProcedureCodeRequired": "Procedure cannot be empty.",
+      "EquipmentCodeRequired": "Equipment code cannot be empty.",
+      "PlcProtocolRequired": "PLC type cannot be empty.",
+      "PlcIpRequired": "PLC IP address cannot be empty.",
+      "ShutdownPointAddressRequired": "Shutdown address cannot be empty."
+    },
+    "WearPartManagement": {
+      "DuplicatedPartName": "Wear part definition named {1} already exists under resource number {0}.",
+      "UpdateIdRequired": "A valid primary key is required to update a wear part definition.",
+      "DefinitionNotFoundById": "No wear part definition found with ID {0}.",
+      "SourceResourceNumberRequired": "Source resource number cannot be empty.",
+      "TargetResourceNumberRequired": "Target resource number cannot be empty.",
+      "SourceTargetSame": "Source and target resource numbers cannot be the same.",
+      "CopyDuplicatePartNames": "Target resource number {0} already contains the following wear part definitions: {1}.",
+      "ConfigurationOrResourceRequired": "Wear part definition must be associated with a valid client configuration or resource number.",
+      "ClientConfigurationNotFoundById": "No client configuration found with ID {0}.",
+      "ClientConfigurationNotFoundByResourceNumber": "No client configuration found for resource number {0}.",
+      "PartNameRequired": "Wear part name cannot be empty.",
+      "InputModeRequired": "Input mode cannot be empty.",
+      "CurrentValueAddressRequired": "Current value address cannot be empty.",
+      "CurrentValueDataTypeRequired": "Current value data type cannot be empty.",
+      "WarningValueAddressRequired": "Warning value address cannot be empty.",
+      "WarningValueDataTypeRequired": "Warning value data type cannot be empty.",
+      "ShutdownValueAddressRequired": "Shutdown value address cannot be empty.",
+      "ShutdownValueDataTypeRequired": "Shutdown value data type cannot be empty.",
+      "LifetimeTypeRequired": "Lifetime type cannot be empty.",
+      "PlcZeroClearAddressRequired": "PLC zero-clear address cannot be empty.",
+      "CodeMinLengthRangeInvalid": "Minimum barcode length cannot be less than 0.",
+      "CodeMaxLengthRangeInvalid": "Maximum barcode length must be greater than 0.",
+      "CodeLengthRangeInverted": "Minimum barcode length cannot be greater than maximum barcode length."
+    },
+    "WearPartReplacement": {
+      "NewBarcodeRequired": "New barcode cannot be empty.",
+      "ReasonRequired": "Replacement reason cannot be empty.",
+      "DefinitionIdRequired": "Wear part definition ID cannot be empty.",
+      "DefinitionNotFoundById": "No wear part definition found with ID {0}.",
+      "ClientConfigurationNotFoundById": "No client configuration found with ID {0}.",
+      "BarcodeTooShort": "Barcode length cannot be shorter than {0}.",
+      "BarcodeTooLong": "Barcode length cannot be longer than {0}.",
+      "LatestRecordMissing": "The latest record is missing.",
+      "ChangePositionBarcodeMismatch": "The new barcode in the latest record does not match the current replacement barcode. Please verify.",
+      "ChangePositionRequiresMe": "The scanned barcode matches the previously used barcode. Please ask ME to log in and confirm whether to continue.",
+      "BarcodeAlreadyUsed": "Wear part {0} already has a replacement record with barcode {1}, so it cannot be reused.",
+      "BarcodeDuplicated": "Barcode already exists. Please use another barcode.",
+      "LifetimeNotReached": "The current wear part has not reached shutdown lifetime, so replacement is not allowed.",
+      "ValueCannotConvert": "The value at PLC address {0} cannot be converted to a number: {1}."
+    },
+    "WearPartMonitor": {
+      "ClientConfigurationNotFoundByResourceNumber": "No client configuration found for resource number {0}.",
+      "NotificationMessage": "Resource number {0}, wear part {1}, current value {2}, warning value {3}, shutdown value {4}, severity {5}.",
+      "ShutdownNotificationTitle": "Wear part shutdown lifetime reached",
+      "WarningNotificationTitle": "Wear part lifetime warning"
+    },
+    "PlcConnection": {
+      "ProtocolTypeRequired": "PLC protocol type cannot be empty.",
+      "ProtocolTypeNotSupported": "Unsupported PLC protocol type: {0}."
+    },
+    "PlcStartupConnection": {
+      "Uninitialized": "Uninitialized",
+      "Connecting": "Connecting",
+      "NotConfigured": "ClientApp is not configured, PLC connection skipped.",
+      "Connected": "Connected",
+      "ConnectFailed": "Connection failed: {0}"
+    },
+    "Login": {
+      "InvalidTokenPayload": "The token returned by the login API is invalid."
+    },
+    "SaveInfo": {
+      "PathEscaped": "The SaveInfo mapped path for {0} escaped the root directory and was denied.",
+      "PathMustBeRelative": "The SaveInfo path for {0} must be relative and must not contain '..'.",
+      "PathContainsInvalidChars": "The SaveInfo path for {0} contains invalid characters."
+    }
   }
 }

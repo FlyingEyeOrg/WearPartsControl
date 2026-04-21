@@ -1,5 +1,6 @@
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Domain.Repositories;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices.PartServices;
@@ -59,7 +60,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
 
         if (await _wearPartRepository.ExistsPartNameAsync(clientAppConfiguration.Id, partName, cancellationToken: cancellationToken).ConfigureAwait(false))
         {
-            throw new UserFriendlyException($"资源号 {clientAppConfiguration.ResourceNumber} 下已存在名称为 {partName} 的易损件定义。");
+            throw new UserFriendlyException(LocalizedText.Format("Services.WearPartManagement.DuplicatedPartName", clientAppConfiguration.ResourceNumber, partName));
         }
 
         var entity = new WearPartDefinitionEntity();
@@ -79,13 +80,13 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
 
         if (definition.Id == Guid.Empty)
         {
-            throw new UserFriendlyException("更新易损件定义时必须提供有效的主键。");
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartManagement.UpdateIdRequired"));
         }
 
         ValidateDefinition(definition);
 
         var entity = await _wearPartRepository.GetByIdAsync(definition.Id, cancellationToken).ConfigureAwait(false)
-            ?? throw new EntityNotFoundException($"未找到主键为 {definition.Id} 的易损件定义。");
+            ?? throw new EntityNotFoundException(LocalizedText.Format("Services.WearPartManagement.DefinitionNotFoundById", definition.Id));
 
         var clientAppConfiguration = await ResolveClientAppConfigurationAsync(
                 definition.ClientAppConfigurationId,
@@ -97,7 +98,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         var partName = definition.PartName.Trim();
         if (await _wearPartRepository.ExistsPartNameAsync(clientAppConfiguration.Id, partName, entity.Id, cancellationToken).ConfigureAwait(false))
         {
-            throw new UserFriendlyException($"资源号 {clientAppConfiguration.ResourceNumber} 下已存在名称为 {partName} 的易损件定义。");
+            throw new UserFriendlyException(LocalizedText.Format("Services.WearPartManagement.DuplicatedPartName", clientAppConfiguration.ResourceNumber, partName));
         }
 
         ApplyDefinition(entity, definition, clientAppConfiguration);
@@ -125,12 +126,12 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
     {
         GetRequiredCurrentUserId();
 
-        var normalizedSource = NormalizeRequired(sourceResourceNumber, "源资源号不能为空。");
-        var normalizedTarget = NormalizeRequired(targetResourceNumber, "目标资源号不能为空。");
+        var normalizedSource = NormalizeRequired(sourceResourceNumber, LocalizedText.Get("Services.WearPartManagement.SourceResourceNumberRequired"));
+        var normalizedTarget = NormalizeRequired(targetResourceNumber, LocalizedText.Get("Services.WearPartManagement.TargetResourceNumberRequired"));
 
         if (string.Equals(normalizedSource, normalizedTarget, StringComparison.OrdinalIgnoreCase))
         {
-            throw new UserFriendlyException("源资源号和目标资源号不能相同。");
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartManagement.SourceTargetSame"));
         }
 
         var sourceConfiguration = await GetRequiredClientAppConfigurationByResourceNumberAsync(normalizedSource, cancellationToken).ConfigureAwait(false);
@@ -150,7 +151,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
 
         if (duplicatePartNames.Length > 0)
         {
-            throw new UserFriendlyException($"目标资源号 {targetConfiguration.ResourceNumber} 已存在以下易损件定义：{string.Join(",", duplicatePartNames)}。");
+            throw new UserFriendlyException(LocalizedText.Format("Services.WearPartManagement.CopyDuplicatePartNames", targetConfiguration.ResourceNumber, string.Join(",", duplicatePartNames)));
         }
 
         foreach (var sourceDefinition in sourceDefinitions)
@@ -184,7 +185,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
             return await GetRequiredClientAppConfigurationAsync(fallbackClientAppConfigurationId.Value, cancellationToken).ConfigureAwait(false);
         }
 
-        throw new UserFriendlyException("易损件定义必须关联有效的客户端配置或资源号。");
+        throw new UserFriendlyException(LocalizedText.Get("Services.WearPartManagement.ConfigurationOrResourceRequired"));
     }
 
     private async Task<ClientAppConfigurationEntity> GetRequiredClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken)
@@ -192,7 +193,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         var clientAppConfiguration = await _clientAppConfigurationRepository.GetByIdAsync(clientAppConfigurationId, cancellationToken).ConfigureAwait(false);
         if (clientAppConfiguration is null)
         {
-            throw new EntityNotFoundException($"未找到主键为 {clientAppConfigurationId} 的客户端配置。");
+            throw new EntityNotFoundException(LocalizedText.Format("Services.WearPartManagement.ClientConfigurationNotFoundById", clientAppConfigurationId));
         }
 
         return clientAppConfiguration;
@@ -200,11 +201,11 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
 
     private async Task<ClientAppConfigurationEntity> GetRequiredClientAppConfigurationByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken)
     {
-        var normalized = NormalizeRequired(resourceNumber, "资源号不能为空。");
+        var normalized = NormalizeRequired(resourceNumber, LocalizedText.Get("Services.Common.ResourceNumberRequired"));
         var clientAppConfiguration = await _clientAppConfigurationRepository.GetByResourceNumberAsync(normalized, cancellationToken).ConfigureAwait(false);
         if (clientAppConfiguration is null)
         {
-            throw new EntityNotFoundException($"未找到资源号为 {normalized} 的客户端配置。");
+            throw new EntityNotFoundException(LocalizedText.Format("Services.WearPartManagement.ClientConfigurationNotFoundByResourceNumber", normalized));
         }
 
         return clientAppConfiguration;
@@ -283,30 +284,30 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
 
     private static void ValidateDefinition(WearPartDefinition definition)
     {
-        NormalizeRequired(definition.PartName, "易损件名称不能为空。");
-        NormalizeRequired(definition.InputMode, "输入方式不能为空。");
-        NormalizeRequired(definition.CurrentValueAddress, "当前值点位不能为空。");
-        NormalizeRequired(definition.CurrentValueDataType, "当前值点位类型不能为空。");
-        NormalizeRequired(definition.WarningValueAddress, "预警值点位不能为空。");
-        NormalizeRequired(definition.WarningValueDataType, "预警值点位类型不能为空。");
-        NormalizeRequired(definition.ShutdownValueAddress, "停机值点位不能为空。");
-        NormalizeRequired(definition.ShutdownValueDataType, "停机值点位类型不能为空。");
-        NormalizeRequired(definition.LifetimeType, "寿命类型不能为空。");
-        NormalizeRequired(definition.PlcZeroClearAddress, "PLC 清零点位不能为空。");
+        NormalizeRequired(definition.PartName, LocalizedText.Get("Services.WearPartManagement.PartNameRequired"));
+        NormalizeRequired(definition.InputMode, LocalizedText.Get("Services.WearPartManagement.InputModeRequired"));
+        NormalizeRequired(definition.CurrentValueAddress, LocalizedText.Get("Services.WearPartManagement.CurrentValueAddressRequired"));
+        NormalizeRequired(definition.CurrentValueDataType, LocalizedText.Get("Services.WearPartManagement.CurrentValueDataTypeRequired"));
+        NormalizeRequired(definition.WarningValueAddress, LocalizedText.Get("Services.WearPartManagement.WarningValueAddressRequired"));
+        NormalizeRequired(definition.WarningValueDataType, LocalizedText.Get("Services.WearPartManagement.WarningValueDataTypeRequired"));
+        NormalizeRequired(definition.ShutdownValueAddress, LocalizedText.Get("Services.WearPartManagement.ShutdownValueAddressRequired"));
+        NormalizeRequired(definition.ShutdownValueDataType, LocalizedText.Get("Services.WearPartManagement.ShutdownValueDataTypeRequired"));
+        NormalizeRequired(definition.LifetimeType, LocalizedText.Get("Services.WearPartManagement.LifetimeTypeRequired"));
+        NormalizeRequired(definition.PlcZeroClearAddress, LocalizedText.Get("Services.WearPartManagement.PlcZeroClearAddressRequired"));
 
         if (definition.CodeMinLength < 0)
         {
-            throw new UserFriendlyException("条码最小长度不能小于 0。");
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartManagement.CodeMinLengthRangeInvalid"));
         }
 
         if (definition.CodeMaxLength <= 0)
         {
-            throw new UserFriendlyException("条码最大长度必须大于 0。");
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartManagement.CodeMaxLengthRangeInvalid"));
         }
 
         if (definition.CodeMinLength > definition.CodeMaxLength)
         {
-            throw new UserFriendlyException("条码最小长度不能大于最大长度。");
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartManagement.CodeLengthRangeInverted"));
         }
     }
 

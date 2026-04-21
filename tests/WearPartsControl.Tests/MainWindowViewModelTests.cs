@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Windows.Threading;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.Localization;
@@ -29,14 +30,8 @@ public sealed class MainWindowViewModelTests
             }
         };
         var accessor = new CurrentUserAccessor();
-        var viewModel = new MainWindowViewModel(
-            new StubLocalizationService(),
-            new StubServiceProvider(),
-            accessor,
-            new StubLoginService(),
-            appSettingsService,
-            new UiBusyService(),
-            new StubPlcStartupConnectionService());
+        var loginService = new StubLoginService();
+        var viewModel = CreateViewModel(accessor, loginService, appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
 
         Assert.True(viewModel.IsClientAppInfoConfigured);
         Assert.Equal("工号：--", viewModel.CurrentUserWorkIdText);
@@ -70,14 +65,7 @@ public sealed class MainWindowViewModelTests
             }
         };
 
-        var viewModel = new MainWindowViewModel(
-            new StubLocalizationService(),
-            new StubServiceProvider(),
-            new CurrentUserAccessor(),
-            new StubLoginService(),
-            appSettingsService,
-            new UiBusyService(),
-            new StubPlcStartupConnectionService());
+        var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
 
         Assert.False(viewModel.IsLoggedIn);
         Assert.True(viewModel.ShowLoginButton);
@@ -97,14 +85,7 @@ public sealed class MainWindowViewModelTests
             }
         };
 
-        var viewModel = new MainWindowViewModel(
-            new StubLocalizationService(),
-            new StubServiceProvider(),
-            new CurrentUserAccessor(),
-            new StubLoginService(),
-            appSettingsService,
-            new UiBusyService(),
-            new StubPlcStartupConnectionService());
+        var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
 
         Assert.Single(viewModel.Tabs);
         Assert.False(viewModel.IsClientAppInfoConfigured);
@@ -133,9 +114,7 @@ public sealed class MainWindowViewModelTests
         var accessor = new CurrentUserAccessor();
         var delaySignals = new Queue<TaskCompletionSource<bool>>();
         var loginService = new StubLoginService(accessor);
-        var viewModel = new MainWindowViewModel(
-            new StubLocalizationService(),
-            new StubServiceProvider(),
+        var viewModel = CreateViewModel(
             accessor,
             loginService,
             appSettingsService,
@@ -183,14 +162,7 @@ public sealed class MainWindowViewModelTests
         {
             PendingResult = new TaskCompletionSource<PlcStartupConnectionResult>(TaskCreationOptions.RunContinuationsAsynchronously)
         };
-        var viewModel = new MainWindowViewModel(
-            new StubLocalizationService(),
-            new StubServiceProvider(),
-            new CurrentUserAccessor(),
-            new StubLoginService(),
-            appSettingsService,
-            new UiBusyService(TimeSpan.Zero),
-            startupConnectionService);
+        var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(TimeSpan.Zero), startupConnectionService);
 
         var initializeTask = viewModel.InitializeAsync();
 
@@ -220,14 +192,7 @@ public sealed class MainWindowViewModelTests
             }
         };
         var startupConnectionService = new StubPlcStartupConnectionService();
-        var viewModel = new MainWindowViewModel(
-            new StubLocalizationService(),
-            new StubServiceProvider(),
-            new CurrentUserAccessor(),
-            new StubLoginService(),
-            appSettingsService,
-            new UiBusyService(TimeSpan.Zero),
-            startupConnectionService);
+        var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(TimeSpan.Zero), startupConnectionService);
 
         await viewModel.InitializeAsync();
         await viewModel.InitializeAsync();
@@ -323,6 +288,26 @@ public sealed class MainWindowViewModelTests
         Assert.True(predicate());
     }
 
+    private static MainWindowViewModel CreateViewModel(
+        CurrentUserAccessor accessor,
+        StubLoginService loginService,
+        StubAppSettingsService appSettingsService,
+        IUiBusyService uiBusyService,
+        IPlcStartupConnectionService startupConnectionService,
+        Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
+    {
+        var stateMachine = new LoginSessionStateMachine(accessor, loginService, delayAsync);
+        return new MainWindowViewModel(
+            new StubLocalizationService(),
+            new StubServiceProvider(),
+            loginService,
+            appSettingsService,
+            uiBusyService,
+            startupConnectionService,
+            stateMachine,
+            new StubUiDispatcher());
+    }
+
     private sealed class StubLocalizationService : ILocalizationService
     {
         public string this[string name] => name;
@@ -350,5 +335,18 @@ public sealed class MainWindowViewModelTests
                 ? service
                 : null;
         }
+    }
+
+    private sealed class StubUiDispatcher : IUiDispatcher
+    {
+        public void Run(Action action) => action();
+
+        public Task RunAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        public Task RenderAsync() => Task.CompletedTask;
     }
 }

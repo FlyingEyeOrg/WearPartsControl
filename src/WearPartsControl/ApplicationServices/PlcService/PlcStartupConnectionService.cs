@@ -1,5 +1,6 @@
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
@@ -58,7 +59,7 @@ public sealed class PlcStartupConnectionService : IPlcStartupConnectionService
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             Log.Warning(ex, "Failed to connect PLC during startup for resource {ResourceNumber}", clientAppInfo.ResourceNumber);
-            var failed = PlcStartupConnectionResult.Failed($"连接失败：{ex.Message}");
+            var failed = PlcStartupConnectionResult.Failed(LocalizedText.Format("Services.PlcStartupConnection.ConnectFailed", ex.Message));
             _plcConnectionStatusService.Set(failed);
             return failed;
         }

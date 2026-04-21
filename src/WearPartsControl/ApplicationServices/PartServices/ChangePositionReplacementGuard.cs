@@ -1,3 +1,4 @@
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices.PartServices;
@@ -15,17 +16,17 @@ public sealed class ChangePositionReplacementGuard : IWearPartReplacementGuard
 
         if (context.LatestRecord is null)
         {
-            throw new UserFriendlyException("最近一次无数据记录。", code: "WearPartReplacement:LatestRecordMissing");
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.LatestRecordMissing"), code: "WearPartReplacement:LatestRecordMissing");
         }
 
         if (!string.Equals(context.LatestRecord.NewBarcode, context.NormalizedBarcode, StringComparison.OrdinalIgnoreCase))
         {
-            throw new UserFriendlyException("最近一条数据的新条码跟当前更换的条码不一致，请确认。", code: "WearPartReplacement:ChangePositionBarcodeMismatch");
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.ChangePositionBarcodeMismatch"), code: "WearPartReplacement:ChangePositionBarcodeMismatch");
         }
 
         if (context.CurrentUser.AccessLevel < 3)
         {
-            throw new AuthorizationException("当前扫的条码跟上次使用的条码一致，请 ME 登录确认是否继续使用。", code: "WearPartReplacement:ChangePositionRequiresMe");
+            throw new AuthorizationException(LocalizedText.Get("Services.WearPartReplacement.ChangePositionRequiresMe"), code: "WearPartReplacement:ChangePositionRequiresMe");
         }
 
         return Task.CompletedTask;

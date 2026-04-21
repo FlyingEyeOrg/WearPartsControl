@@ -1,4 +1,5 @@
 using WearPartsControl.ApplicationServices.ComNotification;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Domain.Repositories;
@@ -35,9 +36,9 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
 
     public async Task<IReadOnlyList<WearPartMonitorResult>> MonitorByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
     {
-        var normalizedResourceNumber = NormalizeRequired(resourceNumber, "资源号不能为空。");
+        var normalizedResourceNumber = NormalizeRequired(resourceNumber, LocalizedText.Get("Services.Common.ResourceNumberRequired"));
         var clientAppConfiguration = await _clientAppConfigurationRepository.GetByResourceNumberAsync(normalizedResourceNumber, cancellationToken).ConfigureAwait(false)
-            ?? throw new EntityNotFoundException($"未找到资源号为 {normalizedResourceNumber} 的客户端配置。");
+            ?? throw new EntityNotFoundException(LocalizedText.Format("Services.WearPartMonitor.ClientConfigurationNotFoundByResourceNumber", normalizedResourceNumber));
 
         var definitions = await _wearPartRepository.ListByClientAppConfigurationAsync(clientAppConfiguration.Id, cancellationToken).ConfigureAwait(false);
         if (definitions.Count == 0)
@@ -115,7 +116,7 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
             return false;
         }
 
-        var message = $"资源号 {clientAppConfiguration.ResourceNumber} 的易损件 {definition.PartName} 当前值 {currentValue}，预警值 {warningValue}，停机值 {shutdownValue}，级别 {severity}。";
+        var message = LocalizedText.Format("Services.WearPartMonitor.NotificationMessage", clientAppConfiguration.ResourceNumber, definition.PartName, currentValue, warningValue, shutdownValue, severity);
         var entity = new ExceedLimitRecordEntity
         {
             ClientAppConfigurationId = clientAppConfiguration.Id,
@@ -133,11 +134,11 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
 
         if (severity == ShutdownSeverity)
         {
-            await _notificationService.NotifyWorkAsync("易损件寿命停机", message, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _notificationService.NotifyWorkAsync(LocalizedText.Get("Services.WearPartMonitor.ShutdownNotificationTitle"), message, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            await _notificationService.NotifyGroupAsync("易损件寿命预警", message, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _notificationService.NotifyGroupAsync(LocalizedText.Get("Services.WearPartMonitor.WarningNotificationTitle"), message, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         return true;

@@ -1,3 +1,5 @@
+using System.Windows.Threading;
+using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.Domain.Entities;
@@ -17,7 +19,8 @@ public sealed class LoginWindowViewModelTests
         var viewModel = new LoginWindowViewModel(
             loginService,
             new StubClientAppConfigurationRepository(),
-            new StubAppSettingsService());
+            new StubAppSettingsService(),
+            new StubUiDispatcher());
 
         bool? dialogResult = null;
         viewModel.RequestClose += (_, result) => dialogResult = result;
@@ -40,7 +43,8 @@ public sealed class LoginWindowViewModelTests
         var viewModel = new LoginWindowViewModel(
             loginService,
             new StubClientAppConfigurationRepository(siteCode: "  "),
-            new StubAppSettingsService());
+            new StubAppSettingsService(),
+            new StubUiDispatcher());
 
         await viewModel.InitializeAsync();
 
@@ -58,7 +62,8 @@ public sealed class LoginWindowViewModelTests
         var viewModel = new LoginWindowViewModel(
             loginService,
             new StubClientAppConfigurationRepository(),
-            new StubAppSettingsService());
+            new StubAppSettingsService(),
+            new StubUiDispatcher());
 
         await viewModel.InitializeAsync();
         viewModel.AuthId = "CARD-01";
@@ -89,6 +94,7 @@ public sealed class LoginWindowViewModelTests
             loginService,
             new StubClientAppConfigurationRepository(),
             new StubAppSettingsService(),
+            new StubUiDispatcher(),
             TimeSpan.FromMilliseconds(500),
             (delay, cancellationToken) =>
             {
@@ -256,5 +262,18 @@ public sealed class LoginWindowViewModelTests
         }
 
         Assert.True(predicate());
+    }
+
+    private sealed class StubUiDispatcher : IUiDispatcher
+    {
+        public void Run(Action action) => action();
+
+        public Task RunAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        public Task RenderAsync() => Task.CompletedTask;
     }
 }

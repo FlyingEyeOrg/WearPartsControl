@@ -1,4 +1,5 @@
 using WearPartsControl.ApplicationServices.PlcService;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Domain.Repositories;
 using WearPartsControl.Exceptions;
@@ -58,8 +59,8 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
         var currentUser = EnsureAccessLevel(1);
         var definition = await GetRequiredDefinitionAsync(request.WearPartDefinitionId, cancellationToken).ConfigureAwait(false);
         var clientAppConfiguration = await GetRequiredClientAppConfigurationAsync(definition.ClientAppConfigurationId, cancellationToken).ConfigureAwait(false);
-        var normalizedBarcode = NormalizeRequired(request.NewBarcode, "新条码不能为空。");
-        var normalizedReason = NormalizeRequired(request.ReplacementReason, "更换原因不能为空。");
+        var normalizedBarcode = NormalizeRequired(request.NewBarcode, LocalizedText.Get("Services.WearPartReplacement.NewBarcodeRequired"));
+        var normalizedReason = NormalizeRequired(request.ReplacementReason, LocalizedText.Get("Services.WearPartReplacement.ReasonRequired"));
 
         _plcService.Connect(WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration));
 
@@ -148,17 +149,17 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
     {
         if (wearPartDefinitionId == Guid.Empty)
         {
-            throw new UserFriendlyException("易损件定义主键不能为空。");
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.DefinitionIdRequired"));
         }
 
         return await _wearPartRepository.GetByIdAsync(wearPartDefinitionId, cancellationToken).ConfigureAwait(false)
-            ?? throw new EntityNotFoundException($"未找到主键为 {wearPartDefinitionId} 的易损件定义。");
+            ?? throw new EntityNotFoundException(LocalizedText.Format("Services.WearPartReplacement.DefinitionNotFoundById", wearPartDefinitionId));
     }
 
     private async Task<ClientAppConfigurationEntity> GetRequiredClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken)
     {
         return await _clientAppConfigurationRepository.GetByIdAsync(clientAppConfigurationId, cancellationToken).ConfigureAwait(false)
-            ?? throw new EntityNotFoundException($"未找到主键为 {clientAppConfigurationId} 的客户端配置。");
+            ?? throw new EntityNotFoundException(LocalizedText.Format("Services.WearPartReplacement.ClientConfigurationNotFoundById", clientAppConfigurationId));
     }
 
     private static WearPartReplacementRecord MapToRecord(WearPartReplacementRecordEntity entity)

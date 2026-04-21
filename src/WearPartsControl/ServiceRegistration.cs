@@ -42,12 +42,14 @@ public static class ServiceRegistration
             })
             .SingleInstance();
         builder.RegisterType<HttpJsonService>().As<IHttpJsonService>().SingleInstance();
+        builder.RegisterType<UiDispatcher>().As<IUiDispatcher>().SingleInstance();
         builder.RegisterType<CurrentUserAccessor>()
             .As<ICurrentUserAccessor>()
             .As<ICurrentUser>()
             .SingleInstance();
         builder.RegisterType<MhrUserDirectoryCache>().As<IMhrUserDirectoryCache>().SingleInstance();
         builder.RegisterType<LoginService>().As<ILoginService>().SingleInstance();
+        builder.RegisterType<LoginSessionStateMachine>().As<ILoginSessionStateMachine>().SingleInstance();
         builder.RegisterType<UserConfigService>().As<IUserConfigService>().SingleInstance();
         builder.RegisterType<ComNotificationService>().As<IComNotificationService>().SingleInstance();
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();

@@ -4,6 +4,7 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.Exceptions;
 
@@ -220,8 +221,8 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         PlcZeroClearAddress = string.Empty;
         BarcodeWriteAddress = string.Empty;
         StatusMessage = string.IsNullOrWhiteSpace(ResourceNumber)
-            ? "当前未配置资源号，无法保存易损件。"
-            : $"当前资源号：{ResourceNumber}";
+            ? LocalizedText.Get("ViewModels.WearPartEditor.ResourceNumberMissing")
+            : LocalizedText.Format("ViewModels.WearPartEditor.CurrentResourceNumber", ResourceNumber);
         SaveCommand.NotifyCanExecuteChanged();
     }
 
@@ -246,7 +247,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         LifetimeType = definition.LifetimeType;
         PlcZeroClearAddress = definition.PlcZeroClearAddress;
         BarcodeWriteAddress = definition.BarcodeWriteAddress;
-        StatusMessage = $"正在编辑资源号 {ResourceNumber} 的易损件。";
+        StatusMessage = LocalizedText.Format("ViewModels.WearPartEditor.Editing", ResourceNumber);
         SaveCommand.NotifyCanExecuteChanged();
     }
 
@@ -277,7 +278,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
     {
         var enteredAt = DateTimeOffset.UtcNow;
         IsBusy = true;
-        StatusMessage = "正在保存易损件...";
+        StatusMessage = LocalizedText.Get("ViewModels.WearPartEditor.Saving");
         using var _ = _uiBusyService.Enter();
 
         try
@@ -286,7 +287,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
             var definition = BuildDefinition();
             await PersistAsync(definition, CancellationToken.None).ConfigureAwait(true);
             await EnsureMinimumBusyDurationAsync(enteredAt).ConfigureAwait(true);
-            StatusMessage = "保存成功。";
+            StatusMessage = LocalizedText.Get("ViewModels.WearPartEditor.Saved");
             RequestClose?.Invoke(this, true);
         }
         catch (Exception ex)
@@ -304,12 +305,12 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
     {
         if (!int.TryParse(CodeMinLength?.Trim(), out var codeMinLength))
         {
-            throw new UserFriendlyException("条码最小长度必须是整数。");
+            throw new UserFriendlyException(LocalizedText.Get("ViewModels.WearPartEditor.CodeMinInvalid"));
         }
 
         if (!int.TryParse(CodeMaxLength?.Trim(), out var codeMaxLength))
         {
-            throw new UserFriendlyException("条码最大长度必须是整数。");
+            throw new UserFriendlyException(LocalizedText.Get("ViewModels.WearPartEditor.CodeMaxInvalid"));
         }
 
         return new WearPartDefinition

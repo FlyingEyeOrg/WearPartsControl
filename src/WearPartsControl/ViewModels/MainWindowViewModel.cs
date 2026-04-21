@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
-using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -22,56 +21,53 @@ namespace WearPartsControl.ViewModels
 
         private string? _selectedTabHeader;
         private readonly IServiceProvider _serviceProvider;
-        private readonly ICurrentUserAccessor _currentUserAccessor;
         private readonly ILoginService _loginService;
         private readonly IAppSettingsService _appSettingsService;
         private readonly IUiBusyService _uiBusyService;
         private readonly IPlcStartupConnectionService _plcStartupConnectionService;
-        private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
+        private readonly ILoginSessionStateMachine _loginSessionStateMachine;
+        private readonly IUiDispatcher _uiDispatcher;
         private readonly IReadOnlyList<string> _allTabs;
-        private string _currentUserWorkIdText = "工号：--";
-        private string _currentUserAccessLevelText = "权限：--";
+        private string _currentUserWorkIdText = LocalizedText.Get("ViewModels.MainWindow.CurrentUserWorkIdEmpty");
+        private string _currentUserAccessLevelText = LocalizedText.Get("ViewModels.MainWindow.CurrentUserAccessLevelEmpty");
         private IEnumerable<string> _tabs = Array.Empty<string>();
         private bool _isLoggedIn;
         private bool _isClientAppInfoConfigured;
-        private int _autoLogoutCountdownSeconds = 360;
-        private int _remainingAutoLogoutSeconds;
-        private CancellationTokenSource? _autoLogoutCancellationTokenSource;
         private int _initializeStarted;
         private bool _defaultContentPending;
 
         public MainWindowViewModel(
             ILocalizationService localizationService,
             IServiceProvider serviceProvider,
-            ICurrentUserAccessor currentUserAccessor,
             ILoginService loginService,
             IAppSettingsService appSettingsService,
             IUiBusyService uiBusyService,
             IPlcStartupConnectionService plcStartupConnectionService,
-            Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
+            ILoginSessionStateMachine loginSessionStateMachine,
+            IUiDispatcher uiDispatcher)
         {
             Title = localizationService["MainWindow.Title"];
             TabChangedCommand = new RelayCommand<int>(OnTabChanged);
             OpenLoginCommand = new RelayCommand(OnOpenLoginRequested);
             LogoutCommand = new AsyncRelayCommand(LogoutAsync, CanLogout);
             _serviceProvider = serviceProvider;
-            _currentUserAccessor = currentUserAccessor;
             _loginService = loginService;
             _uiBusyService = uiBusyService;
             _plcStartupConnectionService = plcStartupConnectionService;
-            _delayAsync = delayAsync ?? Task.Delay;
+            _loginSessionStateMachine = loginSessionStateMachine;
+            _uiDispatcher = uiDispatcher;
             _selectedContent = PlaceholderContent;
             _appSettingsService = appSettingsService;
             _allTabs = localizationService.Catalog.MainWindow.Tabs.ToArray();
 
-            SoftwareVersionText = $"软件版本：{ResolveVersion()}";
-            _currentUserAccessor.CurrentUserChanged += OnCurrentUserChanged;
+            SoftwareVersionText = LocalizedText.Format("ViewModels.MainWindow.SoftwareVersion", ResolveVersion());
+            _loginSessionStateMachine.StateChanged += OnLoginSessionStateChanged;
             _appSettingsService.SettingsSaved += OnAppSettingsSaved;
             _uiBusyService.PropertyChanged += OnUiBusyServicePropertyChanged;
-            UpdateCurrentUserState();
 
             var appSettings = _appSettingsService.GetAsync(default).GetAwaiter().GetResult();
-            ApplyAutoLogoutSettings(appSettings);
+            _loginSessionStateMachine.UpdateSettings(appSettings);
+            ApplyLoginState(_loginSessionStateMachine.Current);
             ApplyClientAppInfoState(appSettings.IsSetClientAppInfo);
         }
 
@@ -215,18 +211,11 @@ namespace WearPartsControl.ViewModels
 
         private void OnAppSettingsSaved(object? sender, AppSettings settings)
         {
-            if (Application.Current?.Dispatcher is { } dispatcher && !dispatcher.CheckAccess())
+            _uiDispatcher.Run(() =>
             {
-                dispatcher.Invoke(() =>
-                {
-                    ApplyAutoLogoutSettings(settings);
-                    ApplyClientAppInfoState(settings.IsSetClientAppInfo);
-                });
-                return;
-            }
-
-            ApplyAutoLogoutSettings(settings);
-            ApplyClientAppInfoState(settings.IsSetClientAppInfo);
+                _loginSessionStateMachine.UpdateSettings(settings);
+                ApplyClientAppInfoState(settings.IsSetClientAppInfo);
+            });
         }
 
         private async Task LogoutAsync()
@@ -234,16 +223,16 @@ namespace WearPartsControl.ViewModels
             await _loginService.LogoutAsync().ConfigureAwait(false);
         }
 
-        private void OnCurrentUserChanged(object? sender, EventArgs e)
+        private void OnLoginSessionStateChanged(object? sender, EventArgs e)
         {
-            RunOnUiThread(UpdateCurrentUserState);
+            _uiDispatcher.Run(() => ApplyLoginState(_loginSessionStateMachine.Current));
         }
 
         private void OnUiBusyServicePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(IUiBusyService.IsBusy))
             {
-                RunOnUiThread(() =>
+                _uiDispatcher.Run(() =>
                 {
                     OnPropertyChanged(nameof(IsBusy));
                     OnPropertyChanged(nameof(IsNotBusy));
@@ -252,91 +241,25 @@ namespace WearPartsControl.ViewModels
             }
         }
 
-        private void UpdateCurrentUserState()
+        private void ApplyLoginState(LoginSessionState state)
         {
-            var currentUser = _currentUserAccessor.CurrentUser;
-            IsLoggedIn = currentUser is not null;
-            CurrentUserWorkIdText = currentUser is null ? "工号：--" : $"工号：{currentUser.WorkId}";
+            var currentUser = state.CurrentUser;
+            IsLoggedIn = state.IsLoggedIn;
+            CurrentUserWorkIdText = currentUser is null
+                ? LocalizedText.Get("ViewModels.MainWindow.CurrentUserWorkIdEmpty")
+                : LocalizedText.Format("ViewModels.MainWindow.CurrentUserWorkId", currentUser.WorkId);
 
             if (currentUser is null)
             {
-                StopAutoLogoutCountdown();
-                CurrentUserAccessLevelText = "权限：--";
+                CurrentUserAccessLevelText = LocalizedText.Get("ViewModels.MainWindow.CurrentUserAccessLevelEmpty");
                 return;
             }
 
-            StartAutoLogoutCountdown(currentUser);
-        }
-
-        private void ApplyAutoLogoutSettings(AppSettings settings)
-        {
-            _autoLogoutCountdownSeconds = settings.AutoLogoutCountdownSeconds <= 0
-                ? 360
-                : settings.AutoLogoutCountdownSeconds;
-
-            if (_currentUserAccessor.CurrentUser is { } currentUser)
-            {
-                StartAutoLogoutCountdown(currentUser);
-            }
-        }
-
-        private void StartAutoLogoutCountdown(MhrUser currentUser)
-        {
-            StopAutoLogoutCountdown();
-
-            _remainingAutoLogoutSeconds = _autoLogoutCountdownSeconds;
-            CurrentUserAccessLevelText = FormatAccessLevelText(currentUser.AccessLevel, _remainingAutoLogoutSeconds);
-
-            var cts = new CancellationTokenSource();
-            _autoLogoutCancellationTokenSource = cts;
-            _ = RunAutoLogoutCountdownAsync(currentUser, cts.Token);
-        }
-
-        private async Task RunAutoLogoutCountdownAsync(MhrUser currentUser, CancellationToken cancellationToken)
-        {
-            try
-            {
-                while (_remainingAutoLogoutSeconds > 0)
-                {
-                    await _delayAsync(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    _remainingAutoLogoutSeconds--;
-                    RunOnUiThread(() =>
-                    {
-                        if (_currentUserAccessor.CurrentUser is not null)
-                        {
-                            CurrentUserAccessLevelText = FormatAccessLevelText(currentUser.AccessLevel, _remainingAutoLogoutSeconds);
-                        }
-                    });
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-                await _loginService.LogoutAsync().ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-            }
-        }
-
-        private void StopAutoLogoutCountdown()
-        {
-            var cts = _autoLogoutCancellationTokenSource;
-            _autoLogoutCancellationTokenSource = null;
-            if (cts is not null)
-            {
-                cts.Cancel();
-                cts.Dispose();
-            }
-
-            _remainingAutoLogoutSeconds = 0;
-        }
-
-        private static string FormatAccessLevelText(int accessLevel, int remainingSeconds)
-        {
-            var clampedSeconds = Math.Max(remainingSeconds, 0);
-            var remaining = TimeSpan.FromSeconds(clampedSeconds);
-            return $"权限：{accessLevel} | 自动注销：{remaining:mm\\:ss}";
+            var remaining = TimeSpan.FromSeconds(Math.Max(state.RemainingAutoLogoutSeconds, 0));
+            CurrentUserAccessLevelText = LocalizedText.Format(
+                "ViewModels.MainWindow.CurrentUserAccessLevelCountdown",
+                currentUser.AccessLevel,
+                remaining.ToString("mm\\:ss"));
         }
 
         private void ApplyClientAppInfoState(bool isConfigured)
@@ -384,17 +307,6 @@ namespace WearPartsControl.ViewModels
             return version.Build >= 0
                 ? version.ToString(3)
                 : version.ToString();
-        }
-
-        private static void RunOnUiThread(Action action)
-        {
-            if (Application.Current?.Dispatcher is { } dispatcher && !dispatcher.CheckAccess())
-            {
-                dispatcher.Invoke(action);
-                return;
-            }
-
-            action();
         }
     }
 }

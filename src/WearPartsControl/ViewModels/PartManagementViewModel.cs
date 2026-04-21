@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
 
 namespace WearPartsControl.ViewModels;
@@ -20,7 +21,7 @@ public sealed class PartManagementViewModel : ObservableObject
     private WearPartDefinition? _selectedDefinition;
     private bool _isBusy;
     private bool _isInitialized;
-    private string _statusMessage = "请先加载当前设备的易损件。";
+    private string _statusMessage = LocalizedText.Get("ViewModels.PartManagement.PromptLoadCurrent");
 
     public PartManagementViewModel(
         IClientAppInfoService clientAppInfoService,
@@ -130,7 +131,7 @@ public sealed class PartManagementViewModel : ObservableObject
     {
         var enteredAt = DateTimeOffset.UtcNow;
         IsBusy = true;
-        StatusMessage = "正在加载易损件列表...";
+        StatusMessage = LocalizedText.Get("ViewModels.PartManagement.Loading");
         using var _ = _uiBusyService.Enter();
 
         try
@@ -145,7 +146,7 @@ public sealed class PartManagementViewModel : ObservableObject
 
             if (_clientAppConfigurationId == Guid.Empty || string.IsNullOrWhiteSpace(ResourceNumber))
             {
-                StatusMessage = "当前客户端未配置资源号，无法管理易损件。";
+                StatusMessage = LocalizedText.Get("ViewModels.PartManagement.ResourceNumberMissing");
                 return;
             }
 
@@ -157,8 +158,8 @@ public sealed class PartManagementViewModel : ObservableObject
             ApplyFilter();
             await EnsureMinimumBusyDurationAsync(enteredAt, cancellationToken).ConfigureAwait(true);
             StatusMessage = _allDefinitions.Count == 0
-                ? $"资源号 {ResourceNumber} 当前暂无易损件定义。"
-                : $"已加载资源号 {ResourceNumber} 的 {_allDefinitions.Count} 条易损件定义。";
+                ? LocalizedText.Format("ViewModels.PartManagement.DefinitionsEmpty", ResourceNumber)
+                : LocalizedText.Format("ViewModels.PartManagement.DefinitionsLoaded", ResourceNumber, _allDefinitions.Count);
         }
         catch (Exception ex)
         {
@@ -215,8 +216,8 @@ public sealed class PartManagementViewModel : ObservableObject
 
         var definition = SelectedDefinition;
         var result = MessageBox.Show(
-            $"确认删除易损件“{definition.PartName}”吗？",
-            "删除确认",
+            LocalizedText.Format("ViewModels.PartManagement.DeleteConfirmationMessage", definition.PartName),
+            LocalizedText.Get("ViewModels.PartManagement.DeleteConfirmationTitle"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
@@ -227,7 +228,7 @@ public sealed class PartManagementViewModel : ObservableObject
 
         var enteredAt = DateTimeOffset.UtcNow;
         IsBusy = true;
-        StatusMessage = "正在删除易损件...";
+        StatusMessage = LocalizedText.Get("ViewModels.PartManagement.Deleting");
         using var _ = _uiBusyService.Enter();
 
         try
@@ -235,7 +236,7 @@ public sealed class PartManagementViewModel : ObservableObject
             await _wearPartManagementService.DeleteDefinitionAsync(definition.Id).ConfigureAwait(true);
             await RefreshAsync(CancellationToken.None).ConfigureAwait(true);
             await EnsureMinimumBusyDurationAsync(enteredAt, CancellationToken.None).ConfigureAwait(true);
-            StatusMessage = $"易损件 {definition.PartName} 已删除。";
+            StatusMessage = LocalizedText.Format("ViewModels.PartManagement.Deleted", definition.PartName);
         }
         catch (Exception ex)
         {
@@ -269,8 +270,8 @@ public sealed class PartManagementViewModel : ObservableObject
         if (!string.IsNullOrWhiteSpace(ResourceNumber))
         {
             StatusMessage = Definitions.Count == 0
-                ? $"资源号 {ResourceNumber} 没有匹配“{keyword}”的易损件。"
-                : $"当前显示 {Definitions.Count} 条易损件定义。";
+                ? LocalizedText.Format("ViewModels.PartManagement.NoMatchedDefinitions", ResourceNumber, keyword)
+                : LocalizedText.Format("ViewModels.PartManagement.FilteredDefinitionsCount", Definitions.Count);
         }
     }
 

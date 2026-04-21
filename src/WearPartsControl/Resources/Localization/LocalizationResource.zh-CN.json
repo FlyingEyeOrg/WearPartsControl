@@ -73,5 +73,163 @@
     "AuthIdEmpty": "请先刷卡后再登录。",
     "ConfigFileNotFound": "未找到 MHR 配置文件: {0}",
     "ConfigDeserializeFailed": "MHR 配置文件解析失败。"
+  },
+  "ViewModels": {
+    "MainWindow": {
+      "CurrentUserWorkIdEmpty": "工号：--",
+      "CurrentUserWorkId": "工号：{0}",
+      "CurrentUserAccessLevelEmpty": "权限：--",
+      "CurrentUserAccessLevelCountdown": "权限：{0} | 自动注销：{1}",
+      "SoftwareVersion": "软件版本：{0}"
+    },
+    "LoginWindow": {
+      "PromptSwipeCard": "请刷卡登录",
+      "ResourceNumberMissing": "请先在配置中设置资源号。",
+      "ClientConfigurationNotFound": "未找到资源号 {0} 对应的客户端配置。",
+      "ClientConfigurationSiteMissing": "资源号 {0} 的客户端配置未设置基地。",
+      "ManualInputRejected": "检测到输入间隔超过 {0} ms，请使用刷卡器登录。",
+      "AuthIdMissing": "请先刷卡后再登录。",
+      "LoggingIn": "正在登录...",
+      "UserNotFound": "未找到对应用户，请确认卡号或权限配置。",
+      "LoginSucceeded": "登录成功，工号 {0}"
+    },
+    "ClientAppInfo": {
+      "PromptComplete": "请先完善客户端信息。",
+      "Loaded": "客户端信息已加载。",
+      "Saving": "正在保存客户端信息...",
+      "Saved": "客户端信息保存成功。",
+      "PlcPortInvalid": "PLC 端口必须是整数。",
+      "PlcSlotInvalid": "PLC 插槽号必须是整数。"
+    },
+    "PartManagement": {
+      "PromptLoadCurrent": "请先加载当前设备的易损件。",
+      "Loading": "正在加载易损件列表...",
+      "ResourceNumberMissing": "当前客户端未配置资源号，无法管理易损件。",
+      "DefinitionsEmpty": "资源号 {0} 当前暂无易损件定义。",
+      "DefinitionsLoaded": "已加载资源号 {0} 的 {1} 条易损件定义。",
+      "DeleteConfirmationMessage": "确认删除易损件“{0}”吗？",
+      "DeleteConfirmationTitle": "删除确认",
+      "Deleting": "正在删除易损件...",
+      "Deleted": "易损件 {0} 已删除。",
+      "NoMatchedDefinitions": "资源号 {0} 没有匹配“{1}”的易损件。",
+      "FilteredDefinitionsCount": "当前显示 {0} 条易损件定义。"
+    },
+    "ReplacePart": {
+      "PromptSelectAndLoadPreview": "请先选择易损件并加载预览。",
+      "Loading": "正在加载易损件更换信息...",
+      "ResourceNumberMissing": "当前客户端未配置资源号，无法执行易损件更换。",
+      "DefinitionsEmpty": "资源号 {0} 暂无易损件定义。",
+      "DefinitionsLoaded": "已加载资源号 {0} 的 {1} 条易损件定义。",
+      "Replacing": "正在更换易损件 {0}...",
+      "ReplaceSucceeded": "易损件 {0} 更换成功，新条码：{1}。"
+    },
+    "UserConfig": {
+      "PromptMaintain": "请先维护用户配置。",
+      "Loaded": "用户配置已加载。",
+      "LoadFailedPrefix": "用户配置加载失败：",
+      "Saved": "用户配置保存成功。",
+      "SaveFailedPrefix": "用户配置保存失败：",
+      "ResponsibleMissing": "请至少配置一个负责人。",
+      "TestNotificationTitle": "WearPartsControl 测试通知",
+      "TestNotificationBody": "这是一条来自用户配置页面的测试通知。",
+      "TestSucceeded": "COM 通知测试发送成功。",
+      "TestFailedPrefix": "COM 通知测试失败："
+    },
+    "WearPartEditor": {
+      "ResourceNumberMissing": "当前未配置资源号，无法保存易损件。",
+      "CurrentResourceNumber": "当前资源号：{0}",
+      "Editing": "正在编辑资源号 {0} 的易损件。",
+      "Saving": "正在保存易损件...",
+      "Saved": "保存成功。",
+      "CodeMinInvalid": "条码最小长度必须是整数。",
+      "CodeMaxInvalid": "条码最大长度必须是整数。"
+    }
+  },
+  "Services": {
+    "Common": {
+      "ResourceNumberRequired": "资源号不能为空。"
+    },
+    "Authorization": {
+      "CurrentUserMissing": "当前没有已登录用户。",
+      "AccessLevelDenied": "当前用户权限不足，要求权限等级不低于 {0}。"
+    },
+    "ClientAppInfo": {
+      "ResourceNumberRequired": "设备资源号不能为空。",
+      "DuplicatedResourceNumber": "资源号 {0} 已存在客户端信息配置。",
+      "SiteCodeRequired": "基地不能为空。",
+      "FactoryCodeRequired": "工厂不能为空。",
+      "AreaCodeRequired": "区域不能为空。",
+      "ProcedureCodeRequired": "工序不能为空。",
+      "EquipmentCodeRequired": "设备编号不能为空。",
+      "PlcProtocolRequired": "PLC 类型不能为空。",
+      "PlcIpRequired": "PLC IP 地址不能为空。",
+      "ShutdownPointAddressRequired": "停机地址不能为空。"
+    },
+    "WearPartManagement": {
+      "DuplicatedPartName": "资源号 {0} 下已存在名称为 {1} 的易损件定义。",
+      "UpdateIdRequired": "更新易损件定义时必须提供有效的主键。",
+      "DefinitionNotFoundById": "未找到主键为 {0} 的易损件定义。",
+      "SourceResourceNumberRequired": "源资源号不能为空。",
+      "TargetResourceNumberRequired": "目标资源号不能为空。",
+      "SourceTargetSame": "源资源号和目标资源号不能相同。",
+      "CopyDuplicatePartNames": "目标资源号 {0} 已存在以下易损件定义：{1}。",
+      "ConfigurationOrResourceRequired": "易损件定义必须关联有效的客户端配置或资源号。",
+      "ClientConfigurationNotFoundById": "未找到主键为 {0} 的客户端配置。",
+      "ClientConfigurationNotFoundByResourceNumber": "未找到资源号为 {0} 的客户端配置。",
+      "PartNameRequired": "易损件名称不能为空。",
+      "InputModeRequired": "输入方式不能为空。",
+      "CurrentValueAddressRequired": "当前值点位不能为空。",
+      "CurrentValueDataTypeRequired": "当前值点位类型不能为空。",
+      "WarningValueAddressRequired": "预警值点位不能为空。",
+      "WarningValueDataTypeRequired": "预警值点位类型不能为空。",
+      "ShutdownValueAddressRequired": "停机值点位不能为空。",
+      "ShutdownValueDataTypeRequired": "停机值点位类型不能为空。",
+      "LifetimeTypeRequired": "寿命类型不能为空。",
+      "PlcZeroClearAddressRequired": "PLC 清零点位不能为空。",
+      "CodeMinLengthRangeInvalid": "条码最小长度不能小于 0。",
+      "CodeMaxLengthRangeInvalid": "条码最大长度必须大于 0。",
+      "CodeLengthRangeInverted": "条码最小长度不能大于最大长度。"
+    },
+    "WearPartReplacement": {
+      "NewBarcodeRequired": "新条码不能为空。",
+      "ReasonRequired": "更换原因不能为空。",
+      "DefinitionIdRequired": "易损件定义主键不能为空。",
+      "DefinitionNotFoundById": "未找到主键为 {0} 的易损件定义。",
+      "ClientConfigurationNotFoundById": "未找到主键为 {0} 的客户端配置。",
+      "BarcodeTooShort": "条码长度不能小于 {0}。",
+      "BarcodeTooLong": "条码长度不能大于 {0}。",
+      "LatestRecordMissing": "最近一次无数据记录。",
+      "ChangePositionBarcodeMismatch": "最近一条数据的新条码跟当前更换的条码不一致，请确认。",
+      "ChangePositionRequiresMe": "当前扫的条码跟上次使用的条码一致，请 ME 登录确认是否继续使用。",
+      "BarcodeAlreadyUsed": "易损件 {0} 已存在条码 {1} 的更换记录，不允许重复使用。",
+      "BarcodeDuplicated": "条码重复，请更换其他条码。",
+      "LifetimeNotReached": "检测到当前易损件未达到停机寿命，不允许更换。",
+      "ValueCannotConvert": "PLC 地址 {0} 的值无法转换为数值：{1}。"
+    },
+    "WearPartMonitor": {
+      "ClientConfigurationNotFoundByResourceNumber": "未找到资源号为 {0} 的客户端配置。",
+      "NotificationMessage": "资源号 {0} 的易损件 {1} 当前值 {2}，预警值 {3}，停机值 {4}，级别 {5}。",
+      "ShutdownNotificationTitle": "易损件寿命停机",
+      "WarningNotificationTitle": "易损件寿命预警"
+    },
+    "PlcConnection": {
+      "ProtocolTypeRequired": "PLC 协议类型不能为空。",
+      "ProtocolTypeNotSupported": "不支持的 PLC 协议类型：{0}。"
+    },
+    "PlcStartupConnection": {
+      "Uninitialized": "未初始化",
+      "Connecting": "连接中",
+      "NotConfigured": "未配置 ClientApp，未连接 PLC。",
+      "Connected": "已连接",
+      "ConnectFailed": "连接失败：{0}"
+    },
+    "Login": {
+      "InvalidTokenPayload": "登录接口返回的 token 格式不正确。"
+    },
+    "SaveInfo": {
+      "PathEscaped": "{0} 的 SaveInfo 映射路径越界，已拒绝访问。",
+      "PathMustBeRelative": "{0} 的 SaveInfo 路径必须是相对路径且不允许包含 '..'。",
+      "PathContainsInvalidChars": "{0} 的 SaveInfo 路径包含非法字符。"
+    }
   }
 }
