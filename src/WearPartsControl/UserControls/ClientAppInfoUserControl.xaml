@@ -118,20 +118,20 @@
                                  Text="{Binding PlcIpAddress, UpdateSourceTrigger=PropertyChanged}"
                                  ui:InfoElement.Placeholder="请输入 PLC 的 IP 地址" />
                     </Grid>
-                                        <Grid Margin="0 8 0 0"
-                                                    Visibility="{Binding IsSiemensRackVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="80" />
-                                                        <ColumnDefinition />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock HorizontalAlignment="Left"
-                                                                     VerticalAlignment="Center">机架号：</TextBlock>
-                                                <TextBox Style="{StaticResource TextBoxExtend}"
-                                                                 Grid.Column="1"
-                                                                 Text="{Binding SiemensRack, UpdateSourceTrigger=PropertyChanged}"
-                                                                 ui:InfoElement.Placeholder="西门子 PLC 机架号，默认 0" />
-                                        </Grid>
-                                        <Grid Margin="0 8 0 0"
+                    <Grid Margin="0 8 0 0"
+                          Visibility="{Binding IsSiemensRackVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">机架号：</TextBlock>
+                        <TextBox Style="{StaticResource TextBoxExtend}"
+                                 Grid.Column="1"
+                                 Text="{Binding SiemensRack, UpdateSourceTrigger=PropertyChanged}"
+                                 ui:InfoElement.Placeholder="西门子 PLC 机架号，默认 0" />
+                    </Grid>
+                    <Grid Margin="0 8 0 0"
                           Visibility="{Binding IsSiemensSlotVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="80" />
