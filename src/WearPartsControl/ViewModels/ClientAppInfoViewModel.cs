@@ -33,7 +33,8 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     private string _plcIpAddress = string.Empty;
     private string _plcPort = "102";
     private string _shutdownPointAddress = string.Empty;
-    private string _siemensSlot = "1";
+    private string _siemensRack = "0";
+    private string _siemensSlot = "0";
     private string _statusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.PromptComplete");
     private bool _isStringReverse = true;
 
@@ -91,6 +92,8 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             }
         }
     }
+
+    public bool IsSiemensRackVisible => IsSiemensPlc(PlcProtocolType);
 
     public bool IsSiemensSlotVisible => IsSiemensPlc(PlcProtocolType);
 
@@ -185,6 +188,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         {
             if (SetProperty(ref _plcProtocolType, value))
             {
+                OnPropertyChanged(nameof(IsSiemensRackVisible));
                 OnPropertyChanged(nameof(IsSiemensSlotVisible));
                 OnPropertyChanged(nameof(IsStringReverseVisible));
                 UpdateDirtyState();
@@ -222,6 +226,18 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         set
         {
             if (SetProperty(ref _shutdownPointAddress, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string SiemensRack
+    {
+        get => _siemensRack;
+        set
+        {
+            if (SetProperty(ref _siemensRack, value))
             {
                 UpdateDirtyState();
             }
@@ -313,8 +329,14 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             throw new UserFriendlyException(LocalizedText.Get("ViewModels.ClientAppInfoVm.PlcPortInvalid"));
         }
 
-        var siemensSlot = 1;
-        if (IsSiemensSlotVisible && !int.TryParse(SiemensSlot?.Trim(), out siemensSlot))
+        var siemensRack = 0;
+        if (IsSiemensRackVisible && (!int.TryParse(SiemensRack?.Trim(), out siemensRack) || siemensRack < 0 || siemensRack > 255))
+        {
+            throw new UserFriendlyException(LocalizedText.Get("ViewModels.ClientAppInfoVm.PlcRackInvalid"));
+        }
+
+        var siemensSlot = 0;
+        if (IsSiemensSlotVisible && (!int.TryParse(SiemensSlot?.Trim(), out siemensSlot) || siemensSlot < 0 || siemensSlot > 255))
         {
             throw new UserFriendlyException(LocalizedText.Get("ViewModels.ClientAppInfoVm.PlcSlotInvalid"));
         }
@@ -332,6 +354,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             PlcIpAddress = PlcIpAddress,
             PlcPort = plcPort,
             ShutdownPointAddress = ShutdownPointAddress,
+            SiemensRack = siemensRack,
             SiemensSlot = siemensSlot,
             IsStringReverse = IsStringReverseVisible && IsStringReverse
         };
@@ -354,6 +377,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             PlcIpAddress = model.PlcIpAddress;
             PlcPort = model.PlcPort.ToString();
             ShutdownPointAddress = model.ShutdownPointAddress;
+            SiemensRack = model.SiemensRack.ToString();
             SiemensSlot = model.SiemensSlot.ToString();
             IsStringReverse = model.IsStringReverse;
             _originalSnapshot = CaptureSnapshot();
@@ -378,6 +402,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             Normalize(PlcIpAddress),
             Normalize(PlcPort),
             Normalize(ShutdownPointAddress),
+            Normalize(SiemensRack),
             Normalize(SiemensSlot),
             IsStringReverse);
     }
@@ -549,10 +574,11 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         string PlcIpAddress,
         string PlcPort,
         string ShutdownPointAddress,
+        string SiemensRack,
         string SiemensSlot,
         bool IsStringReverse)
     {
-        public static ClientAppInfoSnapshot Empty { get; } = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true);
+        public static ClientAppInfoSnapshot Empty { get; } = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true);
     }
 
     public sealed class SiteOption

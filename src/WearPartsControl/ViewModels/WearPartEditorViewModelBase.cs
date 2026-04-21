@@ -12,9 +12,19 @@ namespace WearPartsControl.ViewModels;
 
 public abstract class WearPartEditorViewModelBase : ObservableObject
 {
+    private static readonly IReadOnlyDictionary<string, string> LifetimeTypeAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Meter"] = "记米",
+        ["Count"] = "计次",
+        ["Time"] = "计时",
+        ["记米"] = "记米",
+        ["计次"] = "计次",
+        ["计时"] = "计时"
+    };
+
     private const string DefaultCreateInputMode = "Manual";
     private const string DefaultCreateDataType = "FLOAT";
-    private const string DefaultCreateLifetimeType = "Meter";
+    private const string DefaultCreateLifetimeType = "计次";
     private const string DefaultCreateCodeMinLength = "0";
     private const string DefaultCreateCodeMaxLength = "0";
 
@@ -52,7 +62,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
             InputModes.Add(item);
         }
 
-        foreach (var item in new[] { "Meter", "Count", "Time", "Json" })
+        foreach (var item in new[] { "记米", "计次", "计时" })
         {
             LifetimeTypes.Add(item);
         }
@@ -244,7 +254,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         IsShutdown = definition.IsShutdown;
         CodeMinLength = definition.CodeMinLength.ToString();
         CodeMaxLength = definition.CodeMaxLength.ToString();
-        LifetimeType = definition.LifetimeType;
+        LifetimeType = NormalizeLifetimeType(definition.LifetimeType);
         PlcZeroClearAddress = definition.PlcZeroClearAddress;
         BarcodeWriteAddress = definition.BarcodeWriteAddress;
         StatusMessage = LocalizedText.Format("ViewModels.WearPartEditorVm.Editing", ResourceNumber);
@@ -269,7 +279,6 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
             && !string.IsNullOrWhiteSpace(ShutdownValueAddress)
             && !string.IsNullOrWhiteSpace(ShutdownValueDataType)
             && !string.IsNullOrWhiteSpace(LifetimeType)
-            && !string.IsNullOrWhiteSpace(PlcZeroClearAddress)
             && int.TryParse(CodeMinLength?.Trim(), out _)
             && int.TryParse(CodeMaxLength?.Trim(), out _);
     }
@@ -329,7 +338,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
             IsShutdown = IsShutdown,
             CodeMinLength = codeMinLength,
             CodeMaxLength = codeMaxLength,
-            LifetimeType = LifetimeType,
+            LifetimeType = NormalizeLifetimeType(LifetimeType),
             PlcZeroClearAddress = PlcZeroClearAddress,
             BarcodeWriteAddress = BarcodeWriteAddress
         };
@@ -369,5 +378,13 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         {
             SaveCommand.NotifyCanExecuteChanged();
         }
+    }
+
+    private static string NormalizeLifetimeType(string? value)
+    {
+        var normalized = value?.Trim() ?? string.Empty;
+        return LifetimeTypeAliases.TryGetValue(normalized, out var alias)
+            ? alias
+            : normalized;
     }
 }

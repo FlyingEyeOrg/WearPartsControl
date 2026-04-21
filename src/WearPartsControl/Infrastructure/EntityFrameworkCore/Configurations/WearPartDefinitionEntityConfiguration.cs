@@ -29,7 +29,7 @@ public sealed class WearPartDefinitionEntityConfiguration : IEntityTypeConfigura
         builder.Property(x => x.CodeMinLength).IsRequired();
         builder.Property(x => x.CodeMaxLength).IsRequired();
         builder.Property(x => x.LifetimeType).HasMaxLength(64).IsRequired();
-        builder.Property(x => x.PlcZeroClearAddress).HasMaxLength(128).IsRequired();
+        builder.Property(x => x.PlcZeroClearAddress).HasMaxLength(128);
         builder.Property(x => x.BarcodeWriteAddress).HasMaxLength(128).IsRequired();
 
         builder.HasOne(x => x.ClientAppConfiguration)

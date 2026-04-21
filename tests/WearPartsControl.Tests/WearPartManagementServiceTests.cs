@@ -123,7 +123,8 @@ public sealed class WearPartManagementServiceTests
             PlcIpAddress = "127.0.0.1",
             PlcPort = 102,
             ShutdownPointAddress = "DB1.200",
-            SiemensSlot = 1,
+            SiemensRack = 0,
+            SiemensSlot = 0,
             IsStringReverse = true
         };
     }
@@ -146,7 +147,7 @@ public sealed class WearPartManagementServiceTests
             IsShutdown = true,
             CodeMinLength = 10,
             CodeMaxLength = 30,
-            LifetimeType = "Count",
+            LifetimeType = "计次",
             PlcZeroClearAddress = "DB1.3",
             BarcodeWriteAddress = "DB1.4"
         };
@@ -170,10 +171,27 @@ public sealed class WearPartManagementServiceTests
             IsShutdown = true,
             CodeMinLength = 10,
             CodeMaxLength = 30,
-            LifetimeType = "Count",
+            LifetimeType = "计次",
             PlcZeroClearAddress = "DB1.3",
             BarcodeWriteAddress = "DB1.4"
         };
+    }
+
+    [Fact]
+    public async Task CreateDefinitionAsync_WhenZeroClearAddressEmpty_ShouldAllowCreate()
+    {
+        var currentUserAccessor = CreateLoggedInAccessor();
+        var basicConfiguration = CreateClientAppConfiguration("R120");
+        var basicRepository = new FakeClientAppConfigurationRepository(basicConfiguration);
+        var wearPartRepository = new FakeWearPartRepository();
+        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository);
+        var definition = CreateDefinitionModel(basicConfiguration.Id, basicConfiguration.ResourceNumber);
+        definition.PlcZeroClearAddress = string.Empty;
+
+        var created = await service.CreateDefinitionAsync(definition);
+
+        Assert.Equal(string.Empty, created.PlcZeroClearAddress);
+        Assert.Equal(string.Empty, wearPartRepository.Entities[0].PlcZeroClearAddress);
     }
 
     private sealed class FakeClientAppConfigurationRepository : IClientAppConfigurationRepository

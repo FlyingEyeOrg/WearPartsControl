@@ -121,7 +121,7 @@
                         <TextBox Grid.Column="1"
                                  Text="{Binding PlcZeroClearAddress, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                 hc:InfoElement.Placeholder="请输入清零地址" />
+                                 hc:InfoElement.Placeholder="请输入清零地址，可不填" />
                     </Grid>
                 </StackPanel>
 

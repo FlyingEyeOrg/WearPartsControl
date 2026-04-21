@@ -12,7 +12,7 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
         ["basic_configurations"] =
         [
             "Id", "CreatedAt", "UpdatedAt", "CreatedBy", "UpdatedBy", "SiteCode", "FactoryCode", "AreaCode", "ProcedureCode",
-            "EquipmentCode", "ResourceNumber", "PlcProtocolType", "PlcIpAddress", "PlcPort", "ShutdownPointAddress", "SiemensSlot", "IsStringReverse"
+            "EquipmentCode", "ResourceNumber", "PlcProtocolType", "PlcIpAddress", "PlcPort", "ShutdownPointAddress", "SiemensRack", "SiemensSlot", "IsStringReverse"
         ],
         ["wear_part_definitions"] =
         [

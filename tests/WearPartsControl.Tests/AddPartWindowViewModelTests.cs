@@ -18,7 +18,7 @@ public sealed class AddPartWindowViewModelTests
         Assert.Equal("FLOAT", viewModel.CurrentValueDataType);
         Assert.Equal("FLOAT", viewModel.WarningValueDataType);
         Assert.Equal("FLOAT", viewModel.ShutdownValueDataType);
-        Assert.Equal("Meter", viewModel.LifetimeType);
+        Assert.Equal("计次", viewModel.LifetimeType);
         Assert.Equal("0", viewModel.CodeMinLength);
         Assert.Equal("0", viewModel.CodeMaxLength);
         Assert.False(viewModel.IsShutdown);
@@ -46,7 +46,7 @@ public sealed class AddPartWindowViewModelTests
             IsShutdown = true,
             CodeMinLength = 6,
             CodeMaxLength = 18,
-            LifetimeType = "Count",
+            LifetimeType = "计次",
             PlcZeroClearAddress = "DB1.3",
             BarcodeWriteAddress = "DB1.4"
         };
@@ -57,7 +57,7 @@ public sealed class AddPartWindowViewModelTests
         Assert.Equal("INT32", viewModel.CurrentValueDataType);
         Assert.Equal("BOOL", viewModel.WarningValueDataType);
         Assert.Equal("STRING", viewModel.ShutdownValueDataType);
-        Assert.Equal("Count", viewModel.LifetimeType);
+        Assert.Equal("计次", viewModel.LifetimeType);
         Assert.Equal("6", viewModel.CodeMinLength);
         Assert.Equal("18", viewModel.CodeMaxLength);
         Assert.True(viewModel.IsShutdown);
@@ -65,8 +65,33 @@ public sealed class AddPartWindowViewModelTests
         Assert.Equal("DB1.4", viewModel.BarcodeWriteAddress);
     }
 
+    [Fact]
+    public async Task SaveCommand_WhenZeroClearAddressEmpty_ShouldStillAllowSave()
+    {
+        var service = new StubWearPartManagementService();
+        var viewModel = new AddPartWindowViewModel(service, new UiBusyService(TimeSpan.Zero));
+
+        viewModel.InitializeForCreate(Guid.NewGuid(), "RES-003");
+        viewModel.PartName = "刀具B";
+        viewModel.CurrentValueAddress = "DB1.0";
+        viewModel.WarningValueAddress = "DB1.1";
+        viewModel.ShutdownValueAddress = "DB1.2";
+        viewModel.CodeMinLength = "1";
+        viewModel.CodeMaxLength = "12";
+        viewModel.PlcZeroClearAddress = string.Empty;
+
+        Assert.True(viewModel.SaveCommand.CanExecute(null));
+
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.NotNull(service.LastCreatedDefinition);
+        Assert.Equal(string.Empty, service.LastCreatedDefinition!.PlcZeroClearAddress);
+    }
+
     private sealed class StubWearPartManagementService : IWearPartManagementService
     {
+        public WearPartDefinition? LastCreatedDefinition { get; private set; }
+
         public Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
@@ -84,6 +109,7 @@ public sealed class AddPartWindowViewModelTests
 
         public Task<WearPartDefinition> CreateDefinitionAsync(WearPartDefinition definition, CancellationToken cancellationToken = default)
         {
+            LastCreatedDefinition = definition;
             return Task.FromResult(definition);
         }
 

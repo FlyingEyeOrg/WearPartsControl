@@ -39,6 +39,8 @@ public sealed class ClientAppConfigurationEntity :
 
     public string ShutdownPointAddress { get; set; } = string.Empty;
 
+    public int SiemensRack { get; set; }
+
     public int SiemensSlot { get; set; }
 
     public bool IsStringReverse { get; set; } = true;
@@ -81,6 +83,18 @@ public sealed class ClientAppConfigurationEntity :
         {
             throw new DomainValidationException("PLC 端口号必须在 1 到 65535 之间。")
                 .WithData(nameof(PlcPort), PlcPort);
+        }
+
+        if (SiemensRack < 0 || SiemensRack > 255)
+        {
+            throw new DomainValidationException("西门子 PLC 机架号必须在 0 到 255 之间。")
+                .WithData(nameof(SiemensRack), SiemensRack);
+        }
+
+        if (SiemensSlot < 0 || SiemensSlot > 255)
+        {
+            throw new DomainValidationException("西门子 PLC 插槽号必须在 0 到 255 之间。")
+                .WithData(nameof(SiemensSlot), SiemensSlot);
         }
     }
 }

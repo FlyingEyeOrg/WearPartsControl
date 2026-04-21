@@ -9,6 +9,16 @@ namespace WearPartsControl.ApplicationServices.LegacyImport;
 
 public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
 {
+    private static readonly IReadOnlyDictionary<string, string> LifetimeTypeAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Meter"] = "记米",
+        ["Count"] = "计次",
+        ["Time"] = "计时",
+        ["记米"] = "记米",
+        ["计次"] = "计次",
+        ["计时"] = "计时"
+    };
+
     private const string ShutdownSeverity = "Shutdown";
 
     private readonly IDbContextFactory<WearPartsControlDbContext> _dbContextFactory;
@@ -258,6 +268,7 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
         target.PlcIpAddress = NormalizeOrEmpty(source.PlcIp, "127.0.0.1");
         target.PlcPort = source.Port > 0 ? source.Port : 102;
         target.ShutdownPointAddress = NormalizeOrEmpty(source.ShutdownPoint, "######");
+        target.SiemensRack = 0;
         target.SiemensSlot = source.SiemensSlot;
         target.IsStringReverse = source.IsStringReverse;
     }
@@ -276,8 +287,8 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
         target.IsShutdown = source.IsShutdown;
         target.CodeMinLength = source.CodeMinLength > 0 ? source.CodeMinLength : 1;
         target.CodeMaxLength = source.CodeMaxLength >= target.CodeMinLength ? source.CodeMaxLength : Math.Max(target.CodeMinLength, 128);
-        target.LifetimeType = NormalizeOrEmpty(source.LifetimeType, "Count");
-        target.PlcZeroClearAddress = NormalizeOrEmpty(source.PlcZeroClearAddress, "######");
+        target.LifetimeType = NormalizeLifetimeType(source.LifetimeType);
+        target.PlcZeroClearAddress = NormalizeOrEmpty(source.PlcZeroClearAddress);
         target.BarcodeWriteAddress = NormalizeOrEmpty(source.BarcodeWriteAddress, "######");
     }
 
@@ -434,6 +445,14 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
     private static string NormalizeOrEmpty(string? value, string fallback = "")
     {
         return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+    }
+
+    private static string NormalizeLifetimeType(string? value)
+    {
+        var normalized = NormalizeOrEmpty(value, "计次");
+        return LifetimeTypeAliases.TryGetValue(normalized, out var alias)
+            ? alias
+            : normalized;
     }
 
     private static string? NormalizeNullable(string? value)

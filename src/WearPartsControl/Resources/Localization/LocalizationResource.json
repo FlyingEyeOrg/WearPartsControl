@@ -102,7 +102,8 @@
       "Saving": "Saving client information...",
       "Saved": "Client information saved successfully.",
       "PlcPortInvalid": "PLC port must be an integer.",
-      "PlcSlotInvalid": "PLC slot must be an integer."
+      "PlcRackInvalid": "PLC rack must be an integer between 0 and 255.",
+      "PlcSlotInvalid": "PLC slot must be an integer between 0 and 255."
     },
     "PartManagementVm": {
       "PromptLoadCurrent": "Please load wear parts for the current device first.",
@@ -188,7 +189,6 @@
       "ShutdownValueAddressRequired": "Shutdown value address cannot be empty.",
       "ShutdownValueDataTypeRequired": "Shutdown value data type cannot be empty.",
       "LifetimeTypeRequired": "Lifetime type cannot be empty.",
-      "PlcZeroClearAddressRequired": "PLC zero-clear address cannot be empty.",
       "CodeMinLengthRangeInvalid": "Minimum barcode length cannot be less than 0.",
       "CodeMaxLengthRangeInvalid": "Maximum barcode length must be greater than 0.",
       "CodeLengthRangeInverted": "Minimum barcode length cannot be greater than maximum barcode length."

@@ -7,6 +7,16 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 
 public sealed class WearPartManagementService : ApplicationService, IWearPartManagementService
 {
+    private static readonly IReadOnlyDictionary<string, string> LifetimeTypeAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Meter"] = "记米",
+        ["Count"] = "计次",
+        ["Time"] = "计时",
+        ["记米"] = "记米",
+        ["计次"] = "计次",
+        ["计时"] = "计时"
+    };
+
     private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
     private readonly IWearPartRepository _wearPartRepository;
 
@@ -249,8 +259,8 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         entity.IsShutdown = definition.IsShutdown;
         entity.CodeMinLength = definition.CodeMinLength;
         entity.CodeMaxLength = definition.CodeMaxLength;
-        entity.LifetimeType = definition.LifetimeType.Trim();
-        entity.PlcZeroClearAddress = definition.PlcZeroClearAddress.Trim();
+        entity.LifetimeType = NormalizeLifetimeType(definition.LifetimeType);
+        entity.PlcZeroClearAddress = NormalizeOptional(definition.PlcZeroClearAddress);
         entity.BarcodeWriteAddress = NormalizeOptional(definition.BarcodeWriteAddress);
     }
 
@@ -292,8 +302,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         NormalizeRequired(definition.WarningValueDataType, LocalizedText.Get("Services.WearPartManagement.WarningValueDataTypeRequired"));
         NormalizeRequired(definition.ShutdownValueAddress, LocalizedText.Get("Services.WearPartManagement.ShutdownValueAddressRequired"));
         NormalizeRequired(definition.ShutdownValueDataType, LocalizedText.Get("Services.WearPartManagement.ShutdownValueDataTypeRequired"));
-        NormalizeRequired(definition.LifetimeType, LocalizedText.Get("Services.WearPartManagement.LifetimeTypeRequired"));
-        NormalizeRequired(definition.PlcZeroClearAddress, LocalizedText.Get("Services.WearPartManagement.PlcZeroClearAddressRequired"));
+        NormalizeLifetimeType(definition.LifetimeType);
 
         if (definition.CodeMinLength < 0)
         {
@@ -324,5 +333,13 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
     private static string NormalizeOptional(string? value)
     {
         return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+    }
+
+    private static string NormalizeLifetimeType(string? value)
+    {
+        var normalized = NormalizeRequired(value, LocalizedText.Get("Services.WearPartManagement.LifetimeTypeRequired"));
+        return LifetimeTypeAliases.TryGetValue(normalized, out var alias)
+            ? alias
+            : normalized;
     }
 }

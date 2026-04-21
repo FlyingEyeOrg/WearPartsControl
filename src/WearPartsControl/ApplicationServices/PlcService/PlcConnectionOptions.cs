@@ -8,6 +8,8 @@ public sealed record PlcConnectionOptions
 
     public int Port { get; init; }
 
+    public int SiemensRack { get; init; }
+
     public int SiemensSlot { get; init; }
 
     public bool IsStringReverse { get; init; } = true;

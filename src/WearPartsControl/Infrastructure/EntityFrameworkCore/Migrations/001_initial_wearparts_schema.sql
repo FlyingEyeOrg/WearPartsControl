@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS basic_configurations (
     PlcIpAddress TEXT NOT NULL,
     PlcPort INTEGER NOT NULL,
     ShutdownPointAddress TEXT NULL,
+    SiemensRack INTEGER NOT NULL,
     SiemensSlot INTEGER NOT NULL,
     IsStringReverse INTEGER NOT NULL
 );
@@ -41,7 +42,7 @@ CREATE TABLE IF NOT EXISTS wear_part_definitions (
     CodeMinLength INTEGER NOT NULL,
     CodeMaxLength INTEGER NOT NULL,
     LifetimeType TEXT NOT NULL,
-    PlcZeroClearAddress TEXT NOT NULL,
+    PlcZeroClearAddress TEXT NULL,
     BarcodeWriteAddress TEXT NOT NULL,
     CONSTRAINT FK_wear_part_definitions_basic_configurations_ClientAppConfigurationId
         FOREIGN KEY (ClientAppConfigurationId)

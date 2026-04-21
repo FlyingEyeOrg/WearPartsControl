@@ -48,7 +48,8 @@ public sealed class ClientAppInfoServiceTests : IDisposable
             PlcIpAddress = "127.0.0.1",
             PlcPort = 102,
             ShutdownPointAddress = "M0.0",
-            SiemensSlot = 1,
+            SiemensRack = 0,
+            SiemensSlot = 0,
             IsStringReverse = false
         });
 
@@ -59,6 +60,8 @@ public sealed class ClientAppInfoServiceTests : IDisposable
         var entity = await verifyContext.ClientAppConfigurations.SingleAsync();
         Assert.Equal("S01", entity.SiteCode);
         Assert.Equal("EQ01", entity.EquipmentCode);
+        Assert.Equal(0, entity.SiemensRack);
+        Assert.Equal(0, entity.SiemensSlot);
         Assert.False(entity.IsStringReverse);
 
         var settings = await appSettingsService.GetAsync();
@@ -86,7 +89,8 @@ public sealed class ClientAppInfoServiceTests : IDisposable
             PlcIpAddress = "127.0.0.1",
             PlcPort = 102,
             ShutdownPointAddress = "M0.0",
-            SiemensSlot = 1,
+            SiemensRack = 0,
+            SiemensSlot = 0,
             IsStringReverse = false,
             WearPartDefinitions =
             [
@@ -106,7 +110,7 @@ public sealed class ClientAppInfoServiceTests : IDisposable
                     IsShutdown = true,
                     CodeMinLength = 1,
                     CodeMaxLength = 32,
-                    LifetimeType = "Count",
+                    LifetimeType = "计次",
                     PlcZeroClearAddress = "DB1.6",
                     BarcodeWriteAddress = "DB1.8"
                 }
@@ -133,7 +137,8 @@ public sealed class ClientAppInfoServiceTests : IDisposable
             PlcIpAddress = "127.0.0.2",
             PlcPort = 102,
             ShutdownPointAddress = "M10.0",
-            SiemensSlot = 1,
+            SiemensRack = 0,
+            SiemensSlot = 0,
             IsStringReverse = false
         });
 

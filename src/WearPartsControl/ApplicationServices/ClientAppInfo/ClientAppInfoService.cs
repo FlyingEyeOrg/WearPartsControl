@@ -98,6 +98,7 @@ public sealed class ClientAppInfoService : IClientAppInfoService
         entity.PlcIpAddress = NormalizeRequired(request.PlcIpAddress, LocalizedText.Get("Services.ClientAppInfo.PlcIpRequired"));
         entity.PlcPort = request.PlcPort;
         entity.ShutdownPointAddress = NormalizeRequired(request.ShutdownPointAddress, LocalizedText.Get("Services.ClientAppInfo.ShutdownPointAddressRequired"));
+        entity.SiemensRack = request.SiemensRack;
         entity.SiemensSlot = request.SiemensSlot;
         entity.IsStringReverse = request.IsStringReverse;
         entity.EnsureValid();
@@ -118,6 +119,7 @@ public sealed class ClientAppInfoService : IClientAppInfoService
             PlcIpAddress = entity.PlcIpAddress,
             PlcPort = entity.PlcPort,
             ShutdownPointAddress = entity.ShutdownPointAddress,
+            SiemensRack = entity.SiemensRack,
             SiemensSlot = entity.SiemensSlot,
             IsStringReverse = entity.IsStringReverse
         };
@@ -130,7 +132,8 @@ public sealed class ClientAppInfoService : IClientAppInfoService
             ResourceNumber = resourceNumber,
             PlcProtocolType = "SiemensS1500",
             PlcPort = 102,
-            SiemensSlot = 1,
+            SiemensRack = 0,
+            SiemensSlot = 0,
             IsStringReverse = true
         };
     }

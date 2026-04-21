@@ -102,7 +102,8 @@
       "Saving": "正在保存客户端信息...",
       "Saved": "客户端信息保存成功。",
       "PlcPortInvalid": "PLC 端口必须是整数。",
-      "PlcSlotInvalid": "PLC 插槽号必须是整数。"
+      "PlcRackInvalid": "PLC 机架号必须是 0 到 255 之间的整数。",
+      "PlcSlotInvalid": "PLC 插槽号必须是 0 到 255 之间的整数。"
     },
     "PartManagementVm": {
       "PromptLoadCurrent": "请先加载当前设备的易损件。",
@@ -188,7 +189,6 @@
       "ShutdownValueAddressRequired": "停机值点位不能为空。",
       "ShutdownValueDataTypeRequired": "停机值点位类型不能为空。",
       "LifetimeTypeRequired": "寿命类型不能为空。",
-      "PlcZeroClearAddressRequired": "PLC 清零点位不能为空。",
       "CodeMinLengthRangeInvalid": "条码最小长度不能小于 0。",
       "CodeMaxLengthRangeInvalid": "条码最大长度必须大于 0。",
       "CodeLengthRangeInverted": "条码最小长度不能大于最大长度。"

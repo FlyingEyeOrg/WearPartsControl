@@ -15,6 +15,7 @@ public static class PlcConnectionOptionsFactory
             configuration.PlcProtocolType,
             configuration.PlcIpAddress,
             configuration.PlcPort,
+            configuration.SiemensRack,
             configuration.SiemensSlot,
             configuration.IsStringReverse);
     }
@@ -27,6 +28,7 @@ public static class PlcConnectionOptionsFactory
             configuration.PlcProtocolType,
             configuration.PlcIpAddress,
             configuration.PlcPort,
+            configuration.SiemensRack,
             configuration.SiemensSlot,
             configuration.IsStringReverse);
     }
@@ -35,6 +37,7 @@ public static class PlcConnectionOptionsFactory
         string protocolType,
         string ipAddress,
         int port,
+        int siemensRack,
         int siemensSlot,
         bool isStringReverse)
     {
@@ -43,6 +46,7 @@ public static class PlcConnectionOptionsFactory
             PlcType = ResolveProtocolType(protocolType),
             IpAddress = ipAddress,
             Port = port,
+            SiemensRack = siemensRack,
             SiemensSlot = siemensSlot,
             IsStringReverse = isStringReverse
         };

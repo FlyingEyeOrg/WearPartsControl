@@ -97,6 +97,7 @@ CREATE UNIQUE INDEX IX_basic_configurations_ResourceNumber ON basic_configuratio
 
         var basicColumns = await GetColumnsAsync(verifyConnection, "basic_configurations");
         Assert.Contains("ShutdownPointAddress", basicColumns);
+        Assert.Contains("SiemensRack", basicColumns);
         Assert.Contains("SiemensSlot", basicColumns);
         Assert.Contains("IsStringReverse", basicColumns);
 

@@ -60,7 +60,7 @@
 - 已完成：登录用户上下文与 `access_level` 权限校验。
 - 已补齐持久化表：`wear_part_replacement_records`、`exceed_limit_records`。
 - 已补齐：后台寿命监控调度、MHR 用户列表缓存、旧版 SQLite 数据导入。
-- 易损件新增窗口默认值沿用旧版录入习惯：输入方式默认 `Manual`，三组 PLC 数据类型默认 `FLOAT`，寿命类型默认 `Meter`，条码长度默认 `0-0`。
+- 易损件新增/编辑窗口已按旧版录入习惯调整：输入方式默认 `Manual`，三组 PLC 数据类型默认 `FLOAT`，寿命类型固定为 `记米 / 计次 / 计时`，默认选中 `计次`，条码长度默认 `0-0`，附加清零地址改为可选。
 
 ## 数据与配置目录
 
@@ -80,7 +80,7 @@
 - 启动阶段当前会额外记录这些关键节点：Host 构建、本地化初始化、主窗口解析、主窗口显示、主窗口视图模型初始化、数据库初始化、PLC 启动连接完成，可直接通过日志量化首屏前后的耗时拆分。
 - 启动进入易损件更换页时，如果已经配置 `ClientApp`，程序会按当前资源号自动建立 PLC 连接，并在更换页显示连接状态；如果尚未配置，则不会尝试连接 PLC。
 - 客户端基础信息中的 `区域`、`工序` 由 `PrivateData/Settings/client-app-info.<culture>.json` 提供；会按当前语言环境优先加载对应文件，例如 `client-app-info.zh-CN.json`。
-- PLC 相关配置遵循旧系统规则：西门子 PLC 显示并保存插槽号，`ModbusTcp` 与汇川 PLC 显示字符串反转开关。
+- PLC 相关配置遵循旧系统规则：西门子 PLC 显示并保存机架号与插槽号，两者默认值均为 `0`；`ModbusTcp` 与汇川 PLC 显示字符串反转开关。
 - 登录窗口通过刷卡器模拟键盘输入完成登录，窗口打开后会自动聚焦到密码输入框。
 - 登录窗口支持回车提交；当相邻输入间隔超过 `LoginInputMaxIntervalMilliseconds` 时，会判定为手工输入并拒绝登录。
 - 应用配置统一使用 `src/WearPartsControl/PrivateData/Settings/app-settings.json`。

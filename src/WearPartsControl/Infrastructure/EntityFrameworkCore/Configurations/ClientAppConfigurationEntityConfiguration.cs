@@ -24,7 +24,11 @@ public sealed class ClientAppConfigurationEntityConfiguration : IEntityTypeConfi
         builder.Property(x => x.ResourceNumber).HasMaxLength(128).IsRequired();
         builder.Property(x => x.PlcProtocolType).HasMaxLength(64).IsRequired();
         builder.Property(x => x.PlcIpAddress).HasMaxLength(128).IsRequired();
+        builder.Property(x => x.PlcPort).IsRequired();
         builder.Property(x => x.ShutdownPointAddress).HasMaxLength(128);
+        builder.Property(x => x.SiemensRack).IsRequired();
+        builder.Property(x => x.SiemensSlot).IsRequired();
+        builder.Property(x => x.IsStringReverse).IsRequired();
 
         builder.HasIndex(x => x.ResourceNumber).IsUnique();
     }

@@ -60,6 +60,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         Assert.Contains("阴极", viewModel.AreaOptions);
         Assert.Contains("热压/冷压", viewModel.ProcedureOptions);
         Assert.Contains("X-ray", viewModel.ProcedureOptions);
+        Assert.True(viewModel.IsSiemensRackVisible);
         Assert.True(viewModel.IsSiemensSlotVisible);
         Assert.False(viewModel.IsStringReverseVisible);
 
@@ -100,7 +101,8 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
                 PlcIpAddress = "127.0.0.1",
                 PlcPort = 102,
                 ShutdownPointAddress = "M0.0",
-                SiemensSlot = 1,
+                SiemensRack = 0,
+                SiemensSlot = 0,
                 IsStringReverse = true
             }
         };
@@ -134,7 +136,8 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
                 PlcIpAddress = "127.0.0.1",
                 PlcPort = 102,
                 ShutdownPointAddress = "M0.0",
-                SiemensSlot = 1,
+                SiemensRack = 0,
+                SiemensSlot = 0,
                 IsStringReverse = true
             }
         };
@@ -203,7 +206,8 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             PlcIpAddress = "127.0.0.1",
             PlcPort = 102,
             ShutdownPointAddress = "M0.0",
-            SiemensSlot = 1,
+            SiemensRack = 0,
+            SiemensSlot = 0,
             IsStringReverse = true
         };
 
@@ -228,6 +232,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
                 PlcIpAddress = request.PlcIpAddress,
                 PlcPort = request.PlcPort,
                 ShutdownPointAddress = request.ShutdownPointAddress,
+                SiemensRack = request.SiemensRack,
                 SiemensSlot = request.SiemensSlot,
                 IsStringReverse = request.IsStringReverse
             });

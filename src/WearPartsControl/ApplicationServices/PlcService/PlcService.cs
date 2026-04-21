@@ -200,6 +200,7 @@ public sealed class PlcService : IPlcService, IDisposable
     {
         var client = new HslCommunication.Profinet.Siemens.SiemensS7Net(plcType, options.IpAddress)
         {
+            Rack = (byte)options.SiemensRack,
             Slot = (byte)options.SiemensSlot
         };
 

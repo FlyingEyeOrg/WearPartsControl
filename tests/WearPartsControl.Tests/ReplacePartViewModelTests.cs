@@ -62,7 +62,8 @@ public sealed class ReplacePartViewModelTests
                         PlcProtocolType = "ModbusTcp",
                         PlcIpAddress = "192.168.0.10",
                         PlcPort = 502,
-                        SiemensSlot = 1,
+                        SiemensRack = 0,
+                        SiemensSlot = 0,
                         IsStringReverse = false
                     }
                 }),
@@ -101,7 +102,7 @@ public sealed class ReplacePartViewModelTests
 
         plcConnectionStatusService.Set(PlcStartupConnectionResult.Connected());
 
-        Assert.Equal(LocalizedText.Get("Services.PlcStartupConnection.Connected"), viewModel.PlcConnectionStatusText);
+        Assert.Equal(plcConnectionStatusService.Current.Message, viewModel.PlcConnectionStatusText);
         Assert.Same(Brushes.ForestGreen, viewModel.PlcConnectionStatusBackground);
     }
 

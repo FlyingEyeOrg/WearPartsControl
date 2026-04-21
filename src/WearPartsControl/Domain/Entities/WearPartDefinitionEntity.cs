@@ -79,6 +79,5 @@ public sealed class WearPartDefinitionEntity :
         DomainValidationRules.NotWhiteSpace(ShutdownValueAddress, nameof(ShutdownValueAddress));
         DomainValidationRules.NotWhiteSpace(ShutdownValueDataType, nameof(ShutdownValueDataType));
         DomainValidationRules.NotWhiteSpace(LifetimeType, nameof(LifetimeType));
-        DomainValidationRules.NotWhiteSpace(PlcZeroClearAddress, nameof(PlcZeroClearAddress));
     }
 }
