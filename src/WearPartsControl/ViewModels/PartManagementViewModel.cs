@@ -21,7 +21,7 @@ public sealed class PartManagementViewModel : ObservableObject
     private WearPartDefinition? _selectedDefinition;
     private bool _isBusy;
     private bool _isInitialized;
-    private string _statusMessage = LocalizedText.Get("ViewModels.PartManagement.PromptLoadCurrent");
+    private string _statusMessage = LocalizedText.Get("ViewModels.PartManagementVm.PromptLoadCurrent");
 
     public PartManagementViewModel(
         IClientAppInfoService clientAppInfoService,
@@ -131,7 +131,7 @@ public sealed class PartManagementViewModel : ObservableObject
     {
         var enteredAt = DateTimeOffset.UtcNow;
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.PartManagement.Loading");
+        StatusMessage = LocalizedText.Get("ViewModels.PartManagementVm.Loading");
         using var _ = _uiBusyService.Enter();
 
         try
@@ -146,7 +146,7 @@ public sealed class PartManagementViewModel : ObservableObject
 
             if (_clientAppConfigurationId == Guid.Empty || string.IsNullOrWhiteSpace(ResourceNumber))
             {
-                StatusMessage = LocalizedText.Get("ViewModels.PartManagement.ResourceNumberMissing");
+                StatusMessage = LocalizedText.Get("ViewModels.PartManagementVm.ResourceNumberMissing");
                 return;
             }
 
@@ -158,8 +158,8 @@ public sealed class PartManagementViewModel : ObservableObject
             ApplyFilter();
             await EnsureMinimumBusyDurationAsync(enteredAt, cancellationToken).ConfigureAwait(true);
             StatusMessage = _allDefinitions.Count == 0
-                ? LocalizedText.Format("ViewModels.PartManagement.DefinitionsEmpty", ResourceNumber)
-                : LocalizedText.Format("ViewModels.PartManagement.DefinitionsLoaded", ResourceNumber, _allDefinitions.Count);
+                ? LocalizedText.Format("ViewModels.PartManagementVm.DefinitionsEmpty", ResourceNumber)
+                : LocalizedText.Format("ViewModels.PartManagementVm.DefinitionsLoaded", ResourceNumber, _allDefinitions.Count);
         }
         catch (Exception ex)
         {
@@ -216,8 +216,8 @@ public sealed class PartManagementViewModel : ObservableObject
 
         var definition = SelectedDefinition;
         var result = MessageBox.Show(
-            LocalizedText.Format("ViewModels.PartManagement.DeleteConfirmationMessage", definition.PartName),
-            LocalizedText.Get("ViewModels.PartManagement.DeleteConfirmationTitle"),
+            LocalizedText.Format("ViewModels.PartManagementVm.DeleteConfirmationMessage", definition.PartName),
+            LocalizedText.Get("ViewModels.PartManagementVm.DeleteConfirmationTitle"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
@@ -228,7 +228,7 @@ public sealed class PartManagementViewModel : ObservableObject
 
         var enteredAt = DateTimeOffset.UtcNow;
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.PartManagement.Deleting");
+        StatusMessage = LocalizedText.Get("ViewModels.PartManagementVm.Deleting");
         using var _ = _uiBusyService.Enter();
 
         try
@@ -236,7 +236,7 @@ public sealed class PartManagementViewModel : ObservableObject
             await _wearPartManagementService.DeleteDefinitionAsync(definition.Id).ConfigureAwait(true);
             await RefreshAsync(CancellationToken.None).ConfigureAwait(true);
             await EnsureMinimumBusyDurationAsync(enteredAt, CancellationToken.None).ConfigureAwait(true);
-            StatusMessage = LocalizedText.Format("ViewModels.PartManagement.Deleted", definition.PartName);
+            StatusMessage = LocalizedText.Format("ViewModels.PartManagementVm.Deleted", definition.PartName);
         }
         catch (Exception ex)
         {
@@ -270,8 +270,8 @@ public sealed class PartManagementViewModel : ObservableObject
         if (!string.IsNullOrWhiteSpace(ResourceNumber))
         {
             StatusMessage = Definitions.Count == 0
-                ? LocalizedText.Format("ViewModels.PartManagement.NoMatchedDefinitions", ResourceNumber, keyword)
-                : LocalizedText.Format("ViewModels.PartManagement.FilteredDefinitionsCount", Definitions.Count);
+                ? LocalizedText.Format("ViewModels.PartManagementVm.NoMatchedDefinitions", ResourceNumber, keyword ?? string.Empty)
+                : LocalizedText.Format("ViewModels.PartManagementVm.FilteredDefinitionsCount", Definitions.Count);
         }
     }
 

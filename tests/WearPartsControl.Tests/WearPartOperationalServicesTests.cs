@@ -3,6 +3,7 @@ using System.IO;
 using Microsoft.EntityFrameworkCore;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ComNotification;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.Domain.Entities;
@@ -105,7 +106,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             ReplacementReason = WearPartReplacementReason.Normal
         }));
 
-        Assert.Equal("检测到当前易损件未达到停机寿命，不允许更换。", exception.Message);
+        Assert.Equal(LocalizedText.Get("Services.WearPartReplacement.LifetimeNotReached"), exception.Message);
     }
 
     [Fact]

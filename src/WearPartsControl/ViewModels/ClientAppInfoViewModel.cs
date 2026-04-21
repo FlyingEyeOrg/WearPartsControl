@@ -34,7 +34,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     private string _plcPort = "102";
     private string _shutdownPointAddress = string.Empty;
     private string _siemensSlot = "1";
-    private string _statusMessage = LocalizedText.Get("ViewModels.ClientAppInfo.PromptComplete");
+    private string _statusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.PromptComplete");
     private bool _isStringReverse = true;
 
     public ClientAppInfoViewModel(
@@ -269,8 +269,8 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             Apply(model);
             _isInitialized = true;
             StatusMessage = string.IsNullOrWhiteSpace(model.ResourceNumber)
-                ? LocalizedText.Get("ViewModels.ClientAppInfo.PromptComplete")
-                : LocalizedText.Get("ViewModels.ClientAppInfo.Loaded");
+                ? LocalizedText.Get("ViewModels.ClientAppInfoVm.PromptComplete")
+                : LocalizedText.Get("ViewModels.ClientAppInfoVm.Loaded");
         }
         finally
         {
@@ -286,7 +286,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     private async Task SaveAsync()
     {
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfo.Saving");
+        StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.Saving");
         using var _ = _uiBusyService.Enter();
 
         try
@@ -294,7 +294,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             var request = BuildSaveRequest();
             var saved = await _clientAppInfoService.SaveAsync(request).ConfigureAwait(true);
             Apply(saved);
-            StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfo.Saved");
+            StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.Saved");
         }
         catch (Exception ex)
         {
@@ -310,13 +310,13 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     {
         if (!int.TryParse(PlcPort?.Trim(), out var plcPort))
         {
-            throw new UserFriendlyException(LocalizedText.Get("ViewModels.ClientAppInfo.PlcPortInvalid"));
+            throw new UserFriendlyException(LocalizedText.Get("ViewModels.ClientAppInfoVm.PlcPortInvalid"));
         }
 
         var siemensSlot = 1;
         if (IsSiemensSlotVisible && !int.TryParse(SiemensSlot?.Trim(), out siemensSlot))
         {
-            throw new UserFriendlyException(LocalizedText.Get("ViewModels.ClientAppInfo.PlcSlotInvalid"));
+            throw new UserFriendlyException(LocalizedText.Get("ViewModels.ClientAppInfoVm.PlcSlotInvalid"));
         }
 
         return new ClientAppInfoSaveRequest

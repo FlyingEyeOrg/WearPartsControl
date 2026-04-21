@@ -28,8 +28,8 @@ namespace WearPartsControl.ViewModels
         private readonly ILoginSessionStateMachine _loginSessionStateMachine;
         private readonly IUiDispatcher _uiDispatcher;
         private readonly IReadOnlyList<string> _allTabs;
-        private string _currentUserWorkIdText = LocalizedText.Get("ViewModels.MainWindow.CurrentUserWorkIdEmpty");
-        private string _currentUserAccessLevelText = LocalizedText.Get("ViewModels.MainWindow.CurrentUserAccessLevelEmpty");
+        private string _currentUserWorkIdText = LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserWorkIdEmpty");
+        private string _currentUserAccessLevelText = LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserAccessLevelEmpty");
         private IEnumerable<string> _tabs = Array.Empty<string>();
         private bool _isLoggedIn;
         private bool _isClientAppInfoConfigured;
@@ -60,7 +60,7 @@ namespace WearPartsControl.ViewModels
             _appSettingsService = appSettingsService;
             _allTabs = localizationService.Catalog.MainWindow.Tabs.ToArray();
 
-            SoftwareVersionText = LocalizedText.Format("ViewModels.MainWindow.SoftwareVersion", ResolveVersion());
+            SoftwareVersionText = LocalizedText.Format("ViewModels.MainWindowVm.SoftwareVersion", ResolveVersion());
             _loginSessionStateMachine.StateChanged += OnLoginSessionStateChanged;
             _appSettingsService.SettingsSaved += OnAppSettingsSaved;
             _uiBusyService.PropertyChanged += OnUiBusyServicePropertyChanged;
@@ -246,18 +246,18 @@ namespace WearPartsControl.ViewModels
             var currentUser = state.CurrentUser;
             IsLoggedIn = state.IsLoggedIn;
             CurrentUserWorkIdText = currentUser is null
-                ? LocalizedText.Get("ViewModels.MainWindow.CurrentUserWorkIdEmpty")
-                : LocalizedText.Format("ViewModels.MainWindow.CurrentUserWorkId", currentUser.WorkId);
+                ? LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserWorkIdEmpty")
+                : LocalizedText.Format("ViewModels.MainWindowVm.CurrentUserWorkId", currentUser.WorkId);
 
             if (currentUser is null)
             {
-                CurrentUserAccessLevelText = LocalizedText.Get("ViewModels.MainWindow.CurrentUserAccessLevelEmpty");
+                CurrentUserAccessLevelText = LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserAccessLevelEmpty");
                 return;
             }
 
             var remaining = TimeSpan.FromSeconds(Math.Max(state.RemainingAutoLogoutSeconds, 0));
             CurrentUserAccessLevelText = LocalizedText.Format(
-                "ViewModels.MainWindow.CurrentUserAccessLevelCountdown",
+                "ViewModels.MainWindowVm.CurrentUserAccessLevelCountdown",
                 currentUser.AccessLevel,
                 remaining.ToString("mm\\:ss"));
         }

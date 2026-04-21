@@ -19,7 +19,7 @@ namespace WearPartsControl.ViewModels
         private readonly IUiDispatcher _uiDispatcher;
         private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
         private string _authId = string.Empty;
-        private string _statusMessage = LocalizedText.Get("ViewModels.LoginWindow.PromptSwipeCard");
+        private string _statusMessage = LocalizedText.Get("ViewModels.LoginWindowVm.PromptSwipeCard");
         private string _resourceNumber = string.Empty;
         private string _siteCode = string.Empty;
         private int _loginInputMaxIntervalMilliseconds = 80;
@@ -107,7 +107,7 @@ namespace WearPartsControl.ViewModels
             if (string.IsNullOrWhiteSpace(ResourceNumber))
             {
                 SiteCode = string.Empty;
-                StatusMessage = LocalizedText.Get("ViewModels.LoginWindow.ResourceNumberMissing");
+                StatusMessage = LocalizedText.Get("ViewModels.LoginWindowVm.ResourceNumberMissing");
                 return;
             }
 
@@ -115,25 +115,25 @@ namespace WearPartsControl.ViewModels
             if (clientAppConfiguration is null)
             {
                 SiteCode = string.Empty;
-                StatusMessage = LocalizedText.Format("ViewModels.LoginWindow.ClientConfigurationNotFound", ResourceNumber);
+                StatusMessage = LocalizedText.Format("ViewModels.LoginWindowVm.ClientConfigurationNotFound", ResourceNumber);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(clientAppConfiguration.SiteCode))
             {
                 SiteCode = string.Empty;
-                StatusMessage = LocalizedText.Format("ViewModels.LoginWindow.ClientConfigurationSiteMissing", ResourceNumber);
+                StatusMessage = LocalizedText.Format("ViewModels.LoginWindowVm.ClientConfigurationSiteMissing", ResourceNumber);
                 return;
             }
 
             SiteCode = clientAppConfiguration.SiteCode.Trim();
-            StatusMessage = LocalizedText.Get("ViewModels.LoginWindow.PromptSwipeCard");
+            StatusMessage = LocalizedText.Get("ViewModels.LoginWindowVm.PromptSwipeCard");
         }
 
         public void RejectManualInput()
         {
             AuthId = string.Empty;
-            StatusMessage = LocalizedText.Format("ViewModels.LoginWindow.ManualInputRejected", LoginInputMaxIntervalMilliseconds);
+            StatusMessage = LocalizedText.Format("ViewModels.LoginWindowVm.ManualInputRejected", LoginInputMaxIntervalMilliseconds);
         }
 
         public void ClearInput()
@@ -160,7 +160,7 @@ namespace WearPartsControl.ViewModels
             var authId = AuthId.Trim();
             if (string.IsNullOrWhiteSpace(authId))
             {
-                await _uiDispatcher.RunAsync(() => StatusMessage = LocalizedText.Get("ViewModels.LoginWindow.AuthIdMissing"));
+                await _uiDispatcher.RunAsync(() => StatusMessage = LocalizedText.Get("ViewModels.LoginWindowVm.AuthIdMissing"));
                 return;
             }
 
@@ -169,7 +169,7 @@ namespace WearPartsControl.ViewModels
             await _uiDispatcher.RunAsync(() =>
             {
                 IsBusy = true;
-                StatusMessage = LocalizedText.Get("ViewModels.LoginWindow.LoggingIn");
+                StatusMessage = LocalizedText.Get("ViewModels.LoginWindowVm.LoggingIn");
             });
 
             await _uiDispatcher.RenderAsync();
@@ -181,13 +181,13 @@ namespace WearPartsControl.ViewModels
 
                 if (user is null)
                 {
-                    await _uiDispatcher.RunAsync(() => StatusMessage = LocalizedText.Get("ViewModels.LoginWindow.UserNotFound"));
+                    await _uiDispatcher.RunAsync(() => StatusMessage = LocalizedText.Get("ViewModels.LoginWindowVm.UserNotFound"));
                     return;
                 }
 
                 await _uiDispatcher.RunAsync(() =>
                 {
-                    StatusMessage = LocalizedText.Format("ViewModels.LoginWindow.LoginSucceeded", user.WorkId);
+                    StatusMessage = LocalizedText.Format("ViewModels.LoginWindowVm.LoginSucceeded", user.WorkId);
                     RequestClose?.Invoke(this, true);
                 });
             }

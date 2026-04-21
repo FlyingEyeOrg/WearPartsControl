@@ -34,8 +34,8 @@ public sealed class MainWindowViewModelTests
         var viewModel = CreateViewModel(accessor, loginService, appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
 
         Assert.True(viewModel.IsClientAppInfoConfigured);
-        Assert.Equal("工号：--", viewModel.CurrentUserWorkIdText);
-        Assert.Equal("权限：--", viewModel.CurrentUserAccessLevelText);
+        Assert.Equal(LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserWorkIdEmpty"), viewModel.CurrentUserWorkIdText);
+        Assert.Equal(LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserAccessLevelEmpty"), viewModel.CurrentUserAccessLevelText);
         Assert.False(viewModel.IsLoggedIn);
 
         accessor.SetCurrentUser(new MhrUser
@@ -45,8 +45,8 @@ public sealed class MainWindowViewModelTests
             AccessLevel = 3
         });
 
-        Assert.Equal("工号：WORK-02", viewModel.CurrentUserWorkIdText);
-        Assert.Equal("权限：3 | 自动注销：06:00", viewModel.CurrentUserAccessLevelText);
+        Assert.Equal(LocalizedText.Format("ViewModels.MainWindowVm.CurrentUserWorkId", "WORK-02"), viewModel.CurrentUserWorkIdText);
+        Assert.Equal(LocalizedText.Format("ViewModels.MainWindowVm.CurrentUserAccessLevelCountdown", 3, "06:00"), viewModel.CurrentUserAccessLevelText);
         Assert.True(viewModel.IsLoggedIn);
         Assert.False(viewModel.ShowLoginButton);
         Assert.True(viewModel.ShowLogoutButton);
@@ -135,16 +135,16 @@ public sealed class MainWindowViewModelTests
             AccessLevel = 3
         });
 
-        Assert.Equal("权限：3 | 自动注销：00:02", viewModel.CurrentUserAccessLevelText);
+        Assert.Equal(LocalizedText.Format("ViewModels.MainWindowVm.CurrentUserAccessLevelCountdown", 3, "00:02"), viewModel.CurrentUserAccessLevelText);
 
         delaySignals.Dequeue().SetResult(true);
-        await WaitUntilAsync(() => viewModel.CurrentUserAccessLevelText == "权限：3 | 自动注销：00:01");
+        await WaitUntilAsync(() => viewModel.CurrentUserAccessLevelText == LocalizedText.Format("ViewModels.MainWindowVm.CurrentUserAccessLevelCountdown", 3, "00:01"));
 
         delaySignals.Dequeue().SetResult(true);
         await WaitUntilAsync(() => !viewModel.IsLoggedIn);
 
         Assert.Equal(1, loginService.LogoutCount);
-        Assert.Equal("权限：--", viewModel.CurrentUserAccessLevelText);
+        Assert.Equal(LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserAccessLevelEmpty"), viewModel.CurrentUserAccessLevelText);
     }
 
     [Fact]

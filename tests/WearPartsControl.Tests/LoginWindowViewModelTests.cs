@@ -1,6 +1,7 @@
 using System.Windows.Threading;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Domain.Repositories;
@@ -49,7 +50,7 @@ public sealed class LoginWindowViewModelTests
         await viewModel.InitializeAsync();
 
         Assert.Equal(string.Empty, viewModel.SiteCode);
-        Assert.Equal("资源号 RES-001 的客户端配置未设置基地。", viewModel.StatusMessage);
+        Assert.Equal(LocalizedText.Format("ViewModels.LoginWindowVm.ClientConfigurationSiteMissing", "RES-001"), viewModel.StatusMessage);
     }
 
     [Fact]
@@ -72,7 +73,7 @@ public sealed class LoginWindowViewModelTests
         await WaitUntilAsync(() => viewModel.IsBusy);
 
         Assert.True(viewModel.IsBusy);
-        Assert.Equal("正在登录...", viewModel.StatusMessage);
+        Assert.Equal(LocalizedText.Get("ViewModels.LoginWindowVm.LoggingIn"), viewModel.StatusMessage);
 
         loginService.LoginTaskSource.SetResult(new MhrUser
         {

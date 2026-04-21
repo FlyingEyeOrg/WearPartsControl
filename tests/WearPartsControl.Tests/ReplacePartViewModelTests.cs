@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.ViewModels;
@@ -33,7 +34,7 @@ public sealed class ReplacePartViewModelTests
         var result = await service.EnsureConnectedAsync();
 
         Assert.Equal(PlcStartupConnectionStatus.NotConfigured, result.Status);
-        Assert.Equal("未配置 ClientApp，未连接 PLC。", result.Message);
+        Assert.Equal(LocalizedText.Get("Services.PlcStartupConnection.NotConfigured"), result.Message);
         Assert.Equal(0, plcService.ConnectCount);
         Assert.Equal(PlcStartupConnectionStatus.NotConfigured, plcConnectionStatusService.Current.Status);
     }
@@ -71,7 +72,7 @@ public sealed class ReplacePartViewModelTests
         var result = await service.EnsureConnectedAsync();
 
         Assert.Equal(PlcStartupConnectionStatus.Connected, result.Status);
-        Assert.Equal("已连接", result.Message);
+        Assert.Equal(LocalizedText.Get("Services.PlcStartupConnection.Connected"), result.Message);
         Assert.Equal(1, plcService.ConnectCount);
         Assert.Equal(PlcStartupConnectionStatus.Connected, plcConnectionStatusService.Current.Status);
         Assert.NotNull(plcService.LastOptions);
@@ -88,7 +89,7 @@ public sealed class ReplacePartViewModelTests
 
         plcConnectionStatusService.Set(PlcStartupConnectionResult.NotConfigured());
 
-        Assert.Equal("未配置 ClientApp，未连接 PLC。", viewModel.PlcConnectionStatusText);
+        Assert.Equal(LocalizedText.Get("Services.PlcStartupConnection.NotConfigured"), viewModel.PlcConnectionStatusText);
         Assert.Same(Brushes.DimGray, viewModel.PlcConnectionStatusBackground);
     }
 
@@ -100,7 +101,7 @@ public sealed class ReplacePartViewModelTests
 
         plcConnectionStatusService.Set(PlcStartupConnectionResult.Connected());
 
-        Assert.Equal("已连接", viewModel.PlcConnectionStatusText);
+        Assert.Equal(LocalizedText.Get("Services.PlcStartupConnection.Connected"), viewModel.PlcConnectionStatusText);
         Assert.Same(Brushes.ForestGreen, viewModel.PlcConnectionStatusBackground);
     }
 

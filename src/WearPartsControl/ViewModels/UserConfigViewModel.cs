@@ -19,7 +19,7 @@ public sealed class UserConfigViewModel : ObservableObject
     private string _prdResponsibleWorkId = string.Empty;
     private string _comAccessToken = string.Empty;
     private string _comSecret = string.Empty;
-    private string _statusMessage = LocalizedText.Get("ViewModels.UserConfig.PromptMaintain");
+    private string _statusMessage = LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain");
 
     public UserConfigViewModel(IUserConfigService userConfigService, IComNotificationService comNotificationService)
     {
@@ -129,8 +129,8 @@ public sealed class UserConfigViewModel : ObservableObject
             _originalSnapshot = CaptureSnapshot();
             IsDirty = false;
             _isInitialized = true;
-            StatusMessage = LocalizedText.Get("ViewModels.UserConfig.Loaded");
-        }, LocalizedText.Get("ViewModels.UserConfig.LoadFailedPrefix"), cancellationToken).ConfigureAwait(false);
+            StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.Loaded");
+        }, LocalizedText.Get("ViewModels.UserConfigVm.LoadFailedPrefix"), cancellationToken).ConfigureAwait(false);
     }
 
     private bool CanSave() => IsDirty && !IsBusy;
@@ -145,9 +145,9 @@ public sealed class UserConfigViewModel : ObservableObject
             await _userConfigService.SaveAsync(config).ConfigureAwait(false);
             _originalSnapshot = CaptureSnapshot();
             IsDirty = false;
-            StatusMessage = LocalizedText.Get("ViewModels.UserConfig.Saved");
+            StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.Saved");
             _isInitialized = true;
-        }, LocalizedText.Get("ViewModels.UserConfig.SaveFailedPrefix")).ConfigureAwait(false);
+        }, LocalizedText.Get("ViewModels.UserConfigVm.SaveFailedPrefix")).ConfigureAwait(false);
     }
 
     private async Task TestComNotificationAsync()
@@ -164,16 +164,16 @@ public sealed class UserConfigViewModel : ObservableObject
             var recipients = ResolveRecipients();
             if (recipients.Length == 0)
             {
-                throw new InvalidOperationException(LocalizedText.Get("ViewModels.UserConfig.ResponsibleMissing"));
+                throw new InvalidOperationException(LocalizedText.Get("ViewModels.UserConfigVm.ResponsibleMissing"));
             }
 
             await _comNotificationService.NotifyGroupAsync(
-                LocalizedText.Get("ViewModels.UserConfig.TestNotificationTitle"),
-                LocalizedText.Get("ViewModels.UserConfig.TestNotificationBody"),
+                LocalizedText.Get("ViewModels.UserConfigVm.TestNotificationTitle"),
+                LocalizedText.Get("ViewModels.UserConfigVm.TestNotificationBody"),
                 recipients).ConfigureAwait(false);
 
-            StatusMessage = LocalizedText.Get("ViewModels.UserConfig.TestSucceeded");
-        }, LocalizedText.Get("ViewModels.UserConfig.TestFailedPrefix")).ConfigureAwait(false);
+            StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.TestSucceeded");
+        }, LocalizedText.Get("ViewModels.UserConfigVm.TestFailedPrefix")).ConfigureAwait(false);
     }
 
     private string[] ResolveRecipients()

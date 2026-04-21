@@ -221,8 +221,8 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         PlcZeroClearAddress = string.Empty;
         BarcodeWriteAddress = string.Empty;
         StatusMessage = string.IsNullOrWhiteSpace(ResourceNumber)
-            ? LocalizedText.Get("ViewModels.WearPartEditor.ResourceNumberMissing")
-            : LocalizedText.Format("ViewModels.WearPartEditor.CurrentResourceNumber", ResourceNumber);
+            ? LocalizedText.Get("ViewModels.WearPartEditorVm.ResourceNumberMissing")
+            : LocalizedText.Format("ViewModels.WearPartEditorVm.CurrentResourceNumber", ResourceNumber);
         SaveCommand.NotifyCanExecuteChanged();
     }
 
@@ -247,7 +247,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         LifetimeType = definition.LifetimeType;
         PlcZeroClearAddress = definition.PlcZeroClearAddress;
         BarcodeWriteAddress = definition.BarcodeWriteAddress;
-        StatusMessage = LocalizedText.Format("ViewModels.WearPartEditor.Editing", ResourceNumber);
+        StatusMessage = LocalizedText.Format("ViewModels.WearPartEditorVm.Editing", ResourceNumber);
         SaveCommand.NotifyCanExecuteChanged();
     }
 
@@ -278,7 +278,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
     {
         var enteredAt = DateTimeOffset.UtcNow;
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.WearPartEditor.Saving");
+        StatusMessage = LocalizedText.Get("ViewModels.WearPartEditorVm.Saving");
         using var _ = _uiBusyService.Enter();
 
         try
@@ -287,7 +287,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
             var definition = BuildDefinition();
             await PersistAsync(definition, CancellationToken.None).ConfigureAwait(true);
             await EnsureMinimumBusyDurationAsync(enteredAt).ConfigureAwait(true);
-            StatusMessage = LocalizedText.Get("ViewModels.WearPartEditor.Saved");
+            StatusMessage = LocalizedText.Get("ViewModels.WearPartEditorVm.Saved");
             RequestClose?.Invoke(this, true);
         }
         catch (Exception ex)
@@ -305,12 +305,12 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
     {
         if (!int.TryParse(CodeMinLength?.Trim(), out var codeMinLength))
         {
-            throw new UserFriendlyException(LocalizedText.Get("ViewModels.WearPartEditor.CodeMinInvalid"));
+            throw new UserFriendlyException(LocalizedText.Get("ViewModels.WearPartEditorVm.CodeMinInvalid"));
         }
 
         if (!int.TryParse(CodeMaxLength?.Trim(), out var codeMaxLength))
         {
-            throw new UserFriendlyException(LocalizedText.Get("ViewModels.WearPartEditor.CodeMaxInvalid"));
+            throw new UserFriendlyException(LocalizedText.Get("ViewModels.WearPartEditorVm.CodeMaxInvalid"));
         }
 
         return new WearPartDefinition

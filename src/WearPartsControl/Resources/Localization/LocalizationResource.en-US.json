@@ -75,14 +75,14 @@
     "ConfigDeserializeFailed": "Failed to parse MHR configuration file."
   },
   "ViewModels": {
-    "MainWindow": {
+    "MainWindowVm": {
       "CurrentUserWorkIdEmpty": "Work ID: --",
       "CurrentUserWorkId": "Work ID: {0}",
       "CurrentUserAccessLevelEmpty": "Access: --",
       "CurrentUserAccessLevelCountdown": "Access: {0} | Auto logout: {1}",
       "SoftwareVersion": "Version: {0}"
     },
-    "LoginWindow": {
+    "LoginWindowVm": {
       "PromptSwipeCard": "Please swipe card to log in",
       "ResourceNumberMissing": "Please set the resource number in configuration first.",
       "ClientConfigurationNotFound": "No client configuration found for resource number {0}.",
@@ -93,7 +93,7 @@
       "UserNotFound": "No matching user found. Please verify card number or permission settings.",
       "LoginSucceeded": "Login succeeded, work ID {0}"
     },
-    "ClientAppInfo": {
+    "ClientAppInfoVm": {
       "PromptComplete": "Please complete the client information first.",
       "Loaded": "Client information loaded.",
       "Saving": "Saving client information...",
@@ -101,7 +101,7 @@
       "PlcPortInvalid": "PLC port must be an integer.",
       "PlcSlotInvalid": "PLC slot must be an integer."
     },
-    "PartManagement": {
+    "PartManagementVm": {
       "PromptLoadCurrent": "Please load wear parts for the current device first.",
       "Loading": "Loading wear part list...",
       "ResourceNumberMissing": "The current client has no resource number configured, so wear parts cannot be managed.",
@@ -114,7 +114,7 @@
       "NoMatchedDefinitions": "No wear parts matching \"{1}\" for resource number {0}.",
       "FilteredDefinitionsCount": "Showing {0} wear part definitions."
     },
-    "ReplacePart": {
+    "ReplacePartVm": {
       "PromptSelectAndLoadPreview": "Please select a wear part and load the preview first.",
       "Loading": "Loading wear part replacement information...",
       "ResourceNumberMissing": "The current client has no resource number configured, so replacement cannot proceed.",
@@ -123,7 +123,7 @@
       "Replacing": "Replacing wear part {0}...",
       "ReplaceSucceeded": "Wear part {0} replaced successfully. New barcode: {1}."
     },
-    "UserConfig": {
+    "UserConfigVm": {
       "PromptMaintain": "Please maintain user configuration first.",
       "Loaded": "User configuration loaded.",
       "LoadFailedPrefix": "Failed to load user configuration: ",
@@ -135,7 +135,7 @@
       "TestSucceeded": "COM notification test sent successfully.",
       "TestFailedPrefix": "COM notification test failed: "
     },
-    "WearPartEditor": {
+    "WearPartEditorVm": {
       "ResourceNumberMissing": "No resource number is configured, so the wear part cannot be saved.",
       "CurrentResourceNumber": "Current resource number: {0}",
       "Editing": "Editing wear parts for resource number {0}.",

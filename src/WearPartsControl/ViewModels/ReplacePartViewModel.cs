@@ -33,7 +33,7 @@ public sealed class ReplacePartViewModel : ObservableObject
     private string _newBarcode = string.Empty;
     private string _selectedReplacementReason = string.Empty;
     private string _replacementMessage = string.Empty;
-    private string _statusMessage = LocalizedText.Get("ViewModels.ReplacePart.PromptSelectAndLoadPreview");
+    private string _statusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.PromptSelectAndLoadPreview");
     private bool _isBusy;
     private bool _isInitialized;
 
@@ -245,7 +245,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         }
 
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.ReplacePart.Loading");
+        StatusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.Loading");
         using var _ = _uiBusyService.Enter();
 
         try
@@ -259,7 +259,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             if (string.IsNullOrWhiteSpace(ResourceNumber))
             {
                 SelectedDefinition = null;
-                StatusMessage = LocalizedText.Get("ViewModels.ReplacePart.ResourceNumberMissing");
+                StatusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.ResourceNumberMissing");
                 return;
             }
 
@@ -273,12 +273,12 @@ public sealed class ReplacePartViewModel : ObservableObject
             if (Definitions.Count == 0)
             {
                 SelectedDefinition = null;
-                StatusMessage = LocalizedText.Format("ViewModels.ReplacePart.DefinitionsEmpty", ResourceNumber);
+                StatusMessage = LocalizedText.Format("ViewModels.ReplacePartVm.DefinitionsEmpty", ResourceNumber);
                 return;
             }
 
             SelectedDefinition ??= Definitions[0];
-            StatusMessage = LocalizedText.Format("ViewModels.ReplacePart.DefinitionsLoaded", ResourceNumber, Definitions.Count);
+            StatusMessage = LocalizedText.Format("ViewModels.ReplacePartVm.DefinitionsLoaded", ResourceNumber, Definitions.Count);
             await LoadPreviewAndHistoryAsync(cancellationToken).ConfigureAwait(true);
         }
         catch (Exception ex)
@@ -299,7 +299,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         }
 
         IsBusy = true;
-        StatusMessage = LocalizedText.Format("ViewModels.ReplacePart.Replacing", SelectedDefinition.PartName);
+        StatusMessage = LocalizedText.Format("ViewModels.ReplacePartVm.Replacing", SelectedDefinition.PartName);
         using var _ = _uiBusyService.Enter();
 
         try
@@ -315,7 +315,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             NewBarcode = string.Empty;
             ReplacementMessage = string.Empty;
             await LoadPreviewAndHistoryAsync(CancellationToken.None).ConfigureAwait(true);
-            StatusMessage = LocalizedText.Format("ViewModels.ReplacePart.ReplaceSucceeded", record.PartName, record.NewBarcode);
+            StatusMessage = LocalizedText.Format("ViewModels.ReplacePartVm.ReplaceSucceeded", record.PartName, record.NewBarcode);
         }
         catch (Exception ex)
         {

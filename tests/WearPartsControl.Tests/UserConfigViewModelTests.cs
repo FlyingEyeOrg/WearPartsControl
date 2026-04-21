@@ -1,4 +1,5 @@
 using WearPartsControl.ApplicationServices.ComNotification;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.ViewModels;
 using Xunit;
@@ -29,7 +30,7 @@ public sealed class UserConfigViewModelTests
         Assert.Equal("token", viewModel.ComAccessToken);
         Assert.Equal("secret", viewModel.ComSecret);
         Assert.False(viewModel.IsDirty);
-        Assert.Equal("用户配置已加载。", viewModel.StatusMessage);
+        Assert.Equal(LocalizedText.Get("ViewModels.UserConfigVm.Loaded"), viewModel.StatusMessage);
     }
 
     [Fact]
@@ -50,7 +51,7 @@ public sealed class UserConfigViewModelTests
         await viewModel.SaveCommand.ExecuteAsync(null);
 
         Assert.False(viewModel.IsDirty);
-        Assert.Equal("用户配置保存成功。", viewModel.StatusMessage);
+        Assert.Equal(LocalizedText.Get("ViewModels.UserConfigVm.Saved"), viewModel.StatusMessage);
         Assert.NotNull(service.LastSaved);
         Assert.Equal("ME002", service.LastSaved!.MeResponsibleWorkId);
         Assert.Equal("PRD002", service.LastSaved.PrdResponsibleWorkId);
@@ -75,7 +76,7 @@ public sealed class UserConfigViewModelTests
         Assert.NotNull(notificationService.LastUsers);
         Assert.Single(notificationService.LastUsers!);
         Assert.Contains("ME003", notificationService.LastUsers!);
-        Assert.Equal("COM 通知测试发送成功。", viewModel.StatusMessage);
+        Assert.Equal(LocalizedText.Get("ViewModels.UserConfigVm.TestSucceeded"), viewModel.StatusMessage);
         Assert.False(viewModel.IsDirty);
     }
 

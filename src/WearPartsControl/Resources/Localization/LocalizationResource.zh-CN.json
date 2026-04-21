@@ -75,14 +75,14 @@
     "ConfigDeserializeFailed": "MHR 配置文件解析失败。"
   },
   "ViewModels": {
-    "MainWindow": {
+    "MainWindowVm": {
       "CurrentUserWorkIdEmpty": "工号：--",
       "CurrentUserWorkId": "工号：{0}",
       "CurrentUserAccessLevelEmpty": "权限：--",
       "CurrentUserAccessLevelCountdown": "权限：{0} | 自动注销：{1}",
       "SoftwareVersion": "软件版本：{0}"
     },
-    "LoginWindow": {
+    "LoginWindowVm": {
       "PromptSwipeCard": "请刷卡登录",
       "ResourceNumberMissing": "请先在配置中设置资源号。",
       "ClientConfigurationNotFound": "未找到资源号 {0} 对应的客户端配置。",
@@ -93,7 +93,7 @@
       "UserNotFound": "未找到对应用户，请确认卡号或权限配置。",
       "LoginSucceeded": "登录成功，工号 {0}"
     },
-    "ClientAppInfo": {
+    "ClientAppInfoVm": {
       "PromptComplete": "请先完善客户端信息。",
       "Loaded": "客户端信息已加载。",
       "Saving": "正在保存客户端信息...",
@@ -101,7 +101,7 @@
       "PlcPortInvalid": "PLC 端口必须是整数。",
       "PlcSlotInvalid": "PLC 插槽号必须是整数。"
     },
-    "PartManagement": {
+    "PartManagementVm": {
       "PromptLoadCurrent": "请先加载当前设备的易损件。",
       "Loading": "正在加载易损件列表...",
       "ResourceNumberMissing": "当前客户端未配置资源号，无法管理易损件。",
@@ -114,7 +114,7 @@
       "NoMatchedDefinitions": "资源号 {0} 没有匹配“{1}”的易损件。",
       "FilteredDefinitionsCount": "当前显示 {0} 条易损件定义。"
     },
-    "ReplacePart": {
+    "ReplacePartVm": {
       "PromptSelectAndLoadPreview": "请先选择易损件并加载预览。",
       "Loading": "正在加载易损件更换信息...",
       "ResourceNumberMissing": "当前客户端未配置资源号，无法执行易损件更换。",
@@ -123,7 +123,7 @@
       "Replacing": "正在更换易损件 {0}...",
       "ReplaceSucceeded": "易损件 {0} 更换成功，新条码：{1}。"
     },
-    "UserConfig": {
+    "UserConfigVm": {
       "PromptMaintain": "请先维护用户配置。",
       "Loaded": "用户配置已加载。",
       "LoadFailedPrefix": "用户配置加载失败：",
@@ -135,7 +135,7 @@
       "TestSucceeded": "COM 通知测试发送成功。",
       "TestFailedPrefix": "COM 通知测试失败："
     },
-    "WearPartEditor": {
+    "WearPartEditorVm": {
       "ResourceNumberMissing": "当前未配置资源号，无法保存易损件。",
       "CurrentResourceNumber": "当前资源号：{0}",
       "Editing": "正在编辑资源号 {0} 的易损件。",

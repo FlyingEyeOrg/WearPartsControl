@@ -75,7 +75,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         await viewModel.SaveCommand.ExecuteAsync(null);
 
         Assert.False(viewModel.IsDirty);
-        Assert.Equal("客户端信息保存成功。", viewModel.StatusMessage);
+        Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.Saved"), viewModel.StatusMessage);
         Assert.NotNull(service.LastRequest);
         Assert.Equal("阴极", service.LastRequest!.AreaCode);
         Assert.Equal("ModbusTcp", service.LastRequest.PlcProtocolType);
