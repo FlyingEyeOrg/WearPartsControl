@@ -20,11 +20,14 @@ namespace WearPartsControl;
 /// </summary>
 public partial class App : Application
 {
+    private readonly object _shutdownSyncRoot = new();
     private IHost? _host;
     private ILocalizationService? _localizationService;
     private IAppStartupCoordinator? _appStartupCoordinator;
     private Task? _hostStartTask;
+    private Task? _shutdownTask;
     private CancellationTokenSource? _startupCancellationTokenSource;
+    private int _shutdownRequested;
 
     public App()
     {
@@ -71,6 +74,7 @@ public partial class App : Application
 
         try
         {
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
             StartupPerformanceTracker.Restart("应用启动入口");
             Authorization.SetAuthorizationCode("7525828d-68c9-4d31-b6db-e5162b91ef7b");
 
@@ -105,7 +109,7 @@ public partial class App : Application
         {
             Log.Fatal(ex, "Host terminated unexpectedly");
             HandleFriendlyException(ex);
-            Shutdown();
+            await RequestShutdownAsync("启动阶段发生未处理异常").ConfigureAwait(true);
         }
     }
 
@@ -117,7 +121,7 @@ public partial class App : Application
             {
                 ServiceRegistration.RegisterServices(builder);
             })
-            .UseSerilog(Log.Logger, dispose: true)
+            .UseSerilog(Log.Logger, dispose: false)
             .Build();
     }
 
@@ -134,7 +138,7 @@ public partial class App : Application
         var importService = _host.Services.GetRequiredService<ILegacyDatabaseImportService>();
         var importResult = await importService.ImportAsync(legacyDatabasePath).ConfigureAwait(true);
         MessageBox.Show(importResult.ToSummary(), GetLocalizedText("App.LegacyImportCompletedTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
-        Shutdown();
+        await RequestShutdownAsync("旧库导入完成后退出").ConfigureAwait(true);
     }
 
     private async Task StartHostAsync(IHost host, CancellationToken cancellationToken)
@@ -156,11 +160,8 @@ public partial class App : Application
         catch (Exception ex)
         {
             Log.Fatal(ex, "Host terminated unexpectedly during startup");
-            Dispatcher.Invoke(() =>
-            {
-                HandleFriendlyException(ex);
-                Shutdown();
-            });
+            await Dispatcher.InvokeAsync(() => HandleFriendlyException(ex));
+            await RequestShutdownAsync("宿主启动阶段失败", awaitHostStartupTask: false).ConfigureAwait(false);
         }
     }
 
@@ -173,6 +174,7 @@ public partial class App : Application
 
         Log.Fatal(exception, "Unhandled exception");
         HandleFriendlyException(exception);
+        _ = RequestShutdownAsync("AppDomain 未处理异常");
     }
 
     private void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs args)
@@ -180,6 +182,76 @@ public partial class App : Application
         Log.Error(args.Exception, "Dispatcher unhandled exception");
         HandleFriendlyException(args.Exception);
         args.Handled = true;
+        _ = RequestShutdownAsync("Dispatcher 未处理异常");
+    }
+
+    internal bool IsShutdownRequested => Volatile.Read(ref _shutdownRequested) == 1;
+
+    internal Task RequestShutdownAsync(string reason, int exitCode = 0, bool awaitHostStartupTask = true)
+    {
+        lock (_shutdownSyncRoot)
+        {
+            _shutdownTask ??= ShutdownCoreAsync(reason, exitCode, awaitHostStartupTask);
+            return _shutdownTask;
+        }
+    }
+
+    private async Task ShutdownCoreAsync(string reason, int exitCode, bool awaitHostStartupTask)
+    {
+        Interlocked.Exchange(ref _shutdownRequested, 1);
+        ShutdownPerformanceTracker.Restart($"收到关停请求: {reason}");
+
+        _startupCancellationTokenSource?.Cancel();
+        ShutdownPerformanceTracker.Mark("已取消启动阶段令牌");
+
+        if (awaitHostStartupTask && _hostStartTask is not null)
+        {
+            try
+            {
+                await _hostStartTask.ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error awaiting host startup task during shutdown");
+            }
+            finally
+            {
+                ShutdownPerformanceTracker.Mark("启动后台任务收尾完成");
+            }
+        }
+
+        if (_host is not null)
+        {
+            try
+            {
+                await _host.StopAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                ShutdownPerformanceTracker.Mark("宿主停止完成");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error stopping host during shutdown");
+            }
+            finally
+            {
+                _host.Dispose();
+                _host = null;
+                ShutdownPerformanceTracker.Mark("宿主释放完成");
+            }
+        }
+
+        _appStartupCoordinator = null;
+        _startupCancellationTokenSource?.Dispose();
+        _startupCancellationTokenSource = null;
+        ShutdownPerformanceTracker.Mark("应用资源清理完成");
+
+        await Dispatcher.InvokeAsync(() =>
+        {
+            ShutdownPerformanceTracker.Mark("触发应用退出");
+            Shutdown(exitCode);
+        });
     }
 
     private string GetLocalizedText(string key)
@@ -189,41 +261,9 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        ShutdownPerformanceTracker.Mark($"Exit 事件开始，退出码 {e.ApplicationExitCode}");
         base.OnExit(e);
-
-        _startupCancellationTokenSource?.Cancel();
-
-        if (_hostStartTask is not null)
-        {
-            try
-            {
-                _hostStartTask.GetAwaiter().GetResult();
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Error awaiting host startup task");
-            }
-        }
-
-        if (_host is not null)
-        {
-            try
-            {
-                _host.StopAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
-                _host.Dispose();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Error stopping host");
-            }
-        }
-
-        _startupCancellationTokenSource?.Dispose();
-        _startupCancellationTokenSource = null;
-
+        ShutdownPerformanceTracker.Mark("Exit 事件完成，准备刷新日志");
         Log.CloseAndFlush();
     }
 }

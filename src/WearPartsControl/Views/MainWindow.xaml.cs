@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.ComponentModel;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using WearPartsControl.ApplicationServices.Startup;
@@ -14,6 +15,7 @@ namespace WearPartsControl.Views
         private readonly MainWindowViewModel _viewModel;
         private readonly IServiceProvider _serviceProvider;
         private CancellationTokenSource? _startupCancellationTokenSource;
+        private bool _isClosingIntercepted;
 
         public MainWindow(MainWindowViewModel viewModel, IServiceProvider serviceProvider)
         {
@@ -23,6 +25,7 @@ namespace WearPartsControl.Views
             InitializeComponent();
 
             Loaded += OnMainWindowLoaded;
+            Closing += OnMainWindowClosing;
             _viewModel.LoginRequested += OnLoginRequested;
             Closed += OnMainWindowClosed;
         }
@@ -53,12 +56,38 @@ namespace WearPartsControl.Views
             loginWindow.ShowDialog();
         }
 
+        private async void OnMainWindowClosing(object? sender, CancelEventArgs e)
+        {
+            if (Application.Current is not App app)
+            {
+                return;
+            }
+
+            if (app.IsShutdownRequested || _isClosingIntercepted)
+            {
+                return;
+            }
+
+            e.Cancel = true;
+            _isClosingIntercepted = true;
+
+            try
+            {
+                await app.RequestShutdownAsync("用户关闭主窗口").ConfigureAwait(true);
+            }
+            finally
+            {
+                _isClosingIntercepted = false;
+            }
+        }
+
         private void OnMainWindowClosed(object? sender, EventArgs e)
         {
             _startupCancellationTokenSource?.Cancel();
             _startupCancellationTokenSource?.Dispose();
             _startupCancellationTokenSource = null;
             Loaded -= OnMainWindowLoaded;
+            Closing -= OnMainWindowClosing;
             _viewModel.LoginRequested -= OnLoginRequested;
             Closed -= OnMainWindowClosed;
         }
