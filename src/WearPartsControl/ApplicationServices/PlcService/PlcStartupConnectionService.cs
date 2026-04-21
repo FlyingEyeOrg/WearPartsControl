@@ -2,7 +2,7 @@ using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.Localization;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
+using Microsoft.Extensions.Logging;
 
 namespace WearPartsControl.ApplicationServices.PlcService;
 
@@ -12,17 +12,20 @@ public sealed class PlcStartupConnectionService : IPlcStartupConnectionService
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IPlcService _plcService;
     private readonly IPlcConnectionStatusService _plcConnectionStatusService;
+    private readonly ILogger<PlcStartupConnectionService> _logger;
 
     public PlcStartupConnectionService(
         IAppSettingsService appSettingsService,
         IServiceScopeFactory serviceScopeFactory,
         IPlcService plcService,
-        IPlcConnectionStatusService plcConnectionStatusService)
+        IPlcConnectionStatusService plcConnectionStatusService,
+        ILogger<PlcStartupConnectionService> logger)
     {
         _appSettingsService = appSettingsService;
         _serviceScopeFactory = serviceScopeFactory;
         _plcService = plcService;
         _plcConnectionStatusService = plcConnectionStatusService;
+        _logger = logger;
     }
 
     public async Task<PlcStartupConnectionResult> EnsureConnectedAsync(CancellationToken cancellationToken = default)
@@ -58,7 +61,7 @@ public sealed class PlcStartupConnectionService : IPlcStartupConnectionService
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            Log.Warning(ex, "Failed to connect PLC during startup for resource {ResourceNumber}", clientAppInfo.ResourceNumber);
+            _logger.LogWarning(ex, "Failed to connect PLC during startup for resource {ResourceNumber}", clientAppInfo.ResourceNumber);
             var failed = PlcStartupConnectionResult.Failed(LocalizedText.Format("Services.PlcStartupConnection.ConnectFailed", ex.Message));
             _plcConnectionStatusService.Set(failed);
             return failed;

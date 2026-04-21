@@ -33,6 +33,26 @@ public sealed class HttpJsonServiceTests
         });
     }
 
+    [Fact]
+    public async Task SendRawAsync_WhenTimeoutMillisecondsInvalid_ShouldThrowUserFriendlyException()
+    {
+        using var httpClient = new HttpClient(new StubHandler(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{}", Encoding.UTF8, "application/json")
+            })));
+
+        var service = new HttpJsonService(httpClient, new StubLocalizationService());
+
+        var exception = await Assert.ThrowsAsync<UserFriendlyException>(async () =>
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, "https://example.com/test");
+            await service.SendRawAsync(request, new HttpRequestExecutionOptions { TimeoutMilliseconds = 0 });
+        });
+
+        Assert.Equal("HttpService.InvalidTimeout", exception.Message);
+    }
+
     private sealed class TestDto
     {
         public string Name { get; set; } = string.Empty;

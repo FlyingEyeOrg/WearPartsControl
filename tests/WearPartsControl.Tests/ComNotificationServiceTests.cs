@@ -1,6 +1,7 @@
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
+using Microsoft.Extensions.Logging.Abstractions;
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
@@ -42,7 +43,7 @@ public sealed class ComNotificationServiceTests
             });
 
             var httpJsonService = new StubHttpJsonService();
-            var service = new ComNotificationService(store, new StubLocalizationService(), httpJsonService, userConfigService);
+            var service = new ComNotificationService(store, new StubLocalizationService(), httpJsonService, userConfigService, NullLogger<ComNotificationService>.Instance);
 
             await service.NotifyGroupAsync("title", "text");
 

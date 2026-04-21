@@ -1,5 +1,6 @@
 using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices;
@@ -29,7 +30,8 @@ public sealed class ReplacePartViewModelTests
             },
             new StubServiceScopeFactory(new StubClientAppInfoService()),
             plcService,
-            plcConnectionStatusService);
+            plcConnectionStatusService,
+            NullLogger<PlcStartupConnectionService>.Instance);
 
         var result = await service.EnsureConnectedAsync();
 
@@ -68,7 +70,8 @@ public sealed class ReplacePartViewModelTests
                     }
                 }),
             plcService,
-            plcConnectionStatusService);
+            plcConnectionStatusService,
+            NullLogger<PlcStartupConnectionService>.Instance);
 
         var result = await service.EnsureConnectedAsync();
 

@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Serilog;
+using Microsoft.Extensions.Logging;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
@@ -22,12 +22,18 @@ public sealed class SpacerManagementService : ISpacerManagementService
     private readonly ILocalizationService _localizationService;
     private readonly IHttpJsonService _httpJsonService;
     private readonly ISaveInfoStore _saveInfoStore;
+    private readonly ILogger<SpacerManagementService> _logger;
 
-    public SpacerManagementService(ILocalizationService localizationService, ISaveInfoStore saveInfoStore, IHttpJsonService httpJsonService)
+    public SpacerManagementService(
+        ILocalizationService localizationService,
+        ISaveInfoStore saveInfoStore,
+        IHttpJsonService httpJsonService,
+        ILogger<SpacerManagementService> logger)
     {
         _localizationService = localizationService;
         _saveInfoStore = saveInfoStore;
         _httpJsonService = httpJsonService;
+        _logger = logger;
     }
 
     public async ValueTask<SpacerInfo> ParseCodeAsync(string code, string site, string resourceId, string cardId, CancellationToken cancellationToken = default)
@@ -131,17 +137,17 @@ public sealed class SpacerManagementService : ISpacerManagementService
         }
         catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            Log.Error(ex, "Spacer validation timeout");
+            _logger.LogError(ex, "Spacer validation timeout");
             throw new UserFriendlyException(L("SpacerManagement.Timeout"));
         }
         catch (HttpRequestException ex)
         {
-            Log.Error(ex, "Spacer validation HTTP request failed");
+            _logger.LogError(ex, "Spacer validation HTTP request failed");
             throw new UserFriendlyException(string.Format(L("SpacerManagement.NetworkFailed"), ex.Message));
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Spacer validation unknown error");
+            _logger.LogError(ex, "Spacer validation unknown error");
             throw new UserFriendlyException(string.Format(L("SpacerManagement.Unknown"), ex.Message), null, null, ex);
         }
     }

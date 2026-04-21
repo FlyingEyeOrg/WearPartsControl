@@ -7,7 +7,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Serilog;
+using Microsoft.Extensions.Logging;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
@@ -28,13 +28,20 @@ public sealed class ComNotificationService : IComNotificationService
     private readonly IHttpJsonService _httpJsonService;
     private readonly ISaveInfoStore _saveInfoStore;
     private readonly IUserConfigService _userConfigService;
+    private readonly ILogger<ComNotificationService> _logger;
 
-    public ComNotificationService(ISaveInfoStore saveInfoStore, ILocalizationService localizationService, IHttpJsonService httpJsonService, IUserConfigService userConfigService)
+    public ComNotificationService(
+        ISaveInfoStore saveInfoStore,
+        ILocalizationService localizationService,
+        IHttpJsonService httpJsonService,
+        IUserConfigService userConfigService,
+        ILogger<ComNotificationService> logger)
     {
         _saveInfoStore = saveInfoStore;
         _localizationService = localizationService;
         _httpJsonService = httpJsonService;
         _userConfigService = userConfigService;
+        _logger = logger;
     }
 
     public async ValueTask NotifyGroupAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default)
@@ -233,12 +240,12 @@ public sealed class ComNotificationService : IComNotificationService
         }
         catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            Log.Error(ex, "COM {Scene}发送超时", scene);
+            _logger.LogError(ex, "COM {Scene}发送超时", scene);
             throw new UserFriendlyException(string.Format(L("ComNotification.Timeout"), scene));
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "COM {Scene}发送异常", scene);
+            _logger.LogError(ex, "COM {Scene}发送异常", scene);
             throw new UserFriendlyException(string.Format(L("ComNotification.Unhandled"), scene, ex.Message));
         }
     }

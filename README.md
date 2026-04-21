@@ -53,6 +53,7 @@
 - `ApplicationServices/PartServices/WearPartMonitorService`：寿命监控应用服务，负责读取 PLC 阈值、生成超限记录、发送通知，并执行停机点写入逻辑。
 - `ApplicationServices/PartServices/WearPartMonitoringHostedService`：后台监控调度服务，启动后按当前资源号每 5 分钟执行一次寿命监控。
 - `ApplicationServices/LegacyImport/LegacyDatabaseImportService`：旧版 SQLite 数据导入服务，负责把旧库配置、易损件、超限记录和更换记录映射到当前库。
+- `ApplicationServices/HttpService/HttpJsonService`：统一 HTTP JSON 访问入口，默认使用长生命周期 `HttpClient` 与连接池复用；仅在确有需要忽略证书校验时创建临时处理器，避免为普通超时控制反复创建 `HttpClient`。
 
 ## 当前业务迁移进度
 
@@ -70,6 +71,7 @@
 	- `Settings`：所有设置与配置 JSON（SaveInfo、登录配置等）
 	- `LocalDB`：SQLite 数据库文件（`wear-parts-control.db`）
 - 日志为临时运行文件，保留在应用根目录：`{应用程序目录}/logs/app-*.log`
+- 普通应用服务统一通过依赖注入获取 `ILogger<T>` 记录日志；静态 `Serilog.Log` 仅保留在应用启动和全局异常等进程级入口。
 - 启动性能日志会以 `启动阶段:` 前缀写入同一日志文件，记录每个关键阶段的增量耗时与累计耗时，便于拆分首屏前后性能瓶颈。
 - 关停性能日志会以 `关停阶段:` 前缀写入同一日志文件，记录从收到退出请求到 `Exit` 完成的各阶段耗时，便于定位关闭卡顿或资源释放过慢的问题。
 

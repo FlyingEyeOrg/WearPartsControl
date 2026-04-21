@@ -1,5 +1,6 @@
 using Autofac;
 using Microsoft.Extensions.Hosting;
+using System.Net;
 using System.Net.Http;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
@@ -34,9 +35,16 @@ public static class ServiceRegistration
         builder.RegisterType<LocalizationService>().As<ILocalizationService>().SingleInstance();
         builder.RegisterType<AppStartupCoordinator>().As<IAppStartupCoordinator>().SingleInstance();
         builder.RegisterType<ExceptionToStatusCodeMapper>().As<WearPartsControl.Exceptions.IExceptionToStatusCodeMapper>().SingleInstance();
+        builder.Register(_ => new SocketsHttpHandler
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                PooledConnectionLifetime = TimeSpan.FromMinutes(10)
+            })
+            .SingleInstance();
         builder.Register(_ =>
             {
-                var client = new HttpClient
+                var handler = _.Resolve<SocketsHttpHandler>();
+                var client = new HttpClient(handler, disposeHandler: false)
                 {
                     Timeout = TimeSpan.FromSeconds(30)
                 };

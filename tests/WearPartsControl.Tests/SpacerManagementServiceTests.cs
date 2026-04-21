@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading;
+using Microsoft.Extensions.Logging.Abstractions;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
@@ -23,7 +24,7 @@ public sealed class SpacerManagementServiceTests
             }
         };
 
-        var service = new SpacerManagementService(new StubLocalizationService(), store, new StubHttpJsonService());
+        var service = new SpacerManagementService(new StubLocalizationService(), store, new StubHttpJsonService(), NullLogger<SpacerManagementService>.Instance);
 
         var info = await service.ParseCodeAsync("PN-20260421-0.20-0.10-0.05-AT11-1.50-AB", "SITE01", "RES01", "CARD01");
 
