@@ -172,6 +172,20 @@
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
+                        <TextBlock VerticalAlignment="Center">关联换刀类型：</TextBlock>
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding ToolChangeOptions}"
+                                  DisplayMemberPath="DisplayText"
+                                  SelectedValuePath="Id"
+                                  SelectedValue="{Binding SelectedToolChangeId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  Style="{StaticResource ComboBoxExtend}"
+                                  hc:InfoElement.Placeholder="可选，关联换刀类型" />
+                    </Grid>
+                    <Grid Margin="0 0 0 8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
                         <TextBlock VerticalAlignment="Center">条码输入模式：</TextBlock>
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding InputModes}"

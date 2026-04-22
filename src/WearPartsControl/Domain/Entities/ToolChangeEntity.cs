@@ -18,6 +18,8 @@ public sealed class ToolChangeEntity : Entity, IHasAuditTime, IHasAuditUser
 
     public string Code { get; set; } = string.Empty;
 
+    public ICollection<WearPartDefinitionEntity> WearPartDefinitions { get; set; } = new List<WearPartDefinitionEntity>();
+
     public void EnsureValid()
     {
         DomainValidationRules.NotWhiteSpace(Name, nameof(Name));

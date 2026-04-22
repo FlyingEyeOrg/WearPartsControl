@@ -291,6 +291,55 @@ public sealed class ReplacePartViewModelTests
         Assert.Equal("TL-01", viewModel.SelectedToolCode);
     }
 
+    [Fact]
+    public async Task InitializeAsync_WhenDefinitionHasAssociatedToolChange_ShouldPreferAssociatedToolCode()
+    {
+        var toolChangeId = Guid.NewGuid();
+        var definition = new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            PartName = "刀具A",
+            InputMode = "Scanner",
+            CodeMinLength = 8,
+            CodeMaxLength = 32,
+            CurrentValueDataType = "FLOAT",
+            CurrentValueAddress = "DB1.0",
+            WarningValueDataType = "FLOAT",
+            WarningValueAddress = "DB1.2",
+            ShutdownValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB1.4",
+            ToolChangeId = toolChangeId
+        };
+        var toolSelectionService = new StubToolChangeSelectionService();
+        toolSelectionService.Selections[definition.Id] = "TL-OLD";
+        var toolChangeManagementService = new StubToolChangeManagementService();
+        toolChangeManagementService.Definitions.Add(new ToolChangeDefinition { Id = toolChangeId, Name = "刀型一", Code = "TL-01" });
+        toolChangeManagementService.Definitions.Add(new ToolChangeDefinition { Id = Guid.NewGuid(), Name = "刀型二", Code = "TL-OLD" });
+        var viewModel = new ReplacePartViewModel(
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01", ProcedureCode = "模切分条" } },
+            new StubWearPartManagementService([definition]),
+            new StubWearPartReplacementService
+            {
+                Preview = new WearPartReplacementPreview
+                {
+                    WearPartDefinitionId = definition.Id,
+                    ClientAppConfigurationId = Guid.NewGuid(),
+                    CurrentValue = "10",
+                    WarningValue = "20",
+                    ShutdownValue = "30"
+                }
+            },
+            toolChangeManagementService,
+            toolSelectionService,
+            new UiBusyService(TimeSpan.Zero),
+            new PlcConnectionStatusService());
+
+        await viewModel.InitializeAsync();
+
+        Assert.Equal("TL-01", viewModel.SelectedToolCode);
+    }
+
     private static ReplacePartViewModel CreateViewModel(IPlcConnectionStatusService plcConnectionStatusService)
     {
         return new ReplacePartViewModel(

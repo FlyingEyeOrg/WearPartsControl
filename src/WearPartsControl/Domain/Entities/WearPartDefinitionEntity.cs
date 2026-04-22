@@ -45,11 +45,15 @@ public sealed class WearPartDefinitionEntity :
 
     public string LifetimeType { get; set; } = string.Empty;
 
+    public Guid? ToolChangeId { get; set; }
+
     public string PlcZeroClearAddress { get; set; } = string.Empty;
 
     public string BarcodeWriteAddress { get; set; } = string.Empty;
 
     public ClientAppConfigurationEntity ClientAppConfiguration { get; set; } = null!;
+
+    public ToolChangeEntity? ToolChange { get; set; }
 
     public ICollection<WearPartReplacementRecordEntity> WearPartReplacementRecords { get; set; } = new List<WearPartReplacementRecordEntity>();
 

@@ -81,6 +81,11 @@ public sealed class WearPartDefinition
     public string LifetimeType { get; set; } = string.Empty;
 
     /// <summary>
+    /// 关联的换刀类型主键。
+    /// </summary>
+    public Guid? ToolChangeId { get; set; }
+
+    /// <summary>
     /// PLC 清零点位。
     /// </summary>
     public string PlcZeroClearAddress { get; set; } = string.Empty;

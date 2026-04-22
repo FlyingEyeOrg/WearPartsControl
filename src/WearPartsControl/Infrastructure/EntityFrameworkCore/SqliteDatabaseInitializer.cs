@@ -18,7 +18,7 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
         [
             "Id", "CreatedAt", "UpdatedAt", "CreatedBy", "UpdatedBy", "ClientAppConfigurationId", "ResourceNumber", "PartName", "InputMode",
             "CurrentValueAddress", "CurrentValueDataType", "WarningValueAddress", "WarningValueDataType", "ShutdownValueAddress", "ShutdownValueDataType",
-            "IsShutdown", "CodeMinLength", "CodeMaxLength", "LifetimeType", "PlcZeroClearAddress", "BarcodeWriteAddress"
+            "IsShutdown", "CodeMinLength", "CodeMaxLength", "LifetimeType", "ToolChangeId", "PlcZeroClearAddress", "BarcodeWriteAddress"
         ],
         ["wear_part_replacement_records"] =
         [

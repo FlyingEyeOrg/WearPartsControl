@@ -144,10 +144,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
 
         try
         {
-            var definitions = await _toolChangeManagementService.GetAllAsync(cancellationToken).ConfigureAwait(true);
-            _allDefinitions.Clear();
-            _allDefinitions.AddRange(definitions);
-            ApplyFilter();
+            await ReloadDefinitionsAsync(cancellationToken, preserveSelection: true).ConfigureAwait(true);
 
             StatusMessage = _allDefinitions.Count == 0
                 ? LocalizedText.Get("ViewModels.ToolChangeManagementVm.Empty")
@@ -187,7 +184,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
                 ? await _toolChangeManagementService.CreateAsync(model, cancellationToken).ConfigureAwait(true)
                 : await _toolChangeManagementService.UpdateAsync(model, cancellationToken).ConfigureAwait(true);
 
-            await RefreshAsync(cancellationToken).ConfigureAwait(true);
+            await ReloadDefinitionsAsync(cancellationToken, preserveSelection: false).ConfigureAwait(true);
             SelectedDefinition = Definitions.FirstOrDefault(x => x.Id == saved.Id);
             StatusMessage = SelectedDefinition is null
                 ? LocalizedText.Get("ViewModels.ToolChangeManagementVm.Saved")
@@ -229,7 +226,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         try
         {
             await _toolChangeManagementService.DeleteAsync(selected.Id, cancellationToken).ConfigureAwait(true);
-            await RefreshAsync(cancellationToken).ConfigureAwait(true);
+            await ReloadDefinitionsAsync(cancellationToken, preserveSelection: false).ConfigureAwait(true);
             CreateNew();
             StatusMessage = LocalizedText.Format("ViewModels.ToolChangeManagementVm.Deleted", selected.Name);
         }
@@ -267,6 +264,20 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         if (SelectedDefinition is not null)
         {
             SelectedDefinition = Definitions.FirstOrDefault(x => x.Id == SelectedDefinition.Id);
+        }
+    }
+
+    private async Task ReloadDefinitionsAsync(CancellationToken cancellationToken, bool preserveSelection)
+    {
+        var selectedId = preserveSelection ? SelectedDefinition?.Id : null;
+        var definitions = await _toolChangeManagementService.GetAllAsync(cancellationToken).ConfigureAwait(true);
+        _allDefinitions.Clear();
+        _allDefinitions.AddRange(definitions);
+        ApplyFilter();
+
+        if (selectedId.HasValue)
+        {
+            SelectedDefinition = Definitions.FirstOrDefault(x => x.Id == selectedId.Value);
         }
     }
 

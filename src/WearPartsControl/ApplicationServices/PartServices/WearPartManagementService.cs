@@ -19,15 +19,18 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
 
     private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
     private readonly IWearPartRepository _wearPartRepository;
+    private readonly IToolChangeRepository _toolChangeRepository;
 
     public WearPartManagementService(
         ICurrentUserAccessor currentUserAccessor,
         IClientAppConfigurationRepository clientAppConfigurationRepository,
-        IWearPartRepository wearPartRepository)
+        IWearPartRepository wearPartRepository,
+        IToolChangeRepository toolChangeRepository)
         : base(currentUserAccessor)
     {
         _clientAppConfigurationRepository = clientAppConfigurationRepository;
         _wearPartRepository = wearPartRepository;
+        _toolChangeRepository = toolChangeRepository;
     }
 
     public async Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
@@ -66,6 +69,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         ValidateDefinition(definition);
 
         var clientAppConfiguration = await ResolveClientAppConfigurationAsync(definition.ClientAppConfigurationId, definition.ResourceNumber, cancellationToken).ConfigureAwait(false);
+        await ValidateToolChangeAsync(definition.ToolChangeId, cancellationToken).ConfigureAwait(false);
         var partName = definition.PartName.Trim();
 
         if (await _wearPartRepository.ExistsPartNameAsync(clientAppConfiguration.Id, partName, cancellationToken: cancellationToken).ConfigureAwait(false))
@@ -104,6 +108,8 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
                 cancellationToken,
                 entity.ClientAppConfigurationId)
             .ConfigureAwait(false);
+
+        await ValidateToolChangeAsync(definition.ToolChangeId, cancellationToken).ConfigureAwait(false);
 
         var partName = definition.PartName.Trim();
         if (await _wearPartRepository.ExistsPartNameAsync(clientAppConfiguration.Id, partName, entity.Id, cancellationToken).ConfigureAwait(false))
@@ -239,6 +245,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
             CodeMinLength = sourceDefinition.CodeMinLength,
             CodeMaxLength = sourceDefinition.CodeMaxLength,
             LifetimeType = sourceDefinition.LifetimeType,
+            ToolChangeId = sourceDefinition.ToolChangeId,
             PlcZeroClearAddress = sourceDefinition.PlcZeroClearAddress,
             BarcodeWriteAddress = sourceDefinition.BarcodeWriteAddress
         };
@@ -260,6 +267,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         entity.CodeMinLength = definition.CodeMinLength;
         entity.CodeMaxLength = definition.CodeMaxLength;
         entity.LifetimeType = NormalizeLifetimeType(definition.LifetimeType);
+        entity.ToolChangeId = definition.ToolChangeId;
         entity.PlcZeroClearAddress = NormalizeOptional(definition.PlcZeroClearAddress);
         entity.BarcodeWriteAddress = NormalizeOptional(definition.BarcodeWriteAddress);
     }
@@ -283,6 +291,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
             CodeMinLength = entity.CodeMinLength,
             CodeMaxLength = entity.CodeMaxLength,
             LifetimeType = entity.LifetimeType,
+            ToolChangeId = entity.ToolChangeId,
             PlcZeroClearAddress = entity.PlcZeroClearAddress,
             BarcodeWriteAddress = entity.BarcodeWriteAddress,
             CreatedAt = entity.CreatedAt,
@@ -333,6 +342,20 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
     private static string NormalizeOptional(string? value)
     {
         return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+    }
+
+    private async Task ValidateToolChangeAsync(Guid? toolChangeId, CancellationToken cancellationToken)
+    {
+        if (!toolChangeId.HasValue || toolChangeId.Value == Guid.Empty)
+        {
+            return;
+        }
+
+        var exists = await _toolChangeRepository.GetByIdAsync(toolChangeId.Value, cancellationToken).ConfigureAwait(false);
+        if (exists is null)
+        {
+            throw new EntityNotFoundException(LocalizedText.Format("Services.ToolChangeManagement.NotFoundById", toolChangeId.Value));
+        }
     }
 
     private static string NormalizeLifetimeType(string? value)

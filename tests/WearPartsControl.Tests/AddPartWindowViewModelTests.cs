@@ -10,7 +10,7 @@ public sealed class AddPartWindowViewModelTests
     [Fact]
     public void InitializeForCreate_ShouldUseLegacyAlignedDefaults()
     {
-        var viewModel = new AddPartWindowViewModel(new StubWearPartManagementService(), new UiBusyService());
+        var viewModel = new AddPartWindowViewModel(new StubWearPartManagementService(), new StubToolChangeManagementService(), new UiBusyService());
 
         viewModel.InitializeForCreate(Guid.NewGuid(), "RES-001");
 
@@ -29,7 +29,8 @@ public sealed class AddPartWindowViewModelTests
     [Fact]
     public void InitializeForEdit_ShouldPreserveExistingDefinitionValues()
     {
-        var viewModel = new AddPartWindowViewModel(new StubWearPartManagementService(), new UiBusyService());
+        var viewModel = new AddPartWindowViewModel(new StubWearPartManagementService(), new StubToolChangeManagementService(), new UiBusyService());
+        var toolChangeId = Guid.NewGuid();
         var definition = new WearPartDefinition
         {
             Id = Guid.NewGuid(),
@@ -47,6 +48,7 @@ public sealed class AddPartWindowViewModelTests
             CodeMinLength = 6,
             CodeMaxLength = 18,
             LifetimeType = "计次",
+            ToolChangeId = toolChangeId,
             PlcZeroClearAddress = "DB1.3",
             BarcodeWriteAddress = "DB1.4"
         };
@@ -61,6 +63,7 @@ public sealed class AddPartWindowViewModelTests
         Assert.Equal("6", viewModel.CodeMinLength);
         Assert.Equal("18", viewModel.CodeMaxLength);
         Assert.True(viewModel.IsShutdown);
+        Assert.Equal(toolChangeId, viewModel.SelectedToolChangeId);
         Assert.Equal("DB1.3", viewModel.PlcZeroClearAddress);
         Assert.Equal("DB1.4", viewModel.BarcodeWriteAddress);
     }
@@ -69,7 +72,7 @@ public sealed class AddPartWindowViewModelTests
     public async Task SaveCommand_WhenZeroClearAddressEmpty_ShouldStillAllowSave()
     {
         var service = new StubWearPartManagementService();
-        var viewModel = new AddPartWindowViewModel(service, new UiBusyService(TimeSpan.Zero));
+        var viewModel = new AddPartWindowViewModel(service, new StubToolChangeManagementService(), new UiBusyService(TimeSpan.Zero));
 
         viewModel.InitializeForCreate(Guid.NewGuid(), "RES-003");
         viewModel.PartName = "刀具B";
@@ -86,6 +89,30 @@ public sealed class AddPartWindowViewModelTests
 
         Assert.NotNull(service.LastCreatedDefinition);
         Assert.Equal(string.Empty, service.LastCreatedDefinition!.PlcZeroClearAddress);
+    }
+
+    [Fact]
+    public async Task SaveCommand_WhenToolChangeSelected_ShouldPersistToolChangeId()
+    {
+        var service = new StubWearPartManagementService();
+        var toolChangeService = new StubToolChangeManagementService();
+        var toolChangeId = Guid.NewGuid();
+        toolChangeService.Definitions.Add(new ToolChangeDefinition { Id = toolChangeId, Name = "标准刀", Code = "TL-01" });
+        var viewModel = new AddPartWindowViewModel(service, toolChangeService, new UiBusyService(TimeSpan.Zero));
+
+        viewModel.InitializeForCreate(Guid.NewGuid(), "RES-004");
+        await viewModel.EnsureToolChangeOptionsLoadedAsync();
+        viewModel.PartName = "刀具C";
+        viewModel.CurrentValueAddress = "DB1.0";
+        viewModel.WarningValueAddress = "DB1.1";
+        viewModel.ShutdownValueAddress = "DB1.2";
+        viewModel.CodeMinLength = "1";
+        viewModel.CodeMaxLength = "12";
+        viewModel.SelectedToolChangeId = toolChangeId;
+
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.Equal(toolChangeId, service.LastCreatedDefinition?.ToolChangeId);
     }
 
     private sealed class StubWearPartManagementService : IWearPartManagementService
@@ -124,6 +151,31 @@ public sealed class AddPartWindowViewModelTests
         }
 
         public Task<int> CopyDefinitionsAsync(string sourceResourceNumber, string targetResourceNumber, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    private sealed class StubToolChangeManagementService : IToolChangeManagementService
+    {
+        public List<ToolChangeDefinition> Definitions { get; } = [];
+
+        public Task<IReadOnlyList<ToolChangeDefinition>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<ToolChangeDefinition>>(Definitions.ToArray());
+        }
+
+        public Task<ToolChangeDefinition> CreateAsync(ToolChangeDefinition definition, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<ToolChangeDefinition> UpdateAsync(ToolChangeDefinition definition, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
         }

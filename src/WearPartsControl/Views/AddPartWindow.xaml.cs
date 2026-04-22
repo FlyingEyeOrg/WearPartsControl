@@ -14,14 +14,21 @@ public partial class AddPartWindow : Window
         DataContext = viewModel;
         InitializeComponent();
 
+        Loaded += OnLoaded;
         Closed += OnClosed;
         viewModel.RequestClose += OnRequestClose;
     }
 
     public AddPartWindowViewModel ViewModel { get; }
 
+    private async void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.EnsureToolChangeOptionsLoadedAsync();
+    }
+
     private void OnClosed(object? sender, EventArgs e)
     {
+        Loaded -= OnLoaded;
         Closed -= OnClosed;
         ViewModel.RequestClose -= OnRequestClose;
     }

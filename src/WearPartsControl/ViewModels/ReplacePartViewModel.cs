@@ -451,7 +451,7 @@ public sealed class ReplacePartViewModel : ObservableObject
 
         try
         {
-            await LoadToolCodeStateAsync(definition.Id, cancellationToken).ConfigureAwait(true);
+            await LoadToolCodeStateAsync(definition, cancellationToken).ConfigureAwait(true);
             var preview = await _wearPartReplacementService.GetReplacementPreviewAsync(definition.Id, cancellationToken).ConfigureAwait(true);
             if (loadVersion != _selectionLoadVersion || SelectedDefinition?.Id != definition.Id)
             {
@@ -485,7 +485,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         }
     }
 
-    private async Task LoadToolCodeStateAsync(Guid wearPartDefinitionId, CancellationToken cancellationToken)
+    private async Task LoadToolCodeStateAsync(WearPartDefinition definition, CancellationToken cancellationToken)
     {
         if (!IsToolValidationEnabled)
         {
@@ -495,16 +495,21 @@ public sealed class ReplacePartViewModel : ObservableObject
         }
 
         var toolChanges = await _toolChangeManagementService.GetAllAsync(cancellationToken).ConfigureAwait(true);
-        var state = await _toolChangeSelectionService.GetStateAsync(wearPartDefinitionId, cancellationToken).ConfigureAwait(true);
+        var state = await _toolChangeSelectionService.GetStateAsync(definition.Id, cancellationToken).ConfigureAwait(true);
         ToolCodeOptions.Clear();
         foreach (var toolChange in toolChanges)
         {
             ToolCodeOptions.Add(toolChange);
         }
 
-        var selectedCode = toolChanges.Any(x => string.Equals(x.Code, state.SelectedToolCode, StringComparison.OrdinalIgnoreCase))
-            ? state.SelectedToolCode
-            : string.Empty;
+        var associatedCode = definition.ToolChangeId.HasValue
+            ? toolChanges.FirstOrDefault(x => x.Id == definition.ToolChangeId.Value)?.Code
+            : null;
+        var selectedCode = !string.IsNullOrWhiteSpace(associatedCode)
+            ? associatedCode
+            : toolChanges.Any(x => string.Equals(x.Code, state.SelectedToolCode, StringComparison.OrdinalIgnoreCase))
+                ? state.SelectedToolCode
+                : string.Empty;
         SetSelectedToolCode(selectedCode);
     }
 

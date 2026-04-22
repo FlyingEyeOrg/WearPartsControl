@@ -29,10 +29,12 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
     private const string DefaultCreateCodeMaxLength = "0";
 
     private readonly IWearPartManagementService _wearPartManagementService;
+    private readonly IToolChangeManagementService _toolChangeManagementService;
     private readonly IUiBusyService _uiBusyService;
     private Guid _id;
     private Guid _clientAppConfigurationId;
     private bool _isBusy;
+    private bool _toolChangesLoaded;
     private string _resourceNumber = string.Empty;
     private string _partName = string.Empty;
     private string _inputMode = DefaultCreateInputMode;
@@ -46,15 +48,18 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
     private string _codeMinLength = DefaultCreateCodeMinLength;
     private string _codeMaxLength = DefaultCreateCodeMaxLength;
     private string _lifetimeType = DefaultCreateLifetimeType;
+    private Guid? _selectedToolChangeId;
     private string _plcZeroClearAddress = string.Empty;
     private string _barcodeWriteAddress = string.Empty;
     private string _statusMessage = string.Empty;
 
     protected WearPartEditorViewModelBase(
         IWearPartManagementService wearPartManagementService,
+        IToolChangeManagementService toolChangeManagementService,
         IUiBusyService uiBusyService)
     {
         _wearPartManagementService = wearPartManagementService;
+        _toolChangeManagementService = toolChangeManagementService;
         _uiBusyService = uiBusyService;
 
         foreach (var item in new[] { "Manual", "Scanner", "Barcode" })
@@ -83,6 +88,8 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
     public ObservableCollection<string> LifetimeTypes { get; } = new();
 
     public ObservableCollection<string> DataTypes { get; } = new();
+
+    public ObservableCollection<ToolChangeDefinition> ToolChangeOptions { get; } = new();
 
     public IAsyncRelayCommand SaveCommand { get; }
 
@@ -199,6 +206,12 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         set => SetEditorProperty(ref _plcZeroClearAddress, value);
     }
 
+    public Guid? SelectedToolChangeId
+    {
+        get => _selectedToolChangeId;
+        set => SetEditorProperty(ref _selectedToolChangeId, value);
+    }
+
     public string BarcodeWriteAddress
     {
         get => _barcodeWriteAddress;
@@ -228,6 +241,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         CodeMinLength = DefaultCreateCodeMinLength;
         CodeMaxLength = DefaultCreateCodeMaxLength;
         LifetimeType = DefaultCreateLifetimeType;
+        SelectedToolChangeId = null;
         PlcZeroClearAddress = string.Empty;
         BarcodeWriteAddress = string.Empty;
         StatusMessage = string.IsNullOrWhiteSpace(ResourceNumber)
@@ -255,10 +269,33 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         CodeMinLength = definition.CodeMinLength.ToString();
         CodeMaxLength = definition.CodeMaxLength.ToString();
         LifetimeType = NormalizeLifetimeType(definition.LifetimeType);
+        SelectedToolChangeId = definition.ToolChangeId;
         PlcZeroClearAddress = definition.PlcZeroClearAddress;
         BarcodeWriteAddress = definition.BarcodeWriteAddress;
         StatusMessage = LocalizedText.Format("ViewModels.WearPartEditorVm.Editing", ResourceNumber);
         SaveCommand.NotifyCanExecuteChanged();
+    }
+
+    public async Task EnsureToolChangeOptionsLoadedAsync(CancellationToken cancellationToken = default)
+    {
+        if (_toolChangesLoaded)
+        {
+            return;
+        }
+
+        var toolChanges = await _toolChangeManagementService.GetAllAsync(cancellationToken).ConfigureAwait(true);
+        ToolChangeOptions.Clear();
+        foreach (var toolChange in toolChanges)
+        {
+            ToolChangeOptions.Add(toolChange);
+        }
+
+        if (SelectedToolChangeId.HasValue && ToolChangeOptions.All(x => x.Id != SelectedToolChangeId.Value))
+        {
+            SelectedToolChangeId = null;
+        }
+
+        _toolChangesLoaded = true;
     }
 
     protected abstract Task<WearPartDefinition> PersistAsync(WearPartDefinition definition, CancellationToken cancellationToken);
@@ -339,6 +376,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
             CodeMinLength = codeMinLength,
             CodeMaxLength = codeMaxLength,
             LifetimeType = NormalizeLifetimeType(LifetimeType),
+            ToolChangeId = SelectedToolChangeId,
             PlcZeroClearAddress = PlcZeroClearAddress,
             BarcodeWriteAddress = BarcodeWriteAddress
         };
