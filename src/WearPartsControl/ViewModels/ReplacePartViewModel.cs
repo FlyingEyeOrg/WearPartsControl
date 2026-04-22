@@ -24,11 +24,11 @@ public sealed class ReplacePartViewModel : ObservableObject
     private WearPartDefinition? _selectedDefinition;
     private string _resourceNumber = string.Empty;
     private string _inputMode = string.Empty;
-    private string _codeMinLengthText = "0";
-    private string _codeMaxLengthText = "0";
-    private string _currentValue = "0";
-    private string _warningValue = "0";
-    private string _shutdownValue = "0";
+    private string _codeMinLengthText = string.Empty;
+    private string _codeMaxLengthText = string.Empty;
+    private string _currentValue = string.Empty;
+    private string _warningValue = string.Empty;
+    private string _shutdownValue = string.Empty;
     private string _lastBarcode = string.Empty;
     private string _newBarcode = string.Empty;
     private string _selectedReplacementReason = string.Empty;
@@ -343,14 +343,14 @@ public sealed class ReplacePartViewModel : ObservableObject
     private void ApplySelectedDefinition(WearPartDefinition? definition)
     {
         InputMode = definition?.InputMode ?? string.Empty;
-        CodeMinLengthText = definition?.CodeMinLength.ToString() ?? "0";
-        CodeMaxLengthText = definition?.CodeMaxLength.ToString() ?? "0";
+        CodeMinLengthText = definition?.CodeMinLength.ToString() ?? string.Empty;
+        CodeMaxLengthText = definition?.CodeMaxLength.ToString() ?? string.Empty;
 
         if (definition is null)
         {
-            CurrentValue = "0";
-            WarningValue = "0";
-            ShutdownValue = "0";
+            CurrentValue = string.Empty;
+            WarningValue = string.Empty;
+            ShutdownValue = string.Empty;
             LastBarcode = string.Empty;
         }
     }

@@ -111,6 +111,18 @@ public sealed class ReplacePartViewModelTests
         Assert.Same(Brushes.ForestGreen, viewModel.PlcConnectionStatusBackground);
     }
 
+    [Fact]
+    public void Created_WhenNoDefinitionSelected_ShouldKeepNumericDisplayFieldsEmpty()
+    {
+        var viewModel = CreateViewModel(new PlcConnectionStatusService());
+
+        Assert.Equal(string.Empty, viewModel.CodeMinLengthText);
+        Assert.Equal(string.Empty, viewModel.CodeMaxLengthText);
+        Assert.Equal(string.Empty, viewModel.CurrentValue);
+        Assert.Equal(string.Empty, viewModel.WarningValue);
+        Assert.Equal(string.Empty, viewModel.ShutdownValue);
+    }
+
     private static ReplacePartViewModel CreateViewModel(IPlcConnectionStatusService plcConnectionStatusService)
     {
         return new ReplacePartViewModel(
