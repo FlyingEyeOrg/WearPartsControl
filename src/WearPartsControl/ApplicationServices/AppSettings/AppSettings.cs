@@ -24,7 +24,25 @@ public sealed class AppSettings
     public int AutoLogoutCountdownSeconds { get; set; } = 360;
 
     /// <summary>
+    /// PLC 管线监控配置。
+    /// </summary>
+    public PlcPipelineSettings PlcPipeline { get; set; } = new();
+
+    /// <summary>
     /// 是否已经设置客户端信息
     /// </summary>
     public bool IsSetClientAppInfo { get; set; }
+}
+
+public sealed class PlcPipelineSettings
+{
+    /// <summary>
+    /// PLC 管线排队等待慢调用阈值，单位毫秒。
+    /// </summary>
+    public int SlowQueueWaitThresholdMilliseconds { get; set; } = 100;
+
+    /// <summary>
+    /// PLC 管线执行慢调用阈值，单位毫秒。
+    /// </summary>
+    public int SlowExecutionThresholdMilliseconds { get; set; } = 500;
 }

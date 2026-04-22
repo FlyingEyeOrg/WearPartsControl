@@ -1,24 +1,37 @@
 using System.Diagnostics;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using AppSettingsModel = WearPartsControl.ApplicationServices.AppSettings.AppSettings;
+using IAppSettingsService = WearPartsControl.ApplicationServices.AppSettings.IAppSettingsService;
+using PlcPipelineSettings = WearPartsControl.ApplicationServices.AppSettings.PlcPipelineSettings;
 
 namespace WearPartsControl.ApplicationServices.PlcService;
 
 public sealed class PlcOperationPipeline : IPlcOperationPipeline
 {
-    private const long SlowQueueWaitThresholdMilliseconds = 100;
-    private const long SlowExecutionThresholdMilliseconds = 500;
+    private const int DefaultSlowQueueWaitThresholdMilliseconds = 100;
+    private const int DefaultSlowExecutionThresholdMilliseconds = 500;
 
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly IPlcService _plcService;
     private readonly ILogger<PlcOperationPipeline> _logger;
+    private readonly IAppSettingsService? _appSettingsService;
     private int _pendingOperations;
     private long _operationSequence;
+    private int _slowQueueWaitThresholdMilliseconds = DefaultSlowQueueWaitThresholdMilliseconds;
+    private int _slowExecutionThresholdMilliseconds = DefaultSlowExecutionThresholdMilliseconds;
 
-    internal PlcOperationPipeline(IPlcService plcService, ILogger<PlcOperationPipeline> logger)
+    internal PlcOperationPipeline(IPlcService plcService, ILogger<PlcOperationPipeline> logger, IAppSettingsService? appSettingsService = null)
     {
         _plcService = plcService;
         _logger = logger;
+        _appSettingsService = appSettingsService;
+
+        if (_appSettingsService is not null)
+        {
+            TryLoadThresholdsFromSettings();
+            _appSettingsService.SettingsSaved += OnSettingsSaved;
+        }
     }
 
     public Task ConnectAsync(string operationName, PlcConnectionOptions options, CancellationToken cancellationToken = default)
@@ -130,7 +143,7 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
 
     private void LogQueueWait(string operationName, long operationId, int queueDepth, TimeSpan waitElapsed)
     {
-        if (waitElapsed.TotalMilliseconds >= SlowQueueWaitThresholdMilliseconds)
+        if (waitElapsed.TotalMilliseconds >= Volatile.Read(ref _slowQueueWaitThresholdMilliseconds))
         {
             _logger.LogWarning("PLC pipeline operation {OperationName}#{OperationId} waited {WaitElapsedMs} ms before execution, pending {PendingOperations}", operationName, operationId, waitElapsed.TotalMilliseconds, queueDepth);
             return;
@@ -141,7 +154,7 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
 
     private void LogExecution(string operationName, long operationId, TimeSpan executionElapsed)
     {
-        if (executionElapsed.TotalMilliseconds >= SlowExecutionThresholdMilliseconds)
+        if (executionElapsed.TotalMilliseconds >= Volatile.Read(ref _slowExecutionThresholdMilliseconds))
         {
             _logger.LogWarning("PLC pipeline operation {OperationName}#{OperationId} completed in {ExecutionElapsedMs} ms", operationName, operationId, executionElapsed.TotalMilliseconds);
             return;
@@ -156,5 +169,30 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
         {
             throw new ArgumentException("PLC pipeline operation name is required.", nameof(operationName));
         }
+    }
+
+    private void OnSettingsSaved(object? sender, AppSettingsModel settings)
+    {
+        ApplyThresholds(settings);
+    }
+
+    private void TryLoadThresholdsFromSettings()
+    {
+        try
+        {
+            var settings = _appSettingsService!.GetAsync().AsTask().GetAwaiter().GetResult();
+            ApplyThresholds(settings);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to load PLC pipeline thresholds from app settings, using defaults.");
+        }
+    }
+
+    private void ApplyThresholds(AppSettingsModel settings)
+    {
+        var plcPipeline = settings.PlcPipeline ?? new PlcPipelineSettings();
+        Interlocked.Exchange(ref _slowQueueWaitThresholdMilliseconds, plcPipeline.SlowQueueWaitThresholdMilliseconds <= 0 ? DefaultSlowQueueWaitThresholdMilliseconds : plcPipeline.SlowQueueWaitThresholdMilliseconds);
+        Interlocked.Exchange(ref _slowExecutionThresholdMilliseconds, plcPipeline.SlowExecutionThresholdMilliseconds <= 0 ? DefaultSlowExecutionThresholdMilliseconds : plcPipeline.SlowExecutionThresholdMilliseconds);
     }
 }

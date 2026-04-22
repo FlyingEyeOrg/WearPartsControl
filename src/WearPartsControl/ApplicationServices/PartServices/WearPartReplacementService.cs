@@ -36,12 +36,12 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
         var clientAppConfiguration = await GetRequiredClientAppConfigurationAsync(definition.ClientAppConfigurationId, cancellationToken).ConfigureAwait(false);
 
         var latestRecord = await _replacementRecordRepository.GetLatestByDefinitionAsync(definition.Id, cancellationToken).ConfigureAwait(false);
-        await _plcOperationPipeline.ConnectAsync("Replacement/ConnectPreview", WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration), cancellationToken).ConfigureAwait(false);
+        await _plcOperationPipeline.ConnectAsync(PlcOperationNames.Replacement.ConnectPreview, WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration), cancellationToken).ConfigureAwait(false);
 
         var previewValues = new ReplacementPreviewValues(
-            await WearPartPlcAccessor.ReadAsStringAsync(_plcOperationPipeline, "Replacement/GetPreviewCurrentValue", definition.CurrentValueAddress, definition.CurrentValueDataType, cancellationToken).ConfigureAwait(false),
-            await WearPartPlcAccessor.ReadAsStringAsync(_plcOperationPipeline, "Replacement/GetPreviewWarningValue", definition.WarningValueAddress, definition.WarningValueDataType, cancellationToken).ConfigureAwait(false),
-            await WearPartPlcAccessor.ReadAsStringAsync(_plcOperationPipeline, "Replacement/GetPreviewShutdownValue", definition.ShutdownValueAddress, definition.ShutdownValueDataType, cancellationToken).ConfigureAwait(false));
+            await WearPartPlcAccessor.ReadAsStringAsync(_plcOperationPipeline, PlcOperationNames.Replacement.GetPreviewCurrentValue, definition.CurrentValueAddress, definition.CurrentValueDataType, cancellationToken).ConfigureAwait(false),
+            await WearPartPlcAccessor.ReadAsStringAsync(_plcOperationPipeline, PlcOperationNames.Replacement.GetPreviewWarningValue, definition.WarningValueAddress, definition.WarningValueDataType, cancellationToken).ConfigureAwait(false),
+            await WearPartPlcAccessor.ReadAsStringAsync(_plcOperationPipeline, PlcOperationNames.Replacement.GetPreviewShutdownValue, definition.ShutdownValueAddress, definition.ShutdownValueDataType, cancellationToken).ConfigureAwait(false));
 
         return new WearPartReplacementPreview
         {
@@ -67,11 +67,11 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
         var normalizedReason = NormalizeRequired(request.ReplacementReason, LocalizedText.Get("Services.WearPartReplacement.ReasonRequired"));
 
         var latestRecord = await _replacementRecordRepository.GetLatestByDefinitionAsync(definition.Id, cancellationToken).ConfigureAwait(false);
-        await _plcOperationPipeline.ConnectAsync("Replacement/ConnectReplace", WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration), cancellationToken).ConfigureAwait(false);
+        await _plcOperationPipeline.ConnectAsync(PlcOperationNames.Replacement.ConnectReplace, WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration), cancellationToken).ConfigureAwait(false);
 
-        var currentValue = await WearPartPlcAccessor.ReadAsStringAsync(_plcOperationPipeline, "Replacement/ReadCurrentValue", definition.CurrentValueAddress, definition.CurrentValueDataType, cancellationToken).ConfigureAwait(false);
-        var warningValue = await WearPartPlcAccessor.ReadAsStringAsync(_plcOperationPipeline, "Replacement/ReadWarningValue", definition.WarningValueAddress, definition.WarningValueDataType, cancellationToken).ConfigureAwait(false);
-        var shutdownValue = await WearPartPlcAccessor.ReadAsStringAsync(_plcOperationPipeline, "Replacement/ReadShutdownValue", definition.ShutdownValueAddress, definition.ShutdownValueDataType, cancellationToken).ConfigureAwait(false);
+        var currentValue = await WearPartPlcAccessor.ReadAsStringAsync(_plcOperationPipeline, PlcOperationNames.Replacement.ReadCurrentValue, definition.CurrentValueAddress, definition.CurrentValueDataType, cancellationToken).ConfigureAwait(false);
+        var warningValue = await WearPartPlcAccessor.ReadAsStringAsync(_plcOperationPipeline, PlcOperationNames.Replacement.ReadWarningValue, definition.WarningValueAddress, definition.WarningValueDataType, cancellationToken).ConfigureAwait(false);
+        var shutdownValue = await WearPartPlcAccessor.ReadAsStringAsync(_plcOperationPipeline, PlcOperationNames.Replacement.ReadShutdownValue, definition.ShutdownValueAddress, definition.ShutdownValueDataType, cancellationToken).ConfigureAwait(false);
 
         var guardContext = new WearPartReplacementGuardContext
         {
@@ -98,16 +98,16 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
 
         if (HasAddress(definition.PlcZeroClearAddress))
         {
-            await WearPartPlcAccessor.PulseZeroClearSignalAsync(_plcOperationPipeline, "Replacement/PulseZeroClear", definition.PlcZeroClearAddress, cancellationToken).ConfigureAwait(false);
+            await WearPartPlcAccessor.PulseZeroClearSignalAsync(_plcOperationPipeline, PlcOperationNames.Replacement.PulseZeroClear, definition.PlcZeroClearAddress, cancellationToken).ConfigureAwait(false);
             guardContext.PlcWriteValue = 0d;
         }
         else
         {
-            await WearPartPlcAccessor.WriteCurrentValueAsync(_plcOperationPipeline, "Replacement/WriteCurrentValue", definition.CurrentValueAddress, definition.CurrentValueDataType, guardContext.PlcWriteValue, cancellationToken).ConfigureAwait(false);
+            await WearPartPlcAccessor.WriteCurrentValueAsync(_plcOperationPipeline, PlcOperationNames.Replacement.WriteCurrentValue, definition.CurrentValueAddress, definition.CurrentValueDataType, guardContext.PlcWriteValue, cancellationToken).ConfigureAwait(false);
         }
 
-        await WearPartPlcAccessor.WriteBarcodeAsync(_plcOperationPipeline, "Replacement/WriteBarcode", definition.BarcodeWriteAddress, normalizedBarcode, cancellationToken).ConfigureAwait(false);
-        await WearPartPlcAccessor.WriteShutdownSignalAsync(_plcOperationPipeline, "Replacement/WriteShutdownSignal", clientAppConfiguration.ShutdownPointAddress, shutdown: false, cancellationToken).ConfigureAwait(false);
+        await WearPartPlcAccessor.WriteBarcodeAsync(_plcOperationPipeline, PlcOperationNames.Replacement.WriteBarcode, definition.BarcodeWriteAddress, normalizedBarcode, cancellationToken).ConfigureAwait(false);
+        await WearPartPlcAccessor.WriteShutdownSignalAsync(_plcOperationPipeline, PlcOperationNames.Replacement.WriteShutdownSignal, clientAppConfiguration.ShutdownPointAddress, shutdown: false, cancellationToken).ConfigureAwait(false);
 
         var plcResult = new ReplacementExecutionResult(guardContext.PlcWriteValue, currentValue, warningValue, shutdownValue);
 

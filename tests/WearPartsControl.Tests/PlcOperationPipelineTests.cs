@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.PlcService;
 using Xunit;
 
@@ -69,6 +70,38 @@ public sealed class PlcOperationPipelineTests
             && entry.Message.Contains("completed in", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public async Task ReadAsync_WhenThresholdIsConfigured_ShouldUseConfiguredValue()
+    {
+        var plcService = new PipelineTestPlcService();
+        var logger = new TestLogger<PlcOperationPipeline>();
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                PlcPipeline = new PlcPipelineSettings
+                {
+                    SlowQueueWaitThresholdMilliseconds = 100,
+                    SlowExecutionThresholdMilliseconds = 50
+                }
+            }
+        };
+        var pipeline = new PlcOperationPipeline(plcService, logger, appSettingsService);
+
+        plcService.OnRead = _ =>
+        {
+            Thread.Sleep(80);
+            return 1;
+        };
+
+        _ = await pipeline.ReadAsync<int>("Test/ConfiguredSlowOperation", "ADDR-SLOW");
+
+        Assert.Contains(logger.Entries, entry =>
+            entry.LogLevel == LogLevel.Warning
+            && entry.Message.Contains("Test/ConfiguredSlowOperation", StringComparison.Ordinal)
+            && entry.Message.Contains("completed in", StringComparison.Ordinal));
+    }
+
     private sealed class PipelineTestPlcService : IPlcService
     {
         public bool IsConnected => true;
@@ -121,4 +154,23 @@ public sealed class PlcOperationPipelineTests
     }
 
     private sealed record LogEntry(LogLevel LogLevel, string Message, Exception? Exception);
+
+    private sealed class StubAppSettingsService : IAppSettingsService
+    {
+        public AppSettings Current { get; set; } = new();
+
+        public event EventHandler<AppSettings>? SettingsSaved;
+
+        public ValueTask<AppSettings> GetAsync(CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(Current);
+        }
+
+        public ValueTask SaveAsync(AppSettings settings, CancellationToken cancellationToken = default)
+        {
+            Current = settings;
+            SettingsSaved?.Invoke(this, settings);
+            return ValueTask.CompletedTask;
+        }
+    }
 }

@@ -45,4 +45,38 @@ public sealed class AppSettingsServiceTests
             }
         }
     }
+
+    [Fact]
+    public async Task GetAsync_ShouldNormalizeInvalidPlcPipelineThresholds()
+    {
+        var settingsDirectory = Path.Combine(Path.GetTempPath(), $"WearPartsControl.Tests.{Guid.NewGuid():N}");
+        Directory.CreateDirectory(settingsDirectory);
+
+        try
+        {
+            var store = new TypeJsonSaveInfoStore(settingsDirectory);
+            await store.WriteAsync(new AppSettings
+            {
+                PlcPipeline = new PlcPipelineSettings
+                {
+                    SlowQueueWaitThresholdMilliseconds = 0,
+                    SlowExecutionThresholdMilliseconds = -1
+                }
+            });
+
+            var service = new AppSettingsService(store, settingsDirectory);
+
+            var settings = await service.GetAsync();
+
+            Assert.Equal(100, settings.PlcPipeline.SlowQueueWaitThresholdMilliseconds);
+            Assert.Equal(500, settings.PlcPipeline.SlowExecutionThresholdMilliseconds);
+        }
+        finally
+        {
+            if (Directory.Exists(settingsDirectory))
+            {
+                Directory.Delete(settingsDirectory, true);
+            }
+        }
+    }
 }

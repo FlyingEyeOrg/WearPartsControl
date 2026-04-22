@@ -66,6 +66,8 @@ public sealed class AppSettingsService : IAppSettingsService
 
     private static AppSettings Normalize(AppSettings settings)
     {
+        var plcPipeline = settings.PlcPipeline ?? new PlcPipelineSettings();
+
         return new AppSettings
         {
             ResourceNumber = settings.ResourceNumber?.Trim() ?? string.Empty,
@@ -75,6 +77,15 @@ public sealed class AppSettingsService : IAppSettingsService
             AutoLogoutCountdownSeconds = settings.AutoLogoutCountdownSeconds <= 0
                 ? 360
                 : settings.AutoLogoutCountdownSeconds,
+            PlcPipeline = new PlcPipelineSettings
+            {
+                SlowQueueWaitThresholdMilliseconds = plcPipeline.SlowQueueWaitThresholdMilliseconds <= 0
+                    ? 100
+                    : plcPipeline.SlowQueueWaitThresholdMilliseconds,
+                SlowExecutionThresholdMilliseconds = plcPipeline.SlowExecutionThresholdMilliseconds <= 0
+                    ? 500
+                    : plcPipeline.SlowExecutionThresholdMilliseconds
+            },
             IsSetClientAppInfo = settings.IsSetClientAppInfo
         };
     }
@@ -92,6 +103,11 @@ public sealed class AppSettingsService : IAppSettingsService
             ResourceNumber = settings.ResourceNumber,
             LoginInputMaxIntervalMilliseconds = settings.LoginInputMaxIntervalMilliseconds,
             AutoLogoutCountdownSeconds = settings.AutoLogoutCountdownSeconds,
+            PlcPipeline = new PlcPipelineSettings
+            {
+                SlowQueueWaitThresholdMilliseconds = settings.PlcPipeline.SlowQueueWaitThresholdMilliseconds,
+                SlowExecutionThresholdMilliseconds = settings.PlcPipeline.SlowExecutionThresholdMilliseconds
+            },
             IsSetClientAppInfo = settings.IsSetClientAppInfo
         };
     }

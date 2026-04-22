@@ -47,21 +47,21 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
         }
 
         var connectionOptions = WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration);
-        await _plcOperationPipeline.ConnectAsync("Monitor/Connect", connectionOptions, cancellationToken).ConfigureAwait(false);
+        await _plcOperationPipeline.ConnectAsync(PlcOperationNames.Monitor.Connect, connectionOptions, cancellationToken).ConfigureAwait(false);
 
         var now = DateTime.UtcNow;
         var shouldSaveChanges = false;
         var plcResults = new List<MonitorSnapshot>(definitions.Count);
         foreach (var definition in definitions)
         {
-            var currentValue = await WearPartPlcAccessor.ReadAsDoubleAsync(_plcOperationPipeline, "Monitor/ReadCurrentValue", definition.CurrentValueAddress, definition.CurrentValueDataType, cancellationToken).ConfigureAwait(false);
-            var warningValue = await WearPartPlcAccessor.ReadAsDoubleAsync(_plcOperationPipeline, "Monitor/ReadWarningValue", definition.WarningValueAddress, definition.WarningValueDataType, cancellationToken).ConfigureAwait(false);
-            var shutdownValue = await WearPartPlcAccessor.ReadAsDoubleAsync(_plcOperationPipeline, "Monitor/ReadShutdownValue", definition.ShutdownValueAddress, definition.ShutdownValueDataType, cancellationToken).ConfigureAwait(false);
+            var currentValue = await WearPartPlcAccessor.ReadAsDoubleAsync(_plcOperationPipeline, PlcOperationNames.Monitor.ReadCurrentValue, definition.CurrentValueAddress, definition.CurrentValueDataType, cancellationToken).ConfigureAwait(false);
+            var warningValue = await WearPartPlcAccessor.ReadAsDoubleAsync(_plcOperationPipeline, PlcOperationNames.Monitor.ReadWarningValue, definition.WarningValueAddress, definition.WarningValueDataType, cancellationToken).ConfigureAwait(false);
+            var shutdownValue = await WearPartPlcAccessor.ReadAsDoubleAsync(_plcOperationPipeline, PlcOperationNames.Monitor.ReadShutdownValue, definition.ShutdownValueAddress, definition.ShutdownValueDataType, cancellationToken).ConfigureAwait(false);
             var status = ResolveStatus(currentValue, warningValue, shutdownValue);
 
             if (status == WearPartMonitorStatus.Shutdown)
             {
-                await WearPartPlcAccessor.WriteShutdownSignalAsync(_plcOperationPipeline, "Monitor/WriteShutdownSignal", clientAppConfiguration.ShutdownPointAddress, shutdown: definition.IsShutdown, cancellationToken).ConfigureAwait(false);
+                await WearPartPlcAccessor.WriteShutdownSignalAsync(_plcOperationPipeline, PlcOperationNames.Monitor.WriteShutdownSignal, clientAppConfiguration.ShutdownPointAddress, shutdown: definition.IsShutdown, cancellationToken).ConfigureAwait(false);
             }
 
             plcResults.Add(new MonitorSnapshot(definition, currentValue, warningValue, shutdownValue, status));
