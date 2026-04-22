@@ -31,6 +31,16 @@ public sealed class SqliteDatabaseInitializerTests : IDisposable
 
         var count = await verifyContext.ClientAppConfigurations.CountAsync();
         Assert.Equal(0, count);
+
+        await using var verifyConnection = new SqliteConnection($"Data Source={_dbFilePath}");
+        await verifyConnection.OpenAsync();
+
+        var definitionColumns = await GetColumnsAsync(verifyConnection, "wear_part_definitions");
+        Assert.Contains("ToolChangeId", definitionColumns);
+
+        var toolChangeColumns = await GetColumnsAsync(verifyConnection, "tool_changes");
+        Assert.Contains("Name", toolChangeColumns);
+        Assert.Contains("Code", toolChangeColumns);
     }
 
     [Fact]
@@ -105,9 +115,14 @@ CREATE UNIQUE INDEX IX_basic_configurations_ResourceNumber ON basic_configuratio
         Assert.Contains("CurrentValueAddress", definitionColumns);
         Assert.Contains("WarningValueAddress", definitionColumns);
         Assert.Contains("ShutdownValueAddress", definitionColumns);
+        Assert.Contains("ToolChangeId", definitionColumns);
         Assert.Contains("PlcZeroClearAddress", definitionColumns);
         Assert.Contains("BarcodeWriteAddress", definitionColumns);
         Assert.DoesNotContain("CodeWritePlcPoint", definitionColumns);
+
+        var toolChangeColumns = await GetColumnsAsync(verifyConnection, "tool_changes");
+        Assert.Contains("Name", toolChangeColumns);
+        Assert.Contains("Code", toolChangeColumns);
     }
 
     private static async Task<HashSet<string>> GetColumnsAsync(SqliteConnection connection, string tableName)

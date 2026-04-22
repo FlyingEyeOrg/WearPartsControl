@@ -22,6 +22,22 @@ CREATE TABLE IF NOT EXISTS basic_configurations (
 CREATE UNIQUE INDEX IF NOT EXISTS IX_basic_configurations_ResourceNumber
 ON basic_configurations(ResourceNumber);
 
+CREATE TABLE IF NOT EXISTS tool_changes (
+    Id TEXT NOT NULL PRIMARY KEY,
+    CreatedAt TEXT NOT NULL,
+    UpdatedAt TEXT NOT NULL,
+    CreatedBy TEXT NOT NULL,
+    UpdatedBy TEXT NOT NULL,
+    Name TEXT NOT NULL,
+    Code TEXT NOT NULL
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS IX_tool_changes_Name
+ON tool_changes(Name);
+
+CREATE UNIQUE INDEX IF NOT EXISTS IX_tool_changes_Code
+ON tool_changes(Code);
+
 CREATE TABLE IF NOT EXISTS wear_part_definitions (
     Id TEXT NOT NULL PRIMARY KEY,
     CreatedAt TEXT NOT NULL,
@@ -42,12 +58,17 @@ CREATE TABLE IF NOT EXISTS wear_part_definitions (
     CodeMinLength INTEGER NOT NULL,
     CodeMaxLength INTEGER NOT NULL,
     LifetimeType TEXT NOT NULL,
+    ToolChangeId TEXT NULL,
     PlcZeroClearAddress TEXT NULL,
     BarcodeWriteAddress TEXT NOT NULL,
     CONSTRAINT FK_wear_part_definitions_basic_configurations_ClientAppConfigurationId
         FOREIGN KEY (ClientAppConfigurationId)
         REFERENCES basic_configurations (Id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT FK_wear_part_definitions_tool_changes_ToolChangeId
+        FOREIGN KEY (ToolChangeId)
+        REFERENCES tool_changes (Id)
+        ON DELETE SET NULL
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS IX_wear_part_definitions_ClientAppConfigurationId_PartName

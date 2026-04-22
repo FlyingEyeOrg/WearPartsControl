@@ -83,10 +83,10 @@
                                 Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource DeleteGeometry}">删除</Button>
                         <Button Margin="0 8 8 0"
-                                IsEnabled="False"
-                                Style="{StaticResource ButtonPrimary}"
-                                ToolTip="导入功能保留原入口，当前未在本次 CRUD 范围内调整。"
-                                hc:IconElement.Geometry="{StaticResource AddGeometry}">从其他设备导入</Button>
+                            Width="120"
+                            Command="{Binding ImportLegacyDefinitionsCommand}"
+                            Style="{StaticResource ButtonPrimary}"
+                            hc:IconElement.Geometry="{StaticResource AddGeometry}">导入旧库易损件</Button>
                     </WrapPanel>
                 </Grid>
             </Border>

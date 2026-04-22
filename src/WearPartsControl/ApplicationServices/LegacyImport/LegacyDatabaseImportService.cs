@@ -256,6 +256,81 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
         return result;
     }
 
+    public async Task<LegacyDatabaseImportResult> ImportWearPartDefinitionsAsync(string legacyDatabasePath, Guid clientAppConfigurationId, string resourceNumber, CancellationToken cancellationToken = default)
+    {
+        if (clientAppConfigurationId == Guid.Empty)
+        {
+            throw new UserFriendlyException("当前客户端未配置有效的客户端信息，无法导入旧库易损件。");
+        }
+
+        if (string.IsNullOrWhiteSpace(resourceNumber))
+        {
+            throw new UserFriendlyException("当前客户端未配置资源号，无法导入旧库易损件。");
+        }
+
+        var fullPath = ValidateLegacyDatabasePath(legacyDatabasePath);
+        var result = new LegacyDatabaseImportResult
+        {
+            LegacyDatabasePath = fullPath
+        };
+
+        await using var legacyConnection = new SqliteConnection($"Data Source={fullPath}");
+        await legacyConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        var legacyDefinitions = await ReadWearPartDefinitionsAsync(legacyConnection, cancellationToken).ConfigureAwait(false);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var clientConfigurationExists = await dbContext.ClientAppConfigurations
+            .AnyAsync(x => x.Id == clientAppConfigurationId, cancellationToken)
+            .ConfigureAwait(false);
+        if (!clientConfigurationExists)
+        {
+            throw new UserFriendlyException("当前客户端基础配置不存在，无法导入旧库易损件。");
+        }
+
+        var trackedDefinitions = await dbContext.WearPartDefinitions
+            .Where(x => x.ClientAppConfigurationId == clientAppConfigurationId)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var definitionMap = trackedDefinitions.ToDictionary(
+            x => NormalizeOrEmpty(x.PartName),
+            x => x,
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var legacyDefinition in legacyDefinitions)
+        {
+            if (string.IsNullOrWhiteSpace(legacyDefinition.Name))
+            {
+                result.SkippedRows++;
+                continue;
+            }
+
+            var key = NormalizeOrEmpty(legacyDefinition.Name);
+            if (!definitionMap.TryGetValue(key, out var definition))
+            {
+                definition = new WearPartDefinitionEntity
+                {
+                    ClientAppConfigurationId = clientAppConfigurationId,
+                    ResourceNumber = NormalizeOrEmpty(resourceNumber),
+                    PartName = key
+                };
+
+                ApplyWearPartDefinition(definition, legacyDefinition, resourceNumber);
+                dbContext.WearPartDefinitions.Add(definition);
+                definitionMap[key] = definition;
+                result.ImportedWearPartDefinitions++;
+            }
+            else
+            {
+                ApplyWearPartDefinition(definition, legacyDefinition, resourceNumber);
+                result.UpdatedWearPartDefinitions++;
+            }
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return result;
+    }
+
     private static void ApplyClientConfiguration(ClientAppConfigurationEntity target, LegacyClientConfiguration source)
     {
         target.SiteCode = NormalizeOrEmpty(source.Site);
@@ -290,6 +365,22 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
         target.LifetimeType = NormalizeLifetimeType(source.LifetimeType);
         target.PlcZeroClearAddress = NormalizeOrEmpty(source.PlcZeroClearAddress);
         target.BarcodeWriteAddress = NormalizeOrEmpty(source.BarcodeWriteAddress, "######");
+    }
+
+    private static string ValidateLegacyDatabasePath(string legacyDatabasePath)
+    {
+        if (string.IsNullOrWhiteSpace(legacyDatabasePath))
+        {
+            throw new UserFriendlyException("旧版 SQLite 数据库文件路径不能为空。");
+        }
+
+        var fullPath = Path.GetFullPath(legacyDatabasePath);
+        if (!File.Exists(fullPath))
+        {
+            throw new UserFriendlyException($"未找到旧版 SQLite 数据库文件：{fullPath}");
+        }
+
+        return fullPath;
     }
 
     private static string BuildDefinitionKey(Guid clientAppConfigurationId, string partName)

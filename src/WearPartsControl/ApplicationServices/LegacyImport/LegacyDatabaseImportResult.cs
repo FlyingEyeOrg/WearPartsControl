@@ -22,4 +22,9 @@ public sealed class LegacyDatabaseImportResult
     {
         return $"旧库导入完成。\n数据库: {LegacyDatabasePath}\n客户端配置: 新增 {ImportedClientConfigurations}，更新 {UpdatedClientConfigurations}\n易损件定义: 新增 {ImportedWearPartDefinitions}，更新 {UpdatedWearPartDefinitions}\n更换记录: 新增 {ImportedReplacementRecords}\n超限记录: 新增 {ImportedExceedLimitRecords}\n跳过行数: {SkippedRows}";
     }
+
+    public string ToWearPartDefinitionSummary()
+    {
+        return $"旧库易损件导入完成。\n数据库: {LegacyDatabasePath}\n易损件定义: 新增 {ImportedWearPartDefinitions}，更新 {UpdatedWearPartDefinitions}\n跳过行数: {SkippedRows}";
+    }
 }

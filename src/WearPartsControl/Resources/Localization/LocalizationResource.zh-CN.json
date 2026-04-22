@@ -110,6 +110,10 @@
     "PartManagementVm": {
       "PromptLoadCurrent": "请先加载当前设备的易损件。",
       "Loading": "正在加载易损件列表...",
+      "ImportingLegacyDefinitions": "正在导入旧库易损件...",
+      "ImportedLegacyDefinitions": "旧库易损件导入完成：新增 {0} 条，更新 {1} 条，跳过 {2} 条。",
+      "ImportDialogTitle": "选择旧版 SQLite 数据库",
+      "ImportCanceled": "已取消旧库易损件导入。",
       "ResourceNumberMissing": "当前客户端未配置资源号，无法管理易损件。",
       "DefinitionsEmpty": "资源号 {0} 当前暂无易损件定义。",
       "DefinitionsLoaded": "已加载资源号 {0} 的 {1} 条易损件定义。",

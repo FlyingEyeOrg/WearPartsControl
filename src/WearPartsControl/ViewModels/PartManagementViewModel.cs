@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.LegacyImport;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
 
@@ -12,6 +13,7 @@ namespace WearPartsControl.ViewModels;
 public sealed class PartManagementViewModel : ObservableObject
 {
     private readonly IClientAppInfoService _clientAppInfoService;
+    private readonly ILegacyDatabaseImportService _legacyDatabaseImportService;
     private readonly IWearPartManagementService _wearPartManagementService;
     private readonly IUiBusyService _uiBusyService;
     private readonly List<WearPartDefinition> _allDefinitions = new();
@@ -25,21 +27,26 @@ public sealed class PartManagementViewModel : ObservableObject
 
     public PartManagementViewModel(
         IClientAppInfoService clientAppInfoService,
+        ILegacyDatabaseImportService legacyDatabaseImportService,
         IWearPartManagementService wearPartManagementService,
         IUiBusyService uiBusyService)
     {
         _clientAppInfoService = clientAppInfoService;
+        _legacyDatabaseImportService = legacyDatabaseImportService;
         _wearPartManagementService = wearPartManagementService;
         _uiBusyService = uiBusyService;
 
         SearchCommand = new RelayCommand(ApplyFilter);
         RefreshCommand = new AsyncRelayCommand(RefreshCommandAsync, CanRefresh);
+        ImportLegacyDefinitionsCommand = new RelayCommand(RequestImportLegacyDefinitions, CanImportLegacyDefinitions);
         AddCommand = new RelayCommand(OpenAddDialog, CanAdd);
         EditCommand = new RelayCommand(OpenEditDialog, CanEdit);
         DeleteCommand = new AsyncRelayCommand(DeleteAsync, CanDelete);
     }
 
     public event EventHandler? AddRequested;
+
+    public event EventHandler? ImportLegacyDefinitionsRequested;
 
     public event EventHandler<WearPartDefinition>? EditRequested;
 
@@ -48,6 +55,8 @@ public sealed class PartManagementViewModel : ObservableObject
     public IRelayCommand SearchCommand { get; }
 
     public IAsyncRelayCommand RefreshCommand { get; }
+
+    public IRelayCommand ImportLegacyDefinitionsCommand { get; }
 
     public IRelayCommand AddCommand { get; }
 
@@ -91,6 +100,7 @@ public sealed class PartManagementViewModel : ObservableObject
             {
                 OnPropertyChanged(nameof(IsNotBusy));
                 RefreshCommand.NotifyCanExecuteChanged();
+                ImportLegacyDefinitionsCommand.NotifyCanExecuteChanged();
                 AddCommand.NotifyCanExecuteChanged();
                 EditCommand.NotifyCanExecuteChanged();
                 DeleteCommand.NotifyCanExecuteChanged();
@@ -182,6 +192,11 @@ public sealed class PartManagementViewModel : ObservableObject
         return !IsBusy && _clientAppConfigurationId != Guid.Empty && !string.IsNullOrWhiteSpace(ResourceNumber);
     }
 
+    private bool CanImportLegacyDefinitions()
+    {
+        return !IsBusy && _clientAppConfigurationId != Guid.Empty && !string.IsNullOrWhiteSpace(ResourceNumber);
+    }
+
     private bool CanEdit()
     {
         return !IsBusy && SelectedDefinition is not null;
@@ -195,6 +210,11 @@ public sealed class PartManagementViewModel : ObservableObject
     private void OpenAddDialog()
     {
         AddRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void RequestImportLegacyDefinitions()
+    {
+        ImportLegacyDefinitionsRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private void OpenEditDialog()
@@ -247,6 +267,45 @@ public sealed class PartManagementViewModel : ObservableObject
         {
             IsBusy = false;
         }
+    }
+
+    public async Task<LegacyDatabaseImportResult> ImportLegacyDefinitionsAsync(string legacyDatabasePath, CancellationToken cancellationToken = default)
+    {
+        var enteredAt = DateTimeOffset.UtcNow;
+        IsBusy = true;
+        StatusMessage = LocalizedText.Get("ViewModels.PartManagementVm.ImportingLegacyDefinitions");
+        using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.PartManagementVm.ImportingLegacyDefinitions"));
+
+        try
+        {
+            var result = await _legacyDatabaseImportService
+                .ImportWearPartDefinitionsAsync(legacyDatabasePath, _clientAppConfigurationId, ResourceNumber, cancellationToken)
+                .ConfigureAwait(true);
+
+            await RefreshAsync(cancellationToken).ConfigureAwait(true);
+            await EnsureMinimumBusyDurationAsync(enteredAt, cancellationToken).ConfigureAwait(true);
+            StatusMessage = LocalizedText.Format(
+                "ViewModels.PartManagementVm.ImportedLegacyDefinitions",
+                result.ImportedWearPartDefinitions,
+                result.UpdatedWearPartDefinitions,
+                result.SkippedRows);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            await EnsureMinimumBusyDurationAsync(enteredAt, cancellationToken).ConfigureAwait(true);
+            StatusMessage = ex.Message;
+            throw;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public void NotifyLegacyImportCanceled()
+    {
+        StatusMessage = LocalizedText.Get("ViewModels.PartManagementVm.ImportCanceled");
     }
 
     private void ApplyFilter()

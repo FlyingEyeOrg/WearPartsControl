@@ -46,8 +46,47 @@ public sealed class LegacyDatabaseImportServiceTests : IDisposable
 
         Assert.Equal("RES-IMPORT-01", configuration.ResourceNumber);
         Assert.Equal("刀具A", definition.PartName);
+        Assert.Null(definition.ToolChangeId);
         Assert.Equal("BARCODE-NEW", replacement.NewBarcode);
         Assert.Equal("Shutdown", exceed.Severity);
+    }
+
+    [Fact]
+    public async Task ImportWearPartDefinitionsAsync_ShouldImportDefinitionsIntoSpecifiedClientConfiguration()
+    {
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var configuration = new Domain.Entities.ClientAppConfigurationEntity
+        {
+            Id = Guid.NewGuid(),
+            ResourceNumber = "RES-TARGET-01",
+            SiteCode = "S01",
+            FactoryCode = "F01",
+            AreaCode = "A01",
+            ProcedureCode = "P01",
+            EquipmentCode = "E01",
+            PlcProtocolType = "S7",
+            PlcIpAddress = "127.0.0.1",
+            PlcPort = 102,
+            ShutdownPointAddress = "!M0.0",
+            SiemensRack = 0,
+            SiemensSlot = 0,
+            IsStringReverse = false
+        };
+        dbContext.ClientAppConfigurations.Add(configuration);
+        await dbContext.SaveChangesAsync();
+
+        var service = new LegacyDatabaseImportService(_dbContextFactory);
+
+        var result = await service.ImportWearPartDefinitionsAsync(_legacyDbPath, configuration.Id, configuration.ResourceNumber);
+
+        Assert.Equal(1, result.ImportedWearPartDefinitions);
+        Assert.Equal(0, result.UpdatedWearPartDefinitions);
+
+        await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
+        var definition = await verifyContext.WearPartDefinitions.SingleAsync(x => x.ClientAppConfigurationId == configuration.Id);
+        Assert.Equal(configuration.ResourceNumber, definition.ResourceNumber);
+        Assert.Equal("刀具A", definition.PartName);
+        Assert.Equal("DB1.0", definition.CurrentValueAddress);
     }
 
     public void Dispose()

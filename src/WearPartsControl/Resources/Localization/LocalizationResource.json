@@ -110,6 +110,10 @@
     "PartManagementVm": {
       "PromptLoadCurrent": "Please load wear parts for the current device first.",
       "Loading": "Loading wear part list...",
+      "ImportingLegacyDefinitions": "Importing wear part definitions from the legacy database...",
+      "ImportedLegacyDefinitions": "Legacy wear part import completed: added {0}, updated {1}, skipped {2}.",
+      "ImportDialogTitle": "Select legacy SQLite database",
+      "ImportCanceled": "Legacy wear part import canceled.",
       "ResourceNumberMissing": "The current client has no resource number configured, so wear parts cannot be managed.",
       "DefinitionsEmpty": "No wear part definitions found for resource number {0}.",
       "DefinitionsLoaded": "Loaded {1} wear part definitions for resource number {0}.",

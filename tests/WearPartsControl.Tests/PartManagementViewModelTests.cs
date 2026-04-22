@@ -1,0 +1,125 @@
+using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.LegacyImport;
+using WearPartsControl.ApplicationServices.PartServices;
+using WearPartsControl.ViewModels;
+using Xunit;
+
+namespace WearPartsControl.Tests;
+
+public sealed class PartManagementViewModelTests
+{
+    [Fact]
+    public async Task ImportLegacyDefinitionsAsync_ShouldCallLegacyImportServiceAndUpdateStatus()
+    {
+        var legacyImportService = new StubLegacyDatabaseImportService();
+        var viewModel = new PartManagementViewModel(
+            new StubClientAppInfoService(),
+            legacyImportService,
+            new StubWearPartManagementService(),
+            new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+
+        var result = await viewModel.ImportLegacyDefinitionsAsync("E:\\legacy\\Data.db");
+
+        Assert.Equal("E:\\legacy\\Data.db", legacyImportService.LastPath);
+        Assert.Equal(2, result.ImportedWearPartDefinitions);
+        Assert.Contains("新增 2 条", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public void ImportLegacyDefinitionsCommand_ShouldRaiseRequestedEvent()
+    {
+        var viewModel = new PartManagementViewModel(
+            new StubClientAppInfoService(),
+            new StubLegacyDatabaseImportService(),
+            new StubWearPartManagementService(),
+            new UiBusyService(TimeSpan.Zero));
+        var raised = false;
+        viewModel.ImportLegacyDefinitionsRequested += (_, _) => raised = true;
+
+        viewModel.ImportLegacyDefinitionsCommand.Execute(null);
+
+        Assert.True(raised);
+    }
+
+    private sealed class StubClientAppInfoService : IClientAppInfoService
+    {
+        private readonly Guid _id = Guid.NewGuid();
+
+        public Task<ClientAppInfoModel> GetAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new ClientAppInfoModel
+            {
+                Id = _id,
+                ResourceNumber = "RES-01"
+            });
+        }
+
+        public Task<ClientAppInfoModel> SaveAsync(ClientAppInfoSaveRequest request, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    private sealed class StubLegacyDatabaseImportService : ILegacyDatabaseImportService
+    {
+        public string? LastPath { get; private set; }
+
+        public Task<LegacyDatabaseImportResult> ImportAsync(string legacyDatabasePath, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<LegacyDatabaseImportResult> ImportWearPartDefinitionsAsync(string legacyDatabasePath, Guid clientAppConfigurationId, string resourceNumber, CancellationToken cancellationToken = default)
+        {
+            LastPath = legacyDatabasePath;
+            return Task.FromResult(new LegacyDatabaseImportResult
+            {
+                LegacyDatabasePath = legacyDatabasePath,
+                ImportedWearPartDefinitions = 2,
+                UpdatedWearPartDefinitions = 1,
+                SkippedRows = 0
+            });
+        }
+    }
+
+    private sealed class StubWearPartManagementService : IWearPartManagementService
+    {
+        public Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<WearPartDefinition>>([]);
+        }
+
+        public Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<WearPartDefinition>>([]);
+        }
+
+        public Task<WearPartDefinition?> GetDefinitionAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<WearPartDefinition> CreateDefinitionAsync(WearPartDefinition definition, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<WearPartDefinition> UpdateDefinitionAsync(WearPartDefinition definition, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task DeleteDefinitionAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<int> CopyDefinitionsAsync(string sourceResourceNumber, string targetResourceNumber, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+    }
+}

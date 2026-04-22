@@ -27,9 +27,11 @@
 	- EF Core 映射配置：
 		- `EntityFrameworkCore/Configurations/ClientAppConfigurationEntityConfiguration`
 		- `EntityFrameworkCore/Configurations/WearPartDefinitionEntityConfiguration`
+		- `EntityFrameworkCore/Configurations/ToolChangeEntityConfiguration`
 	- 仓储实现：
 		- `EntityFrameworkCore/Repositories/ClientAppConfigurationRepository`
 		- `EntityFrameworkCore/Repositories/WearPartRepository`
+		- `EntityFrameworkCore/Repositories/ToolChangeRepository`
 	- 初始化与脚本：
 		- `EntityFrameworkCore/SqliteDatabaseInitializer`
 		- `EntityFrameworkCore/Migrations/001_initial_wearparts_schema.sql`
@@ -64,6 +66,7 @@
 - 已补齐：后台寿命监控调度、MHR 用户列表缓存、旧版 SQLite 数据导入。
 - 已补齐：`ToolChange` 主数据实体、仓储、应用服务和“换刀类型管理”页面，模切分条工序已从自由输入工具编码升级为正式主数据选择。
 - 已补齐：涂布工序 A/B 面选择、垫片条码解析与远程校验，并在校验失败时执行停机点写入保护。
+- 已补齐：易损件管理页支持直接选择旧版 SQLite 数据库并导入易损件定义，适合生产环境一次性迁移旧系统数据。
 - 易损件新增/编辑窗口已按旧版录入习惯调整：输入方式默认 `Manual`，三组 PLC 数据类型默认 `FLOAT`，寿命类型固定为 `记米 / 计次 / 计时`，默认选中 `计次`，条码长度默认 `0-0`，附加清零地址改为可选。
 
 ## 数据与配置目录
@@ -110,11 +113,10 @@
 
 ## 旧库导入
 
-- 启动程序时可传入旧版 SQLite 数据库文件路径，执行导入后自动退出。
-- 支持两种写法：
-	- `WearPartsControl.exe --import-legacy-db E:\Old\Data.db`
-	- `WearPartsControl.exe E:\Old\Data.db`
-- 导入范围：`v_Basic`、`v_VulnerableParts`、`v_ReplaceRecord`、`v_exceedlimitinfo`
+- 生产环境推荐在“易损件管理”页面直接点击“导入旧库易损件”，选择旧版 SQLite 数据库文件后执行导入。
+- 旧系统 `VulnerablePartsSys` 的本地 SQLite 默认路径为 `VulnerablePartsSys\db\Data.db`。
+- 页面导入范围仅包含旧库中的易损件定义，并写入当前客户端对应资源号下，不导入历史更换记录、超限记录，也不做旧库结构兼容处理。
+- 启动参数方式 `WearPartsControl.exe --import-legacy-db ...` 仍保留给整库导入场景；如果只是生产环境迁移易损件定义，优先使用页面导入入口。
 
 ## 测试
 

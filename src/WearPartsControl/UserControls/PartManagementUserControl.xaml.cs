@@ -1,6 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Win32;
 using Microsoft.Extensions.DependencyInjection;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ViewModels;
@@ -28,6 +30,7 @@ public partial class PartManagementUserControl : UserControl
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         _viewModel.AddRequested += OnAddRequested;
+        _viewModel.ImportLegacyDefinitionsRequested += OnImportLegacyDefinitionsRequested;
         _viewModel.EditRequested += OnEditRequested;
     }
 
@@ -41,6 +44,7 @@ public partial class PartManagementUserControl : UserControl
         Loaded -= OnLoaded;
         Unloaded -= OnUnloaded;
         _viewModel.AddRequested -= OnAddRequested;
+        _viewModel.ImportLegacyDefinitionsRequested -= OnImportLegacyDefinitionsRequested;
         _viewModel.EditRequested -= OnEditRequested;
     }
 
@@ -71,6 +75,34 @@ public partial class PartManagementUserControl : UserControl
         if (dialogResult)
         {
             await _viewModel.RefreshAsync();
+        }
+    }
+
+    private async void OnImportLegacyDefinitionsRequested(object? sender, EventArgs e)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Title = LocalizedText.Get("ViewModels.PartManagementVm.ImportDialogTitle"),
+            Filter = "SQLite 数据库|*.db;*.sqlite;*.sqlite3|所有文件|*.*",
+            CheckFileExists = true,
+            Multiselect = false
+        };
+
+        var dialogResult = _autoLogoutInteractionService.RunModal(() => dialog.ShowDialog() == true);
+        if (!dialogResult)
+        {
+            _viewModel.NotifyLegacyImportCanceled();
+            return;
+        }
+
+        try
+        {
+            var result = await _viewModel.ImportLegacyDefinitionsAsync(dialog.FileName);
+            MessageBox.Show(result.ToWearPartDefinitionSummary(), LocalizedText.Get("App.LegacyImportCompletedTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, LocalizedText.Get("FriendlyErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 }
