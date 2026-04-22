@@ -143,6 +143,11 @@
       "ExportFailedPrefix": "导出易损件更换记录失败：",
       "AllPartsOption": "全部易损件"
     },
+    "NeedLoginVm": {
+      "Title": "请先登录",
+      "Description": "当前页面需要登录后才能查看或操作。",
+      "Hint": "请点击右上角登录入口完成登录，然后重新进入当前页面。"
+    },
     "UserConfigVm": {
       "PromptMaintain": "请先维护用户配置。",
       "Loaded": "用户配置已加载。",

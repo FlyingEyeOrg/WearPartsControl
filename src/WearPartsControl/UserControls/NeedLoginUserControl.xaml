@@ -3,11 +3,35 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:WearPartsControl.UserControls"
+             xmlns:vm="clr-namespace:WearPartsControl.ViewModels"
              mc:Ignorable="d"
              d:DesignHeight="450"
-             d:DesignWidth="800">
-    <Grid>
-        <TextBlock Style="{StaticResource TextBlockDefaultInfo}">请先登录用户</TextBlock>
+             d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance Type=vm:NeedLoginViewModel}">
+    <Grid Background="#FFF7FAFC">
+        <Border Margin="24"
+                Padding="24"
+                Background="White"
+                BorderBrush="#FFD9E2F2"
+                BorderThickness="1"
+                CornerRadius="10"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MaxWidth="420">
+            <StackPanel>
+                <TextBlock Style="{StaticResource TextBlockLarge}"
+                           Foreground="{StaticResource InfoBrush}"
+                           Text="{Binding Title}" />
+                <TextBlock Margin="0 16 0 0"
+                           TextWrapping="Wrap"
+                           Style="{StaticResource TextBlockDefaultInfo}"
+                           Text="{Binding Description}" />
+                <TextBlock Margin="0 8 0 0"
+                           TextWrapping="Wrap"
+                           Foreground="#FF5B6B7A"
+                           Style="{StaticResource TextBlockDefaultInfo}"
+                           Text="{Binding Hint}" />
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>

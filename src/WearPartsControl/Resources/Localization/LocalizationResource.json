@@ -143,6 +143,11 @@
       "ExportFailedPrefix": "Export wear part replacement history failed: ",
       "AllPartsOption": "All wear parts"
     },
+    "NeedLoginVm": {
+      "Title": "Login Required",
+      "Description": "You need to log in before viewing or operating on this page.",
+      "Hint": "Use the login entry in the top-right corner, then return to the current page."
+    },
     "UserConfigVm": {
       "PromptMaintain": "Please maintain user configuration first.",
       "Loaded": "User configuration loaded.",
