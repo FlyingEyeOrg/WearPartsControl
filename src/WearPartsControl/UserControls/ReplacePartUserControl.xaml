@@ -9,295 +9,298 @@
              d:DesignHeight="450"
              d:DesignWidth="800"
              d:DataContext="{d:DesignInstance Type=vm:ReplacePartViewModel}">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <ScrollViewer>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-        <StackPanel>
-            <Border Background="#FF365082"
-                    Padding="0 8">
-                <TextBlock HorizontalAlignment="Center"
-                           FontWeight="Bold"
-                           FontSize="16"
-                           Foreground="White">易损件更换</TextBlock>
-            </Border>
+            <StackPanel>
+                <Border Background="#FF365082"
+                        Padding="0 8">
+                    <TextBlock HorizontalAlignment="Center"
+                               FontWeight="Bold"
+                               FontSize="16"
+                               Foreground="White">易损件更换</TextBlock>
+                </Border>
 
-            <Border Margin="8 8 8 0"
-                    CornerRadius="6"
-                    Background="#FFF5F7FA"
-                    BorderBrush="#FFD9E2F2"
-                    BorderThickness="1">
-                <Grid Margin="8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Foreground="{StaticResource InfoBrush}"
-                               VerticalAlignment="Center"
-                               FontWeight="SemiBold"
-                               Text="{Binding StatusMessage}" />
-                    <StackPanel Grid.Column="1"
-                                Orientation="Horizontal">
-                        <TextBlock Margin="16 0 0 0"
+                <Border Margin="8 8 8 0"
+                        CornerRadius="6"
+                        Background="#FFF5F7FA"
+                        BorderBrush="#FFD9E2F2"
+                        BorderThickness="1">
+                    <Grid Margin="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Foreground="{StaticResource InfoBrush}"
                                    VerticalAlignment="Center"
                                    FontWeight="SemiBold"
-                                   Text="{Binding ResourceNumber, Mode=OneWay, StringFormat=当前资源号：{0}}" />
-                        <Button Margin="16 0 0 0"
-                                Width="80"
-                                Command="{Binding RefreshCommand}"
-                                Style="{StaticResource ButtonPrimary}">刷新</Button>
+                                   Text="{Binding StatusMessage}" />
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal">
+                            <TextBlock Margin="16 0 0 0"
+                                       VerticalAlignment="Center"
+                                       FontWeight="SemiBold"
+                                       Text="{Binding ResourceNumber, Mode=OneWay, StringFormat=当前资源号：{0}}" />
+                            <Button Margin="16 0 0 0"
+                                    Width="80"
+                                    Command="{Binding RefreshCommand}"
+                                    Style="{StaticResource ButtonPrimary}">刷新</Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <Grid Margin="8 8 8 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center">PLC连接状态：</TextBlock>
+                            <TextBox IsReadOnly="True"
+                                     Grid.Column="1"
+                                     Background="{Binding PlcConnectionStatusBackground, Mode=OneWay}"
+                                     Foreground="White"
+                                     Text="{Binding PlcConnectionStatusText, Mode=OneWay}" />
+                        </Grid>
+                        <Grid Margin="0 8 0 0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center">当前易损件：</TextBlock>
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding Definitions}"
+                                      SelectedItem="{Binding SelectedDefinition, Mode=TwoWay}"
+                                      DisplayMemberPath="PartName"
+                                      Style="{StaticResource ComboBoxExtend}"
+                                      hc:InfoElement.Placeholder="请选择易损件"></ComboBox>
+                        </Grid>
+
+                    </StackPanel>
+                    <StackPanel Grid.Column="1"
+                                Margin="8 0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center">当前寿命：</TextBlock>
+                            <TextBox IsReadOnly="True"
+                                     Text="{Binding CurrentValue, Mode=OneWay, TargetNullValue=''}"
+                                     Grid.Column="1"></TextBox>
+                        </Grid>
+                        <Grid Margin="0 8 0 0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center">预警寿命：</TextBlock>
+                            <TextBox IsReadOnly="True"
+                                     Text="{Binding WarningValue, Mode=OneWay, TargetNullValue=''}"
+                                     Grid.Column="1"></TextBox>
+                        </Grid>
+                        <Grid Margin="0 8 0 0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center">停机寿命：</TextBlock>
+                            <TextBox IsReadOnly="True"
+                                     Text="{Binding ShutdownValue, Mode=OneWay, TargetNullValue=''}"
+                                     Grid.Column="1"></TextBox>
+                        </Grid>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center">输入方式：</TextBlock>
+                            <TextBox Grid.Column="1"
+                                     IsReadOnly="True"
+                                     Text="{Binding InputMode, Mode=OneWay}" />
+                        </Grid>
+                        <Grid Margin="0 8 0 0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center">条码最小长度：</TextBlock>
+                            <TextBox Grid.Column="1"
+                                     IsReadOnly="True"
+                                     Text="{Binding CodeMinLength, Mode=OneWay, TargetNullValue=''}" />
+                        </Grid>
+                        <Grid Margin="0 8 0 0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center">条码最大长度：</TextBlock>
+                            <TextBox Grid.Column="1"
+                                     IsReadOnly="True"
+                                     Text="{Binding CodeMaxLength, Mode=OneWay, TargetNullValue=''}" />
+                        </Grid>
                     </StackPanel>
                 </Grid>
-            </Border>
-            <Grid Margin="8 8 8 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <StackPanel>
+                <Grid Margin="8 8 8 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="80" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">PLC连接状态：</TextBlock>
+                                   VerticalAlignment="Center">当前条码：</TextBlock>
                         <TextBox IsReadOnly="True"
-                                 Grid.Column="1"
-                                 Background="{Binding PlcConnectionStatusBackground, Mode=OneWay}"
-                                 Foreground="White"
-                                 Text="{Binding PlcConnectionStatusText, Mode=OneWay}" />
+                                 Text="{Binding LastBarcode, Mode=OneWay}"
+                                 Grid.Column="1" />
                     </Grid>
-                    <Grid Margin="0 8 0 0">
+                    <Grid Grid.Column="1"
+                          Margin="8 0 0 0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="80" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">当前易损件：</TextBlock>
+                                   VerticalAlignment="Center">更换原因：</TextBlock>
                         <ComboBox Grid.Column="1"
-                                  ItemsSource="{Binding Definitions}"
-                                  SelectedItem="{Binding SelectedDefinition, Mode=TwoWay}"
-                                  DisplayMemberPath="PartName"
-                                  Style="{StaticResource ComboBoxExtend}"
-                                  hc:InfoElement.Placeholder="请选择易损件"></ComboBox>
+                                  ItemsSource="{Binding ReplacementReasons}"
+                                  DisplayMemberPath="DisplayName"
+                                  SelectedValuePath="Code"
+                                  SelectedValue="{Binding SelectedReplacementReason, Mode=TwoWay}"
+                                  Style="{StaticResource ComboBoxExtend}" />
                     </Grid>
-
-                </StackPanel>
-                <StackPanel Grid.Column="1"
-                            Margin="8 0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">当前寿命：</TextBlock>
-                        <TextBox IsReadOnly="True"
-                                 Text="{Binding CurrentValue, Mode=OneWay, TargetNullValue=''}"
-                                 Grid.Column="1"></TextBox>
-                    </Grid>
-                    <Grid Margin="0 8 0 0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">预警寿命：</TextBlock>
-                        <TextBox IsReadOnly="True"
-                                 Text="{Binding WarningValue, Mode=OneWay, TargetNullValue=''}"
-                                 Grid.Column="1"></TextBox>
-                    </Grid>
-                    <Grid Margin="0 8 0 0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">停机寿命：</TextBlock>
-                        <TextBox IsReadOnly="True"
-                                 Text="{Binding ShutdownValue, Mode=OneWay, TargetNullValue=''}"
-                                 Grid.Column="1"></TextBox>
-                    </Grid>
-                </StackPanel>
-                <StackPanel Grid.Column="2">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">输入方式：</TextBlock>
-                        <TextBox Grid.Column="1"
-                                 IsReadOnly="True"
-                                 Text="{Binding InputMode, Mode=OneWay}" />
-                    </Grid>
-                    <Grid Margin="0 8 0 0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">条码最小长度：</TextBlock>
-                        <TextBox Grid.Column="1"
-                                 IsReadOnly="True"
-                                 Text="{Binding CodeMinLength, Mode=OneWay, TargetNullValue=''}" />
-                    </Grid>
-                    <Grid Margin="0 8 0 0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">条码最大长度：</TextBlock>
-                        <TextBox Grid.Column="1"
-                                 IsReadOnly="True"
-                                 Text="{Binding CodeMaxLength, Mode=OneWay, TargetNullValue=''}" />
-                    </Grid>
-                </StackPanel>
-            </Grid>
-            <Grid Margin="8 8 8 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="80" />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock HorizontalAlignment="Left"
-                               VerticalAlignment="Center">当前条码：</TextBlock>
-                    <TextBox IsReadOnly="True"
-                             Text="{Binding LastBarcode, Mode=OneWay}"
-                             Grid.Column="1" />
                 </Grid>
-                <Grid Grid.Column="1"
-                      Margin="8 0 0 0">
+                <Grid Margin="8 8 8 0"
+                      Visibility="{Binding IsToolValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="80" />
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <TextBlock HorizontalAlignment="Left"
-                               VerticalAlignment="Center">更换原因：</TextBlock>
+                               VerticalAlignment="Center">工具编码：</TextBlock>
                     <ComboBox Grid.Column="1"
-                              ItemsSource="{Binding ReplacementReasons}"
-                              DisplayMemberPath="DisplayName"
+                              ItemsSource="{Binding ToolCodeOptions}"
+                              DisplayMemberPath="DisplayText"
                               SelectedValuePath="Code"
-                              SelectedValue="{Binding SelectedReplacementReason, Mode=TwoWay}"
-                              Style="{StaticResource ComboBoxExtend}" />
+                              SelectedValue="{Binding SelectedToolCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              Style="{StaticResource ComboBoxExtend}"
+                              hc:InfoElement.Placeholder="请选择换刀类型" />
                 </Grid>
-            </Grid>
-            <Grid Margin="8 8 8 0"
-                  Visibility="{Binding IsToolValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="80" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">工具编码：</TextBlock>
-                <ComboBox Grid.Column="1"
-                          ItemsSource="{Binding ToolCodeOptions}"
-                          DisplayMemberPath="DisplayText"
-                          SelectedValuePath="Code"
-                          SelectedValue="{Binding SelectedToolCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          Style="{StaticResource ComboBoxExtend}"
-                          hc:InfoElement.Placeholder="请选择换刀类型" />
-            </Grid>
-            <Grid Margin="8 8 8 0"
-                  Visibility="{Binding IsCoatingValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="80" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">A/B面：</TextBlock>
-                <ComboBox Grid.Column="1"
-                          ItemsSource="{Binding AbSideOptions}"
-                          SelectedItem="{Binding SelectedAbSide, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          Style="{StaticResource ComboBoxExtend}"
-                          hc:InfoElement.Placeholder="请选择涂布 A/B 面" />
-            </Grid>
-            <Grid Margin="8 8 8 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Grid>
+                <Grid Margin="8 8 8 0"
+                      Visibility="{Binding IsCoatingValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="80" />
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <TextBlock HorizontalAlignment="Left"
-                               VerticalAlignment="Center">新条码：</TextBlock>
-                    <TextBox Style="{StaticResource TextBoxExtend}"
-                             Text="{Binding NewBarcode, UpdateSourceTrigger=PropertyChanged}"
-                             hc:InfoElement.Placeholder="请输入条码"
-                             Grid.Column="1"></TextBox>
+                               VerticalAlignment="Center">A/B面：</TextBlock>
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding AbSideOptions}"
+                              SelectedItem="{Binding SelectedAbSide, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              Style="{StaticResource ComboBoxExtend}"
+                              hc:InfoElement.Placeholder="请选择涂布 A/B 面" />
                 </Grid>
-                <Grid Grid.Column="1"
-                      Margin="8 0 0 0">
+                <Grid Margin="8 8 8 0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition />
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
-                    <TextBlock HorizontalAlignment="Left"
-                               VerticalAlignment="Center">备注：</TextBlock>
-                    <TextBox Grid.Column="1"
-                             Text="{Binding ReplacementMessage, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource TextBoxExtend}"
-                             hc:InfoElement.Placeholder="可选备注" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">新条码：</TextBlock>
+                        <TextBox Style="{StaticResource TextBoxExtend}"
+                                 Text="{Binding NewBarcode, UpdateSourceTrigger=PropertyChanged}"
+                                 hc:InfoElement.Placeholder="请输入条码"
+                                 Grid.Column="1"></TextBox>
+                    </Grid>
+                    <Grid Grid.Column="1"
+                          Margin="8 0 0 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">备注：</TextBlock>
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding ReplacementMessage, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource TextBoxExtend}"
+                                 hc:InfoElement.Placeholder="可选备注" />
+                    </Grid>
                 </Grid>
-            </Grid>
-            <Grid Margin="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Button Margin="8 0 0 0"
-                        Grid.Column="1"
-                        Width="80"
-                        Command="{Binding ReplaceCommand}"
-                        Style="{StaticResource ButtonPrimary}">更换</Button>
-            </Grid>
-        </StackPanel>
-        <DataGrid Grid.Row="1"
-                  Margin="8 0 8 8"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  IsReadOnly="True"
-                  ItemsSource="{Binding ReplacementHistory}"
-                  Style="{StaticResource DataGridBaseStyle}">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="名称"
-                                    Binding="{Binding PartName}"
-                                    Width="*"></DataGridTextColumn>
-                <DataGridTextColumn Header="更换原因"
-                                    Binding="{Binding ReasonDisplayName}"
-                                    Width="*"></DataGridTextColumn>
-                <DataGridTextColumn Header="旧编码"
-                                    Binding="{Binding OldBarcode}"
-                                    Width="*"></DataGridTextColumn>
-                <DataGridTextColumn Header="新编码"
-                                    Binding="{Binding NewBarcode}"
-                                    Width="*"></DataGridTextColumn>
-                <DataGridTextColumn Header="当前寿命"
-                                    Binding="{Binding CurrentValue}"
-                                    Width="*"></DataGridTextColumn>
-                <DataGridTextColumn Header="停机寿命"
-                                    Binding="{Binding ShutdownValue}"
-                                    Width="*"></DataGridTextColumn>
-                <DataGridTextColumn Header="更换时间"
-                                    Binding="{Binding ReplacedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
-                                    Width="*"></DataGridTextColumn>
-                <DataGridTextColumn Header="操作员"
-                                    Binding="{Binding OperatorWorkNumber}"
-                                    Width="*"></DataGridTextColumn>
-            </DataGrid.Columns>
-        </DataGrid>
-    </Grid>
+                <Grid Margin="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button Margin="8 0 0 0"
+                            Grid.Column="1"
+                            Width="80"
+                            Command="{Binding ReplaceCommand}"
+                            Style="{StaticResource ButtonPrimary}">更换</Button>
+                </Grid>
+            </StackPanel>
+            <DataGrid Grid.Row="1"
+                      Margin="8 0 8 8"
+                      MinHeight="260"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      IsReadOnly="True"
+                      ItemsSource="{Binding ReplacementHistory}"
+                      Style="{StaticResource DataGridBaseStyle}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="名称"
+                                        Binding="{Binding PartName}"
+                                        Width="*"></DataGridTextColumn>
+                    <DataGridTextColumn Header="更换原因"
+                                        Binding="{Binding ReasonDisplayName}"
+                                        Width="*"></DataGridTextColumn>
+                    <DataGridTextColumn Header="旧编码"
+                                        Binding="{Binding OldBarcode}"
+                                        Width="*"></DataGridTextColumn>
+                    <DataGridTextColumn Header="新编码"
+                                        Binding="{Binding NewBarcode}"
+                                        Width="*"></DataGridTextColumn>
+                    <DataGridTextColumn Header="当前寿命"
+                                        Binding="{Binding CurrentValue}"
+                                        Width="*"></DataGridTextColumn>
+                    <DataGridTextColumn Header="停机寿命"
+                                        Binding="{Binding ShutdownValue}"
+                                        Width="*"></DataGridTextColumn>
+                    <DataGridTextColumn Header="更换时间"
+                                        Binding="{Binding ReplacedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                        Width="*"></DataGridTextColumn>
+                    <DataGridTextColumn Header="操作员"
+                                        Binding="{Binding OperatorWorkNumber}"
+                                        Width="*"></DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </ScrollViewer>
 </UserControl>
