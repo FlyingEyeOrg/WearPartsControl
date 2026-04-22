@@ -220,10 +220,18 @@
       "LatestRecordMissing": "The latest record is missing.",
       "ChangePositionBarcodeMismatch": "The new barcode in the latest record does not match the current replacement barcode. Please verify.",
       "ChangePositionRequiresMe": "The scanned barcode matches the previously used barcode. Please ask ME to log in and confirm whether to continue.",
+      "ChangePositionWindowExceeded": "Change-position replacement is only allowed after reaching warning lifetime and before reaching shutdown lifetime.",
       "BarcodeAlreadyUsed": "Wear part {0} already has a replacement record with barcode {1}, so it cannot be reused.",
       "BarcodeDuplicated": "Barcode already exists. Please use another barcode.",
       "LifetimeNotReached": "The current wear part has not reached warning lifetime, so replacement is not allowed.",
       "ValueCannotConvert": "The value at PLC address {0} cannot be converted to a number: {1}."
+    },
+    "WearPartReplacementReason": {
+      "Normal": "Normal replacement at end of life",
+      "ProcessDamage": "Process damage",
+      "Cutover": "Model changeover",
+      "ChangePosition": "Change position at end of life",
+      "Maintenance": "End-of-life maintenance"
     },
     "WearPartMonitor": {
       "ClientConfigurationNotFoundByResourceNumber": "No client configuration found for resource number {0}.",

@@ -59,13 +59,13 @@ public sealed class ReplacePartViewModel : ObservableObject
             ReplacementReasons.Add(reason);
         }
 
-        SelectedReplacementReason = ReplacementReasons.FirstOrDefault() ?? string.Empty;
+        SelectedReplacementReason = ReplacementReasons.FirstOrDefault()?.Code ?? string.Empty;
         Apply(_plcConnectionStatusService.Current);
     }
 
     public ObservableCollection<WearPartDefinition> Definitions { get; } = new();
 
-    public ObservableCollection<string> ReplacementReasons { get; } = new();
+    public ObservableCollection<WearPartReplacementReasonOption> ReplacementReasons { get; } = new();
 
     public ObservableCollection<WearPartReplacementRecord> ReplacementHistory { get; } = new();
 

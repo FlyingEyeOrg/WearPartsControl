@@ -220,10 +220,18 @@
       "LatestRecordMissing": "最近一次无数据记录。",
       "ChangePositionBarcodeMismatch": "最近一条数据的新条码跟当前更换的条码不一致，请确认。",
       "ChangePositionRequiresMe": "当前扫的条码跟上次使用的条码一致，请 ME 登录确认是否继续使用。",
+      "ChangePositionWindowExceeded": "“寿命到期，更换位置”只允许在达到预警寿命后、达到停机寿命前执行。",
       "BarcodeAlreadyUsed": "易损件 {0} 已存在条码 {1} 的更换记录，不允许重复使用。",
       "BarcodeDuplicated": "条码重复，请更换其他条码。",
       "LifetimeNotReached": "检测到当前易损件未达到预警寿命，不允许更换。",
       "ValueCannotConvert": "PLC 地址 {0} 的值无法转换为数值：{1}。"
+    },
+    "WearPartReplacementReason": {
+      "Normal": "寿命到期，正常更换",
+      "ProcessDamage": "过程损坏",
+      "Cutover": "切拉换型",
+      "ChangePosition": "寿命到期，更换位置",
+      "Maintenance": "寿命到期维保"
     },
     "WearPartMonitor": {
       "ClientConfigurationNotFoundByResourceNumber": "未找到资源号为 {0} 的客户端配置。",

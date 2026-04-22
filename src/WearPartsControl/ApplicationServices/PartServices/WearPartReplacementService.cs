@@ -64,7 +64,8 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
         var definition = await GetRequiredDefinitionAsync(request.WearPartDefinitionId, cancellationToken).ConfigureAwait(false);
         var clientAppConfiguration = await GetRequiredClientAppConfigurationAsync(definition.ClientAppConfigurationId, cancellationToken).ConfigureAwait(false);
         var normalizedBarcode = NormalizeRequired(request.NewBarcode, LocalizedText.Get("Services.WearPartReplacement.NewBarcodeRequired"));
-        var normalizedReason = NormalizeRequired(request.ReplacementReason, LocalizedText.Get("Services.WearPartReplacement.ReasonRequired"));
+        var normalizedReason = WearPartReplacementReason.NormalizeCode(
+            NormalizeRequired(request.ReplacementReason, LocalizedText.Get("Services.WearPartReplacement.ReasonRequired")));
 
         var latestRecord = await _replacementRecordRepository.GetLatestByDefinitionAsync(definition.Id, cancellationToken).ConfigureAwait(false);
         await _plcOperationPipeline.ConnectAsync(PlcReplacementPipelineOperations.ConnectReplace, WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration), cancellationToken).ConfigureAwait(false);
@@ -184,7 +185,7 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
             ShutdownValue = entity.ShutdownValue,
             OperatorWorkNumber = entity.OperatorWorkNumber,
             OperatorUserName = entity.OperatorUserName,
-            ReplacementReason = entity.ReplacementReason,
+            ReplacementReason = WearPartReplacementReason.GetDisplayName(entity.ReplacementReason),
             ReplacementMessage = entity.ReplacementMessage,
             ReplacedAt = entity.ReplacedAt,
             DataType = WearPartPlcAccessor.ResolvePartDataType(entity.DataType),

@@ -183,7 +183,9 @@
                                VerticalAlignment="Center">更换原因：</TextBlock>
                     <ComboBox Grid.Column="1"
                               ItemsSource="{Binding ReplacementReasons}"
-                              SelectedItem="{Binding SelectedReplacementReason, Mode=TwoWay}"
+                              DisplayMemberPath="DisplayName"
+                              SelectedValuePath="Code"
+                              SelectedValue="{Binding SelectedReplacementReason, Mode=TwoWay}"
                               Style="{StaticResource ComboBoxExtend}" />
                 </Grid>
             </Grid>
