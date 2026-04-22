@@ -3,6 +3,7 @@ using System.Text;
 using System.IO;
 using System.Threading;
 using Microsoft.Win32;
+using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ViewModels;
 
 namespace WearPartsControl.UserControls;
@@ -13,11 +14,13 @@ namespace WearPartsControl.UserControls;
 public partial class PartUpdateRecordUserControl : UserControl
 {
     private readonly PartUpdateRecordViewModel _viewModel;
+    private readonly IAutoLogoutInteractionService _autoLogoutInteractionService;
     private bool _isInitialized;
 
-    public PartUpdateRecordUserControl(PartUpdateRecordViewModel viewModel)
+    public PartUpdateRecordUserControl(PartUpdateRecordViewModel viewModel, IAutoLogoutInteractionService autoLogoutInteractionService)
     {
         _viewModel = viewModel;
+        _autoLogoutInteractionService = autoLogoutInteractionService;
         DataContext = viewModel;
         InitializeComponent();
         Loaded += OnLoaded;
@@ -57,13 +60,15 @@ public partial class PartUpdateRecordUserControl : UserControl
                 OverwritePrompt = true
             };
 
-            if (dialog.ShowDialog() != true)
+            var dialogResult = _autoLogoutInteractionService.RunModal(() => dialog.ShowDialog() == true);
+
+            if (!dialogResult)
             {
                 _viewModel.NotifyExportCanceled();
                 return;
             }
 
-            await File.WriteAllTextAsync(dialog.FileName, e.Content, new UTF8Encoding(true)).ConfigureAwait(true);
+            await System.IO.File.WriteAllTextAsync(dialog.FileName, e.Content, new UTF8Encoding(true)).ConfigureAwait(true);
             _viewModel.NotifyExportSucceeded(dialog.FileName);
         }
         catch (Exception ex)

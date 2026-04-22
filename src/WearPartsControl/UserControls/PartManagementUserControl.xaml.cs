@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
+using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ViewModels;
 using WearPartsControl.Views;
@@ -14,11 +15,13 @@ public partial class PartManagementUserControl : UserControl
 {
     private readonly PartManagementViewModel _viewModel;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IAutoLogoutInteractionService _autoLogoutInteractionService;
 
-    public PartManagementUserControl(PartManagementViewModel viewModel, IServiceProvider serviceProvider)
+    public PartManagementUserControl(PartManagementViewModel viewModel, IServiceProvider serviceProvider, IAutoLogoutInteractionService autoLogoutInteractionService)
     {
         _viewModel = viewModel;
         _serviceProvider = serviceProvider;
+        _autoLogoutInteractionService = autoLogoutInteractionService;
         DataContext = viewModel;
         InitializeComponent();
 
@@ -48,7 +51,9 @@ public partial class PartManagementUserControl : UserControl
         dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
         dialog.ViewModel.InitializeForCreate(_viewModel.ClientAppConfigurationId, _viewModel.ResourceNumber);
 
-        if (dialog.ShowDialog() == true)
+        var dialogResult = _autoLogoutInteractionService.RunModal(() => dialog.ShowDialog() == true);
+
+        if (dialogResult)
         {
             await _viewModel.RefreshAsync();
         }
@@ -61,7 +66,9 @@ public partial class PartManagementUserControl : UserControl
         dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
         dialog.ViewModel.InitializeForEdit(definition);
 
-        if (dialog.ShowDialog() == true)
+        var dialogResult = _autoLogoutInteractionService.RunModal(() => dialog.ShowDialog() == true);
+
+        if (dialogResult)
         {
             await _viewModel.RefreshAsync();
         }

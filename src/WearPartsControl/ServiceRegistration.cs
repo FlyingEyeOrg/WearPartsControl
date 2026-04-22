@@ -60,6 +60,7 @@ public static class ServiceRegistration
         builder.RegisterType<MhrUserDirectoryCache>().As<IMhrUserDirectoryCache>().SingleInstance();
         builder.RegisterType<LoginService>().As<ILoginService>().SingleInstance();
         builder.RegisterType<LoginSessionStateMachine>().As<ILoginSessionStateMachine>().SingleInstance();
+        builder.RegisterType<AutoLogoutInteractionService>().As<IAutoLogoutInteractionService>().SingleInstance();
         builder.RegisterType<UserConfigService>().As<IUserConfigService>().SingleInstance();
         builder.RegisterType<ComNotificationService>().As<IComNotificationService>().SingleInstance();
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();

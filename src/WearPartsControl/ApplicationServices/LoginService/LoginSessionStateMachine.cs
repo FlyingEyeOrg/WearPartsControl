@@ -12,6 +12,7 @@ public sealed class LoginSessionStateMachine : ILoginSessionStateMachine
     private readonly object _stateLock = new();
     private int _autoLogoutCountdownSeconds = 360;
     private int _remainingAutoLogoutSeconds;
+    private int _interactionScopeCount;
     private CancellationTokenSource? _autoLogoutCancellationTokenSource;
 
     public LoginSessionStateMachine(
@@ -50,6 +51,27 @@ public sealed class LoginSessionStateMachine : ILoginSessionStateMachine
         Publish(LoginSessionState.LoggedOut);
     }
 
+    public IDisposable EnterInteractionScope()
+    {
+        lock (_stateLock)
+        {
+            _interactionScopeCount++;
+        }
+
+        CancelAutoLogoutCountdown();
+        return new InteractionScope(this);
+    }
+
+    public void ResetAutoLogoutCountdown()
+    {
+        if (_currentUserAccessor.CurrentUser is not { } currentUser)
+        {
+            return;
+        }
+
+        StartAutoLogoutCountdown(currentUser);
+    }
+
     private void OnCurrentUserChanged(object? sender, EventArgs e)
     {
         if (_currentUserAccessor.CurrentUser is { } currentUser)
@@ -64,7 +86,7 @@ public sealed class LoginSessionStateMachine : ILoginSessionStateMachine
 
     private void StartAutoLogoutCountdown(MhrUser currentUser)
     {
-        StopAutoLogoutCountdown();
+        CancelAutoLogoutCountdown();
 
         _remainingAutoLogoutSeconds = _autoLogoutCountdownSeconds;
         Publish(new LoginSessionState(currentUser, _remainingAutoLogoutSeconds));
@@ -72,6 +94,11 @@ public sealed class LoginSessionStateMachine : ILoginSessionStateMachine
         var cts = new CancellationTokenSource();
         lock (_stateLock)
         {
+            if (_interactionScopeCount > 0)
+            {
+                return;
+            }
+
             _autoLogoutCancellationTokenSource = cts;
         }
 
@@ -104,6 +131,12 @@ public sealed class LoginSessionStateMachine : ILoginSessionStateMachine
 
     private void StopAutoLogoutCountdown()
     {
+        CancelAutoLogoutCountdown();
+        _remainingAutoLogoutSeconds = 0;
+    }
+
+    private void CancelAutoLogoutCountdown()
+    {
         CancellationTokenSource? cts;
         lock (_stateLock)
         {
@@ -116,13 +149,52 @@ public sealed class LoginSessionStateMachine : ILoginSessionStateMachine
             cts.Cancel();
             cts.Dispose();
         }
+    }
 
-        _remainingAutoLogoutSeconds = 0;
+    private void ExitInteractionScope()
+    {
+        MhrUser? currentUser = null;
+
+        lock (_stateLock)
+        {
+            if (_interactionScopeCount == 0)
+            {
+                return;
+            }
+
+            _interactionScopeCount--;
+            if (_interactionScopeCount > 0)
+            {
+                return;
+            }
+
+            currentUser = _currentUserAccessor.CurrentUser;
+        }
+
+        if (currentUser is not null)
+        {
+            StartAutoLogoutCountdown(currentUser);
+        }
     }
 
     private void Publish(LoginSessionState state)
     {
         Current = state;
         StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private sealed class InteractionScope : IDisposable
+    {
+        private LoginSessionStateMachine? _owner;
+
+        public InteractionScope(LoginSessionStateMachine owner)
+        {
+            _owner = owner;
+        }
+
+        public void Dispose()
+        {
+            Interlocked.Exchange(ref _owner, null)?.ExitInteractionScope();
+        }
     }
 }

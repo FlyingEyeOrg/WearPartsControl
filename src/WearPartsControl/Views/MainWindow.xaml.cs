@@ -1,7 +1,9 @@
 ﻿using System.Windows;
 using System.ComponentModel;
+using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.Startup;
 using WearPartsControl.ViewModels;
 
@@ -14,18 +16,23 @@ namespace WearPartsControl.Views
     {
         private readonly MainWindowViewModel _viewModel;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IAutoLogoutInteractionService _autoLogoutInteractionService;
         private CancellationTokenSource? _startupCancellationTokenSource;
         private bool _isClosingIntercepted;
 
-        public MainWindow(MainWindowViewModel viewModel, IServiceProvider serviceProvider)
+        public MainWindow(MainWindowViewModel viewModel, IServiceProvider serviceProvider, IAutoLogoutInteractionService autoLogoutInteractionService)
         {
             _viewModel = viewModel;
             _serviceProvider = serviceProvider;
+            _autoLogoutInteractionService = autoLogoutInteractionService;
             DataContext = viewModel;
             InitializeComponent();
 
             Loaded += OnMainWindowLoaded;
             Closing += OnMainWindowClosing;
+            PreviewMouseDown += OnUserInteraction;
+            PreviewKeyDown += OnUserKeyInteraction;
+            PreviewGotKeyboardFocus += OnUserInteraction;
             _viewModel.LoginRequested += OnLoginRequested;
             Closed += OnMainWindowClosed;
         }
@@ -53,7 +60,17 @@ namespace WearPartsControl.Views
             var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
             loginWindow.Owner = this;
             loginWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            loginWindow.ShowDialog();
+            _autoLogoutInteractionService.RunModal(() => loginWindow.ShowDialog());
+        }
+
+        private void OnUserInteraction(object? sender, RoutedEventArgs e)
+        {
+            _autoLogoutInteractionService.NotifyActivity();
+        }
+
+        private void OnUserKeyInteraction(object? sender, KeyEventArgs e)
+        {
+            _autoLogoutInteractionService.NotifyActivity();
         }
 
         private async void OnMainWindowClosing(object? sender, CancelEventArgs e)
@@ -88,6 +105,9 @@ namespace WearPartsControl.Views
             _startupCancellationTokenSource = null;
             Loaded -= OnMainWindowLoaded;
             Closing -= OnMainWindowClosing;
+            PreviewMouseDown -= OnUserInteraction;
+            PreviewKeyDown -= OnUserKeyInteraction;
+            PreviewGotKeyboardFocus -= OnUserInteraction;
             _viewModel.LoginRequested -= OnLoginRequested;
             Closed -= OnMainWindowClosed;
         }

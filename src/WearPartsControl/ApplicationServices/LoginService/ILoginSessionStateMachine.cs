@@ -10,4 +10,8 @@ public interface ILoginSessionStateMachine
     LoginSessionState Current { get; }
 
     void UpdateSettings(AppSettingsModel settings);
+
+    IDisposable EnterInteractionScope();
+
+    void ResetAutoLogoutCountdown();
 }

@@ -241,6 +241,7 @@ namespace WearPartsControl.ViewModels
 
         private void ApplyLoginState(LoginSessionState state)
         {
+            var wasLoggedIn = IsLoggedIn;
             var currentUser = state.CurrentUser;
             IsLoggedIn = state.IsLoggedIn;
             CurrentUserWorkIdText = currentUser is null
@@ -250,7 +251,7 @@ namespace WearPartsControl.ViewModels
             if (currentUser is null)
             {
                 CurrentUserAccessLevelText = LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserAccessLevelEmpty");
-                RefreshSelectedContentForCurrentState();
+                RefreshSelectedContentForCurrentStateIfNeeded(wasLoggedIn, IsLoggedIn);
                 return;
             }
 
@@ -259,7 +260,7 @@ namespace WearPartsControl.ViewModels
                 "ViewModels.MainWindowVm.CurrentUserAccessLevelCountdown",
                 currentUser.AccessLevel,
                 remaining.ToString("mm\\:ss"));
-            RefreshSelectedContentForCurrentState();
+            RefreshSelectedContentForCurrentStateIfNeeded(wasLoggedIn, IsLoggedIn);
         }
 
         private void ApplyClientAppInfoState(bool isConfigured)
@@ -296,8 +297,13 @@ namespace WearPartsControl.ViewModels
             _defaultContentPending = false;
         }
 
-        private void RefreshSelectedContentForCurrentState()
+        private void RefreshSelectedContentForCurrentStateIfNeeded(bool wasLoggedIn, bool isLoggedIn)
         {
+            if (wasLoggedIn == isLoggedIn)
+            {
+                return;
+            }
+
             if (!IsClientAppInfoConfigured || Volatile.Read(ref _initializeStarted) == 0)
             {
                 return;

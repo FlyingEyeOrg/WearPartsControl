@@ -231,6 +231,56 @@ public sealed class MainWindowViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task AutoLogoutCountdownTick_WhenLoggedInOnRestrictedTab_ShouldNotRecreateSelectedContent()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 3
+            }
+        };
+        var accessor = new CurrentUserAccessor();
+        var delaySignals = new Queue<TaskCompletionSource<bool>>();
+        var loginService = new StubLoginService(accessor);
+        var serviceProvider = new StubServiceProvider();
+        var viewModel = CreateViewModel(
+            accessor,
+            loginService,
+            appSettingsService,
+            new UiBusyService(),
+            new StubPlcStartupConnectionService(),
+            (delay, cancellationToken) =>
+            {
+                var signal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                delaySignals.Enqueue(signal);
+                cancellationToken.Register(() => signal.TrySetCanceled(cancellationToken));
+                return signal.Task;
+            },
+            serviceProvider);
+
+        await viewModel.InitializeAsync();
+
+        accessor.SetCurrentUser(new MhrUser
+        {
+            CardId = "CARD-01",
+            WorkId = "WORK-02",
+            AccessLevel = 3
+        });
+
+        viewModel.TabChangedCommand.Execute(3);
+        var selectedContent = viewModel.SelectedContent;
+        var partUpdateRecordResolveCountBeforeTick = serviceProvider.GetResolveCount<PartUpdateRecordUserControl>();
+
+        delaySignals.Dequeue().SetResult(true);
+        await WaitUntilAsync(() => viewModel.CurrentUserAccessLevelText == LocalizedText.Format("ViewModels.MainWindowVm.CurrentUserAccessLevelCountdown", 3, "00:02"));
+
+        Assert.Same(selectedContent, viewModel.SelectedContent);
+        Assert.Equal(partUpdateRecordResolveCountBeforeTick, serviceProvider.GetResolveCount<PartUpdateRecordUserControl>());
+    }
+
+    [Fact]
     public async Task InitializeAsync_WhenClientAppConfigured_ShouldConnectWithBusyState()
     {
         var appSettingsService = new StubAppSettingsService
@@ -411,12 +461,13 @@ public sealed class MainWindowViewModelTests : IDisposable
         StubAppSettingsService appSettingsService,
         IUiBusyService uiBusyService,
         IPlcStartupConnectionService startupConnectionService,
-        Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
+        Func<TimeSpan, CancellationToken, Task>? delayAsync = null,
+        StubServiceProvider? serviceProvider = null)
     {
         var stateMachine = new LoginSessionStateMachine(accessor, loginService, delayAsync);
         return new MainWindowViewModel(
             new StubLocalizationService(),
-            new StubServiceProvider(),
+            serviceProvider ?? new StubServiceProvider(),
             loginService,
             appSettingsService,
             uiBusyService,
@@ -446,21 +497,38 @@ public sealed class MainWindowViewModelTests : IDisposable
 
     private sealed class StubServiceProvider : IServiceProvider
     {
-        private readonly Dictionary<Type, object> _services = new()
-        {
-            [typeof(ReplacePartUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(ReplacePartUserControl)),
-            [typeof(ClientAppInfoUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(ClientAppInfoUserControl)),
-            [typeof(NeedLoginUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(NeedLoginUserControl)),
-            [typeof(PartManagementUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(PartManagementUserControl)),
-            [typeof(PartUpdateRecordUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(PartUpdateRecordUserControl)),
-            [typeof(UserConfigUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(UserConfigUserControl))
-        };
+        private readonly Dictionary<Type, int> _resolveCounts = new();
+        private readonly HashSet<Type> _supportedTypes =
+        [
+            typeof(ReplacePartUserControl),
+            typeof(ClientAppInfoUserControl),
+            typeof(NeedLoginUserControl),
+            typeof(PartManagementUserControl),
+            typeof(PartUpdateRecordUserControl),
+            typeof(UserConfigUserControl)
+        ];
 
         public object? GetService(Type serviceType)
         {
-            return _services.TryGetValue(serviceType, out var service)
-                ? service
-                : null;
+            if (!_supportedTypes.Contains(serviceType))
+            {
+                return null;
+            }
+
+            _resolveCounts[serviceType] = GetResolveCount(serviceType) + 1;
+            return RuntimeHelpers.GetUninitializedObject(serviceType);
+        }
+
+        public int GetResolveCount<T>() where T : class
+        {
+            return GetResolveCount(typeof(T));
+        }
+
+        private int GetResolveCount(Type serviceType)
+        {
+            return _resolveCounts.TryGetValue(serviceType, out var count)
+                ? count
+                : 0;
         }
     }
 

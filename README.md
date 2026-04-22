@@ -94,6 +94,7 @@
 - PLC 相关配置遵循旧系统规则：西门子 PLC 显示并保存机架号与插槽号，两者默认值均为 `0`；`ModbusTcp` 与汇川 PLC 显示字符串反转开关。
 - 登录窗口通过刷卡器模拟键盘输入完成登录，窗口打开后会自动聚焦到密码输入框。
 - 登录窗口支持回车提交；当相邻输入间隔超过 `LoginInputMaxIntervalMilliseconds` 时，会判定为手工输入并拒绝登录。
+- 自动注销相关的 UI 交互统一收敛到一个交互保活工具：登录窗口、添加/编辑易损件弹窗、导出文件选择框等模态交互期间会暂停倒计时；弹窗关闭后会从完整倒计时重新开始。主窗口中的键盘输入、鼠标点击和焦点进入也会重置倒计时，避免正常操作过程中被自动登出并把当前 tab 切回登录提示页。
 - 应用配置统一使用 `src/WearPartsControl/PrivateData/Settings/app-settings.json`。
 - PLC 管线慢调用阈值也放在该文件中，保存应用设置后会刷新到运行中的 PLC 管线，无需重启。
 - 当前默认配置示例：`{"ResourceNumber":"","LoginInputMaxIntervalMilliseconds":80,"PlcPipeline":{"SlowQueueWaitThresholdMilliseconds":100,"SlowExecutionThresholdMilliseconds":500}}`
