@@ -113,6 +113,75 @@ public sealed class MainWindowViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task OnTabChanged_WhenNotLoggedInAndSwitchToNonBasicTab_ShouldShowNeedLoginControl()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+
+        var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
+
+        await viewModel.InitializeAsync();
+        viewModel.TabChangedCommand.Execute(2);
+
+        Assert.IsType<NeedLoginUserControl>(viewModel.SelectedContent);
+    }
+
+    [Fact]
+    public async Task OnTabChanged_WhenNotLoggedInAndSwitchToBasicInfoTab_ShouldShowBasicInfoControl()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+
+        var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
+
+        await viewModel.InitializeAsync();
+        viewModel.TabChangedCommand.Execute(1);
+
+        Assert.IsType<ClientAppInfoUserControl>(viewModel.SelectedContent);
+    }
+
+    [Fact]
+    public async Task CurrentUserChanged_WhenLoggedInAfterNeedLoginShown_ShouldRestoreRequestedTabContent()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+        var accessor = new CurrentUserAccessor();
+        var loginService = new StubLoginService();
+        var viewModel = CreateViewModel(accessor, loginService, appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
+
+        await viewModel.InitializeAsync();
+        viewModel.TabChangedCommand.Execute(3);
+        Assert.IsType<NeedLoginUserControl>(viewModel.SelectedContent);
+
+        accessor.SetCurrentUser(new MhrUser
+        {
+            CardId = "CARD-01",
+            WorkId = "WORK-02",
+            AccessLevel = 3
+        });
+
+        Assert.IsType<PartUpdateRecordUserControl>(viewModel.SelectedContent);
+    }
+
+    [Fact]
     public async Task CurrentUserChanged_ShouldAutoLogoutAfterCountdownElapsed()
     {
         var appSettingsService = new StubAppSettingsService
@@ -191,6 +260,7 @@ public sealed class MainWindowViewModelTests : IDisposable
 
         startupConnectionService.PendingResult.SetResult(PlcStartupConnectionResult.Connected());
         await initializeTask;
+        await WaitUntilAsync(() => !viewModel.IsBusy && string.IsNullOrEmpty(viewModel.LoadingText));
 
         Assert.False(viewModel.IsBusy);
         Assert.True(viewModel.IsNotBusy);
@@ -379,7 +449,11 @@ public sealed class MainWindowViewModelTests : IDisposable
         private readonly Dictionary<Type, object> _services = new()
         {
             [typeof(ReplacePartUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(ReplacePartUserControl)),
-            [typeof(ClientAppInfoUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(ClientAppInfoUserControl))
+            [typeof(ClientAppInfoUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(ClientAppInfoUserControl)),
+            [typeof(NeedLoginUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(NeedLoginUserControl)),
+            [typeof(PartManagementUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(PartManagementUserControl)),
+            [typeof(PartUpdateRecordUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(PartUpdateRecordUserControl)),
+            [typeof(UserConfigUserControl)] = RuntimeHelpers.GetUninitializedObject(typeof(UserConfigUserControl))
         };
 
         public object? GetService(Type serviceType)

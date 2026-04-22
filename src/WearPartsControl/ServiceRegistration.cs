@@ -103,6 +103,7 @@ public static class ServiceRegistration
         builder.RegisterType<ReplacePartUserControl>().AsSelf();
         builder.RegisterType<ClientAppInfoUserControl>().AsSelf();
         builder.RegisterType<PartInfoUserControl>().AsSelf();
+        builder.RegisterType<NeedLoginUserControl>().AsSelf();
         builder.RegisterType<UserConfigUserControl>().AsSelf();
         builder.RegisterType<PartManagementUserControl>().AsSelf();
         builder.RegisterType<PartUpdateRecordUserControl>().AsSelf();

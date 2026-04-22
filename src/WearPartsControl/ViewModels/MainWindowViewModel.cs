@@ -35,6 +35,7 @@ namespace WearPartsControl.ViewModels
         private IEnumerable<string> _tabs = Array.Empty<string>();
         private bool _isLoggedIn;
         private bool _isClientAppInfoConfigured;
+        private int _selectedTabIndex;
         private int _initializeStarted;
         private bool _defaultContentPending;
 
@@ -194,30 +195,8 @@ namespace WearPartsControl.ViewModels
 
         private void OnTabChanged(int index)
         {
-            if (!_isClientAppInfoConfigured)
-            {
-                SelectedContent = _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
-                return;
-            }
-
-            switch (index)
-            {
-                case 1:
-                    SelectedContent = _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
-                    break;
-                case 2:
-                    SelectedContent = _serviceProvider.GetRequiredService<PartManagementUserControl>();
-                    break;
-                case 3:
-                    SelectedContent = _serviceProvider.GetRequiredService<PartUpdateRecordUserControl>();
-                    break;
-                case 4:
-                    SelectedContent = _serviceProvider.GetRequiredService<UserConfigUserControl>();
-                    break;
-                default:
-                    SelectedContent = _serviceProvider.GetRequiredService<ReplacePartUserControl>();
-                    break;
-            }
+            _selectedTabIndex = index;
+            SelectedContent = ResolveTabContent(index);
         }
 
         private void OnOpenLoginRequested()
@@ -271,6 +250,7 @@ namespace WearPartsControl.ViewModels
             if (currentUser is null)
             {
                 CurrentUserAccessLevelText = LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserAccessLevelEmpty");
+                RefreshSelectedContentForCurrentState();
                 return;
             }
 
@@ -279,6 +259,7 @@ namespace WearPartsControl.ViewModels
                 "ViewModels.MainWindowVm.CurrentUserAccessLevelCountdown",
                 currentUser.AccessLevel,
                 remaining.ToString("mm\\:ss"));
+            RefreshSelectedContentForCurrentState();
         }
 
         private void ApplyClientAppInfoState(bool isConfigured)
@@ -311,8 +292,40 @@ namespace WearPartsControl.ViewModels
                 return;
             }
 
-            SelectedContent = _serviceProvider.GetRequiredService<ReplacePartUserControl>();
+            SelectedContent = ResolveTabContent(_selectedTabIndex);
             _defaultContentPending = false;
+        }
+
+        private void RefreshSelectedContentForCurrentState()
+        {
+            if (!IsClientAppInfoConfigured || Volatile.Read(ref _initializeStarted) == 0)
+            {
+                return;
+            }
+
+            SelectedContent = ResolveTabContent(_selectedTabIndex);
+        }
+
+        private object ResolveTabContent(int index)
+        {
+            if (!_isClientAppInfoConfigured)
+            {
+                return _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
+            }
+
+            if (!IsLoggedIn && index != 1)
+            {
+                return _serviceProvider.GetRequiredService<NeedLoginUserControl>();
+            }
+
+            return index switch
+            {
+                1 => _serviceProvider.GetRequiredService<ClientAppInfoUserControl>(),
+                2 => _serviceProvider.GetRequiredService<PartManagementUserControl>(),
+                3 => _serviceProvider.GetRequiredService<PartUpdateRecordUserControl>(),
+                4 => _serviceProvider.GetRequiredService<UserConfigUserControl>(),
+                _ => _serviceProvider.GetRequiredService<ReplacePartUserControl>()
+            };
         }
 
         private static string ResolveVersion()
