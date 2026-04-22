@@ -92,6 +92,10 @@ namespace WearPartsControl.ViewModels
 
         public bool IsBusy => _uiBusyService.IsBusy;
 
+        public string LoadingText => _uiBusyService.BusyMessage;
+
+        public bool HasLoadingText => !string.IsNullOrWhiteSpace(LoadingText);
+
         public bool IsNotBusy => !IsBusy;
 
         public bool IsLoggedIn
@@ -178,7 +182,7 @@ namespace WearPartsControl.ViewModels
                 return;
             }
 
-            using (_uiBusyService.Enter())
+            using (_uiBusyService.Enter(LocalizedText.Get("Services.PlcStartupConnection.Connecting")))
             {
                 await _plcStartupConnectionService.EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -242,12 +246,15 @@ namespace WearPartsControl.ViewModels
 
         private void OnUiBusyServicePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(IUiBusyService.IsBusy))
+            if (e.PropertyName == nameof(IUiBusyService.IsBusy)
+                || e.PropertyName == nameof(IUiBusyService.BusyMessage))
             {
                 _uiDispatcher.Run(() =>
                 {
                     OnPropertyChanged(nameof(IsBusy));
                     OnPropertyChanged(nameof(IsNotBusy));
+                    OnPropertyChanged(nameof(LoadingText));
+                    OnPropertyChanged(nameof(HasLoadingText));
                     LogoutCommand.NotifyCanExecuteChanged();
                 });
             }

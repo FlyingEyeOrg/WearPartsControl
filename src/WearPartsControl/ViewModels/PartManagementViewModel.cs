@@ -132,7 +132,7 @@ public sealed class PartManagementViewModel : ObservableObject
         var enteredAt = DateTimeOffset.UtcNow;
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.PartManagementVm.Loading");
-        using var _ = _uiBusyService.Enter();
+        using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.PartManagementVm.Loading"));
 
         try
         {
@@ -229,7 +229,7 @@ public sealed class PartManagementViewModel : ObservableObject
         var enteredAt = DateTimeOffset.UtcNow;
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.PartManagementVm.Deleting");
-        using var _ = _uiBusyService.Enter();
+        using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.PartManagementVm.Deleting"));
 
         try
         {

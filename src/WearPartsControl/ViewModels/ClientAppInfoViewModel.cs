@@ -276,7 +276,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         }
 
         IsBusy = true;
-        using var _ = _uiBusyService.Enter();
+        using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.ClientAppInfoVm.Loading"));
         try
         {
             await LoadSelectionOptionsAsync(cancellationToken).ConfigureAwait(true);
@@ -303,7 +303,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     {
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.Saving");
-        using var _ = _uiBusyService.Enter();
+        using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.ClientAppInfoVm.Saving"));
 
         try
         {

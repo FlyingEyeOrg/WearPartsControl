@@ -98,6 +98,7 @@
     },
     "ClientAppInfoVm": {
       "PromptComplete": "请先完善客户端信息。",
+      "Loading": "正在加载客户端信息...",
       "Loaded": "客户端信息已加载。",
       "Saving": "正在保存客户端信息...",
       "Saved": "客户端信息保存成功。",

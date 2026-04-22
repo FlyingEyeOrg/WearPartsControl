@@ -8,8 +8,10 @@ public sealed class UiBusyService : ObservableObject, IUiBusyService
     private readonly object _syncRoot = new();
     private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
     private readonly SynchronizationContext? _synchronizationContext;
-    private int _busyCount;
+    private readonly List<BusyEntry> _busyEntries = new();
+    private int _nextEntryId;
     private bool _isBusy;
+    private string _busyMessage = string.Empty;
 
     public UiBusyService(
         TimeSpan? minimumBusyDuration = null,
@@ -29,18 +31,26 @@ public sealed class UiBusyService : ObservableObject, IUiBusyService
         private set => SetProperty(ref _isBusy, value);
     }
 
-    public IDisposable Enter()
+    public string BusyMessage
     {
-        lock (_syncRoot)
-        {
-            _busyCount++;
-            SetIsBusy(_busyCount > 0);
-        }
-
-        return new BusyScope(this, DateTimeOffset.UtcNow);
+        get => _busyMessage;
+        private set => SetProperty(ref _busyMessage, value);
     }
 
-    private async Task ExitAsync(DateTimeOffset enteredAt)
+    public IDisposable Enter(string? message = null)
+    {
+        var entry = new BusyEntry(Interlocked.Increment(ref _nextEntryId), message?.Trim());
+
+        lock (_syncRoot)
+        {
+            _busyEntries.Add(entry);
+            ApplyBusyState(_busyEntries.Count > 0, ResolveBusyMessage());
+        }
+
+        return new BusyScope(this, entry.Id, DateTimeOffset.UtcNow);
+    }
+
+    private async Task ExitAsync(int entryId, DateTimeOffset enteredAt)
     {
         var elapsed = DateTimeOffset.UtcNow - enteredAt;
         var remaining = MinimumBusyDuration - elapsed;
@@ -51,38 +61,54 @@ public sealed class UiBusyService : ObservableObject, IUiBusyService
 
         lock (_syncRoot)
         {
-            if (_busyCount > 0)
-            {
-                _busyCount--;
-            }
-
-            SetIsBusy(_busyCount > 0);
+            _busyEntries.RemoveAll(entry => entry.Id == entryId);
+            ApplyBusyState(_busyEntries.Count > 0, ResolveBusyMessage());
         }
     }
 
-    private void SetIsBusy(bool value)
+    private string ResolveBusyMessage()
+    {
+        for (var index = _busyEntries.Count - 1; index >= 0; index--)
+        {
+            var message = _busyEntries[index].Message;
+            if (!string.IsNullOrWhiteSpace(message))
+            {
+                return message;
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private void ApplyBusyState(bool isBusy, string busyMessage)
     {
         if (_synchronizationContext is null || SynchronizationContext.Current == _synchronizationContext)
         {
-            IsBusy = value;
+            IsBusy = isBusy;
+            BusyMessage = busyMessage;
             return;
         }
 
         _synchronizationContext.Post(static state =>
         {
-            var payload = ((UiBusyService Owner, bool Value))state!;
-            payload.Owner.IsBusy = payload.Value;
-        }, (this, value));
+            var payload = ((UiBusyService Owner, bool IsBusy, string BusyMessage))state!;
+            payload.Owner.IsBusy = payload.IsBusy;
+            payload.Owner.BusyMessage = payload.BusyMessage;
+        }, (this, isBusy, busyMessage));
     }
+
+    private sealed record BusyEntry(int Id, string? Message);
 
     private sealed class BusyScope : IDisposable
     {
         private UiBusyService? _owner;
+        private readonly int _entryId;
         private readonly DateTimeOffset _enteredAt;
 
-        public BusyScope(UiBusyService owner, DateTimeOffset enteredAt)
+        public BusyScope(UiBusyService owner, int entryId, DateTimeOffset enteredAt)
         {
             _owner = owner;
+            _entryId = entryId;
             _enteredAt = enteredAt;
         }
 
@@ -94,7 +120,7 @@ public sealed class UiBusyService : ObservableObject, IUiBusyService
                 return;
             }
 
-            _ = owner.ExitAsync(_enteredAt);
+            _ = owner.ExitAsync(_entryId, _enteredAt);
         }
     }
 }

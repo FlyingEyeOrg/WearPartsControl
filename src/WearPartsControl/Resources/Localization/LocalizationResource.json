@@ -98,6 +98,7 @@
     },
     "ClientAppInfoVm": {
       "PromptComplete": "Please complete the client information first.",
+      "Loading": "Loading client information...",
       "Loaded": "Client information loaded.",
       "Saving": "Saving client information...",
       "Saved": "Client information saved successfully.",

@@ -8,5 +8,7 @@ public interface IUiBusyService : INotifyPropertyChanged
 
     bool IsBusy { get; }
 
-    IDisposable Enter();
+    string BusyMessage { get; }
+
+    IDisposable Enter(string? message = null);
 }

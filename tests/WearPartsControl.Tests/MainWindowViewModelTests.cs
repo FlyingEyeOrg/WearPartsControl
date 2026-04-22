@@ -185,6 +185,8 @@ public sealed class MainWindowViewModelTests : IDisposable
 
         Assert.True(viewModel.IsBusy);
         Assert.False(viewModel.IsNotBusy);
+        Assert.Equal(LocalizedText.Get("Services.PlcStartupConnection.Connecting"), viewModel.LoadingText);
+        Assert.True(viewModel.HasLoadingText);
         Assert.Equal(1, startupConnectionService.CallCount);
 
         startupConnectionService.PendingResult.SetResult(PlcStartupConnectionResult.Connected());
@@ -192,6 +194,8 @@ public sealed class MainWindowViewModelTests : IDisposable
 
         Assert.False(viewModel.IsBusy);
         Assert.True(viewModel.IsNotBusy);
+        Assert.Equal(string.Empty, viewModel.LoadingText);
+        Assert.False(viewModel.HasLoadingText);
     }
 
     [Fact]

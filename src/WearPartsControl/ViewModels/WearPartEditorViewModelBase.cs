@@ -288,7 +288,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         var enteredAt = DateTimeOffset.UtcNow;
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.WearPartEditorVm.Saving");
-        using var _ = _uiBusyService.Enter();
+        using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.WearPartEditorVm.Saving"));
 
         try
         {
