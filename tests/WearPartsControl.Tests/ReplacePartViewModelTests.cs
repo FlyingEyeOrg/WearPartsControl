@@ -123,6 +123,59 @@ public sealed class ReplacePartViewModelTests
         Assert.Null(viewModel.ShutdownValue);
     }
 
+    [Fact]
+    public async Task InitializeAsync_WhenDefinitionsExist_ShouldSelectFirstDefinitionAndLoadPreview()
+    {
+        var definition = new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            PartName = "刀具A",
+            InputMode = "Scanner",
+            CodeMinLength = 8,
+            CodeMaxLength = 32,
+            CurrentValueDataType = "FLOAT",
+            CurrentValueAddress = "DB1.0",
+            WarningValueDataType = "FLOAT",
+            WarningValueAddress = "DB1.2",
+            ShutdownValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB1.4"
+        };
+        var replacementService = new StubWearPartReplacementService
+        {
+            Preview = new WearPartReplacementPreview
+            {
+                WearPartDefinitionId = definition.Id,
+                ClientAppConfigurationId = Guid.NewGuid(),
+                CurrentValue = "12.5",
+                WarningValue = "20",
+                ShutdownValue = "30",
+                LastBarcode = null
+            }
+        };
+        replacementService.History.Add(new WearPartReplacementRecord
+        {
+            WearPartDefinitionId = definition.Id,
+            PartName = definition.PartName,
+            NewBarcode = "BC-01"
+        });
+
+        var viewModel = new ReplacePartViewModel(
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubWearPartManagementService([definition]),
+            replacementService,
+            new UiBusyService(TimeSpan.Zero),
+            new PlcConnectionStatusService());
+
+        await viewModel.InitializeAsync();
+
+        Assert.Same(definition, viewModel.SelectedDefinition);
+        Assert.Equal(12.5, viewModel.CurrentValue);
+        Assert.Equal(20d, viewModel.WarningValue);
+        Assert.Equal(30d, viewModel.ShutdownValue);
+        Assert.Equal(LocalizedText.Get("ViewModels.ReplacePartVm.LastBarcodeEmpty"), viewModel.LastBarcode);
+        Assert.Single(viewModel.ReplacementHistory);
+    }
+
     private static ReplacePartViewModel CreateViewModel(IPlcConnectionStatusService plcConnectionStatusService)
     {
         return new ReplacePartViewModel(
@@ -207,14 +260,21 @@ public sealed class ReplacePartViewModelTests
 
     private sealed class StubWearPartManagementService : IWearPartManagementService
     {
+        private readonly IReadOnlyList<WearPartDefinition> _definitions;
+
+        public StubWearPartManagementService(IReadOnlyList<WearPartDefinition>? definitions = null)
+        {
+            _definitions = definitions ?? [];
+        }
+
         public Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<IReadOnlyList<WearPartDefinition>>([]);
+            return Task.FromResult(_definitions);
         }
 
         public Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<IReadOnlyList<WearPartDefinition>>([]);
+            return Task.FromResult(_definitions);
         }
 
         public Task<WearPartDefinition?> GetDefinitionAsync(Guid id, CancellationToken cancellationToken = default)
@@ -245,9 +305,13 @@ public sealed class ReplacePartViewModelTests
 
     private sealed class StubWearPartReplacementService : IWearPartReplacementService
     {
+        public WearPartReplacementPreview Preview { get; set; } = new();
+
+        public List<WearPartReplacementRecord> History { get; } = [];
+
         public Task<WearPartReplacementPreview> GetReplacementPreviewAsync(Guid wearPartDefinitionId, CancellationToken cancellationToken = default)
         {
-            throw new NotSupportedException();
+            return Task.FromResult(Preview);
         }
 
         public Task<WearPartReplacementRecord> ReplaceByScanAsync(WearPartReplacementRequest request, CancellationToken cancellationToken = default)
@@ -257,7 +321,7 @@ public sealed class ReplacePartViewModelTests
 
         public Task<IReadOnlyList<WearPartReplacementRecord>> GetReplacementHistoryAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<IReadOnlyList<WearPartReplacementRecord>>([]);
+            return Task.FromResult<IReadOnlyList<WearPartReplacementRecord>>(History);
         }
     }
 

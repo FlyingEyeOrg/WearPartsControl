@@ -36,6 +36,7 @@ public sealed class ReplacePartViewModel : ObservableObject
     private string _statusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.PromptSelectAndLoadPreview");
     private bool _isBusy;
     private bool _isInitialized;
+    private int _selectionLoadVersion;
 
     public ReplacePartViewModel(
         IAppSettingsService appSettingsService,
@@ -99,7 +100,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             {
                 ApplySelectedDefinition(value);
                 ReplaceCommand.NotifyCanExecuteChanged();
-                _ = LoadPreviewAndHistoryAsync(CancellationToken.None);
+                _ = LoadSelectedDefinitionDetailsAsync(value, CancellationToken.None, Interlocked.Increment(ref _selectionLoadVersion));
             }
         }
     }
@@ -277,9 +278,21 @@ public sealed class ReplacePartViewModel : ObservableObject
                 return;
             }
 
-            SelectedDefinition ??= Definitions[0];
+            var selectedDefinition = SelectedDefinition is not null
+                ? Definitions.FirstOrDefault(x => x.Id == SelectedDefinition.Id) ?? Definitions[0]
+                : Definitions[0];
+
+            if (!ReferenceEquals(SelectedDefinition, selectedDefinition))
+            {
+                SelectedDefinition = selectedDefinition;
+            }
+            else
+            {
+                ApplySelectedDefinition(selectedDefinition);
+            }
+
             StatusMessage = LocalizedText.Format("ViewModels.ReplacePartVm.DefinitionsLoaded", ResourceNumber, Definitions.Count);
-            await LoadPreviewAndHistoryAsync(cancellationToken).ConfigureAwait(true);
+            await LoadSelectedDefinitionDetailsAsync(selectedDefinition, cancellationToken, Interlocked.Increment(ref _selectionLoadVersion)).ConfigureAwait(true);
         }
         catch (Exception ex)
         {
@@ -314,7 +327,7 @@ public sealed class ReplacePartViewModel : ObservableObject
 
             NewBarcode = string.Empty;
             ReplacementMessage = string.Empty;
-            await LoadPreviewAndHistoryAsync(CancellationToken.None).ConfigureAwait(true);
+            await LoadSelectedDefinitionDetailsAsync(SelectedDefinition, CancellationToken.None, Interlocked.Increment(ref _selectionLoadVersion)).ConfigureAwait(true);
             StatusMessage = LocalizedText.Format("ViewModels.ReplacePartVm.ReplaceSucceeded", record.PartName, record.NewBarcode);
         }
         catch (Exception ex)
@@ -351,14 +364,13 @@ public sealed class ReplacePartViewModel : ObservableObject
             CurrentValue = null;
             WarningValue = null;
             ShutdownValue = null;
-            LastBarcode = string.Empty;
+            LastBarcode = LocalizedText.Get("ViewModels.ReplacePartVm.LastBarcodeEmpty");
         }
     }
 
-    private async Task LoadPreviewAndHistoryAsync(CancellationToken cancellationToken)
+    private async Task LoadSelectedDefinitionDetailsAsync(WearPartDefinition? definition, CancellationToken cancellationToken, int loadVersion)
     {
-        var definition = SelectedDefinition;
-        if (definition is null || IsBusy && cancellationToken == CancellationToken.None)
+        if (definition is null)
         {
             return;
         }
@@ -366,17 +378,31 @@ public sealed class ReplacePartViewModel : ObservableObject
         try
         {
             var preview = await _wearPartReplacementService.GetReplacementPreviewAsync(definition.Id, cancellationToken).ConfigureAwait(true);
+            if (loadVersion != _selectionLoadVersion || SelectedDefinition?.Id != definition.Id)
+            {
+                return;
+            }
+
             CurrentValue = ParsePreviewValue(preview.CurrentValue, definition.CurrentValueDataType, definition.CurrentValueAddress);
             WarningValue = ParsePreviewValue(preview.WarningValue, definition.WarningValueDataType, definition.WarningValueAddress);
             ShutdownValue = ParsePreviewValue(preview.ShutdownValue, definition.ShutdownValueDataType, definition.ShutdownValueAddress);
-            LastBarcode = preview.LastBarcode ?? string.Empty;
 
             var history = await _wearPartReplacementService.GetReplacementHistoryAsync(preview.ClientAppConfigurationId, cancellationToken).ConfigureAwait(true);
+            if (loadVersion != _selectionLoadVersion || SelectedDefinition?.Id != definition.Id)
+            {
+                return;
+            }
+
+            var filteredHistory = history.Where(x => x.WearPartDefinitionId == definition.Id).ToArray();
             ReplacementHistory.Clear();
-            foreach (var record in history.Where(x => x.WearPartDefinitionId == definition.Id))
+            foreach (var record in filteredHistory)
             {
                 ReplacementHistory.Add(record);
             }
+
+            LastBarcode = string.IsNullOrWhiteSpace(preview.LastBarcode)
+                ? LocalizedText.Get("ViewModels.ReplacePartVm.LastBarcodeEmpty")
+                : preview.LastBarcode.Trim();
         }
         catch (Exception ex)
         {

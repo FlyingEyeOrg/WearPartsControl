@@ -93,6 +93,7 @@ public static class ServiceRegistration
         builder.RegisterType<EditPartWindowViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<ClientAppInfoViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<ReplacePartViewModel>().AsSelf().InstancePerDependency();
+        builder.RegisterType<PartUpdateRecordViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<UserConfigViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<MainWindowViewModel>().AsSelf().InstancePerDependency();
         // Add other services as needed

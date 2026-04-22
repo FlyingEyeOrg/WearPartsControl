@@ -125,8 +125,23 @@
       "ResourceNumberMissing": "The current client has no resource number configured, so replacement cannot proceed.",
       "DefinitionsEmpty": "No wear part definitions found for resource number {0}.",
       "DefinitionsLoaded": "Loaded {1} wear part definitions for resource number {0}.",
+      "LastBarcodeEmpty": "No replacement record",
       "Replacing": "Replacing wear part {0}...",
       "ReplaceSucceeded": "Wear part {0} replaced successfully. New barcode: {1}."
+    },
+    "PartUpdateRecordVm": {
+      "PromptLoadCurrent": "Please load wear part replacement history for the current device first.",
+      "Loading": "Loading wear part replacement history...",
+      "ResourceNumberMissing": "The current client has no resource number configured, so replacement history cannot be viewed.",
+      "RecordsEmpty": "No wear part replacement history found for resource number {0}.",
+      "RecordsLoaded": "Loaded {1} wear part replacement records for resource number {0}.",
+      "RecordsFiltered": "Showing {0} wear part replacement records.",
+      "InvalidPageNumber": "Page number must be an integer greater than 0.",
+      "ExportFileName": "WearPartReplacementHistory_{0}_{1:yyyyMMddHHmmss}.csv",
+      "ExportSucceeded": "Wear part replacement history exported to: {0}",
+      "ExportCanceled": "Wear part replacement history export canceled.",
+      "ExportFailedPrefix": "Export wear part replacement history failed: ",
+      "AllPartsOption": "All wear parts"
     },
     "UserConfigVm": {
       "PromptMaintain": "Please maintain user configuration first.",

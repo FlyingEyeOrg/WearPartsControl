@@ -125,8 +125,23 @@
       "ResourceNumberMissing": "当前客户端未配置资源号，无法执行易损件更换。",
       "DefinitionsEmpty": "资源号 {0} 暂无易损件定义。",
       "DefinitionsLoaded": "已加载资源号 {0} 的 {1} 条易损件定义。",
+      "LastBarcodeEmpty": "暂无更换记录",
       "Replacing": "正在更换易损件 {0}...",
       "ReplaceSucceeded": "易损件 {0} 更换成功，新条码：{1}。"
+    },
+    "PartUpdateRecordVm": {
+      "PromptLoadCurrent": "请先加载当前设备的易损件更换记录。",
+      "Loading": "正在加载易损件更换记录...",
+      "ResourceNumberMissing": "当前客户端未配置资源号，无法查看易损件更换记录。",
+      "RecordsEmpty": "资源号 {0} 暂无易损件更换记录。",
+      "RecordsLoaded": "已加载资源号 {0} 的 {1} 条易损件更换记录。",
+      "RecordsFiltered": "当前筛选到 {0} 条易损件更换记录。",
+      "InvalidPageNumber": "页码必须是大于 0 的整数。",
+      "ExportFileName": "易损件更换记录_{0}_{1:yyyyMMddHHmmss}.csv",
+      "ExportSucceeded": "易损件更换记录已导出到：{0}",
+      "ExportCanceled": "已取消导出易损件更换记录。",
+      "ExportFailedPrefix": "导出易损件更换记录失败：",
+      "AllPartsOption": "全部易损件"
     },
     "UserConfigVm": {
       "PromptMaintain": "请先维护用户配置。",
