@@ -7,6 +7,7 @@ using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PlcService;
+using WearPartsControl.ApplicationServices.LegacyImport;
 using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ViewModels;
@@ -15,6 +16,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
 {
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly IClientAppInfoSelectionOptionsProvider _selectionOptionsProvider;
+    private readonly ILegacyConfigurationImportService _legacyConfigurationImportService;
     private readonly IUiBusyService _uiBusyService;
     private readonly List<SiteFactoryOption> _siteFactoryOptions = new();
     private Guid? _clientAppConfigurationId;
@@ -41,12 +43,15 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     public ClientAppInfoViewModel(
         IClientAppInfoService clientAppInfoService,
         IClientAppInfoSelectionOptionsProvider selectionOptionsProvider,
+        ILegacyConfigurationImportService legacyConfigurationImportService,
         IUiBusyService uiBusyService)
     {
         _clientAppInfoService = clientAppInfoService;
         _selectionOptionsProvider = selectionOptionsProvider;
+        _legacyConfigurationImportService = legacyConfigurationImportService;
         _uiBusyService = uiBusyService;
         SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
+        ImportLegacyConfigurationCommand = new RelayCommand(RequestImportLegacyConfiguration, CanImportLegacyConfiguration);
 
         foreach (var plcProtocolType in Enum.GetNames<PlcProtocolType>())
         {
@@ -66,6 +71,10 @@ public sealed class ClientAppInfoViewModel : ObservableObject
 
     public IAsyncRelayCommand SaveCommand { get; }
 
+    public IRelayCommand ImportLegacyConfigurationCommand { get; }
+
+    public event EventHandler? ImportLegacyConfigurationRequested;
+
     public bool IsBusy
     {
         get => _isBusy;
@@ -75,6 +84,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             {
                 OnPropertyChanged(nameof(IsNotBusy));
                 SaveCommand.NotifyCanExecuteChanged();
+                ImportLegacyConfigurationCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -299,6 +309,11 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         return !IsBusy && IsDirty;
     }
 
+    private bool CanImportLegacyConfiguration()
+    {
+        return !IsBusy;
+    }
+
     private async Task SaveAsync()
     {
         IsBusy = true;
@@ -320,6 +335,40 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         {
             IsBusy = false;
         }
+    }
+
+    public async Task<LegacyConfigurationImportResult> ImportLegacyConfigurationAsync(string legacyDatabasePath, CancellationToken cancellationToken = default)
+    {
+        IsBusy = true;
+        StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.ImportingLegacyConfiguration");
+        using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.ClientAppInfoVm.ImportingLegacyConfiguration"));
+
+        try
+        {
+            var result = await _legacyConfigurationImportService.ImportAsync(legacyDatabasePath, cancellationToken).ConfigureAwait(true);
+            Apply(result.ClientAppInfo);
+            StatusMessage = LocalizedText.Format("ViewModels.ClientAppInfoVm.ImportedLegacyConfiguration", result.ResourceNumber);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = ex.Message;
+            throw;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public void NotifyLegacyConfigurationImportCanceled()
+    {
+        StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.ImportCanceled");
+    }
+
+    private void RequestImportLegacyConfiguration()
+    {
+        ImportLegacyConfigurationRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private ClientAppInfoSaveRequest BuildSaveRequest()

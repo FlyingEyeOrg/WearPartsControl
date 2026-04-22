@@ -23,6 +23,7 @@ namespace WearPartsControl.ViewModels
         private string _resourceNumber = string.Empty;
         private string _siteCode = string.Empty;
         private int _loginInputMaxIntervalMilliseconds = 80;
+        private bool _useWorkNumberLogin;
         private bool _isBusy;
 
         public LoginWindowViewModel(
@@ -82,6 +83,25 @@ namespace WearPartsControl.ViewModels
             private set => SetProperty(ref _loginInputMaxIntervalMilliseconds, value);
         }
 
+        public bool UseWorkNumberLogin
+        {
+            get => _useWorkNumberLogin;
+            private set
+            {
+                if (SetProperty(ref _useWorkNumberLogin, value))
+                {
+                    OnPropertyChanged(nameof(RequiresCardScan));
+                    OnPropertyChanged(nameof(LoginPrompt));
+                }
+            }
+        }
+
+        public bool RequiresCardScan => !UseWorkNumberLogin;
+
+        public string LoginPrompt => UseWorkNumberLogin
+            ? LocalizedText.Get("ViewModels.LoginWindowVm.PromptEnterWorkNumber")
+            : LocalizedText.Get("ViewModels.LoginWindowVm.PromptSwipeCard");
+
         public TimeSpan MinimumBusyDuration { get; }
 
         public bool IsBusy
@@ -105,6 +125,7 @@ namespace WearPartsControl.ViewModels
             LoginInputMaxIntervalMilliseconds = settings.LoginInputMaxIntervalMilliseconds <= 0
                 ? 80
                 : settings.LoginInputMaxIntervalMilliseconds;
+            UseWorkNumberLogin = settings.UseWorkNumberLogin;
 
             if (string.IsNullOrWhiteSpace(ResourceNumber))
             {
@@ -129,11 +150,16 @@ namespace WearPartsControl.ViewModels
             }
 
             SiteCode = clientAppConfiguration.SiteCode.Trim();
-            StatusMessage = LocalizedText.Get("ViewModels.LoginWindowVm.PromptSwipeCard");
+            StatusMessage = LoginPrompt;
         }
 
         public void RejectManualInput()
         {
+            if (!RequiresCardScan)
+            {
+                return;
+            }
+
             AuthId = string.Empty;
             StatusMessage = LocalizedText.Format("ViewModels.LoginWindowVm.ManualInputRejected", LoginInputMaxIntervalMilliseconds);
         }
@@ -162,7 +188,9 @@ namespace WearPartsControl.ViewModels
             var authId = AuthId.Trim();
             if (string.IsNullOrWhiteSpace(authId))
             {
-                await _uiDispatcher.RunAsync(() => StatusMessage = LocalizedText.Get("ViewModels.LoginWindowVm.AuthIdMissing"));
+                await _uiDispatcher.RunAsync(() => StatusMessage = LocalizedText.Get(UseWorkNumberLogin
+                    ? "ViewModels.LoginWindowVm.AuthIdMissingWorkNumber"
+                    : "ViewModels.LoginWindowVm.AuthIdMissing"));
                 return;
             }
 
@@ -178,7 +206,7 @@ namespace WearPartsControl.ViewModels
 
             try
             {
-                var user = await _loginService.LoginAsync(authId, SiteCode, ResourceNumber, isIdCard: true);
+                var user = await _loginService.LoginAsync(authId, SiteCode, ResourceNumber, isIdCard: !UseWorkNumberLogin);
                 await EnsureMinimumBusyDurationAsync(busyEnteredAt);
 
                 if (user is null)

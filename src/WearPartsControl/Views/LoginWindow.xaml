@@ -32,7 +32,8 @@
                     <Label Style="{x:Null}"
                            HorizontalAlignment="Center"
                            FontWeight="Bold"
-                           FontSize="24">请刷卡登录</Label>
+                              FontSize="24"
+                              Content="{Binding LoginPrompt}" />
                     <TextBlock Margin="0 16 0 0"
                                HorizontalAlignment="Center"
                                Foreground="Gray"

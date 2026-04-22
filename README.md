@@ -47,7 +47,7 @@
 - `ApplicationServices/ApplicationService`：应用服务基类，统一提供当前登录用户访问能力。
 - `ApplicationServices/ApplicationService`：应用服务基类，统一提供当前登录用户访问能力和基于 `access_level` 的权限校验。
 - `ApplicationServices/CurrentUserAccessor`：桌面应用登录态上下文，同时实现 `ICurrentUserAccessor` 与 `ICurrentUser`，供应用服务和 EF 审计共用。
-- `ApplicationServices/AppSettings/AppSettingsService`：独立的客户端应用设置服务，负责资源号与登录输入阈值配置，不再混入 `PartServices`。
+- `ApplicationServices/AppSettings/AppSettingsService`：独立的客户端应用设置服务，负责资源号、登录模式与登录输入阈值配置，不再混入 `PartServices`。
 - `ApplicationServices/LoginService/LoginService`：支持登录、读取当前用户、注销，并将登录态同步给应用服务与 EF 审计。
 - `ApplicationServices/LoginService/MhrUserDirectoryCache`：缓存 MHR 用户目录，优先复用最近一次拉取结果，减少重复访问远程接口。
 - `ApplicationServices/PartServices/WearPartManagementService`：易损件定义管理服务，负责定义查询、创建、更新、删除和跨资源号复制。
@@ -67,6 +67,7 @@
 - 已补齐：`ToolChange` 主数据实体、仓储、应用服务和“换刀类型管理”页面，模切分条工序已从自由输入工具编码升级为正式主数据选择。
 - 已补齐：涂布工序 A/B 面选择、垫片条码解析与远程校验，并在校验失败时执行停机点写入保护。
 - 已补齐：易损件管理页支持直接选择旧版 SQLite 数据库并导入易损件定义，适合生产环境一次性迁移旧系统数据。
+- 已补齐：客户端信息页支持直接从旧版 `VulnerablePartsSys\db\Data.db` 导入基础配置、登录模式、MHR、COM 通知和垫片校验配置。
 - 易损件新增/编辑窗口已按旧版录入习惯调整：输入方式默认 `Manual`，三组 PLC 数据类型默认 `FLOAT`，寿命类型固定为 `记米 / 计次 / 计时`，默认选中 `计次`，条码长度默认 `0-0`，附加清零地址改为可选。
 
 ## 数据与配置目录
@@ -100,12 +101,13 @@
 - 涂布工序当前要求在更换页先选择 A/B 面；系统会解析垫片条码中的 `ABSite` 与所选值比对，并调用 `SpacerManagementService` 做远程校验。远程校验失败时会尝试写入客户端配置中的停机点位，形成与旧系统一致的保护闭环。
 - 客户端基础信息中的 `区域`、`工序` 由 `PrivateData/Settings/client-app-info.<culture>.json` 提供；会按当前语言环境优先加载对应文件，例如 `client-app-info.zh-CN.json`。
 - PLC 相关配置遵循旧系统规则：西门子 PLC 显示并保存机架号与插槽号，两者默认值均为 `0`；`ModbusTcp` 与汇川 PLC 显示字符串反转开关。
+- 登录窗口支持两种模式：默认刷卡登录；导入旧配置后如果 `UseUserNumber=true`，则切换为工号登录。
 - 登录窗口通过刷卡器模拟键盘输入完成登录，窗口打开后会自动聚焦到密码输入框。
-- 登录窗口支持回车提交；当相邻输入间隔超过 `LoginInputMaxIntervalMilliseconds` 时，会判定为手工输入并拒绝登录。
+- 登录窗口支持回车提交；仅在刷卡模式下，当相邻输入间隔超过 `LoginInputMaxIntervalMilliseconds` 时，才会判定为手工输入并拒绝登录。
 - 自动注销相关的 UI 交互统一收敛到一个交互保活工具：登录窗口、添加/编辑易损件弹窗、导出文件选择框等模态交互期间会暂停倒计时；弹窗关闭后会从完整倒计时重新开始。主窗口中的键盘输入、鼠标点击和焦点进入也会重置倒计时，避免正常操作过程中被自动登出并把当前 tab 切回登录提示页。
 - 应用配置统一使用 `src/WearPartsControl/PrivateData/Settings/app-settings.json`。
 - PLC 管线慢调用阈值也放在该文件中，保存应用设置后会刷新到运行中的 PLC 管线，无需重启。
-- 当前默认配置示例：`{"ResourceNumber":"","LoginInputMaxIntervalMilliseconds":80,"PlcPipeline":{"SlowQueueWaitThresholdMilliseconds":100,"SlowExecutionThresholdMilliseconds":500}}`
+- 当前默认配置示例：`{"ResourceNumber":"","LoginInputMaxIntervalMilliseconds":80,"UseWorkNumberLogin":false,"PlcPipeline":{"SlowQueueWaitThresholdMilliseconds":100,"SlowExecutionThresholdMilliseconds":500}}`
 - PLC 管线操作名常量已按业务域拆分到 `ApplicationServices/PlcService` 目录下的多个常量类，避免单文件持续膨胀。
 - `ResourceNumber` 用于在客户端配置中查找资源对应的 `SiteCode`，随后由登录服务完成用户认证。
 - 登录成功后，用户信息会同步到 `ICurrentUserAccessor`，主窗口右上角 `LoginBox` 会自动刷新工号、权限与登录按钮状态。
@@ -114,8 +116,12 @@
 ## 旧库导入
 
 - 生产环境推荐在“易损件管理”页面直接点击“导入旧库易损件”，选择旧版 SQLite 数据库文件后执行导入。
+- 生产环境推荐在“客户端信息”页面直接点击“导入旧项目配置”，选择旧版 SQLite 数据库文件后执行导入；程序会自动回溯同级旧目录下的 `Json` 配置文件并做一次性转换导入。
 - 旧系统 `VulnerablePartsSys` 的本地 SQLite 默认路径为 `VulnerablePartsSys\db\Data.db`。
 - 页面导入范围仅包含旧库中的易损件定义，并写入当前客户端对应资源号下，不导入历史更换记录、超限记录，也不做旧库结构兼容处理。
+- 配置导入范围包含：`v_Basic`、`AppSetting.json`、`AppConfig.json`、`MHRInfos.json`，若缺少 `MHRInfos.json` 则回退读取 `MHR.json`。
+- 旧系统 `MySql.json` 不再导入。新版本统一使用本地 SQLite 和拆分后的 `PrivateData/Settings/*.json`，不再保留旧版本地/远程双写模式。
+- 旧系统 `ToolChangeSaveInfo.json` 也不再导入。新版本已用正式 `ToolChange` 主数据和 `tool-change-selection.json` 替代该运行时缓存文件。
 - 启动参数方式 `WearPartsControl.exe --import-legacy-db ...` 仍保留给整库导入场景；如果只是生产环境迁移易损件定义，优先使用页面导入入口。
 
 ## 测试

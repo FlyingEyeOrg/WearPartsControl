@@ -88,11 +88,13 @@
     },
     "LoginWindowVm": {
       "PromptSwipeCard": "请刷卡登录",
+      "PromptEnterWorkNumber": "请输入工号登录",
       "ResourceNumberMissing": "请先在配置中设置资源号。",
       "ClientConfigurationNotFound": "未找到资源号 {0} 对应的客户端配置。",
       "ClientConfigurationSiteMissing": "资源号 {0} 的客户端配置未设置基地。",
       "ManualInputRejected": "检测到输入间隔超过 {0} ms，请使用刷卡器登录。",
       "AuthIdMissing": "请先刷卡后再登录。",
+      "AuthIdMissingWorkNumber": "请输入工号后再登录。",
       "LoggingIn": "正在登录...",
       "UserNotFound": "未找到对应用户，请确认卡号或权限配置。",
       "LoginSucceeded": "登录成功，工号 {0}"
@@ -103,6 +105,10 @@
       "Loaded": "客户端信息已加载。",
       "Saving": "正在保存客户端信息...",
       "Saved": "客户端信息保存成功。",
+      "ImportDialogTitle": "选择旧版 SQLite 数据库",
+      "ImportingLegacyConfiguration": "正在导入旧项目配置...",
+      "ImportedLegacyConfiguration": "旧项目配置导入完成，当前资源号：{0}。",
+      "ImportCanceled": "已取消旧项目配置导入。",
       "PlcPortInvalid": "PLC 端口必须是整数。",
       "PlcRackInvalid": "PLC 机架号必须是 0 到 255 之间的整数。",
       "PlcSlotInvalid": "PLC 插槽号必须是 0 到 255 之间的整数。"

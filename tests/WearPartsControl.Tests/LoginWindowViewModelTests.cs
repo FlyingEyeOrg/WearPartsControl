@@ -38,6 +38,29 @@ public sealed class LoginWindowViewModelTests
     }
 
     [Fact]
+    public async Task InitializeAsync_WhenUseWorkNumberLoginEnabled_ShouldSwitchToWorkNumberMode()
+    {
+        var loginService = new StubLoginService();
+        var viewModel = new LoginWindowViewModel(
+            loginService,
+            new StubClientAppConfigurationRepository(),
+            new StubAppSettingsService { UseWorkNumberLogin = true },
+            new StubUiDispatcher());
+
+        await viewModel.InitializeAsync();
+        viewModel.AuthId = "WORK-01";
+
+        viewModel.RejectManualInput();
+        await viewModel.LoginCommand.ExecuteAsync(null);
+
+        Assert.True(viewModel.UseWorkNumberLogin);
+        Assert.False(viewModel.RequiresCardScan);
+        Assert.Equal(LocalizedText.Get("ViewModels.LoginWindowVm.PromptEnterWorkNumber"), viewModel.LoginPrompt);
+        Assert.Equal("WORK-01", viewModel.AuthId);
+        Assert.False(loginService.IsIdCard);
+    }
+
+    [Fact]
     public async Task InitializeAsync_WhenClientSiteCodeMissing_ShouldShowPromptAndKeepSiteEmpty()
     {
         var loginService = new StubLoginService();
@@ -218,12 +241,15 @@ public sealed class LoginWindowViewModelTests
     {
         public event EventHandler<AppSettings>? SettingsSaved;
 
+        public bool UseWorkNumberLogin { get; set; }
+
         public ValueTask<AppSettings> GetAsync(CancellationToken cancellationToken = default)
         {
             return ValueTask.FromResult(new AppSettings
             {
                 ResourceNumber = "RES-001",
-                LoginInputMaxIntervalMilliseconds = 88
+                LoginInputMaxIntervalMilliseconds = 88,
+                UseWorkNumberLogin = UseWorkNumberLogin
             });
         }
 

@@ -79,6 +79,7 @@ public static class ServiceRegistration
         builder.RegisterType<JsonClientAppInfoSelectionOptionsProvider>().As<IClientAppInfoSelectionOptionsProvider>().SingleInstance();
         builder.RegisterType<ClientAppInfoService>().As<IClientAppInfoService>().InstancePerDependency();
         builder.RegisterType<LegacyDatabaseImportService>().As<ILegacyDatabaseImportService>().SingleInstance();
+        builder.RegisterType<LegacyConfigurationImportService>().As<ILegacyConfigurationImportService>().SingleInstance();
         builder.RegisterType<WearPartManagementService>().As<IWearPartManagementService>().InstancePerDependency();
         builder.RegisterType<ToolChangeManagementService>().As<IToolChangeManagementService>().InstancePerDependency();
         builder.RegisterType<WearPartReplacementService>().As<IWearPartReplacementService>().InstancePerDependency();

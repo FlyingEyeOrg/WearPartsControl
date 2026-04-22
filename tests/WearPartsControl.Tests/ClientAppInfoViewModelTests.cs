@@ -1,6 +1,7 @@
 using System.IO;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.LegacyImport;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ViewModels;
 using Xunit;
@@ -49,6 +50,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         var viewModel = new ClientAppInfoViewModel(
             service,
             new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
+            new StubLegacyConfigurationImportService(),
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -110,6 +112,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         var viewModel = new ClientAppInfoViewModel(
             service,
             new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
+            new StubLegacyConfigurationImportService(),
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -145,6 +148,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         var viewModel = new ClientAppInfoViewModel(
             service,
             new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
+            new StubLegacyConfigurationImportService(),
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -152,6 +156,44 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         Assert.Equal("F02", viewModel.FactoryCode);
         Assert.Contains("F02", viewModel.FactoryOptions);
         Assert.False(viewModel.IsDirty);
+    }
+
+    [Fact]
+    public async Task ImportLegacyConfigurationAsync_ShouldApplyImportedConfigurationAndUpdateStatus()
+    {
+        var importService = new StubLegacyConfigurationImportService();
+        var viewModel = new ClientAppInfoViewModel(
+            new StubClientAppInfoService(),
+            new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
+            importService,
+            new UiBusyService());
+
+        await viewModel.InitializeAsync();
+
+        var result = await viewModel.ImportLegacyConfigurationAsync("E:\\legacy\\db\\Data.db");
+
+        Assert.Equal("E:\\legacy\\db\\Data.db", importService.LastPath);
+        Assert.Equal("RES-LEGACY", result.ResourceNumber);
+        Assert.Equal("RES-LEGACY", viewModel.ResourceNumber);
+        Assert.Equal("ModbusTcp", viewModel.PlcProtocolType);
+        Assert.Equal(LocalizedText.Format("ViewModels.ClientAppInfoVm.ImportedLegacyConfiguration", "RES-LEGACY"), viewModel.StatusMessage);
+        Assert.False(viewModel.IsDirty);
+    }
+
+    [Fact]
+    public void ImportLegacyConfigurationCommand_ShouldRaiseRequestedEvent()
+    {
+        var viewModel = new ClientAppInfoViewModel(
+            new StubClientAppInfoService(),
+            new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
+            new StubLegacyConfigurationImportService(),
+            new UiBusyService());
+        var raised = false;
+        viewModel.ImportLegacyConfigurationRequested += (_, _) => raised = true;
+
+        viewModel.ImportLegacyConfigurationCommand.Execute(null);
+
+        Assert.True(raised);
     }
 
     public void Dispose()
@@ -250,5 +292,40 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         public ValueTask SetCultureAsync(string cultureName, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
 
         public System.Globalization.CultureInfo CurrentCulture { get; } = System.Globalization.CultureInfo.GetCultureInfo("zh-CN");
+    }
+
+    private sealed class StubLegacyConfigurationImportService : ILegacyConfigurationImportService
+    {
+        public string? LastPath { get; private set; }
+
+        public Task<LegacyConfigurationImportResult> ImportAsync(string legacyDatabasePath, CancellationToken cancellationToken = default)
+        {
+            LastPath = legacyDatabasePath;
+            var model = new ClientAppInfoModel
+            {
+                Id = Guid.NewGuid(),
+                SiteCode = "S01",
+                FactoryCode = "F01",
+                AreaCode = "阳极",
+                ProcedureCode = "凹版",
+                EquipmentCode = "EQ99",
+                ResourceNumber = "RES-LEGACY",
+                PlcProtocolType = "ModbusTcp",
+                PlcIpAddress = "192.168.1.10",
+                PlcPort = 502,
+                ShutdownPointAddress = "M9.0",
+                SiemensRack = 0,
+                SiemensSlot = 0,
+                IsStringReverse = true
+            };
+
+            return Task.FromResult(new LegacyConfigurationImportResult
+            {
+                LegacyDatabasePath = legacyDatabasePath,
+                ResourceNumber = model.ResourceNumber,
+                ClientAppInfo = model,
+                ImportedAppSettings = true
+            });
+        }
     }
 }

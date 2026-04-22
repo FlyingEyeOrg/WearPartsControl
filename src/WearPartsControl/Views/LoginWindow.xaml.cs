@@ -82,7 +82,10 @@ namespace WearPartsControl.Views
 
             var now = DateTimeOffset.UtcNow;
             var interval = TimeSpan.FromMilliseconds(_viewModel.LoginInputMaxIntervalMilliseconds);
-            if (_lastInputAt.HasValue && PasswordInputBox.Password.Length > 0 && now - _lastInputAt.Value > interval)
+            if (_viewModel.RequiresCardScan
+                && _lastInputAt.HasValue
+                && PasswordInputBox.Password.Length > 0
+                && now - _lastInputAt.Value > interval)
             {
                 PasswordInputBox.Clear();
                 _lastInputAt = null;
@@ -96,6 +99,11 @@ namespace WearPartsControl.Views
 
         private void PasswordInputBox_OnPasting(object sender, DataObjectPastingEventArgs e)
         {
+            if (!_viewModel.RequiresCardScan)
+            {
+                return;
+            }
+
             e.CancelCommand();
             PasswordInputBox.Clear();
             _lastInputAt = null;

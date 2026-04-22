@@ -77,6 +77,7 @@ public sealed class AppSettingsService : IAppSettingsService
             AutoLogoutCountdownSeconds = settings.AutoLogoutCountdownSeconds <= 0
                 ? 360
                 : settings.AutoLogoutCountdownSeconds,
+            UseWorkNumberLogin = settings.UseWorkNumberLogin,
             PlcPipeline = new PlcPipelineSettings
             {
                 SlowQueueWaitThresholdMilliseconds = plcPipeline.SlowQueueWaitThresholdMilliseconds <= 0
@@ -103,6 +104,7 @@ public sealed class AppSettingsService : IAppSettingsService
             ResourceNumber = settings.ResourceNumber,
             LoginInputMaxIntervalMilliseconds = settings.LoginInputMaxIntervalMilliseconds,
             AutoLogoutCountdownSeconds = settings.AutoLogoutCountdownSeconds,
+            UseWorkNumberLogin = settings.UseWorkNumberLogin,
             PlcPipeline = new PlcPipelineSettings
             {
                 SlowQueueWaitThresholdMilliseconds = settings.PlcPipeline.SlowQueueWaitThresholdMilliseconds,

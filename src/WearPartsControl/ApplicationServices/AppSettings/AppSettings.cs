@@ -24,6 +24,11 @@ public sealed class AppSettings
     public int AutoLogoutCountdownSeconds { get; set; } = 360;
 
     /// <summary>
+    /// 是否启用工号登录。默认为刷卡登录。
+    /// </summary>
+    public bool UseWorkNumberLogin { get; set; }
+
+    /// <summary>
     /// PLC 管线监控配置。
     /// </summary>
     public PlcPipelineSettings PlcPipeline { get; set; } = new();

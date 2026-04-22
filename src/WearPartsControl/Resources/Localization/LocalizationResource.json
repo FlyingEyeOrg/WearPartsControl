@@ -88,11 +88,13 @@
     },
     "LoginWindowVm": {
       "PromptSwipeCard": "Please swipe card to log in",
+      "PromptEnterWorkNumber": "Please enter work ID to log in",
       "ResourceNumberMissing": "Please set the resource number in configuration first.",
       "ClientConfigurationNotFound": "No client configuration found for resource number {0}.",
       "ClientConfigurationSiteMissing": "The client configuration for resource number {0} has no site code.",
       "ManualInputRejected": "Input interval exceeded {0} ms. Please use the card reader to log in.",
       "AuthIdMissing": "Please swipe your card before logging in.",
+      "AuthIdMissingWorkNumber": "Please enter your work ID before logging in.",
       "LoggingIn": "Logging in...",
       "UserNotFound": "No matching user found. Please verify card number or permission settings.",
       "LoginSucceeded": "Login succeeded, work ID {0}"
@@ -103,6 +105,10 @@
       "Loaded": "Client information loaded.",
       "Saving": "Saving client information...",
       "Saved": "Client information saved successfully.",
+      "ImportDialogTitle": "Select legacy SQLite database",
+      "ImportingLegacyConfiguration": "Importing legacy client configuration...",
+      "ImportedLegacyConfiguration": "Legacy client configuration imported. Current resource number: {0}.",
+      "ImportCanceled": "Legacy client configuration import canceled.",
       "PlcPortInvalid": "PLC port must be an integer.",
       "PlcRackInvalid": "PLC rack must be an integer between 0 and 255.",
       "PlcSlotInvalid": "PLC slot must be an integer between 0 and 255."
