@@ -339,7 +339,7 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
             builder.AppendLine(string.Join(",", new[]
             {
                 Escape(record.PartName),
-                Escape(record.ReplacementReason),
+                Escape(record.ReasonDisplayName),
                 Escape(record.OldBarcode ?? string.Empty),
                 Escape(record.NewBarcode),
                 Escape(record.CurrentValue),

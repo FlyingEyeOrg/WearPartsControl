@@ -81,7 +81,7 @@ public sealed class PartUpdateRecordViewModelTests
         var definition = new WearPartDefinition { Id = Guid.NewGuid(), PartName = "刀具A" };
         var viewModel = CreateViewModel(
             [definition],
-            [new WearPartReplacementRecord { WearPartDefinitionId = definition.Id, PartName = definition.PartName, NewBarcode = "NB-1" }]);
+            [new WearPartReplacementRecord { WearPartDefinitionId = definition.Id, PartName = definition.PartName, NewBarcode = "NB-1", ReasonCode = WearPartReplacementReason.ProcessDamage, ReasonDisplayName = "过程损坏" }]);
         PartUpdateRecordExportRequestedEventArgs? raised = null;
         viewModel.ExportRequested += (_, args) => raised = args;
 
@@ -92,6 +92,19 @@ public sealed class PartUpdateRecordViewModelTests
         Assert.Contains("名称,更换原因,旧编码,新编码", raised!.Content);
         Assert.Contains("刀具A", raised.Content);
         Assert.Contains("NB-1", raised.Content);
+        Assert.Contains("过程损坏", raised.Content);
+    }
+
+    [Fact]
+    public void WearPartReplacementRecord_WhenOnlyReasonCodeProvided_ShouldResolveDisplayName()
+    {
+        var record = new WearPartReplacementRecord
+        {
+            ReasonCode = WearPartReplacementReason.ChangePosition
+        };
+
+        Assert.Equal(WearPartReplacementReason.ChangePosition, record.ReasonCode);
+        Assert.Equal(WearPartReplacementReason.GetDisplayName(WearPartReplacementReason.ChangePosition), record.ReasonDisplayName);
     }
 
     [Fact]

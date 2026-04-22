@@ -106,7 +106,7 @@
                                     Binding="{Binding ShutdownValue}"
                                     Width="*"></DataGridTextColumn>
                 <DataGridTextColumn Header="更换原因"
-                                    Binding="{Binding ReplacementReason}"
+                                    Binding="{Binding ReasonDisplayName}"
                                     Width="*"></DataGridTextColumn>
                 <DataGridTextColumn Header="更换时间"
                                     Binding="{Binding ReplacedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"

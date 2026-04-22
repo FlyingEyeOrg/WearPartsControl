@@ -5,6 +5,9 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 /// </summary>
 public sealed class WearPartReplacementRecord
 {
+    private string _reasonCode = string.Empty;
+    private string _reasonDisplayName = string.Empty;
+
     /// <summary>
     /// 主键。
     /// </summary>
@@ -71,9 +74,37 @@ public sealed class WearPartReplacementRecord
     public string ReplacementMessage { get; set; } = string.Empty;
 
     /// <summary>
-    /// 更换原因。
+    /// 更换原因代码。
     /// </summary>
-    public string ReplacementReason { get; set; } = string.Empty;
+    public string ReasonCode
+    {
+        get => _reasonCode;
+        set => _reasonCode = WearPartReplacementReason.NormalizeCode(value);
+    }
+
+    /// <summary>
+    /// 更换原因显示名称。
+    /// </summary>
+    public string ReasonDisplayName
+    {
+        get => string.IsNullOrWhiteSpace(_reasonDisplayName)
+            ? WearPartReplacementReason.GetDisplayName(_reasonCode)
+            : _reasonDisplayName;
+        set => _reasonDisplayName = value?.Trim() ?? string.Empty;
+    }
+
+    /// <summary>
+    /// 兼容旧调用方的更换原因显示字段。
+    /// </summary>
+    public string ReplacementReason
+    {
+        get => ReasonDisplayName;
+        set
+        {
+            ReasonCode = value;
+            ReasonDisplayName = WearPartReplacementReason.GetDisplayName(value);
+        }
+    }
 
     /// <summary>
     /// 操作时间。
