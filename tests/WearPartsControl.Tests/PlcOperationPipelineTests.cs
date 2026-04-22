@@ -66,8 +66,7 @@ public sealed class PlcOperationPipelineTests
 
         Assert.Contains(logger.Entries, entry =>
             entry.LogLevel == LogLevel.Warning
-            && entry.Message.Contains("Test/SlowOperation", StringComparison.Ordinal)
-            && entry.Message.Contains("completed in", StringComparison.Ordinal));
+            && entry.Message.Contains("Test/SlowOperation", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -98,8 +97,7 @@ public sealed class PlcOperationPipelineTests
 
         Assert.Contains(logger.Entries, entry =>
             entry.LogLevel == LogLevel.Warning
-            && entry.Message.Contains("Test/ConfiguredSlowOperation", StringComparison.Ordinal)
-            && entry.Message.Contains("completed in", StringComparison.Ordinal));
+            && entry.Message.Contains("Test/ConfiguredSlowOperation", StringComparison.Ordinal));
     }
 
     private sealed class PipelineTestPlcService : IPlcService

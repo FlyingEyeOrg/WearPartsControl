@@ -225,9 +225,23 @@
       "NotConfigured": "未配置 ClientApp，未连接 PLC。",
       "Connected": "已连接",
       "ConnectFailed": "连接失败：{0}",
+      "LogConnectFailed": "启动阶段连接 PLC 失败，资源号 {ResourceNumber}",
       "Reconnecting": "正在应用 PLC 配置并重新连接...",
       "Reconfigured": "PLC 配置已应用。",
       "ReconfiguredFailedKeepCurrent": "应用 PLC 配置失败：{0}。已保留当前连接。"
+    },
+    "PlcConfigurationMonitor": {
+      "LogApplySettingsFailed": "应用 PLC 配置变更失败，资源号 {ResourceNumber}"
+    },
+    "PlcPipeline": {
+      "OperationNameRequired": "PLC 管线操作名不能为空。",
+      "LogOperationQueued": "PLC 管线操作 {OperationName}#{OperationId} 已入队，待处理 {PendingOperations}",
+      "LogOperationFailed": "PLC 管线操作 {OperationName}#{OperationId} 在 {ExecutionElapsedMs} ms 后失败",
+      "LogQueueWaitSlow": "PLC 管线操作 {OperationName}#{OperationId} 执行前等待了 {WaitElapsedMs} ms，待处理 {PendingOperations}",
+      "LogQueueWaitAcquired": "PLC 管线操作 {OperationName}#{OperationId} 在 {WaitElapsedMs} ms 后获得执行槽位",
+      "LogExecutionSlow": "PLC 管线操作 {OperationName}#{OperationId} 在 {ExecutionElapsedMs} ms 后完成",
+      "LogExecutionCompleted": "PLC 管线操作 {OperationName}#{OperationId} 在 {ExecutionElapsedMs} ms 后完成",
+      "LogLoadThresholdsFailed": "从应用配置加载 PLC 管线阈值失败，已使用默认值。"
     },
     "Login": {
       "InvalidTokenPayload": "登录接口返回的 token 格式不正确。"

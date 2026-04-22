@@ -225,9 +225,23 @@
       "NotConfigured": "ClientApp is not configured, PLC connection skipped.",
       "Connected": "Connected",
       "ConnectFailed": "Connection failed: {0}",
+      "LogConnectFailed": "Failed to connect PLC during startup for resource {ResourceNumber}",
       "Reconnecting": "Applying PLC configuration and reconnecting...",
       "Reconfigured": "PLC configuration applied successfully.",
       "ReconfiguredFailedKeepCurrent": "Applying PLC configuration failed: {0}. The current connection is kept."
+    },
+    "PlcConfigurationMonitor": {
+      "LogApplySettingsFailed": "Failed to apply PLC settings change for resource {ResourceNumber}"
+    },
+    "PlcPipeline": {
+      "OperationNameRequired": "PLC pipeline operation name is required.",
+      "LogOperationQueued": "PLC pipeline queued operation {OperationName}#{OperationId}, pending {PendingOperations}",
+      "LogOperationFailed": "PLC pipeline operation {OperationName}#{OperationId} failed after {ExecutionElapsedMs} ms",
+      "LogQueueWaitSlow": "PLC pipeline operation {OperationName}#{OperationId} waited {WaitElapsedMs} ms before execution, pending {PendingOperations}",
+      "LogQueueWaitAcquired": "PLC pipeline operation {OperationName}#{OperationId} acquired execution slot in {WaitElapsedMs} ms",
+      "LogExecutionSlow": "PLC pipeline operation {OperationName}#{OperationId} completed in {ExecutionElapsedMs} ms",
+      "LogExecutionCompleted": "PLC pipeline operation {OperationName}#{OperationId} completed in {ExecutionElapsedMs} ms",
+      "LogLoadThresholdsFailed": "Failed to load PLC pipeline thresholds from app settings, using defaults."
     },
     "Login": {
       "InvalidTokenPayload": "The token returned by the login API is invalid."

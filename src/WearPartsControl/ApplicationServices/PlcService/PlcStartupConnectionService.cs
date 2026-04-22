@@ -54,14 +54,14 @@ public sealed class PlcStartupConnectionService : IPlcStartupConnectionService
         {
             _plcConnectionStatusService.Set(PlcStartupConnectionResult.Connecting());
             var connectionOptions = PlcConnectionOptionsFactory.Create(clientAppInfo);
-            await _plcOperationPipeline.ConnectAsync(PlcOperationNames.Startup.EnsureConnected, connectionOptions, cancellationToken).ConfigureAwait(false);
+            await _plcOperationPipeline.ConnectAsync(PlcStartupPipelineOperations.EnsureConnected, connectionOptions, cancellationToken).ConfigureAwait(false);
             var connected = PlcStartupConnectionResult.Connected();
             _plcConnectionStatusService.Set(connected);
             return connected;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogWarning(ex, "Failed to connect PLC during startup for resource {ResourceNumber}", clientAppInfo.ResourceNumber);
+            _logger.LogWarning(ex, LocalizedText.Get("Services.PlcStartupConnection.LogConnectFailed"), clientAppInfo.ResourceNumber);
             var failed = PlcStartupConnectionResult.Failed(LocalizedText.Format("Services.PlcStartupConnection.ConnectFailed", ex.Message));
             _plcConnectionStatusService.Set(failed);
             return failed;

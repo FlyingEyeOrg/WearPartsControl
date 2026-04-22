@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using WearPartsControl.ApplicationServices.Localization;
 using AppSettingsModel = WearPartsControl.ApplicationServices.AppSettings.AppSettings;
 using IAppSettingsService = WearPartsControl.ApplicationServices.AppSettings.IAppSettingsService;
 using PlcPipelineSettings = WearPartsControl.ApplicationServices.AppSettings.PlcPipelineSettings;
@@ -78,7 +79,7 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
         var queuedAt = Stopwatch.GetTimestamp();
         var queueDepth = Interlocked.Increment(ref _pendingOperations);
 
-        _logger.LogDebug("PLC pipeline queued operation {OperationName}#{OperationId}, pending {PendingOperations}", operationName, operationId, queueDepth);
+        _logger.LogDebug(LocalizedText.Get("Services.PlcPipeline.LogOperationQueued"), operationName, operationId, queueDepth);
 
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         var waitElapsed = Stopwatch.GetElapsedTime(queuedAt);
@@ -93,7 +94,7 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             var executionElapsed = Stopwatch.GetElapsedTime(executionStartedAt);
-            _logger.LogWarning(ex, "PLC pipeline operation {OperationName}#{OperationId} failed after {ExecutionElapsedMs} ms", operationName, operationId, executionElapsed.TotalMilliseconds);
+            _logger.LogWarning(ex, LocalizedText.Get("Services.PlcPipeline.LogOperationFailed"), operationName, operationId, executionElapsed.TotalMilliseconds);
             throw;
         }
         finally
@@ -114,7 +115,7 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
         var queuedAt = Stopwatch.GetTimestamp();
         var queueDepth = Interlocked.Increment(ref _pendingOperations);
 
-        _logger.LogDebug("PLC pipeline queued operation {OperationName}#{OperationId}, pending {PendingOperations}", operationName, operationId, queueDepth);
+        _logger.LogDebug(LocalizedText.Get("Services.PlcPipeline.LogOperationQueued"), operationName, operationId, queueDepth);
 
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         var waitElapsed = Stopwatch.GetElapsedTime(queuedAt);
@@ -129,7 +130,7 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             var executionElapsed = Stopwatch.GetElapsedTime(executionStartedAt);
-            _logger.LogWarning(ex, "PLC pipeline operation {OperationName}#{OperationId} failed after {ExecutionElapsedMs} ms", operationName, operationId, executionElapsed.TotalMilliseconds);
+            _logger.LogWarning(ex, LocalizedText.Get("Services.PlcPipeline.LogOperationFailed"), operationName, operationId, executionElapsed.TotalMilliseconds);
             throw;
         }
         finally
@@ -145,29 +146,29 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
     {
         if (waitElapsed.TotalMilliseconds >= Volatile.Read(ref _slowQueueWaitThresholdMilliseconds))
         {
-            _logger.LogWarning("PLC pipeline operation {OperationName}#{OperationId} waited {WaitElapsedMs} ms before execution, pending {PendingOperations}", operationName, operationId, waitElapsed.TotalMilliseconds, queueDepth);
+            _logger.LogWarning(LocalizedText.Get("Services.PlcPipeline.LogQueueWaitSlow"), operationName, operationId, waitElapsed.TotalMilliseconds, queueDepth);
             return;
         }
 
-        _logger.LogDebug("PLC pipeline operation {OperationName}#{OperationId} acquired execution slot in {WaitElapsedMs} ms", operationName, operationId, waitElapsed.TotalMilliseconds);
+        _logger.LogDebug(LocalizedText.Get("Services.PlcPipeline.LogQueueWaitAcquired"), operationName, operationId, waitElapsed.TotalMilliseconds);
     }
 
     private void LogExecution(string operationName, long operationId, TimeSpan executionElapsed)
     {
         if (executionElapsed.TotalMilliseconds >= Volatile.Read(ref _slowExecutionThresholdMilliseconds))
         {
-            _logger.LogWarning("PLC pipeline operation {OperationName}#{OperationId} completed in {ExecutionElapsedMs} ms", operationName, operationId, executionElapsed.TotalMilliseconds);
+            _logger.LogWarning(LocalizedText.Get("Services.PlcPipeline.LogExecutionSlow"), operationName, operationId, executionElapsed.TotalMilliseconds);
             return;
         }
 
-        _logger.LogDebug("PLC pipeline operation {OperationName}#{OperationId} completed in {ExecutionElapsedMs} ms", operationName, operationId, executionElapsed.TotalMilliseconds);
+        _logger.LogDebug(LocalizedText.Get("Services.PlcPipeline.LogExecutionCompleted"), operationName, operationId, executionElapsed.TotalMilliseconds);
     }
 
     private static void ValidateOperationName(string operationName)
     {
         if (string.IsNullOrWhiteSpace(operationName))
         {
-            throw new ArgumentException("PLC pipeline operation name is required.", nameof(operationName));
+            throw new ArgumentException(LocalizedText.Get("Services.PlcPipeline.OperationNameRequired"), nameof(operationName));
         }
     }
 
@@ -185,7 +186,7 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to load PLC pipeline thresholds from app settings, using defaults.");
+            _logger.LogWarning(ex, LocalizedText.Get("Services.PlcPipeline.LogLoadThresholdsFailed"));
         }
     }
 

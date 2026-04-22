@@ -114,7 +114,7 @@ public sealed class PlcConfigurationMonitorService : IDisposable
         var settings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
         if (!settings.IsSetClientAppInfo || string.IsNullOrWhiteSpace(settings.ResourceNumber))
         {
-            await _plcOperationPipeline.DisconnectAsync(PlcOperationNames.Configuration.DisconnectWhenNotConfigured, cancellationToken).ConfigureAwait(false);
+            await _plcOperationPipeline.DisconnectAsync(PlcConfigurationPipelineOperations.DisconnectWhenNotConfigured, cancellationToken).ConfigureAwait(false);
             _lastAppliedConfigurationKey = null;
             _plcConnectionStatusService.Set(PlcStartupConnectionResult.NotConfigured());
             return;
@@ -127,7 +127,7 @@ public sealed class PlcConfigurationMonitorService : IDisposable
             || string.IsNullOrWhiteSpace(clientAppInfo.PlcProtocolType)
             || string.IsNullOrWhiteSpace(clientAppInfo.PlcIpAddress))
         {
-            await _plcOperationPipeline.DisconnectAsync(PlcOperationNames.Configuration.DisconnectWhenInvalid, cancellationToken).ConfigureAwait(false);
+            await _plcOperationPipeline.DisconnectAsync(PlcConfigurationPipelineOperations.DisconnectWhenInvalid, cancellationToken).ConfigureAwait(false);
             _lastAppliedConfigurationKey = null;
             _plcConnectionStatusService.Set(PlcStartupConnectionResult.NotConfigured());
             return;
@@ -142,16 +142,16 @@ public sealed class PlcConfigurationMonitorService : IDisposable
         try
         {
             _plcConnectionStatusService.Set(PlcStartupConnectionResult.Connecting(LocalizedText.Get("Services.PlcStartupConnection.Reconnecting")));
-            await _plcOperationPipeline.ConnectAsync(PlcOperationNames.Configuration.ApplyAndReconnect, PlcConnectionOptionsFactory.Create(clientAppInfo), cancellationToken).ConfigureAwait(false);
+            await _plcOperationPipeline.ConnectAsync(PlcConfigurationPipelineOperations.ApplyAndReconnect, PlcConnectionOptionsFactory.Create(clientAppInfo), cancellationToken).ConfigureAwait(false);
 
             _lastAppliedConfigurationKey = configurationKey;
             _plcConnectionStatusService.Set(PlcStartupConnectionResult.Connected(LocalizedText.Get("Services.PlcStartupConnection.Reconfigured")));
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogWarning(ex, "Failed to apply PLC settings change for resource {ResourceNumber}", clientAppInfo.ResourceNumber);
+            _logger.LogWarning(ex, LocalizedText.Get("Services.PlcConfigurationMonitor.LogApplySettingsFailed"), clientAppInfo.ResourceNumber);
 
-            var isConnected = await _plcOperationPipeline.IsConnectedAsync(PlcOperationNames.Configuration.CheckConnectionState, cancellationToken).ConfigureAwait(false);
+            var isConnected = await _plcOperationPipeline.IsConnectedAsync(PlcConfigurationPipelineOperations.CheckConnectionState, cancellationToken).ConfigureAwait(false);
             if (isConnected)
             {
                 _plcConnectionStatusService.Set(PlcStartupConnectionResult.Connected(

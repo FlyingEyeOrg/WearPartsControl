@@ -86,7 +86,9 @@
 - 登录窗口通过刷卡器模拟键盘输入完成登录，窗口打开后会自动聚焦到密码输入框。
 - 登录窗口支持回车提交；当相邻输入间隔超过 `LoginInputMaxIntervalMilliseconds` 时，会判定为手工输入并拒绝登录。
 - 应用配置统一使用 `src/WearPartsControl/PrivateData/Settings/app-settings.json`。
-- 当前默认配置示例：`{"ResourceNumber":"","LoginInputMaxIntervalMilliseconds":80}`
+- PLC 管线慢调用阈值也放在该文件中，保存应用设置后会刷新到运行中的 PLC 管线，无需重启。
+- 当前默认配置示例：`{"ResourceNumber":"","LoginInputMaxIntervalMilliseconds":80,"PlcPipeline":{"SlowQueueWaitThresholdMilliseconds":100,"SlowExecutionThresholdMilliseconds":500}}`
+- PLC 管线操作名常量已按业务域拆分到 `ApplicationServices/PlcService` 目录下的多个常量类，避免单文件持续膨胀。
 - `ResourceNumber` 用于在客户端配置中查找资源对应的 `SiteCode`，随后由登录服务完成用户认证。
 - 登录成功后，用户信息会同步到 `ICurrentUserAccessor`，主窗口右上角 `LoginBox` 会自动刷新工号、权限与登录按钮状态。
 - 登录服务会将 MHR 返回的用户目录缓存到 `PrivateData/Settings/mhr-user-cache.json`，默认缓存 1 天，可通过 `mhrinfo.json` 的 `CacheDays` 调整。

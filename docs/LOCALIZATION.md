@@ -46,6 +46,7 @@ dotnet run --project tools/LocalizationResourceGenerator/LocalizationResourceGen
 
 - 若需要进一步拆分或增强生成器逻辑（例如支持更多数据类型或生成不同格式），在 `tools/LocalizationResourceGenerator` 中扩展 `LocalizationArtifactGenerator` 的实现并补充对应单元测试。
 - 避免在不同层级使用同名对象节，否则生成器可能产生命名冲突的 `Section` 类型。ViewModel 专用资源建议使用 `*Vm` 后缀，例如 `ViewModels.MainWindowVm`。
+- PLC 相关用户可见异常、状态文案和日志模板现已分别放在 `PlcService.Errors`、`Services.PlcStartupConnection`、`Services.PlcConfigurationMonitor`、`Services.PlcPipeline` 节下；新增资源时避免再次创建同名节。
 - `App.xaml.cs` 中的用户可见文本也应放入本地化资源，当前已使用 `FriendlyErrorTitle`、`UnexpectedError` 和 `App.LegacyImportCompletedTitle`。
 
 如需我把这段内容合并回根 README.md，我可以替你把这部分追加进去并提交。
