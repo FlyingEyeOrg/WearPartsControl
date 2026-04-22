@@ -6,6 +6,7 @@ using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.PlcService;
+using WearPartsControl.ApplicationServices.SpacerManagement;
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Domain.Repositories;
 using WearPartsControl.Domain.Services;
@@ -374,6 +375,130 @@ public sealed class WearPartOperationalServicesTests : IDisposable
     }
 
     [Fact]
+    public async Task ReplaceByScanAsync_WhenDieCutSlittingAndToolCodeMissing_ShouldThrowUserFriendlyException()
+    {
+        var seeded = await SeedAsync("R-OPS-08", "M0.8", procedureCode: "模切分条");
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 30);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService);
+
+        var exception = await Assert.ThrowsAsync<UserFriendlyException>(() => service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "BARCODE-0008",
+            ReplacementReason = WearPartReplacementReason.Normal
+        }));
+
+        Assert.Equal(LocalizedText.Get("Services.WearPartReplacement.ToolCodeRequired"), exception.Message);
+    }
+
+    [Fact]
+    public async Task ReplaceByScanAsync_WhenDieCutSlittingAndToolCodeMismatch_ShouldThrowUserFriendlyException()
+    {
+        var seeded = await SeedAsync("R-OPS-08A", "M0.8A", procedureCode: "模切分条");
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 30);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService);
+
+        var exception = await Assert.ThrowsAsync<UserFriendlyException>(() => service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "BARCODE-0008A",
+            ToolCode = "TL-99",
+            ReplacementReason = WearPartReplacementReason.Normal
+        }));
+
+        Assert.Equal(LocalizedText.Format("Services.WearPartReplacement.ToolCodeMismatch", "TL-99"), exception.Message);
+    }
+
+    [Fact]
+    public async Task ReplaceByScanAsync_WhenDieCutSlittingAndToolCodeMatches_ShouldAllowReplacement()
+    {
+        var seeded = await SeedAsync("R-OPS-08B", "M0.8B", procedureCode: "模切分条");
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 30);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService);
+
+        var result = await service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "BARCODE-TL-01-0008B",
+            ToolCode = "TL-01",
+            ReplacementReason = WearPartReplacementReason.Normal
+        });
+
+        Assert.Equal("BARCODE-TL-01-0008B", result.NewBarcode);
+    }
+
+    [Fact]
+    public async Task ReplaceByScanAsync_WhenCoatingAbSideMissing_ShouldThrowUserFriendlyException()
+    {
+        var seeded = await SeedAsync("R-OPS-09", "M0.9", procedureCode: "涂布");
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 30);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService, new FakeSpacerManagementService());
+
+        var exception = await Assert.ThrowsAsync<UserFriendlyException>(() => service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "COAT-0009",
+            ReplacementReason = WearPartReplacementReason.Normal
+        }));
+
+        Assert.Equal(LocalizedText.Get("Services.WearPartReplacement.CoatingAbSideRequired"), exception.Message);
+    }
+
+    [Fact]
+    public async Task ReplaceByScanAsync_WhenCoatingSpacerValidationFails_ShouldWriteShutdownAndThrowFriendlyError()
+    {
+        var seeded = await SeedAsync("R-OPS-09A", "M0.9A", procedureCode: "涂布");
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 30);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+        var spacerService = new FakeSpacerManagementService
+        {
+            ParsedInfo = new SpacerInfo { ABSite = "A" },
+            VerifyException = new UserFriendlyException("远程验证失败")
+        };
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService, spacerService);
+
+        var exception = await Assert.ThrowsAsync<UserFriendlyException>(() => service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "COAT-0009A",
+            SelectedAbSide = "A",
+            ReplacementReason = WearPartReplacementReason.Normal
+        }));
+
+        Assert.Equal(LocalizedText.Format("Services.WearPartReplacement.SpacerValidationFailedAndShutdownApplied", "远程验证失败"), exception.Message);
+        Assert.Contains(plcService.Writes, x => x.Address == "M0.9A" && Equals(x.Value, true));
+    }
+
+    [Fact]
     public async Task MonitorByResourceNumberAsync_WhenWarningExceeded_ShouldPersistRecordAndNotifyGroup()
     {
         var seeded = await SeedAsync("R-OPS-03", "M0.2");
@@ -422,7 +547,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         Assert.Single(notificationService.WorkNotifications);
     }
 
-    private async Task<(Guid BasicConfigurationId, Guid DefinitionId)> SeedAsync(string resourceNumber, string shutdownPointAddress, string plcZeroClearAddress = "DB1.3")
+    private async Task<(Guid BasicConfigurationId, Guid DefinitionId)> SeedAsync(string resourceNumber, string shutdownPointAddress, string plcZeroClearAddress = "DB1.3", string procedureCode = "P01")
     {
         var basicConfigurationId = Guid.NewGuid();
         var definitionId = Guid.NewGuid();
@@ -434,7 +559,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             SiteCode = "S01",
             FactoryCode = "F01",
             AreaCode = "A01",
-            ProcedureCode = "P01",
+            ProcedureCode = procedureCode,
             EquipmentCode = "E01",
             ResourceNumber = resourceNumber,
             PlcProtocolType = "S7",
@@ -482,9 +607,14 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         return accessor;
     }
 
-    private static WearPartReplacementService CreateReplacementService(WearPartsControlDbContext dbContext, ICurrentUserAccessor currentUserAccessor, IPlcService plcService)
+    private static WearPartReplacementService CreateReplacementService(
+        WearPartsControlDbContext dbContext,
+        ICurrentUserAccessor currentUserAccessor,
+        IPlcService plcService,
+        ISpacerManagementService? spacerManagementService = null)
     {
         var plcOperationPipeline = new PlcOperationPipeline(plcService, Microsoft.Extensions.Logging.Abstractions.NullLogger<PlcOperationPipeline>.Instance);
+        spacerManagementService ??= new FakeSpacerManagementService();
 
         return new WearPartReplacementService(
             currentUserAccessor,
@@ -494,9 +624,11 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             plcOperationPipeline,
             [
                 new BarcodeLengthReplacementGuard(),
+                new ToolCodeReplacementGuard(),
                 new BarcodeReuseReplacementGuard(new WearPartReplacementRecordRepository(dbContext)),
                 new LifetimeReachedReplacementGuard(),
-                new ChangePositionReplacementGuard()
+                new ChangePositionReplacementGuard(),
+                new CoatingSpacerReplacementGuard(spacerManagementService, plcOperationPipeline)
             ]);
     }
 
@@ -590,6 +722,28 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         {
             WorkNotifications.Add($"{title}:{text}");
             return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class FakeSpacerManagementService : ISpacerManagementService
+    {
+        public SpacerInfo ParsedInfo { get; set; } = new() { ABSite = "A" };
+
+        public Exception? VerifyException { get; set; }
+
+        public ValueTask<SpacerInfo> ParseCodeAsync(string code, string site, string resourceId, string cardId, CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(ParsedInfo);
+        }
+
+        public ValueTask VerifyAsync(SpacerInfo info, CancellationToken cancellationToken = default)
+        {
+            if (VerifyException is null)
+            {
+                return ValueTask.CompletedTask;
+            }
+
+            return ValueTask.FromException(VerifyException);
         }
     }
 }

@@ -6,6 +6,7 @@ using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
+using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.ViewModels;
 using Xunit;
@@ -161,8 +162,11 @@ public sealed class ReplacePartViewModelTests
 
         var viewModel = new ReplacePartViewModel(
             new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01" } },
             new StubWearPartManagementService([definition]),
             replacementService,
+            new StubToolChangeManagementService(),
+            new StubToolChangeSelectionService(),
             new UiBusyService(TimeSpan.Zero),
             new PlcConnectionStatusService());
 
@@ -219,8 +223,11 @@ public sealed class ReplacePartViewModelTests
 
         var viewModel = new ReplacePartViewModel(
             new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01" } },
             new StubWearPartManagementService([definition]),
             replacementService,
+            new StubToolChangeManagementService(),
+            new StubToolChangeSelectionService(),
             new UiBusyService(TimeSpan.Zero),
             new PlcConnectionStatusService());
 
@@ -237,14 +244,89 @@ public sealed class ReplacePartViewModelTests
         Assert.Equal("BC-02", viewModel.ReplacementHistory[0].NewBarcode);
     }
 
+    [Fact]
+    public async Task InitializeAsync_WhenProcedureRequiresToolValidation_ShouldLoadSavedToolCode()
+    {
+        var definition = new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            PartName = "刀具A",
+            InputMode = "Scanner",
+            CodeMinLength = 8,
+            CodeMaxLength = 32,
+            CurrentValueDataType = "FLOAT",
+            CurrentValueAddress = "DB1.0",
+            WarningValueDataType = "FLOAT",
+            WarningValueAddress = "DB1.2",
+            ShutdownValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB1.4"
+        };
+        var toolSelectionService = new StubToolChangeSelectionService();
+        toolSelectionService.Selections[definition.Id] = "TL-01";
+        var toolChangeManagementService = new StubToolChangeManagementService();
+        toolChangeManagementService.Definitions.Add(new ToolChangeDefinition { Name = "刀型一", Code = "TL-01" });
+        var viewModel = new ReplacePartViewModel(
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01", ProcedureCode = "模切分条" } },
+            new StubWearPartManagementService([definition]),
+            new StubWearPartReplacementService
+            {
+                Preview = new WearPartReplacementPreview
+                {
+                    WearPartDefinitionId = definition.Id,
+                    ClientAppConfigurationId = Guid.NewGuid(),
+                    CurrentValue = "10",
+                    WarningValue = "20",
+                    ShutdownValue = "30"
+                }
+            },
+            toolChangeManagementService,
+            toolSelectionService,
+            new UiBusyService(TimeSpan.Zero),
+            new PlcConnectionStatusService());
+
+        await viewModel.InitializeAsync();
+
+        Assert.True(viewModel.IsToolValidationEnabled);
+        Assert.Equal("TL-01", viewModel.SelectedToolCode);
+    }
+
     private static ReplacePartViewModel CreateViewModel(IPlcConnectionStatusService plcConnectionStatusService)
     {
         return new ReplacePartViewModel(
             new StubAppSettingsService(),
+            new StubClientAppInfoService(),
             new StubWearPartManagementService(),
             new StubWearPartReplacementService(),
+            new StubToolChangeManagementService(),
+            new StubToolChangeSelectionService(),
             new UiBusyService(TimeSpan.Zero),
             plcConnectionStatusService);
+    }
+
+    private sealed class StubToolChangeManagementService : IToolChangeManagementService
+    {
+        public List<ToolChangeDefinition> Definitions { get; } = [];
+
+        public Task<IReadOnlyList<ToolChangeDefinition>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<ToolChangeDefinition>>(Definitions.ToArray());
+        }
+
+        public Task<ToolChangeDefinition> CreateAsync(ToolChangeDefinition definition, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<ToolChangeDefinition> UpdateAsync(ToolChangeDefinition definition, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
     }
 
     private sealed class StubAppSettingsService : IAppSettingsService
@@ -413,6 +495,35 @@ public sealed class ReplacePartViewModelTests
         public Task<IReadOnlyList<WearPartReplacementRecord>> GetReplacementHistoryAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
         {
             return Task.FromResult<IReadOnlyList<WearPartReplacementRecord>>(History);
+        }
+    }
+
+    private sealed class StubToolChangeSelectionService : IToolChangeSelectionService
+    {
+        public Dictionary<Guid, string> Selections { get; } = new();
+
+        public ValueTask<ToolChangeSelectionState> GetStateAsync(Guid wearPartDefinitionId, CancellationToken cancellationToken = default)
+        {
+            Selections.TryGetValue(wearPartDefinitionId, out var selected);
+            return ValueTask.FromResult(new ToolChangeSelectionState
+            {
+                SelectedToolCode = selected ?? string.Empty,
+                RecentToolCodes = Selections.Values.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
+            });
+        }
+
+        public ValueTask SaveSelectionAsync(Guid wearPartDefinitionId, string toolCode, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(toolCode))
+            {
+                Selections.Remove(wearPartDefinitionId);
+            }
+            else
+            {
+                Selections[wearPartDefinitionId] = toolCode.Trim();
+            }
+
+            return ValueTask.CompletedTask;
         }
     }
 

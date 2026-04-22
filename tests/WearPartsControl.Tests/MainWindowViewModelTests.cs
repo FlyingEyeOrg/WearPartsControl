@@ -108,7 +108,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             ResourceNumber = "RES-01"
         });
 
-        Assert.Equal(5, viewModel.Tabs.Count());
+        Assert.Equal(6, viewModel.Tabs.Count());
         Assert.True(viewModel.IsClientAppInfoConfigured);
     }
 
@@ -168,7 +168,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         var viewModel = CreateViewModel(accessor, loginService, appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
 
         await viewModel.InitializeAsync();
-        viewModel.TabChangedCommand.Execute(3);
+        viewModel.TabChangedCommand.Execute(4);
         Assert.IsType<NeedLoginUserControl>(viewModel.SelectedContent);
 
         accessor.SetCurrentUser(new MhrUser
@@ -269,7 +269,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             AccessLevel = 3
         });
 
-        viewModel.TabChangedCommand.Execute(3);
+        viewModel.TabChangedCommand.Execute(4);
         var selectedContent = viewModel.SelectedContent;
         var partUpdateRecordResolveCountBeforeTick = serviceProvider.GetResolveCount<PartUpdateRecordUserControl>();
 
@@ -504,6 +504,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             typeof(ClientAppInfoUserControl),
             typeof(NeedLoginUserControl),
             typeof(PartManagementUserControl),
+            typeof(ToolChangeManagementUserControl),
             typeof(PartUpdateRecordUserControl),
             typeof(UserConfigUserControl)
         ];

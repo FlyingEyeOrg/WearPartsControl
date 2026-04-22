@@ -11,9 +11,10 @@
              d:DataContext="{d:DesignInstance Type=vm:ReplacePartViewModel}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="AUto" />
-            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+
         <StackPanel>
             <Border Background="#FF365082"
                     Padding="0 8">
@@ -22,6 +23,7 @@
                            FontSize="16"
                            Foreground="White">易损件更换</TextBlock>
             </Border>
+
             <Border Margin="8 8 8 0"
                     CornerRadius="6"
                     Background="#FFF5F7FA"
@@ -188,6 +190,36 @@
                               SelectedValue="{Binding SelectedReplacementReason, Mode=TwoWay}"
                               Style="{StaticResource ComboBoxExtend}" />
                 </Grid>
+            </Grid>
+            <Grid Margin="8 8 8 0"
+                  Visibility="{Binding IsToolValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center">工具编码：</TextBlock>
+                <ComboBox Grid.Column="1"
+                          ItemsSource="{Binding ToolCodeOptions}"
+                          DisplayMemberPath="DisplayText"
+                          SelectedValuePath="Code"
+                          SelectedValue="{Binding SelectedToolCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          Style="{StaticResource ComboBoxExtend}"
+                          hc:InfoElement.Placeholder="请选择换刀类型" />
+            </Grid>
+            <Grid Margin="8 8 8 0"
+                  Visibility="{Binding IsCoatingValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center">A/B面：</TextBlock>
+                <ComboBox Grid.Column="1"
+                          ItemsSource="{Binding AbSideOptions}"
+                          SelectedItem="{Binding SelectedAbSide, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          Style="{StaticResource ComboBoxExtend}"
+                          hc:InfoElement.Placeholder="请选择涂布 A/B 面" />
             </Grid>
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>

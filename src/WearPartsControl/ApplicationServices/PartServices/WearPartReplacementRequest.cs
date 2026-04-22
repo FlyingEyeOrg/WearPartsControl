@@ -6,6 +6,10 @@ public sealed class WearPartReplacementRequest
 
     public string NewBarcode { get; set; } = string.Empty;
 
+    public string ToolCode { get; set; } = string.Empty;
+
+    public string SelectedAbSide { get; set; } = string.Empty;
+
     public string ReplacementReason { get; set; } = string.Empty;
 
     public string ReplacementMessage { get; set; } = string.Empty;

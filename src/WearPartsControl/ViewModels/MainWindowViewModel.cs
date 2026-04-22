@@ -328,8 +328,9 @@ namespace WearPartsControl.ViewModels
             {
                 1 => _serviceProvider.GetRequiredService<ClientAppInfoUserControl>(),
                 2 => _serviceProvider.GetRequiredService<PartManagementUserControl>(),
-                3 => _serviceProvider.GetRequiredService<PartUpdateRecordUserControl>(),
-                4 => _serviceProvider.GetRequiredService<UserConfigUserControl>(),
+                3 => _serviceProvider.GetRequiredService<ToolChangeManagementUserControl>(),
+                4 => _serviceProvider.GetRequiredService<PartUpdateRecordUserControl>(),
+                5 => _serviceProvider.GetRequiredService<UserConfigUserControl>(),
                 _ => _serviceProvider.GetRequiredService<ReplacePartUserControl>()
             };
         }

@@ -2,9 +2,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Media;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.PlcService;
@@ -14,8 +16,11 @@ namespace WearPartsControl.ViewModels;
 public sealed class ReplacePartViewModel : ObservableObject
 {
     private readonly IAppSettingsService _appSettingsService;
+    private readonly IClientAppInfoService _clientAppInfoService;
     private readonly IWearPartManagementService _wearPartManagementService;
     private readonly IWearPartReplacementService _wearPartReplacementService;
+    private readonly IToolChangeManagementService _toolChangeManagementService;
+    private readonly IToolChangeSelectionService _toolChangeSelectionService;
     private readonly IUiBusyService _uiBusyService;
     private readonly IPlcConnectionStatusService _plcConnectionStatusService;
     private readonly List<WearPartDefinition> _allDefinitions = new();
@@ -23,6 +28,7 @@ public sealed class ReplacePartViewModel : ObservableObject
     private Brush _plcConnectionStatusBackground = Brushes.Gray;
     private WearPartDefinition? _selectedDefinition;
     private string _resourceNumber = string.Empty;
+    private string _procedureCode = string.Empty;
     private string _inputMode = string.Empty;
     private int? _codeMinLength;
     private int? _codeMaxLength;
@@ -32,22 +38,31 @@ public sealed class ReplacePartViewModel : ObservableObject
     private string _lastBarcode = string.Empty;
     private string _newBarcode = string.Empty;
     private string _selectedReplacementReason = string.Empty;
+    private string _selectedToolCode = string.Empty;
+    private string _selectedAbSide = string.Empty;
     private string _replacementMessage = string.Empty;
     private string _statusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.PromptSelectAndLoadPreview");
     private bool _isBusy;
     private bool _isInitialized;
+    private bool _isApplyingToolCode;
     private int _selectionLoadVersion;
 
     public ReplacePartViewModel(
         IAppSettingsService appSettingsService,
+        IClientAppInfoService clientAppInfoService,
         IWearPartManagementService wearPartManagementService,
         IWearPartReplacementService wearPartReplacementService,
+        IToolChangeManagementService toolChangeManagementService,
+        IToolChangeSelectionService toolChangeSelectionService,
         IUiBusyService uiBusyService,
         IPlcConnectionStatusService plcConnectionStatusService)
     {
         _appSettingsService = appSettingsService;
+        _clientAppInfoService = clientAppInfoService;
         _wearPartManagementService = wearPartManagementService;
         _wearPartReplacementService = wearPartReplacementService;
+        _toolChangeManagementService = toolChangeManagementService;
+        _toolChangeSelectionService = toolChangeSelectionService;
         _uiBusyService = uiBusyService;
         _plcConnectionStatusService = plcConnectionStatusService;
         _plcConnectionStatusService.PropertyChanged += OnPlcConnectionStatusChanged;
@@ -59,6 +74,11 @@ public sealed class ReplacePartViewModel : ObservableObject
             ReplacementReasons.Add(reason);
         }
 
+        foreach (var item in new[] { "A", "B" })
+        {
+            AbSideOptions.Add(item);
+        }
+
         SelectedReplacementReason = ReplacementReasons.FirstOrDefault()?.Code ?? string.Empty;
         Apply(_plcConnectionStatusService.Current);
     }
@@ -66,6 +86,10 @@ public sealed class ReplacePartViewModel : ObservableObject
     public ObservableCollection<WearPartDefinition> Definitions { get; } = new();
 
     public ObservableCollection<WearPartReplacementReasonOption> ReplacementReasons { get; } = new();
+
+    public ObservableCollection<ToolChangeDefinition> ToolCodeOptions { get; } = new();
+
+    public ObservableCollection<string> AbSideOptions { get; } = new();
 
     public ObservableCollection<WearPartReplacementRecord> ReplacementHistory { get; } = new();
 
@@ -171,6 +195,38 @@ public sealed class ReplacePartViewModel : ObservableObject
         }
     }
 
+    public string SelectedToolCode
+    {
+        get => _selectedToolCode;
+        set
+        {
+            if (SetProperty(ref _selectedToolCode, value))
+            {
+                ReplaceCommand.NotifyCanExecuteChanged();
+                if (!_isApplyingToolCode && IsToolValidationEnabled && SelectedDefinition is not null)
+                {
+                    _ = SaveToolCodeSelectionAsync(SelectedDefinition.Id, value, CancellationToken.None);
+                }
+            }
+        }
+    }
+
+    public bool IsToolValidationEnabled => ToolCodeReplacementGuard.RequiresToolCodeValidation(_procedureCode);
+
+    public string SelectedAbSide
+    {
+        get => _selectedAbSide;
+        set
+        {
+            if (SetProperty(ref _selectedAbSide, value))
+            {
+                ReplaceCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool IsCoatingValidationEnabled => CoatingSpacerReplacementGuard.RequiresCoatingValidation(_procedureCode);
+
     public string ReplacementMessage
     {
         get => _replacementMessage;
@@ -253,13 +309,23 @@ public sealed class ReplacePartViewModel : ObservableObject
         {
             var settings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(true);
             ResourceNumber = settings.ResourceNumber?.Trim() ?? string.Empty;
+            var clientInfo = await _clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(true);
+            _procedureCode = clientInfo.ProcedureCode?.Trim() ?? string.Empty;
+            OnPropertyChanged(nameof(IsToolValidationEnabled));
+            OnPropertyChanged(nameof(IsCoatingValidationEnabled));
             Definitions.Clear();
             ReplacementHistory.Clear();
             _allDefinitions.Clear();
+            ToolCodeOptions.Clear();
+            if (!IsCoatingValidationEnabled)
+            {
+                SelectedAbSide = string.Empty;
+            }
 
             if (string.IsNullOrWhiteSpace(ResourceNumber))
             {
                 SelectedDefinition = null;
+                SetSelectedToolCode(string.Empty);
                 StatusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.ResourceNumberMissing");
                 return;
             }
@@ -274,6 +340,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             if (Definitions.Count == 0)
             {
                 SelectedDefinition = null;
+                SetSelectedToolCode(string.Empty);
                 StatusMessage = LocalizedText.Format("ViewModels.ReplacePartVm.DefinitionsEmpty", ResourceNumber);
                 return;
             }
@@ -321,6 +388,8 @@ public sealed class ReplacePartViewModel : ObservableObject
             {
                 WearPartDefinitionId = SelectedDefinition.Id,
                 NewBarcode = NewBarcode,
+                ToolCode = SelectedToolCode,
+                SelectedAbSide = SelectedAbSide,
                 ReplacementReason = SelectedReplacementReason,
                 ReplacementMessage = ReplacementMessage
             }).ConfigureAwait(true);
@@ -351,6 +420,8 @@ public sealed class ReplacePartViewModel : ObservableObject
         return !IsBusy
             && SelectedDefinition is not null
             && !string.IsNullOrWhiteSpace(NewBarcode)
+            && (!IsToolValidationEnabled || !string.IsNullOrWhiteSpace(SelectedToolCode))
+            && (!IsCoatingValidationEnabled || !string.IsNullOrWhiteSpace(SelectedAbSide))
             && !string.IsNullOrWhiteSpace(SelectedReplacementReason);
     }
 
@@ -366,6 +437,8 @@ public sealed class ReplacePartViewModel : ObservableObject
             WarningValue = null;
             ShutdownValue = null;
             LastBarcode = LocalizedText.Get("ViewModels.ReplacePartVm.LastBarcodeEmpty");
+            ToolCodeOptions.Clear();
+            SetSelectedToolCode(string.Empty);
         }
     }
 
@@ -378,6 +451,7 @@ public sealed class ReplacePartViewModel : ObservableObject
 
         try
         {
+            await LoadToolCodeStateAsync(definition.Id, cancellationToken).ConfigureAwait(true);
             var preview = await _wearPartReplacementService.GetReplacementPreviewAsync(definition.Id, cancellationToken).ConfigureAwait(true);
             if (loadVersion != _selectionLoadVersion || SelectedDefinition?.Id != definition.Id)
             {
@@ -408,6 +482,54 @@ public sealed class ReplacePartViewModel : ObservableObject
         catch (Exception ex)
         {
             StatusMessage = ex.Message;
+        }
+    }
+
+    private async Task LoadToolCodeStateAsync(Guid wearPartDefinitionId, CancellationToken cancellationToken)
+    {
+        if (!IsToolValidationEnabled)
+        {
+            ToolCodeOptions.Clear();
+            SetSelectedToolCode(string.Empty);
+            return;
+        }
+
+        var toolChanges = await _toolChangeManagementService.GetAllAsync(cancellationToken).ConfigureAwait(true);
+        var state = await _toolChangeSelectionService.GetStateAsync(wearPartDefinitionId, cancellationToken).ConfigureAwait(true);
+        ToolCodeOptions.Clear();
+        foreach (var toolChange in toolChanges)
+        {
+            ToolCodeOptions.Add(toolChange);
+        }
+
+        var selectedCode = toolChanges.Any(x => string.Equals(x.Code, state.SelectedToolCode, StringComparison.OrdinalIgnoreCase))
+            ? state.SelectedToolCode
+            : string.Empty;
+        SetSelectedToolCode(selectedCode);
+    }
+
+    private async Task SaveToolCodeSelectionAsync(Guid wearPartDefinitionId, string toolCode, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _toolChangeSelectionService.SaveSelectionAsync(wearPartDefinitionId, toolCode, cancellationToken).ConfigureAwait(true);
+        }
+        catch
+        {
+            // 持久化工具编码失败不应中断更换页的主交互。
+        }
+    }
+
+    private void SetSelectedToolCode(string value)
+    {
+        _isApplyingToolCode = true;
+        try
+        {
+            SelectedToolCode = value;
+        }
+        finally
+        {
+            _isApplyingToolCode = false;
         }
     }
 

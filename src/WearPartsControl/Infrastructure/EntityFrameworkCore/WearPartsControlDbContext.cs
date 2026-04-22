@@ -20,6 +20,8 @@ public sealed class WearPartsControlDbContext : DbContextBase
 
     public DbSet<ExceedLimitRecordEntity> ExceedLimitRecords => Set<ExceedLimitRecordEntity>();
 
+    public DbSet<ToolChangeEntity> ToolChanges => Set<ToolChangeEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(WearPartsControlDbContext).Assembly);

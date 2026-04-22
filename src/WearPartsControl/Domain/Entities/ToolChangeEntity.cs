@@ -1,0 +1,26 @@
+using System;
+using WearPartsControl.Domain.Entities.Interfaces;
+using WearPartsControl.Domain.Validation;
+
+namespace WearPartsControl.Domain.Entities;
+
+public sealed class ToolChangeEntity : Entity, IHasAuditTime, IHasAuditUser
+{
+    public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    public string? CreatedBy { get; set; } = string.Empty;
+
+    public string? UpdatedBy { get; set; } = string.Empty;
+
+    public string Name { get; set; } = string.Empty;
+
+    public string Code { get; set; } = string.Empty;
+
+    public void EnsureValid()
+    {
+        DomainValidationRules.NotWhiteSpace(Name, nameof(Name));
+        DomainValidationRules.NotWhiteSpace(Code, nameof(Code));
+    }
+}

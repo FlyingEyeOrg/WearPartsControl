@@ -66,6 +66,7 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
         var normalizedBarcode = NormalizeRequired(request.NewBarcode, LocalizedText.Get("Services.WearPartReplacement.NewBarcodeRequired"));
         var normalizedReason = WearPartReplacementReason.NormalizeCode(
             NormalizeRequired(request.ReplacementReason, LocalizedText.Get("Services.WearPartReplacement.ReasonRequired")));
+        request.ToolCode = request.ToolCode?.Trim() ?? string.Empty;
 
         var latestRecord = await _replacementRecordRepository.GetLatestByDefinitionAsync(definition.Id, cancellationToken).ConfigureAwait(false);
         await _plcOperationPipeline.ConnectAsync(PlcReplacementPipelineOperations.ConnectReplace, WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration), cancellationToken).ConfigureAwait(false);

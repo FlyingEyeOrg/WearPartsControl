@@ -259,3 +259,43 @@
 - `src/WearPartsControl/ApplicationServices/PartServices/Services/*`
 - `src/WearPartsControl/ApplicationServices/PartServices/Rules/*`
 - `tests/WearPartsControl.Tests/PartServices/*`
+
+---
+
+## 5. 当前映射状态审计（2026-04-22）
+
+基于当前项目 `WearPartsControl` 与源项目 `VulnerablePartsSys` 的代码核对，结论如下：**文档中描述的旧系统能力尚未被当前项目完全映射**。
+
+### 5.1 已完成或基本完成
+
+- 基础配置维护：已迁移到 `ClientAppInfoService` + `ClientAppInfoViewModel`。
+- 易损件定义维护：已迁移到 `WearPartManagementService`，支持按资源号复制定义。
+- 易损件更换主流程：已迁移到 `WearPartReplacementService`，已覆盖条码长度、条码复用、更换原因寿命规则、PLC 清零/写条码、更换记录落库。
+- 历史更换记录查询/导出：已迁移到 `PartUpdateRecordViewModel` / `PartUpdateRecordUserControl`。
+- 寿命监控与停机写点：已迁移到 `WearPartMonitorService` / `WearPartMonitoringHostedService`，并保留“每天一条”的超限记录限制。
+- MHR 登录与缓存：已迁移到 `LoginService` + `MhrUserDirectoryCache`。
+- 模切分条 by 工具校验：本轮已补充“工具编码必填 + 新条码必须包含工具编码”的更换校验，并用本地 SaveInfo 记录每个易损件最近选择的工具编码。
+
+### 5.2 部分映射，仍有缺口
+
+- 历史页分页：
+  - 已有分页与导出。
+  - 本轮补充了“每页条数可配置”。
+- 迁移文档中的 `PLC 写入 + DB 写入` 一致性优化建议：当前仍主要依赖顺序执行，尚未引入补偿任务或 outbox。
+
+### 5.3 尚未完整映射的旧系统能力
+
+- `EquipentInVersion` 设备版本同步逻辑：当前项目中未发现等价实体与同步流程。
+- `UserInfoByResourceId` 用户快照入库：当前登录缓存仍是本地 JSON 缓存，未落到数据库表。
+
+### 5.4 结论
+
+- 本文档对**旧系统业务范围**的梳理是完整且可用的。
+- 但对**当前项目已迁移完成度**而言，不能视为“已全部映射完成”。
+- 当前项目更接近“核心更换/监控/登录能力已迁移完成，且 `ToolChange` 主数据、模切分条换刀校验、涂布 A/B 面 + Spacer 校验闭环已补齐；用户快照入库与设备版本同步仍待继续补齐”的状态。
+
+### 5.5 本轮新增映射结论
+
+- `ToolChange`：已完成数据库实体、EF 映射、仓储、应用服务、主窗口入口和维护页面迁移，可执行增删改查。
+- 模切分条换刀校验：已从“自由输入工具编码”升级为“正式主数据下拉选择 + 按易损件记忆最近选择”。
+- 涂布工序：已完成 A/B 面选择、条码 `ABSite` 比对、`SpacerManagementService` 远程校验，以及校验失败后的停机点写入保护。

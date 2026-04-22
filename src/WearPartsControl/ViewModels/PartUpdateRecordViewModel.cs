@@ -12,6 +12,7 @@ namespace WearPartsControl.ViewModels;
 public sealed class PartUpdateRecordViewModel : ObservableObject
 {
     private const int DefaultPageSize = 20;
+    private static readonly int[] SupportedPageSizes = [10, 20, 50, 100];
 
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly IWearPartManagementService _wearPartManagementService;
@@ -27,6 +28,7 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
     private bool _isInitialized;
     private int _currentPage = 1;
     private int _totalPages = 1;
+    private int _selectedPageSize = DefaultPageSize;
     private string _requestedPageNumber = "1";
     private string _statusMessage = LocalizedText.Get("ViewModels.PartUpdateRecordVm.PromptLoadCurrent");
 
@@ -47,6 +49,11 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
         NextPageCommand = new RelayCommand(MoveToNextPage, CanMoveToNextPage);
         GoToPageCommand = new RelayCommand(MoveToRequestedPage, CanMoveToRequestedPage);
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync(CancellationToken.None), CanRefresh);
+
+        foreach (var pageSize in SupportedPageSizes)
+        {
+            PageSizeOptions.Add(pageSize);
+        }
     }
 
     public event EventHandler<PartUpdateRecordExportRequestedEventArgs>? ExportRequested;
@@ -54,6 +61,8 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
     public ObservableCollection<WearPartDefinition> Definitions { get; } = new();
 
     public ObservableCollection<WearPartReplacementRecord> Records { get; } = new();
+
+    public ObservableCollection<int> PageSizeOptions { get; } = new();
 
     public IRelayCommand QueryCommand { get; }
 
@@ -117,6 +126,20 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
         private set => SetProperty(ref _totalPages, value);
     }
 
+    public int SelectedPageSize
+    {
+        get => _selectedPageSize;
+        set
+        {
+            if (SetProperty(ref _selectedPageSize, value))
+            {
+                CurrentPage = 1;
+                RequestedPageNumber = "1";
+                RecalculatePagingAndReload();
+            }
+        }
+    }
+
     public string RequestedPageNumber
     {
         get => _requestedPageNumber;
@@ -164,6 +187,7 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
             Records.Clear();
             CurrentPage = 1;
             TotalPages = 1;
+            SelectedPageSize = DefaultPageSize;
             RequestedPageNumber = "1";
 
             if (_clientAppConfigurationId == Guid.Empty || string.IsNullOrWhiteSpace(ResourceNumber))
@@ -239,16 +263,7 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
 
         _filteredRecords.AddRange(records);
 
-        TotalPages = Math.Max(1, (int)Math.Ceiling(_filteredRecords.Count / (double)DefaultPageSize));
-        CurrentPage = Math.Min(Math.Max(1, CurrentPage), TotalPages);
-        RequestedPageNumber = CurrentPage.ToString();
-        LoadCurrentPage();
-        UpdateStatusMessage();
-
-        ExportCommand.NotifyCanExecuteChanged();
-        PreviousPageCommand.NotifyCanExecuteChanged();
-        NextPageCommand.NotifyCanExecuteChanged();
-        GoToPageCommand.NotifyCanExecuteChanged();
+        RecalculatePagingAndReload();
     }
 
     private void MoveToPreviousPage()
@@ -288,10 +303,24 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
         LoadCurrentPage();
     }
 
+    private void RecalculatePagingAndReload()
+    {
+        TotalPages = Math.Max(1, (int)Math.Ceiling(_filteredRecords.Count / (double)SelectedPageSize));
+        CurrentPage = Math.Min(Math.Max(1, CurrentPage), TotalPages);
+        RequestedPageNumber = CurrentPage.ToString();
+        LoadCurrentPage();
+        UpdateStatusMessage();
+
+        ExportCommand.NotifyCanExecuteChanged();
+        PreviousPageCommand.NotifyCanExecuteChanged();
+        NextPageCommand.NotifyCanExecuteChanged();
+        GoToPageCommand.NotifyCanExecuteChanged();
+    }
+
     private void LoadCurrentPage()
     {
         Records.Clear();
-        foreach (var record in _filteredRecords.Skip((CurrentPage - 1) * DefaultPageSize).Take(DefaultPageSize))
+        foreach (var record in _filteredRecords.Skip((CurrentPage - 1) * SelectedPageSize).Take(SelectedPageSize))
         {
             Records.Add(record);
         }

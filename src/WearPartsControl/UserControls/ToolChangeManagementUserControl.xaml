@@ -1,0 +1,140 @@
+<UserControl x:Class="WearPartsControl.UserControls.ToolChangeManagementUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             mc:Ignorable="d"
+             d:DesignHeight="450"
+             d:DesignWidth="1000">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <Border Background="#FF365082"
+                    Padding="0 8">
+                <TextBlock HorizontalAlignment="Center"
+                           FontWeight="Bold"
+                           FontSize="16"
+                           Foreground="White">换刀类型管理</TextBlock>
+            </Border>
+
+            <Border Margin="8 8 8 0"
+                    CornerRadius="6"
+                    Background="#FFF5F7FA"
+                    BorderBrush="#FFD9E2F2"
+                    BorderThickness="1">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock VerticalAlignment="Center"
+                               Foreground="{StaticResource InfoBrush}"
+                               FontWeight="SemiBold"
+                               Text="{Binding StatusMessage}" />
+
+                    <WrapPanel Grid.Row="1"
+                               Margin="0 8 0 0">
+                        <Grid Margin="0 8 8 0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="180" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center">名称：</TextBlock>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding ToolName, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     hc:InfoElement.Placeholder="请输入换刀类型名称" />
+                        </Grid>
+
+                        <Grid Margin="0 8 8 0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="180" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center">编码：</TextBlock>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding ToolCode, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     hc:InfoElement.Placeholder="请输入工具校验编码" />
+                        </Grid>
+
+                        <Grid Margin="0 8 8 0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="180" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center">筛选：</TextBlock>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     hc:InfoElement.Placeholder="名称或编码" />
+                        </Grid>
+
+                        <Button Margin="0 8 8 0"
+                                Width="80"
+                                Command="{Binding SearchCommand}"
+                                Style="{StaticResource ButtonPrimary}">查询</Button>
+                        <Button Margin="0 8 8 0"
+                                Width="80"
+                                Command="{Binding RefreshCommand}"
+                                Style="{StaticResource ButtonPrimary}">刷新</Button>
+                        <Button Margin="0 8 8 0"
+                                Width="80"
+                                Command="{Binding NewCommand}"
+                                Style="{StaticResource ButtonPrimary}">新建</Button>
+                        <Button Margin="0 8 8 0"
+                                Width="80"
+                                Command="{Binding SaveCommand}"
+                                Style="{StaticResource ButtonPrimary}">保存</Button>
+                        <Button Margin="0 8 8 0"
+                                Width="80"
+                                Command="{Binding DeleteCommand}"
+                                Style="{StaticResource ButtonPrimary}">删除</Button>
+                    </WrapPanel>
+                </Grid>
+            </Border>
+        </StackPanel>
+
+        <Border Grid.Row="1"
+                Margin="8"
+                MinHeight="0"
+                MinWidth="0"
+                ClipToBounds="True">
+            <DataGrid AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      IsReadOnly="True"
+                      ItemsSource="{Binding Definitions}"
+                      SelectedItem="{Binding SelectedDefinition, Mode=TwoWay}"
+                      EnableColumnVirtualization="True"
+                      EnableRowVirtualization="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="名称"
+                                        Binding="{Binding Name}"
+                                        Width="180" />
+                    <DataGridTextColumn Header="编码"
+                                        Binding="{Binding Code}"
+                                        Width="140" />
+                    <DataGridTextColumn Header="创建时间"
+                                        Binding="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                        Width="160" />
+                    <DataGridTextColumn Header="创建人"
+                                        Binding="{Binding CreatedBy}"
+                                        Width="120" />
+                    <DataGridTextColumn Header="更新时间"
+                                        Binding="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                        Width="160" />
+                    <DataGridTextColumn Header="更新人"
+                                        Binding="{Binding UpdatedBy}"
+                                        Width="120" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>

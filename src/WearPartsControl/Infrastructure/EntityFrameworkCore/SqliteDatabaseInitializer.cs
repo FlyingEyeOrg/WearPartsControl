@@ -30,6 +30,10 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
         [
             "Id", "CreatedAt", "UpdatedAt", "CreatedBy", "UpdatedBy", "ClientAppConfigurationId", "WearPartDefinitionId", "PartName",
             "CurrentValue", "WarningValue", "ShutdownValue", "Severity", "OccurredAt", "NotificationMessage"
+        ],
+        ["tool_changes"] =
+        [
+            "Id", "CreatedAt", "UpdatedAt", "CreatedBy", "UpdatedBy", "Name", "Code"
         ]
     };
 

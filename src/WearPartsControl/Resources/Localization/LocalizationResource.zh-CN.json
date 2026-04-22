@@ -10,6 +10,7 @@
       "易损件更换",
       "设备基础信息",
       "易损件管理",
+      "换刀类型管理",
       "易损件更换历史",
       "用户配置"
     ]
@@ -129,6 +130,20 @@
       "Replacing": "正在更换易损件 {0}...",
       "ReplaceSucceeded": "易损件 {0} 更换成功，新条码：{1}。"
     },
+    "ToolChangeManagementVm": {
+      "PromptLoadCurrent": "请先加载换刀类型主数据。",
+      "Loading": "正在加载换刀类型...",
+      "Empty": "当前暂无换刀类型。",
+      "Loaded": "已加载 {0} 条换刀类型。",
+      "Saving": "正在保存换刀类型...",
+      "Saved": "换刀类型已保存。",
+      "SavedWithName": "换刀类型 {0} 已保存。",
+      "DeleteConfirmationMessage": "确认删除换刀类型“{0}”吗？",
+      "DeleteConfirmationTitle": "删除确认",
+      "Deleting": "正在删除换刀类型...",
+      "Deleted": "换刀类型 {0} 已删除。",
+      "Creating": "正在新建换刀类型。"
+    },
     "PartUpdateRecordVm": {
       "PromptLoadCurrent": "请先加载当前设备的易损件更换记录。",
       "Loading": "正在加载易损件更换记录...",
@@ -214,6 +229,14 @@
       "CodeMaxLengthRangeInvalid": "条码最大长度必须大于 0。",
       "CodeLengthRangeInverted": "条码最小长度不能大于最大长度。"
     },
+    "ToolChangeManagement": {
+      "NameRequired": "换刀类型名称不能为空。",
+      "CodeRequired": "换刀类型编码不能为空。",
+      "DuplicatedName": "已存在名称为 {0} 的换刀类型。",
+      "DuplicatedCode": "已存在编码为 {0} 的换刀类型。",
+      "IdRequired": "更新换刀类型时必须提供有效主键。",
+      "NotFoundById": "未找到主键为 {0} 的换刀类型。"
+    },
     "WearPartReplacement": {
       "NewBarcodeRequired": "新条码不能为空。",
       "ReasonRequired": "更换原因不能为空。",
@@ -228,6 +251,12 @@
       "ChangePositionWindowExceeded": "“寿命到期，更换位置”只允许在达到预警寿命后、达到停机寿命前执行。",
       "BarcodeAlreadyUsed": "易损件 {0} 已存在条码 {1} 的更换记录，不允许重复使用。",
       "BarcodeDuplicated": "条码重复，请更换其他条码。",
+      "ToolCodeRequired": "当前工序要求先输入或选择工具编码。",
+      "ToolCodeMismatch": "进行更换的刀编号不包含校验编号【{0}】，请确认。",
+      "CoatingAbSideRequired": "当前涂布工序必须先选择 A/B 面。",
+      "CoatingAbSideMismatch": "当前选择的 A/B 面为 {0}，但条码解析结果为 {1}，请确认。",
+      "SpacerValidationFailedAndShutdownApplied": "垫片校验失败，系统已执行停机保护：{0}",
+      "SpacerValidationFailedAndShutdownWriteFailed": "垫片校验失败，且停机信号写入失败。校验错误：{0}；停机写入错误：{1}",
       "LifetimeNotReached": "检测到当前易损件未达到预警寿命，不允许更换。",
       "ValueCannotConvert": "PLC 地址 {0} 的值无法转换为数值：{1}。"
     },

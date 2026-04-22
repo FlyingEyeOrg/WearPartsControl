@@ -119,7 +119,16 @@
         <StackPanel Margin="8 8 8 8"
                     Grid.Row="2"
                     Orientation="Horizontal">
+            <TextBlock VerticalAlignment="Center">每页</TextBlock>
+            <ComboBox Margin="8 0 0 0"
+                  Width="80"
+                  ItemsSource="{Binding PageSizeOptions}"
+                  SelectedItem="{Binding SelectedPageSize, Mode=TwoWay}"
+                  Style="{StaticResource ComboBoxExtend}" />
+            <TextBlock Margin="8 0 0 0"
+                   VerticalAlignment="Center">条</TextBlock>
             <Button Style="{StaticResource ButtonIconCircular}"
+                Margin="16 0 0 0"
                     Command="{Binding PreviousPageCommand}"
                     hc:IconElement.Geometry="{StaticResource LeftGeometry}"></Button>
             <TextBox Margin="8 0 0 0"

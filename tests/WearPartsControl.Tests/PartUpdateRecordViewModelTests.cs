@@ -96,6 +96,29 @@ public sealed class PartUpdateRecordViewModelTests
     }
 
     [Fact]
+    public async Task SelectedPageSize_WhenChanged_ShouldUpdateCurrentPageDataAndTotalPages()
+    {
+        var definition = new WearPartDefinition { Id = Guid.NewGuid(), PartName = "刀具A" };
+        var records = Enumerable.Range(1, 25)
+            .Select(index => new WearPartReplacementRecord
+            {
+                WearPartDefinitionId = definition.Id,
+                PartName = definition.PartName,
+                NewBarcode = $"NB-{index}"
+            })
+            .ToArray();
+        var viewModel = CreateViewModel([definition], records);
+
+        await viewModel.InitializeAsync();
+
+        viewModel.SelectedPageSize = 10;
+
+        Assert.Equal(3, viewModel.TotalPages);
+        Assert.Equal(10, viewModel.Records.Count);
+        Assert.Equal(1, viewModel.CurrentPage);
+    }
+
+    [Fact]
     public void WearPartReplacementRecord_WhenOnlyReasonCodeProvided_ShouldResolveDisplayName()
     {
         var record = new WearPartReplacementRecord

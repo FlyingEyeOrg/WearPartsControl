@@ -10,6 +10,7 @@
       "Wear Part Replacement",
       "Equipment Information",
       "Wear Part Management",
+      "Tool Change Management",
       "Replacement History",
       "User Settings"
     ]
@@ -129,6 +130,20 @@
       "Replacing": "Replacing wear part {0}...",
       "ReplaceSucceeded": "Wear part {0} replaced successfully. New barcode: {1}."
     },
+    "ToolChangeManagementVm": {
+      "PromptLoadCurrent": "Please load tool change master data first.",
+      "Loading": "Loading tool change types...",
+      "Empty": "No tool change types found.",
+      "Loaded": "Loaded {0} tool change types.",
+      "Saving": "Saving tool change type...",
+      "Saved": "Tool change type saved.",
+      "SavedWithName": "Tool change type {0} saved.",
+      "DeleteConfirmationMessage": "Delete tool change type \"{0}\"?",
+      "DeleteConfirmationTitle": "Delete Confirmation",
+      "Deleting": "Deleting tool change type...",
+      "Deleted": "Tool change type {0} deleted.",
+      "Creating": "Creating a new tool change type."
+    },
     "PartUpdateRecordVm": {
       "PromptLoadCurrent": "Please load wear part replacement history for the current device first.",
       "Loading": "Loading wear part replacement history...",
@@ -214,6 +229,14 @@
       "CodeMaxLengthRangeInvalid": "Maximum barcode length must be greater than 0.",
       "CodeLengthRangeInverted": "Minimum barcode length cannot be greater than maximum barcode length."
     },
+    "ToolChangeManagement": {
+      "NameRequired": "Tool change type name cannot be empty.",
+      "CodeRequired": "Tool change type code cannot be empty.",
+      "DuplicatedName": "A tool change type named {0} already exists.",
+      "DuplicatedCode": "A tool change type with code {0} already exists.",
+      "IdRequired": "A valid primary key is required to update a tool change type.",
+      "NotFoundById": "No tool change type found with ID {0}."
+    },
     "WearPartReplacement": {
       "NewBarcodeRequired": "New barcode cannot be empty.",
       "ReasonRequired": "Replacement reason cannot be empty.",
@@ -228,6 +251,12 @@
       "ChangePositionWindowExceeded": "Change-position replacement is only allowed after reaching warning lifetime and before reaching shutdown lifetime.",
       "BarcodeAlreadyUsed": "Wear part {0} already has a replacement record with barcode {1}, so it cannot be reused.",
       "BarcodeDuplicated": "Barcode already exists. Please use another barcode.",
+      "ToolCodeRequired": "The current procedure requires a tool code before replacement.",
+      "ToolCodeMismatch": "The replacement barcode does not contain the required tool validation code [{0}].",
+      "CoatingAbSideRequired": "The current coating procedure requires selecting side A or B first.",
+      "CoatingAbSideMismatch": "The selected coating side is {0}, but the parsed barcode side is {1}.",
+      "SpacerValidationFailedAndShutdownApplied": "Spacer validation failed and the system applied shutdown protection: {0}",
+      "SpacerValidationFailedAndShutdownWriteFailed": "Spacer validation failed and writing the shutdown signal also failed. Validation error: {0}; shutdown write error: {1}",
       "LifetimeNotReached": "The current wear part has not reached warning lifetime, so replacement is not allowed.",
       "ValueCannotConvert": "The value at PLC address {0} cannot be converted to a number: {1}."
     },
