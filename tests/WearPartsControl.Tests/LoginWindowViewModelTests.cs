@@ -123,8 +123,60 @@ public sealed class LoginWindowViewModelTests
         Assert.False(viewModel.IsBusy);
     }
 
+    [Fact]
+    public async Task LoginCommand_WhenUserNotFound_ShouldClearInputAndRaiseClearEvent()
+    {
+        var loginService = new StubLoginService { LoginResult = null };
+        var viewModel = new LoginWindowViewModel(
+            loginService,
+            new StubClientAppConfigurationRepository(),
+            new StubAppSettingsService(),
+            new StubUiDispatcher());
+        var clearRaised = false;
+        viewModel.RequestClearInput += (_, _) => clearRaised = true;
+
+        await viewModel.InitializeAsync();
+        viewModel.AuthId = "CARD-01";
+
+        await viewModel.LoginCommand.ExecuteAsync(null);
+
+        Assert.True(clearRaised);
+        Assert.Equal(string.Empty, viewModel.AuthId);
+        Assert.Equal(LocalizedText.Get("ViewModels.LoginWindowVm.UserNotFound"), viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task LoginCommand_WhenLoginThrows_ShouldClearInputAndKeepErrorMessage()
+    {
+        var loginService = new StubLoginService { LoginException = new InvalidOperationException("登录失败") };
+        var viewModel = new LoginWindowViewModel(
+            loginService,
+            new StubClientAppConfigurationRepository(),
+            new StubAppSettingsService(),
+            new StubUiDispatcher());
+        var clearRaised = false;
+        viewModel.RequestClearInput += (_, _) => clearRaised = true;
+
+        await viewModel.InitializeAsync();
+        viewModel.AuthId = "CARD-01";
+
+        await viewModel.LoginCommand.ExecuteAsync(null);
+
+        Assert.True(clearRaised);
+        Assert.Equal(string.Empty, viewModel.AuthId);
+        Assert.Equal("登录失败", viewModel.StatusMessage);
+    }
+
     private sealed class StubLoginService : ILoginService
     {
+        public MhrUser? LoginResult { get; set; } = new MhrUser
+        {
+            WorkId = "WORK-01",
+            AccessLevel = 1
+        };
+
+        public Exception? LoginException { get; set; }
+
         public string ResourceNumber { get; private set; } = string.Empty;
 
         public string SiteCode { get; private set; } = string.Empty;
@@ -139,17 +191,22 @@ public sealed class LoginWindowViewModelTests
             ResourceNumber = resourceId;
             IsIdCard = isIdCard;
 
+            if (LoginException is not null)
+            {
+                return Task.FromException<MhrUser?>(LoginException);
+            }
+
             if (LoginTaskSource is not null)
             {
                 return LoginTaskSource.Task;
             }
 
-            return Task.FromResult<MhrUser?>(new MhrUser
+            if (LoginResult is not null)
             {
-                CardId = authId,
-                WorkId = "WORK-01",
-                AccessLevel = 1
-            });
+                LoginResult.CardId = authId;
+            }
+
+            return Task.FromResult(LoginResult);
         }
 
         public MhrUser? GetCurrentUser() => null;

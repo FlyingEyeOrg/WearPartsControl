@@ -22,6 +22,7 @@ namespace WearPartsControl.Views
             Loaded += OnLoaded;
             Closed += OnClosed;
             _viewModel.RequestClose += OnRequestClose;
+            _viewModel.RequestClearInput += OnRequestClearInput;
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -34,6 +35,7 @@ namespace WearPartsControl.Views
         private void OnClosed(object? sender, EventArgs e)
         {
             _viewModel.RequestClose -= OnRequestClose;
+            _viewModel.RequestClearInput -= OnRequestClearInput;
             Loaded -= OnLoaded;
             Closed -= OnClosed;
         }
@@ -42,6 +44,14 @@ namespace WearPartsControl.Views
         {
             DialogResult = dialogResult;
             Close();
+        }
+
+        private void OnRequestClearInput(object? sender, EventArgs e)
+        {
+            PasswordInputBox.Clear();
+            _lastInputAt = null;
+            PasswordInputBox.Focus();
+            Keyboard.Focus(PasswordInputBox);
         }
 
         private void PasswordInputBox_OnPasswordChanged(object sender, RoutedEventArgs e)

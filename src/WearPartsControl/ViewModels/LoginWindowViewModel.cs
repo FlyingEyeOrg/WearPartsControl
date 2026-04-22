@@ -44,6 +44,8 @@ namespace WearPartsControl.ViewModels
 
         public event EventHandler<bool?>? RequestClose;
 
+        public event EventHandler? RequestClearInput;
+
         public string AuthId
         {
             get => _authId;
@@ -181,7 +183,12 @@ namespace WearPartsControl.ViewModels
 
                 if (user is null)
                 {
-                    await _uiDispatcher.RunAsync(() => StatusMessage = LocalizedText.Get("ViewModels.LoginWindowVm.UserNotFound"));
+                    await _uiDispatcher.RunAsync(() =>
+                    {
+                        AuthId = string.Empty;
+                        StatusMessage = LocalizedText.Get("ViewModels.LoginWindowVm.UserNotFound");
+                        RequestClearInput?.Invoke(this, EventArgs.Empty);
+                    });
                     return;
                 }
 
@@ -194,7 +201,12 @@ namespace WearPartsControl.ViewModels
             catch (Exception ex)
             {
                 await EnsureMinimumBusyDurationAsync(busyEnteredAt);
-                await _uiDispatcher.RunAsync(() => StatusMessage = ex.Message);
+                await _uiDispatcher.RunAsync(() =>
+                {
+                    AuthId = string.Empty;
+                    StatusMessage = ex.Message;
+                    RequestClearInput?.Invoke(this, EventArgs.Empty);
+                });
             }
             finally
             {
