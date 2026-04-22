@@ -110,6 +110,35 @@ public sealed class WearPartOperationalServicesTests : IDisposable
     }
 
     [Fact]
+    public async Task ReplaceByScanAsync_WhenWarningLifetimeReached_ShouldAllowReplacement()
+    {
+        var seeded = await SeedAsync("R-OPS-05A", "M0.5A");
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 20);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService);
+
+        var result = await service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "BARCODE-0005A",
+            ReplacementReason = WearPartReplacementReason.Normal
+        });
+
+        Assert.Equal("BARCODE-0005A", result.NewBarcode);
+
+        await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
+        var repository = new WearPartReplacementRecordRepository(verifyContext);
+        var records = await repository.ListByClientAppConfigurationAsync(seeded.BasicConfigurationId);
+        Assert.Single(records);
+        Assert.Equal("BARCODE-0005A", records[0].NewBarcode);
+    }
+
+    [Fact]
     public async Task ReplaceByScanAsync_WhenChangePositionWithoutMe_ShouldThrowAuthorizationException()
     {
         var seeded = await SeedAsync("R-OPS-06", "M0.6");

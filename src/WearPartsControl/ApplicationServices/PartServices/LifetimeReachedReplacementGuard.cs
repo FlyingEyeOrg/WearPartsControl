@@ -14,7 +14,7 @@ public sealed class LifetimeReachedReplacementGuard : IWearPartReplacementGuard
             return Task.CompletedTask;
         }
 
-        if (context.CurrentValue < context.ShutdownValue)
+        if (context.CurrentValue < context.WarningValue)
         {
             throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.LifetimeNotReached"), code: "WearPartReplacement:LifetimeNotReached");
         }

@@ -222,7 +222,7 @@
       "ChangePositionRequiresMe": "当前扫的条码跟上次使用的条码一致，请 ME 登录确认是否继续使用。",
       "BarcodeAlreadyUsed": "易损件 {0} 已存在条码 {1} 的更换记录，不允许重复使用。",
       "BarcodeDuplicated": "条码重复，请更换其他条码。",
-      "LifetimeNotReached": "检测到当前易损件未达到停机寿命，不允许更换。",
+      "LifetimeNotReached": "检测到当前易损件未达到预警寿命，不允许更换。",
       "ValueCannotConvert": "PLC 地址 {0} 的值无法转换为数值：{1}。"
     },
     "WearPartMonitor": {

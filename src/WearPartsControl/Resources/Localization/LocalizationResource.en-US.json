@@ -222,7 +222,7 @@
       "ChangePositionRequiresMe": "The scanned barcode matches the previously used barcode. Please ask ME to log in and confirm whether to continue.",
       "BarcodeAlreadyUsed": "Wear part {0} already has a replacement record with barcode {1}, so it cannot be reused.",
       "BarcodeDuplicated": "Barcode already exists. Please use another barcode.",
-      "LifetimeNotReached": "The current wear part has not reached shutdown lifetime, so replacement is not allowed.",
+      "LifetimeNotReached": "The current wear part has not reached warning lifetime, so replacement is not allowed.",
       "ValueCannotConvert": "The value at PLC address {0} cannot be converted to a number: {1}."
     },
     "WearPartMonitor": {
