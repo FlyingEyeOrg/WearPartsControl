@@ -24,11 +24,11 @@ public sealed class ReplacePartViewModel : ObservableObject
     private WearPartDefinition? _selectedDefinition;
     private string _resourceNumber = string.Empty;
     private string _inputMode = string.Empty;
-    private string _codeMinLengthText = string.Empty;
-    private string _codeMaxLengthText = string.Empty;
-    private string _currentValue = string.Empty;
-    private string _warningValue = string.Empty;
-    private string _shutdownValue = string.Empty;
+    private int? _codeMinLength;
+    private int? _codeMaxLength;
+    private double? _currentValue;
+    private double? _warningValue;
+    private double? _shutdownValue;
     private string _lastBarcode = string.Empty;
     private string _newBarcode = string.Empty;
     private string _selectedReplacementReason = string.Empty;
@@ -110,31 +110,31 @@ public sealed class ReplacePartViewModel : ObservableObject
         private set => SetProperty(ref _inputMode, value);
     }
 
-    public string CodeMinLengthText
+    public int? CodeMinLength
     {
-        get => _codeMinLengthText;
-        private set => SetProperty(ref _codeMinLengthText, value);
+        get => _codeMinLength;
+        private set => SetProperty(ref _codeMinLength, value);
     }
 
-    public string CodeMaxLengthText
+    public int? CodeMaxLength
     {
-        get => _codeMaxLengthText;
-        private set => SetProperty(ref _codeMaxLengthText, value);
+        get => _codeMaxLength;
+        private set => SetProperty(ref _codeMaxLength, value);
     }
 
-    public string CurrentValue
+    public double? CurrentValue
     {
         get => _currentValue;
         private set => SetProperty(ref _currentValue, value);
     }
 
-    public string WarningValue
+    public double? WarningValue
     {
         get => _warningValue;
         private set => SetProperty(ref _warningValue, value);
     }
 
-    public string ShutdownValue
+    public double? ShutdownValue
     {
         get => _shutdownValue;
         private set => SetProperty(ref _shutdownValue, value);
@@ -343,14 +343,14 @@ public sealed class ReplacePartViewModel : ObservableObject
     private void ApplySelectedDefinition(WearPartDefinition? definition)
     {
         InputMode = definition?.InputMode ?? string.Empty;
-        CodeMinLengthText = definition?.CodeMinLength.ToString() ?? string.Empty;
-        CodeMaxLengthText = definition?.CodeMaxLength.ToString() ?? string.Empty;
+        CodeMinLength = definition?.CodeMinLength;
+        CodeMaxLength = definition?.CodeMaxLength;
 
         if (definition is null)
         {
-            CurrentValue = string.Empty;
-            WarningValue = string.Empty;
-            ShutdownValue = string.Empty;
+            CurrentValue = null;
+            WarningValue = null;
+            ShutdownValue = null;
             LastBarcode = string.Empty;
         }
     }
@@ -366,9 +366,9 @@ public sealed class ReplacePartViewModel : ObservableObject
         try
         {
             var preview = await _wearPartReplacementService.GetReplacementPreviewAsync(definition.Id, cancellationToken).ConfigureAwait(true);
-            CurrentValue = preview.CurrentValue;
-            WarningValue = preview.WarningValue;
-            ShutdownValue = preview.ShutdownValue;
+            CurrentValue = ParsePreviewValue(preview.CurrentValue, definition.CurrentValueDataType, definition.CurrentValueAddress);
+            WarningValue = ParsePreviewValue(preview.WarningValue, definition.WarningValueDataType, definition.WarningValueAddress);
+            ShutdownValue = ParsePreviewValue(preview.ShutdownValue, definition.ShutdownValueDataType, definition.ShutdownValueAddress);
             LastBarcode = preview.LastBarcode ?? string.Empty;
 
             var history = await _wearPartReplacementService.GetReplacementHistoryAsync(preview.ClientAppConfigurationId, cancellationToken).ConfigureAwait(true);
@@ -382,5 +382,15 @@ public sealed class ReplacePartViewModel : ObservableObject
         {
             StatusMessage = ex.Message;
         }
+    }
+
+    private static double? ParsePreviewValue(string rawValue, string dataType, string address)
+    {
+        if (string.IsNullOrWhiteSpace(rawValue))
+        {
+            return null;
+        }
+
+        return WearPartReplacementValueParser.ParseDouble(rawValue, dataType, address);
     }
 }

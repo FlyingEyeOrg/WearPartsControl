@@ -94,7 +94,7 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">当前寿命：</TextBlock>
                         <TextBox IsReadOnly="True"
-                                 Text="{Binding CurrentValue, Mode=OneWay}"
+                                 Text="{Binding CurrentValue, Mode=OneWay, TargetNullValue=''}"
                                  Grid.Column="1"></TextBox>
                     </Grid>
                     <Grid Margin="0 8 0 0">
@@ -105,7 +105,7 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">预警寿命：</TextBlock>
                         <TextBox IsReadOnly="True"
-                                 Text="{Binding WarningValue, Mode=OneWay}"
+                                 Text="{Binding WarningValue, Mode=OneWay, TargetNullValue=''}"
                                  Grid.Column="1"></TextBox>
                     </Grid>
                     <Grid Margin="0 8 0 0">
@@ -116,7 +116,7 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">停机寿命：</TextBlock>
                         <TextBox IsReadOnly="True"
-                                 Text="{Binding ShutdownValue, Mode=OneWay}"
+                                 Text="{Binding ShutdownValue, Mode=OneWay, TargetNullValue=''}"
                                  Grid.Column="1"></TextBox>
                     </Grid>
                 </StackPanel>
@@ -141,7 +141,7 @@
                                    VerticalAlignment="Center">条码最小长度：</TextBlock>
                         <TextBox Grid.Column="1"
                                  IsReadOnly="True"
-                                 Text="{Binding CodeMinLengthText, Mode=OneWay}" />
+                                 Text="{Binding CodeMinLength, Mode=OneWay, TargetNullValue=''}" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -152,7 +152,7 @@
                                    VerticalAlignment="Center">条码最大长度：</TextBlock>
                         <TextBox Grid.Column="1"
                                  IsReadOnly="True"
-                                 Text="{Binding CodeMaxLengthText, Mode=OneWay}" />
+                                 Text="{Binding CodeMaxLength, Mode=OneWay, TargetNullValue=''}" />
                     </Grid>
                 </StackPanel>
             </Grid>

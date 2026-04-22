@@ -116,11 +116,11 @@ public sealed class ReplacePartViewModelTests
     {
         var viewModel = CreateViewModel(new PlcConnectionStatusService());
 
-        Assert.Equal(string.Empty, viewModel.CodeMinLengthText);
-        Assert.Equal(string.Empty, viewModel.CodeMaxLengthText);
-        Assert.Equal(string.Empty, viewModel.CurrentValue);
-        Assert.Equal(string.Empty, viewModel.WarningValue);
-        Assert.Equal(string.Empty, viewModel.ShutdownValue);
+        Assert.Null(viewModel.CodeMinLength);
+        Assert.Null(viewModel.CodeMaxLength);
+        Assert.Null(viewModel.CurrentValue);
+        Assert.Null(viewModel.WarningValue);
+        Assert.Null(viewModel.ShutdownValue);
     }
 
     private static ReplacePartViewModel CreateViewModel(IPlcConnectionStatusService plcConnectionStatusService)
