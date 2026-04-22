@@ -83,7 +83,6 @@
                                 Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource DeleteGeometry}">删除</Button>
                         <Button Margin="0 8 8 0"
-                            Width="120"
                             Command="{Binding ImportLegacyDefinitionsCommand}"
                             Style="{StaticResource ButtonPrimary}"
                             hc:IconElement.Geometry="{StaticResource AddGeometry}">导入旧库易损件</Button>
