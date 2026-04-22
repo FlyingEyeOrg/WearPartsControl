@@ -1,6 +1,7 @@
 ﻿using System.Windows.Controls;
 using System.Text;
 using System.IO;
+using System.Threading;
 using Microsoft.Win32;
 using WearPartsControl.ViewModels;
 
@@ -28,6 +29,7 @@ public partial class PartUpdateRecordUserControl : UserControl
     {
         if (_isInitialized)
         {
+            await _viewModel.RefreshAsync(CancellationToken.None).ConfigureAwait(true);
             return;
         }
 

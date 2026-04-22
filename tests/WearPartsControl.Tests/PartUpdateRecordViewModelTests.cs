@@ -94,6 +94,44 @@ public sealed class PartUpdateRecordViewModelTests
         Assert.Contains("NB-1", raised.Content);
     }
 
+    [Fact]
+    public async Task RefreshAsync_WhenNewReplacementRecordAdded_ShouldLoadLatestRecord()
+    {
+        var definition = new WearPartDefinition { Id = Guid.NewGuid(), PartName = "刀具A" };
+        var replacementService = new StubWearPartReplacementService(
+        [
+            new WearPartReplacementRecord
+            {
+                Id = Guid.NewGuid(),
+                WearPartDefinitionId = definition.Id,
+                PartName = definition.PartName,
+                NewBarcode = "NB-1",
+                ReplacedAt = DateTime.UtcNow.AddMinutes(-1)
+            }
+        ]);
+        var viewModel = new PartUpdateRecordViewModel(
+            new StubClientAppInfoService(),
+            new StubWearPartManagementService([definition]),
+            replacementService,
+            new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+
+        replacementService.AddRecord(new WearPartReplacementRecord
+        {
+            Id = Guid.NewGuid(),
+            WearPartDefinitionId = definition.Id,
+            PartName = definition.PartName,
+            NewBarcode = "NB-2",
+            ReplacedAt = DateTime.UtcNow
+        });
+
+        await viewModel.RefreshAsync(CancellationToken.None);
+
+        Assert.Equal(2, viewModel.Records.Count);
+        Assert.Equal("NB-2", viewModel.Records[0].NewBarcode);
+    }
+
     private static PartUpdateRecordViewModel CreateViewModel(
         IReadOnlyList<WearPartDefinition> definitions,
         IReadOnlyList<WearPartReplacementRecord> records)
@@ -107,11 +145,13 @@ public sealed class PartUpdateRecordViewModelTests
 
     private sealed class StubClientAppInfoService : IClientAppInfoService
     {
+        private readonly Guid _id = Guid.NewGuid();
+
         public Task<ClientAppInfoModel> GetAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(new ClientAppInfoModel
             {
-                Id = Guid.NewGuid(),
+                Id = _id,
                 ResourceNumber = "RES-01"
             });
         }
@@ -150,11 +190,11 @@ public sealed class PartUpdateRecordViewModelTests
 
     private sealed class StubWearPartReplacementService : IWearPartReplacementService
     {
-        private readonly IReadOnlyList<WearPartReplacementRecord> _records;
+        private readonly List<WearPartReplacementRecord> _records;
 
         public StubWearPartReplacementService(IReadOnlyList<WearPartReplacementRecord> records)
         {
-            _records = records;
+            _records = records.ToList();
         }
 
         public Task<WearPartReplacementPreview> GetReplacementPreviewAsync(Guid wearPartDefinitionId, CancellationToken cancellationToken = default)
@@ -169,7 +209,12 @@ public sealed class PartUpdateRecordViewModelTests
 
         public Task<IReadOnlyList<WearPartReplacementRecord>> GetReplacementHistoryAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(_records);
+            return Task.FromResult<IReadOnlyList<WearPartReplacementRecord>>(_records.ToArray());
+        }
+
+        public void AddRecord(WearPartReplacementRecord record)
+        {
+            _records.Insert(0, record);
         }
     }
 }

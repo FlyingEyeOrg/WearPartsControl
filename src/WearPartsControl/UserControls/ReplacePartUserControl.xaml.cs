@@ -1,5 +1,6 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Threading;
+using System.Threading;
 using WearPartsControl.ViewModels;
 
 namespace WearPartsControl.UserControls
@@ -20,18 +21,20 @@ namespace WearPartsControl.UserControls
 
         private async void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (_isInitialized)
+            if (DataContext is not ReplacePartViewModel viewModel)
             {
                 return;
             }
 
-            _isInitialized = true;
-
-            if (DataContext is ReplacePartViewModel viewModel)
+            if (_isInitialized)
             {
-                await Dispatcher.Yield(DispatcherPriority.Background);
-                await viewModel.InitializeAsync().ConfigureAwait(true);
+                await viewModel.RefreshAsync(CancellationToken.None).ConfigureAwait(true);
+                return;
             }
+
+            _isInitialized = true;
+            await Dispatcher.Yield(DispatcherPriority.Background);
+            await viewModel.InitializeAsync().ConfigureAwait(true);
         }
     }
 }

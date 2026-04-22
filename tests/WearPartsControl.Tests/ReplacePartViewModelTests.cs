@@ -176,6 +176,67 @@ public sealed class ReplacePartViewModelTests
         Assert.Single(viewModel.ReplacementHistory);
     }
 
+    [Fact]
+    public async Task ReplaceAsync_WhenReplacementSucceeds_ShouldUpdateHistoryImmediately()
+    {
+        var clientAppConfigurationId = Guid.NewGuid();
+        var definition = new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            PartName = "刀具A",
+            InputMode = "Scanner",
+            CodeMinLength = 8,
+            CodeMaxLength = 32,
+            CurrentValueDataType = "FLOAT",
+            CurrentValueAddress = "DB1.0",
+            WarningValueDataType = "FLOAT",
+            WarningValueAddress = "DB1.2",
+            ShutdownValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB1.4"
+        };
+        var replacementService = new StubWearPartReplacementService
+        {
+            Preview = new WearPartReplacementPreview
+            {
+                WearPartDefinitionId = definition.Id,
+                ClientAppConfigurationId = clientAppConfigurationId,
+                CurrentValue = "12.5",
+                WarningValue = "20",
+                ShutdownValue = "30",
+                LastBarcode = "BC-01"
+            }
+        };
+        replacementService.History.Add(new WearPartReplacementRecord
+        {
+            Id = Guid.NewGuid(),
+            ClientAppConfigurationId = clientAppConfigurationId,
+            WearPartDefinitionId = definition.Id,
+            PartName = definition.PartName,
+            NewBarcode = "BC-01",
+            ReplacementReason = WearPartReplacementReason.ProcessDamage,
+            ReplacedAt = DateTime.UtcNow.AddMinutes(-1)
+        });
+
+        var viewModel = new ReplacePartViewModel(
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubWearPartManagementService([definition]),
+            replacementService,
+            new UiBusyService(TimeSpan.Zero),
+            new PlcConnectionStatusService());
+
+        await viewModel.InitializeAsync();
+        viewModel.SelectedReplacementReason = WearPartReplacementReason.ProcessDamage;
+        viewModel.NewBarcode = "BC-02";
+        viewModel.ReplacementMessage = "测试备注";
+
+        await viewModel.ReplaceCommand.ExecuteAsync(null);
+
+        Assert.Equal(string.Empty, viewModel.NewBarcode);
+        Assert.Equal("BC-02", viewModel.LastBarcode);
+        Assert.Equal(2, viewModel.ReplacementHistory.Count);
+        Assert.Equal("BC-02", viewModel.ReplacementHistory[0].NewBarcode);
+    }
+
     private static ReplacePartViewModel CreateViewModel(IPlcConnectionStatusService plcConnectionStatusService)
     {
         return new ReplacePartViewModel(
@@ -316,7 +377,37 @@ public sealed class ReplacePartViewModelTests
 
         public Task<WearPartReplacementRecord> ReplaceByScanAsync(WearPartReplacementRequest request, CancellationToken cancellationToken = default)
         {
-            throw new NotSupportedException();
+            var record = new WearPartReplacementRecord
+            {
+                Id = Guid.NewGuid(),
+                ClientAppConfigurationId = Preview.ClientAppConfigurationId,
+                WearPartDefinitionId = request.WearPartDefinitionId,
+                PartName = History.FirstOrDefault(x => x.WearPartDefinitionId == request.WearPartDefinitionId)?.PartName ?? "刀具A",
+                OldBarcode = Preview.LastBarcode,
+                NewBarcode = request.NewBarcode.Trim(),
+                CurrentValue = Preview.CurrentValue,
+                WarningValue = Preview.WarningValue,
+                ShutdownValue = Preview.ShutdownValue,
+                OperatorWorkNumber = "WORK-01",
+                ReplacementReason = request.ReplacementReason.Trim(),
+                ReplacementMessage = request.ReplacementMessage?.Trim() ?? string.Empty,
+                ReplacedAt = DateTime.UtcNow
+            };
+
+            Preview = new WearPartReplacementPreview
+            {
+                WearPartDefinitionId = Preview.WearPartDefinitionId,
+                ClientAppConfigurationId = Preview.ClientAppConfigurationId,
+                ResourceNumber = Preview.ResourceNumber,
+                PartName = record.PartName,
+                LastBarcode = record.NewBarcode,
+                CurrentValue = Preview.CurrentValue,
+                WarningValue = Preview.WarningValue,
+                ShutdownValue = Preview.ShutdownValue
+            };
+
+            History.Insert(0, record);
+            return Task.FromResult(record);
         }
 
         public Task<IReadOnlyList<WearPartReplacementRecord>> GetReplacementHistoryAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)

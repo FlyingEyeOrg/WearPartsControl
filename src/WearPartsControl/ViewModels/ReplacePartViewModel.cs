@@ -325,6 +325,7 @@ public sealed class ReplacePartViewModel : ObservableObject
                 ReplacementMessage = ReplacementMessage
             }).ConfigureAwait(true);
 
+            ApplyReplacementRecord(record);
             NewBarcode = string.Empty;
             ReplacementMessage = string.Empty;
             await LoadSelectedDefinitionDetailsAsync(SelectedDefinition, CancellationToken.None, Interlocked.Increment(ref _selectionLoadVersion)).ConfigureAwait(true);
@@ -408,6 +409,32 @@ public sealed class ReplacePartViewModel : ObservableObject
         {
             StatusMessage = ex.Message;
         }
+    }
+
+    private void ApplyReplacementRecord(WearPartReplacementRecord record)
+    {
+        if (SelectedDefinition is null || record.WearPartDefinitionId != SelectedDefinition.Id)
+        {
+            return;
+        }
+
+        var existingRecord = ReplacementHistory.FirstOrDefault(x => x.Id == record.Id);
+        if (existingRecord is not null)
+        {
+            var existingIndex = ReplacementHistory.IndexOf(existingRecord);
+            if (existingIndex >= 0)
+            {
+                ReplacementHistory[existingIndex] = record;
+            }
+        }
+        else
+        {
+            ReplacementHistory.Insert(0, record);
+        }
+
+        LastBarcode = string.IsNullOrWhiteSpace(record.NewBarcode)
+            ? LocalizedText.Get("ViewModels.ReplacePartVm.LastBarcodeEmpty")
+            : record.NewBarcode.Trim();
     }
 
     private static double? ParsePreviewValue(string rawValue, string dataType, string address)
