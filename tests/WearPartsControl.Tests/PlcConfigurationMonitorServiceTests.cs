@@ -183,7 +183,7 @@ public sealed class PlcConfigurationMonitorServiceTests
         }
     }
 
-    private sealed class StubPlcService : IPlcOperationContext
+    private sealed class StubPlcService : IPlcService
     {
         public List<PlcConnectionOptions> ConnectCalls { get; } = new();
 

@@ -10,36 +10,53 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
     private const long SlowExecutionThresholdMilliseconds = 500;
 
     private readonly SemaphoreSlim _gate = new(1, 1);
-    private readonly IPlcOperationContext _plcContext;
+    private readonly IPlcService _plcService;
     private readonly ILogger<PlcOperationPipeline> _logger;
     private int _pendingOperations;
     private long _operationSequence;
 
-    public PlcOperationPipeline(IPlcOperationContext plcContext, ILogger<PlcOperationPipeline> logger)
+    internal PlcOperationPipeline(IPlcService plcService, ILogger<PlcOperationPipeline> logger)
     {
-        _plcContext = plcContext;
+        _plcService = plcService;
         _logger = logger;
     }
 
-    public Task ExecuteAsync(string operationName, Action<IPlcOperationContext> operation, CancellationToken cancellationToken = default)
+    public Task ConnectAsync(string operationName, PlcConnectionOptions options, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentNullException.ThrowIfNull(options);
 
-        return ExecuteAsync(operationName, plcContext =>
+        return ExecuteCoreAsync(operationName, plcService => plcService.ConnectAsync(options, cancellationToken), cancellationToken);
+    }
+
+    public Task DisconnectAsync(string operationName, CancellationToken cancellationToken = default)
+    {
+        return ExecuteCoreAsync(operationName, plcService =>
         {
-            operation(plcContext);
+            plcService.Disconnect();
             return Task.CompletedTask;
         }, cancellationToken);
     }
 
-    public Task<TResult> ExecuteAsync<TResult>(string operationName, Func<IPlcOperationContext, TResult> operation, CancellationToken cancellationToken = default)
+    public Task<bool> IsConnectedAsync(string operationName, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(operation);
-
-        return ExecuteAsync(operationName, plcContext => Task.FromResult(operation(plcContext)), cancellationToken);
+        return ExecuteCoreAsync(operationName, plcService => Task.FromResult(plcService.IsConnected), cancellationToken);
     }
 
-    public async Task ExecuteAsync(string operationName, Func<IPlcOperationContext, Task> operation, CancellationToken cancellationToken = default)
+    public Task<TValue> ReadAsync<TValue>(string operationName, string address, int retryCount = 1, CancellationToken cancellationToken = default)
+    {
+        return ExecuteCoreAsync(operationName, plcService => Task.FromResult(plcService.Read<TValue>(address, retryCount)), cancellationToken);
+    }
+
+    public Task WriteAsync<TValue>(string operationName, string address, TValue value, int retryCount = 1, CancellationToken cancellationToken = default)
+    {
+        return ExecuteCoreAsync(operationName, plcService =>
+        {
+            plcService.Write(address, value, retryCount);
+            return Task.CompletedTask;
+        }, cancellationToken);
+    }
+
+    private async Task ExecuteCoreAsync(string operationName, Func<IPlcService, Task> operation, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(operation);
         ValidateOperationName(operationName);
@@ -58,7 +75,7 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
 
         try
         {
-            await operation(_plcContext).ConfigureAwait(false);
+            await operation(_plcService).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -75,7 +92,7 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
         }
     }
 
-    public async Task<TResult> ExecuteAsync<TResult>(string operationName, Func<IPlcOperationContext, Task<TResult>> operation, CancellationToken cancellationToken = default)
+    private async Task<TResult> ExecuteCoreAsync<TResult>(string operationName, Func<IPlcService, Task<TResult>> operation, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(operation);
         ValidateOperationName(operationName);
@@ -94,7 +111,7 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
 
         try
         {
-            return await operation(_plcContext).ConfigureAwait(false);
+            return await operation(_plcService).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

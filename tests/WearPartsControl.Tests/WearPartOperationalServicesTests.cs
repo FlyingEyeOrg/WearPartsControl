@@ -321,7 +321,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         return accessor;
     }
 
-    private static WearPartReplacementService CreateReplacementService(WearPartsControlDbContext dbContext, ICurrentUserAccessor currentUserAccessor, IPlcOperationContext plcService)
+    private static WearPartReplacementService CreateReplacementService(WearPartsControlDbContext dbContext, ICurrentUserAccessor currentUserAccessor, IPlcService plcService)
     {
         var plcOperationPipeline = new PlcOperationPipeline(plcService, Microsoft.Extensions.Logging.Abstractions.NullLogger<PlcOperationPipeline>.Instance);
 
@@ -339,7 +339,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             ]);
     }
 
-    private static WearPartMonitorService CreateMonitorService(WearPartsControlDbContext dbContext, IPlcOperationContext plcService, IComNotificationService notificationService)
+    private static WearPartMonitorService CreateMonitorService(WearPartsControlDbContext dbContext, IPlcService plcService, IComNotificationService notificationService)
     {
         var plcOperationPipeline = new PlcOperationPipeline(plcService, Microsoft.Extensions.Logging.Abstractions.NullLogger<PlcOperationPipeline>.Instance);
 
@@ -371,7 +371,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         }
     }
 
-    private sealed class FakePlcService : IPlcOperationContext
+    private sealed class FakePlcService : IPlcService
     {
         private readonly Dictionary<string, object> _values = new(StringComparer.OrdinalIgnoreCase);
 

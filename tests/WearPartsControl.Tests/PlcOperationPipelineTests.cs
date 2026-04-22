@@ -7,7 +7,7 @@ namespace WearPartsControl.Tests;
 public sealed class PlcOperationPipelineTests
 {
     [Fact]
-    public async Task ExecuteAsync_WhenCalledConcurrently_ShouldSerializeOperations()
+    public async Task ConnectAsync_WhenCalledConcurrently_ShouldSerializeOperations()
     {
         var plcService = new PipelineTestPlcService();
         var logger = new TestLogger<PlcOperationPipeline>();
@@ -17,21 +17,27 @@ public sealed class PlcOperationPipelineTests
         var secondStarted = false;
         var executionOrder = new List<string>();
 
-        var firstTask = pipeline.ExecuteAsync("Test/First", async _ =>
+        plcService.OnConnectAsync = async options =>
         {
-            executionOrder.Add("first-start");
-            firstEntered.SetResult();
-            await releaseFirst.Task;
-            executionOrder.Add("first-end");
-        });
+            if (options.IpAddress == "ADDR-1")
+            {
+                executionOrder.Add("first-start");
+                firstEntered.SetResult();
+                await releaseFirst.Task;
+                executionOrder.Add("first-end");
+                return;
+            }
+
+            secondStarted = true;
+            executionOrder.Add("second");
+            await Task.CompletedTask;
+        };
+
+        var firstTask = pipeline.ConnectAsync("Test/First", new PlcConnectionOptions { IpAddress = "ADDR-1" });
 
         await firstEntered.Task;
 
-        var secondTask = pipeline.ExecuteAsync("Test/Second", _ =>
-        {
-            secondStarted = true;
-            executionOrder.Add("second");
-        });
+        var secondTask = pipeline.ConnectAsync("Test/Second", new PlcConnectionOptions { IpAddress = "ADDR-2" });
 
         await Task.Delay(100);
         Assert.False(secondStarted);
@@ -43,16 +49,19 @@ public sealed class PlcOperationPipelineTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WhenOperationIsSlow_ShouldWriteWarningLog()
+    public async Task ReadAsync_WhenOperationIsSlow_ShouldWriteWarningLog()
     {
         var plcService = new PipelineTestPlcService();
         var logger = new TestLogger<PlcOperationPipeline>();
         var pipeline = new PlcOperationPipeline(plcService, logger);
 
-        await pipeline.ExecuteAsync("Test/SlowOperation", async _ =>
+        plcService.OnRead = _ =>
         {
-            await Task.Delay(550);
-        });
+            Thread.Sleep(550);
+            return 1;
+        };
+
+        _ = await pipeline.ReadAsync<int>("Test/SlowOperation", "ADDR-SLOW");
 
         Assert.Contains(logger.Entries, entry =>
             entry.LogLevel == LogLevel.Warning
@@ -60,13 +69,17 @@ public sealed class PlcOperationPipelineTests
             && entry.Message.Contains("completed in", StringComparison.Ordinal));
     }
 
-    private sealed class PipelineTestPlcService : IPlcOperationContext
+    private sealed class PipelineTestPlcService : IPlcService
     {
         public bool IsConnected => true;
 
+        public Func<PlcConnectionOptions, Task>? OnConnectAsync { get; set; }
+
+        public Func<string, object>? OnRead { get; set; }
+
         public Task ConnectAsync(PlcConnectionOptions options, CancellationToken cancellationToken = default)
         {
-            return Task.CompletedTask;
+            return OnConnectAsync?.Invoke(options) ?? Task.CompletedTask;
         }
 
         public void Disconnect()
@@ -75,7 +88,13 @@ public sealed class PlcOperationPipelineTests
 
         public TValue Read<TValue>(string address, int retryCount = 1)
         {
-            throw new NotSupportedException();
+            if (OnRead is null)
+            {
+                throw new NotSupportedException();
+            }
+
+            var value = OnRead(address);
+            return (TValue)Convert.ChangeType(value, typeof(TValue), System.Globalization.CultureInfo.InvariantCulture);
         }
 
         public void Write<TValue>(string address, TValue value, int retryCount = 1)

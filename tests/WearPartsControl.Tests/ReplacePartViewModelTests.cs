@@ -161,7 +161,7 @@ public sealed class ReplacePartViewModelTests
         }
     }
 
-    private sealed class StubPlcService : IPlcOperationContext
+    private sealed class StubPlcService : IPlcService
     {
         public bool IsConnected { get; private set; }
 

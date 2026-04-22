@@ -2,11 +2,13 @@ namespace WearPartsControl.ApplicationServices.PlcService;
 
 public interface IPlcOperationPipeline
 {
-    Task ExecuteAsync(string operationName, Action<IPlcOperationContext> operation, CancellationToken cancellationToken = default);
+    Task ConnectAsync(string operationName, PlcConnectionOptions options, CancellationToken cancellationToken = default);
 
-    Task<TResult> ExecuteAsync<TResult>(string operationName, Func<IPlcOperationContext, TResult> operation, CancellationToken cancellationToken = default);
+    Task DisconnectAsync(string operationName, CancellationToken cancellationToken = default);
 
-    Task ExecuteAsync(string operationName, Func<IPlcOperationContext, Task> operation, CancellationToken cancellationToken = default);
+    Task<bool> IsConnectedAsync(string operationName, CancellationToken cancellationToken = default);
 
-    Task<TResult> ExecuteAsync<TResult>(string operationName, Func<IPlcOperationContext, Task<TResult>> operation, CancellationToken cancellationToken = default);
+    Task<TValue> ReadAsync<TValue>(string operationName, string address, int retryCount = 1, CancellationToken cancellationToken = default);
+
+    Task WriteAsync<TValue>(string operationName, string address, TValue value, int retryCount = 1, CancellationToken cancellationToken = default);
 }
