@@ -321,14 +321,16 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         return accessor;
     }
 
-    private static WearPartReplacementService CreateReplacementService(WearPartsControlDbContext dbContext, ICurrentUserAccessor currentUserAccessor, IPlcService plcService)
+    private static WearPartReplacementService CreateReplacementService(WearPartsControlDbContext dbContext, ICurrentUserAccessor currentUserAccessor, IPlcOperationContext plcService)
     {
+        var plcOperationPipeline = new PlcOperationPipeline(plcService, Microsoft.Extensions.Logging.Abstractions.NullLogger<PlcOperationPipeline>.Instance);
+
         return new WearPartReplacementService(
             currentUserAccessor,
             new ClientAppConfigurationRepository(dbContext),
             new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
             new WearPartReplacementRecordRepository(dbContext),
-            plcService,
+            plcOperationPipeline,
             [
                 new BarcodeLengthReplacementGuard(),
                 new BarcodeReuseReplacementGuard(new WearPartReplacementRecordRepository(dbContext)),
@@ -337,14 +339,16 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             ]);
     }
 
-    private static WearPartMonitorService CreateMonitorService(WearPartsControlDbContext dbContext, IPlcService plcService, IComNotificationService notificationService)
+    private static WearPartMonitorService CreateMonitorService(WearPartsControlDbContext dbContext, IPlcOperationContext plcService, IComNotificationService notificationService)
     {
+        var plcOperationPipeline = new PlcOperationPipeline(plcService, Microsoft.Extensions.Logging.Abstractions.NullLogger<PlcOperationPipeline>.Instance);
+
         return new WearPartMonitorService(
             new CurrentUserAccessor(),
             new ClientAppConfigurationRepository(dbContext),
             new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
             new ExceedLimitRecordRepository(dbContext),
-            plcService,
+            plcOperationPipeline,
             notificationService);
     }
 
@@ -367,7 +371,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         }
     }
 
-    private sealed class FakePlcService : IPlcService
+    private sealed class FakePlcService : IPlcOperationContext
     {
         private readonly Dictionary<string, object> _values = new(StringComparer.OrdinalIgnoreCase);
 

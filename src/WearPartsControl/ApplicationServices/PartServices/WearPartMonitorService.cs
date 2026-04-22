@@ -15,7 +15,7 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
     private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
     private readonly IWearPartRepository _wearPartRepository;
     private readonly IExceedLimitRecordRepository _exceedLimitRecordRepository;
-    private readonly IPlcService _plcService;
+    private readonly IPlcOperationPipeline _plcOperationPipeline;
     private readonly IComNotificationService _notificationService;
 
     public WearPartMonitorService(
@@ -23,14 +23,14 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
         IClientAppConfigurationRepository clientAppConfigurationRepository,
         IWearPartRepository wearPartRepository,
         IExceedLimitRecordRepository exceedLimitRecordRepository,
-        IPlcService plcService,
+        IPlcOperationPipeline plcOperationPipeline,
         IComNotificationService notificationService)
         : base(currentUserAccessor)
     {
         _clientAppConfigurationRepository = clientAppConfigurationRepository;
         _wearPartRepository = wearPartRepository;
         _exceedLimitRecordRepository = exceedLimitRecordRepository;
-        _plcService = plcService;
+        _plcOperationPipeline = plcOperationPipeline;
         _notificationService = notificationService;
     }
 
@@ -46,43 +46,57 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
             return [];
         }
 
-        await _plcService.ConnectAsync(WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration), cancellationToken).ConfigureAwait(false);
-
         var now = DateTime.UtcNow;
         var shouldSaveChanges = false;
-        var results = new List<WearPartMonitorResult>(definitions.Count);
-
-        foreach (var definition in definitions)
+        var plcResults = await _plcOperationPipeline.ExecuteAsync("Monitor/ReadDefinitions", async plcService =>
         {
-            var currentValue = WearPartPlcAccessor.ReadAsDouble(_plcService, definition.CurrentValueAddress, definition.CurrentValueDataType);
-            var warningValue = WearPartPlcAccessor.ReadAsDouble(_plcService, definition.WarningValueAddress, definition.WarningValueDataType);
-            var shutdownValue = WearPartPlcAccessor.ReadAsDouble(_plcService, definition.ShutdownValueAddress, definition.ShutdownValueDataType);
+            await plcService.ConnectAsync(WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration), cancellationToken).ConfigureAwait(false);
 
-            var status = ResolveStatus(currentValue, warningValue, shutdownValue);
+            var snapshots = new List<MonitorSnapshot>(definitions.Count);
+            foreach (var definition in definitions)
+            {
+                var currentValue = WearPartPlcAccessor.ReadAsDouble(plcService, definition.CurrentValueAddress, definition.CurrentValueDataType);
+                var warningValue = WearPartPlcAccessor.ReadAsDouble(plcService, definition.WarningValueAddress, definition.WarningValueDataType);
+                var shutdownValue = WearPartPlcAccessor.ReadAsDouble(plcService, definition.ShutdownValueAddress, definition.ShutdownValueDataType);
+                var status = ResolveStatus(currentValue, warningValue, shutdownValue);
+
+                if (status == WearPartMonitorStatus.Shutdown)
+                {
+                    WearPartPlcAccessor.WriteShutdownSignal(plcService, clientAppConfiguration.ShutdownPointAddress, shutdown: definition.IsShutdown);
+                }
+
+                snapshots.Add(new MonitorSnapshot(definition, currentValue, warningValue, shutdownValue, status));
+            }
+
+            return snapshots;
+        }, cancellationToken).ConfigureAwait(false);
+
+        var results = new List<WearPartMonitorResult>(plcResults.Count);
+        foreach (var snapshot in plcResults)
+        {
             var notificationTriggered = false;
 
-            if (status == WearPartMonitorStatus.Warning)
+            if (snapshot.Status == WearPartMonitorStatus.Warning)
             {
-                notificationTriggered = await HandleEventAsync(clientAppConfiguration, definition, currentValue, warningValue, shutdownValue, now, WarningSeverity, cancellationToken).ConfigureAwait(false);
+                notificationTriggered = await HandleEventAsync(clientAppConfiguration, snapshot.Definition, snapshot.CurrentValue, snapshot.WarningValue, snapshot.ShutdownValue, now, WarningSeverity, cancellationToken).ConfigureAwait(false);
                 shouldSaveChanges |= notificationTriggered;
             }
-            else if (status == WearPartMonitorStatus.Shutdown)
+            else if (snapshot.Status == WearPartMonitorStatus.Shutdown)
             {
-                notificationTriggered = await HandleEventAsync(clientAppConfiguration, definition, currentValue, warningValue, shutdownValue, now, ShutdownSeverity, cancellationToken).ConfigureAwait(false);
+                notificationTriggered = await HandleEventAsync(clientAppConfiguration, snapshot.Definition, snapshot.CurrentValue, snapshot.WarningValue, snapshot.ShutdownValue, now, ShutdownSeverity, cancellationToken).ConfigureAwait(false);
                 shouldSaveChanges |= notificationTriggered;
-                WearPartPlcAccessor.WriteShutdownSignal(_plcService, clientAppConfiguration.ShutdownPointAddress, shutdown: definition.IsShutdown);
             }
 
             results.Add(new WearPartMonitorResult
             {
-                WearPartDefinitionId = definition.Id,
+                WearPartDefinitionId = snapshot.Definition.Id,
                 ClientAppConfigurationId = clientAppConfiguration.Id,
                 ResourceNumber = clientAppConfiguration.ResourceNumber,
-                PartName = definition.PartName,
-                CurrentValue = currentValue,
-                WarningValue = warningValue,
-                ShutdownValue = shutdownValue,
-                Status = status,
+                PartName = snapshot.Definition.PartName,
+                CurrentValue = snapshot.CurrentValue,
+                WarningValue = snapshot.WarningValue,
+                ShutdownValue = snapshot.ShutdownValue,
+                Status = snapshot.Status,
                 NotificationTriggered = notificationTriggered
             });
         }
@@ -184,4 +198,11 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
 
         return value.Trim();
     }
+
+    private sealed record MonitorSnapshot(
+        WearPartDefinitionEntity Definition,
+        double CurrentValue,
+        double WarningValue,
+        double ShutdownValue,
+        WearPartMonitorStatus Status);
 }

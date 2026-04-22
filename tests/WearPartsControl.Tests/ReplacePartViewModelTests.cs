@@ -18,6 +18,7 @@ public sealed class ReplacePartViewModelTests
     public async Task EnsureConnectedAsync_WhenClientAppNotConfigured_ShouldSkipConnection()
     {
         var plcService = new StubPlcService();
+        var plcOperationPipeline = new PlcOperationPipeline(plcService, NullLogger<PlcOperationPipeline>.Instance);
         var plcConnectionStatusService = new PlcConnectionStatusService();
         var service = new PlcStartupConnectionService(
             new StubAppSettingsService
@@ -29,7 +30,7 @@ public sealed class ReplacePartViewModelTests
                 }
             },
             new StubServiceScopeFactory(new StubClientAppInfoService()),
-            plcService,
+            plcOperationPipeline,
             plcConnectionStatusService,
             NullLogger<PlcStartupConnectionService>.Instance);
 
@@ -45,6 +46,7 @@ public sealed class ReplacePartViewModelTests
     public async Task EnsureConnectedAsync_WhenClientAppConfigured_ShouldConnectPlc()
     {
         var plcService = new StubPlcService();
+        var plcOperationPipeline = new PlcOperationPipeline(plcService, NullLogger<PlcOperationPipeline>.Instance);
         var plcConnectionStatusService = new PlcConnectionStatusService();
         var service = new PlcStartupConnectionService(
             new StubAppSettingsService
@@ -69,7 +71,7 @@ public sealed class ReplacePartViewModelTests
                         IsStringReverse = false
                     }
                 }),
-            plcService,
+            plcOperationPipeline,
             plcConnectionStatusService,
             NullLogger<PlcStartupConnectionService>.Instance);
 
@@ -159,7 +161,7 @@ public sealed class ReplacePartViewModelTests
         }
     }
 
-    private sealed class StubPlcService : IPlcService
+    private sealed class StubPlcService : IPlcOperationContext
     {
         public bool IsConnected { get; private set; }
 

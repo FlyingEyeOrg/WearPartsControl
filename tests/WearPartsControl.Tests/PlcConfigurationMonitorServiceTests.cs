@@ -16,11 +16,12 @@ public sealed class PlcConfigurationMonitorServiceTests
         var appSettingsService = new StubAppSettingsService();
         var clientAppInfoService = new StubClientAppInfoService();
         var plcService = new StubPlcService();
+        var plcOperationPipeline = new PlcOperationPipeline(plcService, new TestLogger<PlcOperationPipeline>());
         var connectionStatusService = new PlcConnectionStatusService();
         using var monitorService = new PlcConfigurationMonitorService(
             appSettingsService,
             new StubServiceScopeFactory(clientAppInfoService),
-            plcService,
+            plcOperationPipeline,
             connectionStatusService,
             new TestLogger<PlcConfigurationMonitorService>());
 
@@ -48,11 +49,12 @@ public sealed class PlcConfigurationMonitorServiceTests
             Current = CreateClientAppInfoModel(ipAddress: "192.168.0.10")
         };
         var plcService = new StubPlcService();
+        var plcOperationPipeline = new PlcOperationPipeline(plcService, new TestLogger<PlcOperationPipeline>());
         var connectionStatusService = new PlcConnectionStatusService();
         using var monitorService = new PlcConfigurationMonitorService(
             appSettingsService,
             new StubServiceScopeFactory(clientAppInfoService),
-            plcService,
+            plcOperationPipeline,
             connectionStatusService,
             new TestLogger<PlcConfigurationMonitorService>());
 
@@ -80,11 +82,12 @@ public sealed class PlcConfigurationMonitorServiceTests
             Current = CreateClientAppInfoModel(ipAddress: "192.168.0.10")
         };
         var plcService = new StubPlcService();
+        var plcOperationPipeline = new PlcOperationPipeline(plcService, new TestLogger<PlcOperationPipeline>());
         var connectionStatusService = new PlcConnectionStatusService();
         using var monitorService = new PlcConfigurationMonitorService(
             appSettingsService,
             new StubServiceScopeFactory(clientAppInfoService),
-            plcService,
+            plcOperationPipeline,
             connectionStatusService,
             new TestLogger<PlcConfigurationMonitorService>());
 
@@ -180,7 +183,7 @@ public sealed class PlcConfigurationMonitorServiceTests
         }
     }
 
-    private sealed class StubPlcService : IPlcService
+    private sealed class StubPlcService : IPlcOperationContext
     {
         public List<PlcConnectionOptions> ConnectCalls { get; } = new();
 

@@ -10,20 +10,20 @@ public sealed class PlcStartupConnectionService : IPlcStartupConnectionService
 {
     private readonly IAppSettingsService _appSettingsService;
     private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly IPlcService _plcService;
+    private readonly IPlcOperationPipeline _plcOperationPipeline;
     private readonly IPlcConnectionStatusService _plcConnectionStatusService;
     private readonly ILogger<PlcStartupConnectionService> _logger;
 
     public PlcStartupConnectionService(
         IAppSettingsService appSettingsService,
         IServiceScopeFactory serviceScopeFactory,
-        IPlcService plcService,
+        IPlcOperationPipeline plcOperationPipeline,
         IPlcConnectionStatusService plcConnectionStatusService,
         ILogger<PlcStartupConnectionService> logger)
     {
         _appSettingsService = appSettingsService;
         _serviceScopeFactory = serviceScopeFactory;
-        _plcService = plcService;
+        _plcOperationPipeline = plcOperationPipeline;
         _plcConnectionStatusService = plcConnectionStatusService;
         _logger = logger;
     }
@@ -54,7 +54,10 @@ public sealed class PlcStartupConnectionService : IPlcStartupConnectionService
         {
             _plcConnectionStatusService.Set(PlcStartupConnectionResult.Connecting());
             var connectionOptions = PlcConnectionOptionsFactory.Create(clientAppInfo);
-            await _plcService.ConnectAsync(connectionOptions, cancellationToken).ConfigureAwait(false);
+            await _plcOperationPipeline.ExecuteAsync(
+                "Startup/EnsureConnected",
+                plcService => plcService.ConnectAsync(connectionOptions, cancellationToken),
+                cancellationToken).ConfigureAwait(false);
             var connected = PlcStartupConnectionResult.Connected();
             _plcConnectionStatusService.Set(connected);
             return connected;

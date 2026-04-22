@@ -17,7 +17,7 @@ using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices.PlcService;
 
-public sealed class PlcService : IPlcService, IDisposable
+public sealed class PlcService : IPlcService, IPlcOperationContext, IDisposable
 {
     private readonly object _syncRoot = new();
     private readonly ILocalizationService _localizationService;

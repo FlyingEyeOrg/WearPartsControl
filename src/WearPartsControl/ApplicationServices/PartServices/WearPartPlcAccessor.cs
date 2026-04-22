@@ -14,7 +14,7 @@ internal static class WearPartPlcAccessor
         return PlcConnectionOptionsFactory.Create(configuration);
     }
 
-    public static string ReadAsString(IPlcService plcService, string address, string dataType)
+    public static string ReadAsString(IPlcOperationContext plcService, string address, string dataType)
     {
         if (ShouldSkip(address))
         {
@@ -31,7 +31,7 @@ internal static class WearPartPlcAccessor
         };
     }
 
-    public static double ReadAsDouble(IPlcService plcService, string address, string dataType)
+    public static double ReadAsDouble(IPlcOperationContext plcService, string address, string dataType)
     {
         if (ShouldSkip(address))
         {
@@ -48,7 +48,7 @@ internal static class WearPartPlcAccessor
         };
     }
 
-    public static void ClearCounter(IPlcService plcService, string address)
+    public static void ClearCounter(IPlcOperationContext plcService, string address)
     {
         if (ShouldSkip(address))
         {
@@ -58,7 +58,7 @@ internal static class WearPartPlcAccessor
         plcService.Write(address, 0);
     }
 
-    public static void PulseZeroClearSignal(IPlcService plcService, string address)
+    public static void PulseZeroClearSignal(IPlcOperationContext plcService, string address)
     {
         if (ShouldSkip(address))
         {
@@ -69,7 +69,7 @@ internal static class WearPartPlcAccessor
         plcService.Write(address, false);
     }
 
-    public static void WriteCurrentValue(IPlcService plcService, string address, string dataType, double value)
+    public static void WriteCurrentValue(IPlcOperationContext plcService, string address, string dataType, double value)
     {
         if (ShouldSkip(address))
         {
@@ -100,7 +100,7 @@ internal static class WearPartPlcAccessor
         }
     }
 
-    public static void WriteBarcode(IPlcService plcService, string address, string barcode)
+    public static void WriteBarcode(IPlcOperationContext plcService, string address, string barcode)
     {
         if (ShouldSkip(address))
         {
@@ -110,7 +110,7 @@ internal static class WearPartPlcAccessor
         plcService.Write(address, barcode);
     }
 
-    public static void WriteShutdownSignal(IPlcService plcService, string address, bool shutdown)
+    public static void WriteShutdownSignal(IPlcOperationContext plcService, string address, bool shutdown)
     {
         if (ShouldSkip(address))
         {

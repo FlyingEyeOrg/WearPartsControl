@@ -63,7 +63,12 @@ public static class ServiceRegistration
         builder.RegisterType<UserConfigService>().As<IUserConfigService>().SingleInstance();
         builder.RegisterType<ComNotificationService>().As<IComNotificationService>().SingleInstance();
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
-        builder.RegisterType<PlcService>().As<IPlcService>().SingleInstance();
+        builder.RegisterType<PlcService>().AsSelf().SingleInstance();
+        builder.Register(_ => new PlcOperationPipeline(
+                _.Resolve<PlcService>(),
+                _.Resolve<Microsoft.Extensions.Logging.ILogger<PlcOperationPipeline>>()))
+            .As<IPlcOperationPipeline>()
+            .SingleInstance();
         builder.RegisterType<PlcConnectionStatusService>().As<IPlcConnectionStatusService>().SingleInstance();
         builder.RegisterType<PlcConfigurationMonitorService>().SingleInstance().AutoActivate();
         builder.RegisterType<PlcStartupConnectionService>().As<IPlcStartupConnectionService>().InstancePerDependency();
