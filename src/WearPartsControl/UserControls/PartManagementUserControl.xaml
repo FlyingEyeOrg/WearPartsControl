@@ -6,9 +6,9 @@
              xmlns:hc="https://handyorg.github.io/handycontrol"
              mc:Ignorable="d"
              d:DesignHeight="450"
-         d:DesignWidth="1000">
+             d:DesignWidth="1000">
     <Grid MinHeight="0"
-        MinWidth="0">
+          MinWidth="0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -36,6 +36,7 @@
 
                     <DockPanel LastChildFill="False">
                         <TextBlock VerticalAlignment="Center"
+                                   Foreground="{StaticResource InfoBrush}"
                                    FontWeight="SemiBold"
                                    Text="{Binding StatusMessage}" />
                         <TextBlock Margin="24 0 0 0"
@@ -93,81 +94,81 @@
         </StackPanel>
 
         <Border Grid.Row="1"
-            Margin="8"
-            MinHeight="0"
-            MinWidth="0"
-            ClipToBounds="True">
+                Margin="8"
+                MinHeight="0"
+                MinWidth="0"
+                ClipToBounds="True">
             <DataGrid AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  IsReadOnly="True"
-                  ItemsSource="{Binding Definitions}"
-                  SelectedItem="{Binding SelectedDefinition, Mode=TwoWay}"
-                  HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch"
-                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                  ScrollViewer.VerticalScrollBarVisibility="Auto"
-                  ScrollViewer.CanContentScroll="True"
-                  EnableColumnVirtualization="True"
-                  EnableRowVirtualization="True">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="资源号"
-                                    Binding="{Binding ResourceNumber}"
-                                    Width="120" />
-                <DataGridTextColumn Header="名称"
-                                    Binding="{Binding PartName}"
-                                    Width="140" />
-                <DataGridTextColumn Header="寿命类型"
-                                    Binding="{Binding LifetimeType}"
-                                    Width="90" />
-                <DataGridCheckBoxColumn Header="到期停机"
-                                        Binding="{Binding IsShutdown}"
-                                        Width="80" />
-                <DataGridTextColumn Header="当前寿命地址"
-                                    Binding="{Binding CurrentValueAddress}"
-                                    Width="120" />
-                <DataGridTextColumn Header="当前寿命数据类型"
-                                    Binding="{Binding CurrentValueDataType}"
-                                    Width="120" />
-                <DataGridTextColumn Header="预警寿命地址"
-                                    Binding="{Binding WarningValueAddress}"
-                                    Width="120" />
-                <DataGridTextColumn Header="预警寿命数据类型"
-                                    Binding="{Binding WarningValueDataType}"
-                                    Width="120" />
-                <DataGridTextColumn Header="停机寿命地址"
-                                    Binding="{Binding ShutdownValueAddress}"
-                                    Width="120" />
-                <DataGridTextColumn Header="停机寿命数据类型"
-                                    Binding="{Binding ShutdownValueDataType}"
-                                    Width="120" />
-                <DataGridTextColumn Header="输入方式"
-                                    Binding="{Binding InputMode}"
-                                    Width="90" />
-                <DataGridTextColumn Header="条码最小长度"
-                                    Binding="{Binding CodeMinLength}"
-                                    Width="90" />
-                <DataGridTextColumn Header="条码最大长度"
-                                    Binding="{Binding CodeMaxLength}"
-                                    Width="90" />
-                <DataGridTextColumn Header="附加清零地址"
-                                    Binding="{Binding PlcZeroClearAddress}"
-                                    Width="120" />
-                <DataGridTextColumn Header="易损件条码地址"
-                                    Binding="{Binding BarcodeWriteAddress}"
-                                    Width="120" />
-                <DataGridTextColumn Header="创建时间"
-                                    Binding="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
-                                    Width="150" />
-                <DataGridTextColumn Header="创建人"
-                                    Binding="{Binding CreatedBy}"
-                                    Width="100" />
-                <DataGridTextColumn Header="更新时间"
-                                    Binding="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
-                                    Width="150" />
-                <DataGridTextColumn Header="更新人"
-                                    Binding="{Binding UpdatedBy}"
-                                    Width="100" />
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      IsReadOnly="True"
+                      ItemsSource="{Binding Definitions}"
+                      SelectedItem="{Binding SelectedDefinition, Mode=TwoWay}"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      ScrollViewer.CanContentScroll="True"
+                      EnableColumnVirtualization="True"
+                      EnableRowVirtualization="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="资源号"
+                                        Binding="{Binding ResourceNumber}"
+                                        Width="120" />
+                    <DataGridTextColumn Header="名称"
+                                        Binding="{Binding PartName}"
+                                        Width="140" />
+                    <DataGridTextColumn Header="寿命类型"
+                                        Binding="{Binding LifetimeType}"
+                                        Width="90" />
+                    <DataGridCheckBoxColumn Header="到期停机"
+                                            Binding="{Binding IsShutdown}"
+                                            Width="80" />
+                    <DataGridTextColumn Header="当前寿命地址"
+                                        Binding="{Binding CurrentValueAddress}"
+                                        Width="120" />
+                    <DataGridTextColumn Header="当前寿命数据类型"
+                                        Binding="{Binding CurrentValueDataType}"
+                                        Width="120" />
+                    <DataGridTextColumn Header="预警寿命地址"
+                                        Binding="{Binding WarningValueAddress}"
+                                        Width="120" />
+                    <DataGridTextColumn Header="预警寿命数据类型"
+                                        Binding="{Binding WarningValueDataType}"
+                                        Width="120" />
+                    <DataGridTextColumn Header="停机寿命地址"
+                                        Binding="{Binding ShutdownValueAddress}"
+                                        Width="120" />
+                    <DataGridTextColumn Header="停机寿命数据类型"
+                                        Binding="{Binding ShutdownValueDataType}"
+                                        Width="120" />
+                    <DataGridTextColumn Header="输入方式"
+                                        Binding="{Binding InputMode}"
+                                        Width="90" />
+                    <DataGridTextColumn Header="条码最小长度"
+                                        Binding="{Binding CodeMinLength}"
+                                        Width="90" />
+                    <DataGridTextColumn Header="条码最大长度"
+                                        Binding="{Binding CodeMaxLength}"
+                                        Width="90" />
+                    <DataGridTextColumn Header="附加清零地址"
+                                        Binding="{Binding PlcZeroClearAddress}"
+                                        Width="120" />
+                    <DataGridTextColumn Header="易损件条码地址"
+                                        Binding="{Binding BarcodeWriteAddress}"
+                                        Width="120" />
+                    <DataGridTextColumn Header="创建时间"
+                                        Binding="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                        Width="150" />
+                    <DataGridTextColumn Header="创建人"
+                                        Binding="{Binding CreatedBy}"
+                                        Width="100" />
+                    <DataGridTextColumn Header="更新时间"
+                                        Binding="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                        Width="150" />
+                    <DataGridTextColumn Header="更新人"
+                                        Binding="{Binding UpdatedBy}"
+                                        Width="100" />
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

@@ -21,6 +21,7 @@
                     Padding="10"
                     CornerRadius="6">
                 <TextBlock FontSize="14"
+                           Foreground="{StaticResource InfoBrush}"
                            FontWeight="SemiBold"
                            Text="{Binding StatusMessage}" />
             </Border>

@@ -3,12 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-         xmlns:vm="clr-namespace:WearPartsControl.ViewModels"
+             xmlns:vm="clr-namespace:WearPartsControl.ViewModels"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              mc:Ignorable="d"
              d:DesignHeight="450"
-         d:DesignWidth="800"
-         d:DataContext="{d:DesignInstance Type=vm:PartUpdateRecordViewModel}">
+             d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance Type=vm:PartUpdateRecordViewModel}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -23,128 +23,129 @@
                            FontSize="16"
                            Foreground="White">易损件更换记录</TextBlock>
             </Border>
-        <Border Margin="8 8 8 0"
-            CornerRadius="6"
-            Background="#FFF5F7FA"
-            BorderBrush="#FFD9E2F2"
-            BorderThickness="1">
-        <Grid Margin="8">
+            <Border Margin="8 8 8 0"
+                    CornerRadius="6"
+                    Background="#FFF5F7FA"
+                    BorderBrush="#FFD9E2F2"
+                    BorderThickness="1">
+                <Grid Margin="8">
                     <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-            <TextBlock VerticalAlignment="Center"
-                   FontWeight="SemiBold"
-                   Text="{Binding StatusMessage}" />
-            <StackPanel Grid.Column="1"
-                Orientation="Horizontal">
-            <TextBlock Margin="16 0 0 0"
-                   VerticalAlignment="Center"
-                   FontWeight="SemiBold"
-                   Text="{Binding ResourceNumber, Mode=OneWay, StringFormat=当前资源号：{0}}" />
-            <Button Margin="16 0 0 0"
-                Width="80"
-                Command="{Binding RefreshCommand}"
-                Style="{StaticResource ButtonPrimary}">刷新</Button>
+                    <TextBlock VerticalAlignment="Center"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource InfoBrush}"
+                               Text="{Binding StatusMessage}" />
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal">
+                        <TextBlock Margin="16 0 0 0"
+                                   VerticalAlignment="Center"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding ResourceNumber, Mode=OneWay, StringFormat=当前资源号：{0}}" />
+                        <Button Margin="16 0 0 0"
+                                Width="80"
+                                Command="{Binding RefreshCommand}"
+                                Style="{StaticResource ButtonPrimary}">刷新</Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            <StackPanel Orientation="Horizontal"
+                        Margin="8 8 8 0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="240" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">易损件：</TextBlock>
+                    <ComboBox Grid.Column="1"
+                              Style="{StaticResource ComboBoxExtend}"
+                              ItemsSource="{Binding Definitions}"
+                              SelectedItem="{Binding SelectedDefinition, Mode=TwoWay}"
+                              DisplayMemberPath="PartName"
+                              hc:InfoElement.Placeholder="不选则查询全部"></ComboBox>
+                </Grid>
+                <Button Margin="8 0 0 0"
+                        Width="80"
+                        Command="{Binding QueryCommand}"
+                        Style="{StaticResource ButtonPrimary}"
+                        hc:IconElement.Geometry="{StaticResource SearchGeometry}">查询</Button>
+                <Button Margin="8 0 0 0"
+                        Width="80"
+                        Command="{Binding ExportCommand}"
+                        Style="{StaticResource ButtonPrimary}"
+                        hc:IconElement.Geometry="{StaticResource SaveGeometry}">导出</Button>
             </StackPanel>
-        </Grid>
-        </Border>
-        <StackPanel Orientation="Horizontal"
-            Margin="8 8 8 0">
-        <Grid>
-            <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="80" />
-            <ColumnDefinition Width="240" />
-            </Grid.ColumnDefinitions>
-            <TextBlock HorizontalAlignment="Left"
-                   VerticalAlignment="Center">易损件：</TextBlock>
-            <ComboBox Grid.Column="1"
-                  Style="{StaticResource ComboBoxExtend}"
-                  ItemsSource="{Binding Definitions}"
-                  SelectedItem="{Binding SelectedDefinition, Mode=TwoWay}"
-                  DisplayMemberPath="PartName"
-                  hc:InfoElement.Placeholder="不选则查询全部"></ComboBox>
-        </Grid>
-        <Button Margin="8 0 0 0"
-            Width="80"
-            Command="{Binding QueryCommand}"
-            Style="{StaticResource ButtonPrimary}"
-            hc:IconElement.Geometry="{StaticResource SearchGeometry}">查询</Button>
-        <Button Margin="8 0 0 0"
-            Width="80"
-            Command="{Binding ExportCommand}"
-            Style="{StaticResource ButtonPrimary}"
-            hc:IconElement.Geometry="{StaticResource SaveGeometry}">导出</Button>
-        </StackPanel>
         </StackPanel>
         <DataGrid Grid.Row="1"
-          Margin="0 8 0 0"
-          AutoGenerateColumns="False"
-          CanUserAddRows="False"
-          CanUserDeleteRows="False"
-          IsReadOnly="True"
-          ItemsSource="{Binding Records}"
-          Style="{StaticResource DataGridBaseStyle}">
+                  Margin="8 8 8 0"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True"
+                  ItemsSource="{Binding Records}"
+                  Style="{StaticResource DataGridBaseStyle}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="名称"
-                    Binding="{Binding PartName}"
+                                    Binding="{Binding PartName}"
                                     Width="*"></DataGridTextColumn>
                 <DataGridTextColumn Header="旧编码"
-                    Binding="{Binding OldBarcode}"
+                                    Binding="{Binding OldBarcode}"
                                     Width="*"></DataGridTextColumn>
                 <DataGridTextColumn Header="新编码"
-                    Binding="{Binding NewBarcode}"
+                                    Binding="{Binding NewBarcode}"
                                     Width="*"></DataGridTextColumn>
                 <DataGridTextColumn Header="当前寿命"
-                    Binding="{Binding CurrentValue}"
+                                    Binding="{Binding CurrentValue}"
                                     Width="*"></DataGridTextColumn>
                 <DataGridTextColumn Header="预警寿命"
-                    Binding="{Binding WarningValue}"
+                                    Binding="{Binding WarningValue}"
                                     Width="*"></DataGridTextColumn>
                 <DataGridTextColumn Header="停机寿命"
-                    Binding="{Binding ShutdownValue}"
+                                    Binding="{Binding ShutdownValue}"
                                     Width="*"></DataGridTextColumn>
-        <DataGridTextColumn Header="更换原因"
-                    Binding="{Binding ReplacementReason}"
-                    Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="更换原因"
+                                    Binding="{Binding ReplacementReason}"
+                                    Width="*"></DataGridTextColumn>
                 <DataGridTextColumn Header="更换时间"
-                    Binding="{Binding ReplacedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                    Binding="{Binding ReplacedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
                                     Width="*"></DataGridTextColumn>
                 <DataGridTextColumn Header="操作员"
-                    Binding="{Binding OperatorWorkNumber}"
+                                    Binding="{Binding OperatorWorkNumber}"
                                     Width="*"></DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
         <StackPanel Margin="8 8 8 8"
                     Grid.Row="2"
                     Orientation="Horizontal">
-        <Button Style="{StaticResource ButtonIconCircular}"
-            Command="{Binding PreviousPageCommand}"
+            <Button Style="{StaticResource ButtonIconCircular}"
+                    Command="{Binding PreviousPageCommand}"
                     hc:IconElement.Geometry="{StaticResource LeftGeometry}"></Button>
             <TextBox Margin="8 0 0 0"
                      HorizontalContentAlignment="Center"
-             Width="40"
-             IsReadOnly="True"
-             Text="{Binding CurrentPage, Mode=OneWay}"></TextBox>
+                     Width="40"
+                     IsReadOnly="True"
+                     Text="{Binding CurrentPage, Mode=OneWay}"></TextBox>
             <Button Margin="8 0 0 0"
-            Command="{Binding NextPageCommand}"
+                    Command="{Binding NextPageCommand}"
                     Style="{StaticResource ButtonIconCircular}"
                     hc:IconElement.Geometry="{StaticResource RightGeometry}"></Button>
             <TextBlock Margin="8 0 0 0"
                        VerticalAlignment="Center">第</TextBlock>
             <TextBox Margin="8 0 0 0"
                      HorizontalContentAlignment="Center"
-             Width="40"
-             Text="{Binding RequestedPageNumber, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                     Width="40"
+                     Text="{Binding RequestedPageNumber, UpdateSourceTrigger=PropertyChanged}"></TextBox>
             <TextBlock Margin="8 0 0 0"
                        VerticalAlignment="Center">页</TextBlock>
             <Button Margin="8 0 0 0"
-            Command="{Binding GoToPageCommand}"
+                    Command="{Binding GoToPageCommand}"
                     Style="{StaticResource ButtonIconCircular}"
                     hc:IconElement.Geometry="{StaticResource SearchGeometry}"></Button>
-        <TextBlock Margin="16 0 0 0"
-               VerticalAlignment="Center"
-               Text="{Binding TotalPages, StringFormat=共 {0} 页}" />
+            <TextBlock Margin="16 0 0 0"
+                       VerticalAlignment="Center"
+                       Text="{Binding TotalPages, StringFormat=共 {0} 页}" />
         </StackPanel>
     </Grid>
 </UserControl>

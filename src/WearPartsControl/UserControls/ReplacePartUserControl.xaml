@@ -32,7 +32,8 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock VerticalAlignment="Center"
+                    <TextBlock Foreground="{StaticResource InfoBrush}"
+                               VerticalAlignment="Center"
                                FontWeight="SemiBold"
                                Text="{Binding StatusMessage}" />
                     <StackPanel Grid.Column="1"
@@ -230,6 +231,7 @@
             </Grid>
         </StackPanel>
         <DataGrid Grid.Row="1"
+                  Margin="8 0 8 8"
                   AutoGenerateColumns="False"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
