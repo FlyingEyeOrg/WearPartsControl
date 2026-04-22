@@ -40,7 +40,7 @@
                         <TextBlock Margin="16 0 0 0"
                                    VerticalAlignment="Center"
                                    FontWeight="SemiBold"
-                               Text="{Binding ResourceNumber, Mode=OneWay, StringFormat=当前资源号：{0}}" />
+                                   Text="{Binding ResourceNumber, Mode=OneWay, StringFormat=当前资源号：{0}}" />
                         <Button Margin="16 0 0 0"
                                 Width="80"
                                 Command="{Binding RefreshCommand}"
@@ -82,17 +82,7 @@
                                   Style="{StaticResource ComboBoxExtend}"
                                   hc:InfoElement.Placeholder="请选择易损件"></ComboBox>
                     </Grid>
-                    <Grid Margin="0 8 0 0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">上次条码：</TextBlock>
-                        <TextBox IsReadOnly="True"
-                                 Text="{Binding LastBarcode, Mode=OneWay}"
-                                 Grid.Column="1" />
-                    </Grid>
+
                 </StackPanel>
                 <StackPanel Grid.Column="1"
                             Margin="8 0">
@@ -166,12 +156,10 @@
                     </Grid>
                 </StackPanel>
             </Grid>
-            <Grid Margin="8 8 8 8">
+            <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.2*" />
                     <ColumnDefinition />
-                    <ColumnDefinition Width="1.1*" />
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -179,14 +167,13 @@
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <TextBlock HorizontalAlignment="Left"
-                               VerticalAlignment="Center">条码：</TextBlock>
-                    <TextBox Style="{StaticResource TextBoxExtend}"
-                             Text="{Binding NewBarcode, UpdateSourceTrigger=PropertyChanged}"
-                             hc:InfoElement.Placeholder="请输入条码"
-                             Grid.Column="1"></TextBox>
+                               VerticalAlignment="Center">当前条码：</TextBlock>
+                    <TextBox IsReadOnly="True"
+                             Text="{Binding LastBarcode, Mode=OneWay}"
+                             Grid.Column="1" />
                 </Grid>
                 <Grid Grid.Column="1"
-                      Margin="8 0">
+                      Margin="8 0 0 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="80" />
                         <ColumnDefinition />
@@ -198,8 +185,26 @@
                               SelectedItem="{Binding SelectedReplacementReason, Mode=TwoWay}"
                               Style="{StaticResource ComboBoxExtend}" />
                 </Grid>
-                <Grid Grid.Column="2"
-                      Margin="8 0">
+            </Grid>
+            <Grid Margin="8 8 8 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center">新条码：</TextBlock>
+                    <TextBox Style="{StaticResource TextBoxExtend}"
+                             Text="{Binding NewBarcode, UpdateSourceTrigger=PropertyChanged}"
+                             hc:InfoElement.Placeholder="请输入条码"
+                             Grid.Column="1"></TextBox>
+                </Grid>
+                <Grid Grid.Column="1"
+                      Margin="8 0 0 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="80" />
                         <ColumnDefinition />
@@ -211,7 +216,14 @@
                              Style="{StaticResource TextBoxExtend}"
                              hc:InfoElement.Placeholder="可选备注" />
                 </Grid>
-                <Button Grid.Column="3"
+            </Grid>
+            <Grid Margin="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Button Margin="8 0 0 0"
+                        Grid.Column="1"
                         Width="80"
                         Command="{Binding ReplaceCommand}"
                         Style="{StaticResource ButtonPrimary}">更换</Button>
