@@ -224,7 +224,10 @@
       "Connecting": "连接中",
       "NotConfigured": "未配置 ClientApp，未连接 PLC。",
       "Connected": "已连接",
-      "ConnectFailed": "连接失败：{0}"
+      "ConnectFailed": "连接失败：{0}",
+      "Reconnecting": "正在应用 PLC 配置并重新连接...",
+      "Reconfigured": "PLC 配置已应用。",
+      "ReconfiguredFailedKeepCurrent": "应用 PLC 配置失败：{0}。已保留当前连接。"
     },
     "Login": {
       "InvalidTokenPayload": "登录接口返回的 token 格式不正确。"

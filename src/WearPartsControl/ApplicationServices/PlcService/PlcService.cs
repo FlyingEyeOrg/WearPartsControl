@@ -21,9 +21,7 @@ public sealed class PlcService : IPlcService, IDisposable
 {
     private readonly object _syncRoot = new();
     private readonly ILocalizationService _localizationService;
-    private DeviceTcpNet? _deviceTcpNet;
-    private InovanceEIPDriver? _inovanceEipDriver;
-    private BeckhoffAdsSymbolDriver? _beckhoffAdsSymbolDriver;
+    private PlcClientSession? _clientSession;
     private PlcConnectionOptions? _currentOptions;
     private bool _isDisposed;
 
@@ -39,6 +37,8 @@ public sealed class PlcService : IPlcService, IDisposable
         ArgumentNullException.ThrowIfNull(options);
 
         var resolvedOptions = await NormalizeConnectionOptionsAsync(options, cancellationToken).ConfigureAwait(false);
+        PlcClientSession? replacementSession = null;
+        PlcClientSession? previousSession = null;
 
         lock (_syncRoot)
         {
@@ -49,30 +49,38 @@ public sealed class PlcService : IPlcService, IDisposable
                 return;
             }
 
-            DisconnectInternal();
+            replacementSession = CreateClientSession(resolvedOptions);
 
             try
             {
-                InitializeClient(resolvedOptions);
-                ConnectInternal(resolvedOptions.ConnectTimeoutMilliseconds);
+                ConnectInternal(replacementSession, resolvedOptions.ConnectTimeoutMilliseconds);
+                previousSession = _clientSession;
+                _clientSession = replacementSession;
                 _currentOptions = resolvedOptions;
+                IsConnected = true;
             }
             catch
             {
-                DisconnectInternal();
+                replacementSession.Dispose();
                 throw;
             }
         }
+
+        previousSession?.Dispose();
     }
 
     public void Disconnect()
     {
+        PlcClientSession? previousSession;
+
         lock (_syncRoot)
         {
             ThrowIfDisposed();
-            DisconnectInternal();
+            previousSession = DisconnectInternal();
             _currentOptions = null;
         }
+
+        previousSession?.Dispose();
     }
 
     public TValue Read<TValue>(string address, int retryCount = 1)
@@ -116,6 +124,8 @@ public sealed class PlcService : IPlcService, IDisposable
 
     public void Dispose()
     {
+        PlcClientSession? previousSession;
+
         lock (_syncRoot)
         {
             if (_isDisposed)
@@ -123,60 +133,55 @@ public sealed class PlcService : IPlcService, IDisposable
                 return;
             }
 
-            DisconnectInternal();
+            previousSession = DisconnectInternal();
             _isDisposed = true;
         }
+
+        previousSession?.Dispose();
     }
 
-    private void InitializeClient(PlcConnectionOptions options)
+    private PlcClientSession CreateClientSession(PlcConnectionOptions options)
     {
         switch (options.PlcType)
         {
             case PlcProtocolType.OmronCip:
-                _deviceTcpNet = new OmronCipNet(options.IpAddress, options.Port);
-                break;
+                return new PlcClientSession { DeviceTcpNet = new OmronCipNet(options.IpAddress, options.Port) };
             case PlcProtocolType.OmronFins:
-                _deviceTcpNet = new OmronFinsNet(options.IpAddress, options.Port);
-                break;
+                return new PlcClientSession { DeviceTcpNet = new OmronFinsNet(options.IpAddress, options.Port) };
             case PlcProtocolType.Mitsubishi:
-                _deviceTcpNet = new HslCommunication.Profinet.Melsec.MelsecCipNet(options.IpAddress, options.Port);
-                break;
+                return new PlcClientSession { DeviceTcpNet = new HslCommunication.Profinet.Melsec.MelsecCipNet(options.IpAddress, options.Port) };
             case PlcProtocolType.SiemensS1500:
-                _deviceTcpNet = BuildSiemensClient(HslCommunication.Profinet.Siemens.SiemensPLCS.S1500, options);
-                break;
+                return new PlcClientSession { DeviceTcpNet = BuildSiemensClient(HslCommunication.Profinet.Siemens.SiemensPLCS.S1500, options) };
             case PlcProtocolType.SiemensS1200:
-                _deviceTcpNet = BuildSiemensClient(HslCommunication.Profinet.Siemens.SiemensPLCS.S1200, options);
-                break;
+                return new PlcClientSession { DeviceTcpNet = BuildSiemensClient(HslCommunication.Profinet.Siemens.SiemensPLCS.S1200, options) };
             case PlcProtocolType.AllenBradley:
-                _deviceTcpNet = new AllenBradleyNet(options.IpAddress, options.Port);
-                break;
+                return new PlcClientSession { DeviceTcpNet = new AllenBradleyNet(options.IpAddress, options.Port) };
             case PlcProtocolType.InovanceAm:
-                _deviceTcpNet = new InovanceTcpNet(InovanceSeries.AM, options.IpAddress, options.Port)
+                return new PlcClientSession
                 {
-                    IsStringReverse = options.IsStringReverse
+                    DeviceTcpNet = new InovanceTcpNet(InovanceSeries.AM, options.IpAddress, options.Port)
+                    {
+                        IsStringReverse = options.IsStringReverse
+                    }
                 };
-                break;
             case PlcProtocolType.InovanceH3U:
-                _deviceTcpNet = new InovanceTcpNet(InovanceSeries.H3U, options.IpAddress, options.Port);
-                break;
+                return new PlcClientSession { DeviceTcpNet = new InovanceTcpNet(InovanceSeries.H3U, options.IpAddress, options.Port) };
             case PlcProtocolType.InovanceH5U:
-                _deviceTcpNet = new InovanceTcpNet(InovanceSeries.H5U, options.IpAddress, options.Port);
-                break;
+                return new PlcClientSession { DeviceTcpNet = new InovanceTcpNet(InovanceSeries.H5U, options.IpAddress, options.Port) };
             case PlcProtocolType.InovanceEip:
-                _inovanceEipDriver = BuildInovanceEipClient(options);
-                break;
+                return new PlcClientSession { InovanceEipDriver = BuildInovanceEipClient(options) };
             case PlcProtocolType.Beckhoff:
-                _beckhoffAdsSymbolDriver = BuildBeckhoffSymbolDriver(options);
-                break;
+                return new PlcClientSession { BeckhoffAdsSymbolDriver = BuildBeckhoffSymbolDriver(options) };
             case PlcProtocolType.Keyence:
-                _deviceTcpNet = new KeyenceMcNet(options.IpAddress, options.Port);
-                break;
+                return new PlcClientSession { DeviceTcpNet = new KeyenceMcNet(options.IpAddress, options.Port) };
             case PlcProtocolType.ModbusTcp:
-                _deviceTcpNet = new ModbusTcpNet(options.IpAddress, options.Port)
+                return new PlcClientSession
                 {
-                    IsStringReverse = options.IsStringReverse
+                    DeviceTcpNet = new ModbusTcpNet(options.IpAddress, options.Port)
+                    {
+                        IsStringReverse = options.IsStringReverse
+                    }
                 };
-                break;
             default:
                 throw new NotSupportedException($"{L("PlcService.Errors.ProtocolNotSupported")} : {options.PlcType}");
         }
@@ -259,37 +264,31 @@ public sealed class PlcService : IPlcService, IDisposable
         throw new BusinessException(L("PlcService.Errors.HostIpNotFoundInSubnet"));
     }
 
-    private void ConnectInternal(int timeoutMilliseconds)
+    private void ConnectInternal(PlcClientSession session, int timeoutMilliseconds)
     {
-        if (_inovanceEipDriver is not null)
+        if (session.InovanceEipDriver is not null)
         {
-            _inovanceEipDriver.Connect();
-            IsConnected = true;
+            session.InovanceEipDriver.Connect();
             return;
         }
 
-        if (_beckhoffAdsSymbolDriver is not null)
+        if (session.BeckhoffAdsSymbolDriver is not null)
         {
-            _beckhoffAdsSymbolDriver.Connect();
-            IsConnected = true;
+            session.BeckhoffAdsSymbolDriver.Connect();
             return;
         }
 
-        if (_deviceTcpNet is null)
+        if (session.DeviceTcpNet is null)
         {
-            IsConnected = false;
             throw new InvalidOperationException(L("PlcService.Errors.ClientNotInitialized"));
         }
 
-        _deviceTcpNet.ConnectTimeOut = timeoutMilliseconds;
-        var result = _deviceTcpNet.ConnectServer();
+        session.DeviceTcpNet.ConnectTimeOut = timeoutMilliseconds;
+        var result = session.DeviceTcpNet.ConnectServer();
         if (!result.IsSuccess)
         {
-            IsConnected = false;
             throw new BusinessException($"{L("PlcService.Errors.ConnectFailed")}: {result.Message}", details: $"ErrorCode={result.ErrorCode}");
         }
-
-        IsConnected = true;
     }
 
     private void EnsureConnected()
@@ -309,53 +308,47 @@ public sealed class PlcService : IPlcService, IDisposable
             throw new InvalidOperationException(L("PlcService.Errors.ReconnectWithoutOptions"));
         }
 
-        DisconnectInternal();
-        InitializeClient(_currentOptions);
-        ConnectInternal(_currentOptions.ConnectTimeoutMilliseconds);
-    }
+        var replacementSession = CreateClientSession(_currentOptions);
 
-    private void DisconnectInternal()
-    {
         try
         {
-            if (_inovanceEipDriver is not null)
-            {
-                _inovanceEipDriver.Disconnect();
-            }
-
-            if (_beckhoffAdsSymbolDriver is not null)
-            {
-                _beckhoffAdsSymbolDriver.Disconnect();
-                _beckhoffAdsSymbolDriver.Dispose();
-            }
-
-            if (_deviceTcpNet is not null)
-            {
-                _ = _deviceTcpNet.ConnectClose();
-            }
+            ConnectInternal(replacementSession, _currentOptions.ConnectTimeoutMilliseconds);
         }
-        finally
+        catch
         {
-            _inovanceEipDriver = null;
-            _beckhoffAdsSymbolDriver = null;
-            _deviceTcpNet = null;
-            IsConnected = false;
+            replacementSession.Dispose();
+            throw;
         }
+
+        var previousSession = _clientSession;
+        _clientSession = replacementSession;
+        IsConnected = true;
+        previousSession?.Dispose();
+    }
+
+    private PlcClientSession? DisconnectInternal()
+    {
+        var previousSession = _clientSession;
+        _clientSession = null;
+        IsConnected = false;
+        return previousSession;
     }
 
     private TValue ReadCore<TValue>(string address)
     {
-        if (_inovanceEipDriver is not null)
+        var clientSession = _clientSession;
+
+        if (clientSession?.InovanceEipDriver is not null)
         {
-            return _inovanceEipDriver.Read<TValue>(address);
+            return clientSession.InovanceEipDriver.Read<TValue>(address);
         }
 
-        if (_beckhoffAdsSymbolDriver is not null)
+        if (clientSession?.BeckhoffAdsSymbolDriver is not null)
         {
-            return _beckhoffAdsSymbolDriver.Read<TValue>(address);
+            return clientSession.BeckhoffAdsSymbolDriver.Read<TValue>(address);
         }
 
-        if (_deviceTcpNet is null)
+        if (clientSession?.DeviceTcpNet is null)
         {
             throw new InvalidOperationException(L("PlcService.Errors.ClientNotInitialized"));
         }
@@ -363,49 +356,49 @@ public sealed class PlcService : IPlcService, IDisposable
         if (typeof(TValue) == typeof(string))
         {
             var stringLength = (ushort)Math.Clamp(_currentOptions?.StringReadLength ?? 99, 1, ushort.MaxValue);
-            var result = _deviceTcpNet.ReadString(address, stringLength);
+            var result = clientSession.DeviceTcpNet.ReadString(address, stringLength);
             EnsureOperateSuccess(result, L("PlcService.Errors.ReadFailed"));
             return (TValue)(object)(result.Content ?? string.Empty);
         }
 
         if (typeof(TValue) == typeof(bool))
         {
-            var result = _deviceTcpNet.ReadBool(address);
+            var result = clientSession.DeviceTcpNet.ReadBool(address);
             EnsureOperateSuccess(result, L("PlcService.Errors.ReadFailed"));
             return (TValue)(object)result.Content;
         }
 
         if (typeof(TValue) == typeof(short))
         {
-            var result = _deviceTcpNet.ReadInt16(address);
+            var result = clientSession.DeviceTcpNet.ReadInt16(address);
             EnsureOperateSuccess(result, L("PlcService.Errors.ReadFailed"));
             return (TValue)(object)result.Content;
         }
 
         if (typeof(TValue) == typeof(int))
         {
-            var result = _deviceTcpNet.ReadInt32(address);
+            var result = clientSession.DeviceTcpNet.ReadInt32(address);
             EnsureOperateSuccess(result, L("PlcService.Errors.ReadFailed"));
             return (TValue)(object)result.Content;
         }
 
         if (typeof(TValue) == typeof(uint))
         {
-            var result = _deviceTcpNet.ReadUInt32(address);
+            var result = clientSession.DeviceTcpNet.ReadUInt32(address);
             EnsureOperateSuccess(result, L("PlcService.Errors.ReadFailed"));
             return (TValue)(object)result.Content;
         }
 
         if (typeof(TValue) == typeof(float))
         {
-            var result = _deviceTcpNet.ReadFloat(address);
+            var result = clientSession.DeviceTcpNet.ReadFloat(address);
             EnsureOperateSuccess(result, L("PlcService.Errors.ReadFailed"));
             return (TValue)(object)result.Content;
         }
 
         if (typeof(TValue) == typeof(double))
         {
-            var result = _deviceTcpNet.ReadDouble(address);
+            var result = clientSession.DeviceTcpNet.ReadDouble(address);
             EnsureOperateSuccess(result, L("PlcService.Errors.ReadFailed"));
             return (TValue)(object)result.Content;
         }
@@ -415,19 +408,21 @@ public sealed class PlcService : IPlcService, IDisposable
 
     private void WriteCore<TValue>(string address, TValue value)
     {
-        if (_inovanceEipDriver is not null)
+        var clientSession = _clientSession;
+
+        if (clientSession?.InovanceEipDriver is not null)
         {
-            _inovanceEipDriver.Write(address, value);
+            clientSession.InovanceEipDriver.Write(address, value);
             return;
         }
 
-        if (_beckhoffAdsSymbolDriver is not null)
+        if (clientSession?.BeckhoffAdsSymbolDriver is not null)
         {
-            _beckhoffAdsSymbolDriver.Write(address, value);
+            clientSession.BeckhoffAdsSymbolDriver.Write(address, value);
             return;
         }
 
-        if (_deviceTcpNet is null)
+        if (clientSession?.DeviceTcpNet is null)
         {
             throw new InvalidOperationException(L("PlcService.Errors.ClientNotInitialized"));
         }
@@ -436,49 +431,49 @@ public sealed class PlcService : IPlcService, IDisposable
 
         if (value is bool boolValue)
         {
-            writeResult = _deviceTcpNet.Write(address, boolValue);
+            writeResult = clientSession.DeviceTcpNet.Write(address, boolValue);
             EnsureOperateSuccess(writeResult, L("PlcService.Errors.WriteFailed"));
             return;
         }
 
         if (value is short shortValue)
         {
-            writeResult = _deviceTcpNet.Write(address, shortValue);
+            writeResult = clientSession.DeviceTcpNet.Write(address, shortValue);
             EnsureOperateSuccess(writeResult, L("PlcService.Errors.WriteFailed"));
             return;
         }
 
         if (value is int intValue)
         {
-            writeResult = _deviceTcpNet.Write(address, intValue);
+            writeResult = clientSession.DeviceTcpNet.Write(address, intValue);
             EnsureOperateSuccess(writeResult, L("PlcService.Errors.WriteFailed"));
             return;
         }
 
         if (value is uint uintValue)
         {
-            writeResult = _deviceTcpNet.Write(address, uintValue);
+            writeResult = clientSession.DeviceTcpNet.Write(address, uintValue);
             EnsureOperateSuccess(writeResult, L("PlcService.Errors.WriteFailed"));
             return;
         }
 
         if (value is float floatValue)
         {
-            writeResult = _deviceTcpNet.Write(address, floatValue);
+            writeResult = clientSession.DeviceTcpNet.Write(address, floatValue);
             EnsureOperateSuccess(writeResult, L("PlcService.Errors.WriteFailed"));
             return;
         }
 
         if (value is double doubleValue)
         {
-            writeResult = _deviceTcpNet.Write(address, doubleValue);
+            writeResult = clientSession.DeviceTcpNet.Write(address, doubleValue);
             EnsureOperateSuccess(writeResult, L("PlcService.Errors.WriteFailed"));
             return;
         }
 
         if (value is string stringValue)
         {
-            writeResult = _deviceTcpNet.Write(address, stringValue);
+            writeResult = clientSession.DeviceTcpNet.Write(address, stringValue);
             EnsureOperateSuccess(writeResult, L("PlcService.Errors.WriteFailed"));
             return;
         }
@@ -526,4 +521,27 @@ public sealed class PlcService : IPlcService, IDisposable
     }
 
     private string L(string key) => _localizationService[key];
+
+    private sealed class PlcClientSession : IDisposable
+    {
+        public DeviceTcpNet? DeviceTcpNet { get; init; }
+
+        public InovanceEIPDriver? InovanceEipDriver { get; init; }
+
+        public BeckhoffAdsSymbolDriver? BeckhoffAdsSymbolDriver { get; init; }
+
+        public void Dispose()
+        {
+            try
+            {
+                InovanceEipDriver?.Disconnect();
+                BeckhoffAdsSymbolDriver?.Disconnect();
+                BeckhoffAdsSymbolDriver?.Dispose();
+                _ = DeviceTcpNet?.ConnectClose();
+            }
+            catch
+            {
+            }
+        }
+    }
 }

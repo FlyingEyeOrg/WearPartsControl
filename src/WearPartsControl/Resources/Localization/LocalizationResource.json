@@ -224,7 +224,10 @@
       "Connecting": "Connecting",
       "NotConfigured": "ClientApp is not configured, PLC connection skipped.",
       "Connected": "Connected",
-      "ConnectFailed": "Connection failed: {0}"
+      "ConnectFailed": "Connection failed: {0}",
+      "Reconnecting": "Applying PLC configuration and reconnecting...",
+      "Reconfigured": "PLC configuration applied successfully.",
+      "ReconfiguredFailedKeepCurrent": "Applying PLC configuration failed: {0}. The current connection is kept."
     },
     "Login": {
       "InvalidTokenPayload": "The token returned by the login API is invalid."
