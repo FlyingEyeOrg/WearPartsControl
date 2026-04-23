@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices.PartServices;
@@ -42,6 +43,7 @@ public sealed class WearPartMonitoringHostedService : BackgroundService
         {
             await using var scope = _serviceScopeFactory.CreateAsyncScope();
             var appSettingsService = scope.ServiceProvider.GetRequiredService<IAppSettingsService>();
+            var plcStartupConnectionService = scope.ServiceProvider.GetRequiredService<IPlcStartupConnectionService>();
             var monitorService = scope.ServiceProvider.GetRequiredService<IWearPartMonitorService>();
             var settings = await appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
 
@@ -54,6 +56,13 @@ public sealed class WearPartMonitoringHostedService : BackgroundService
             if (!settings.IsWearPartMonitoringEnabled)
             {
                 _logger.LogDebug("跳过后台易损件监控：当前已关闭后台监控。");
+                return;
+            }
+
+            var plcConnectionResult = await plcStartupConnectionService.EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
+            if (plcConnectionResult.Status != PlcStartupConnectionStatus.Connected)
+            {
+                _logger.LogWarning("跳过后台易损件监控：PLC 未连接，原因：{Message}", plcConnectionResult.Message);
                 return;
             }
 

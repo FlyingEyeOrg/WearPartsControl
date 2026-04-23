@@ -1,15 +1,22 @@
 using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.ApplicationServices.PlcService;
+using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices.PartServices;
 
 public sealed class WearPartMonitoringControlService : IWearPartMonitoringControlService
 {
     private readonly IAppSettingsService _appSettingsService;
+    private readonly IPlcStartupConnectionService _plcStartupConnectionService;
     private readonly WearPartMonitoringHostedService _wearPartMonitoringHostedService;
 
-    public WearPartMonitoringControlService(IAppSettingsService appSettingsService, WearPartMonitoringHostedService wearPartMonitoringHostedService)
+    public WearPartMonitoringControlService(
+        IAppSettingsService appSettingsService,
+        IPlcStartupConnectionService plcStartupConnectionService,
+        WearPartMonitoringHostedService wearPartMonitoringHostedService)
     {
         _appSettingsService = appSettingsService;
+        _plcStartupConnectionService = plcStartupConnectionService;
         _wearPartMonitoringHostedService = wearPartMonitoringHostedService;
     }
 
@@ -21,6 +28,12 @@ public sealed class WearPartMonitoringControlService : IWearPartMonitoringContro
 
     public async Task EnableAsync(CancellationToken cancellationToken = default)
     {
+        var plcConnectionResult = await _plcStartupConnectionService.EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
+        if (plcConnectionResult.Status != PlcStartupConnectionStatus.Connected)
+        {
+            throw new UserFriendlyException(plcConnectionResult.Message);
+        }
+
         var settings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
         if (!settings.IsWearPartMonitoringEnabled)
         {

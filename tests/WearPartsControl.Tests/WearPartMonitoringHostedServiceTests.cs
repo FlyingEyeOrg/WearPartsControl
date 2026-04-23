@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.PartServices;
+using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.Exceptions;
 using Xunit;
 
@@ -19,7 +20,8 @@ public sealed class WearPartMonitoringHostedServiceTests
                 {
                     Current = new AppSettings { ResourceNumber = "RES-01" }
                 },
-                new StubWearPartMonitorService(new BusinessException("PLC 未连接"))),
+                new StubWearPartMonitorService(new BusinessException("PLC 未连接")),
+                new StubPlcStartupConnectionService()),
             logger);
 
         await service.RunOnceAsync();
@@ -43,13 +45,42 @@ public sealed class WearPartMonitoringHostedServiceTests
                         IsWearPartMonitoringEnabled = false
                     }
                 },
-                monitorService),
+                monitorService,
+                new StubPlcStartupConnectionService()),
             logger);
 
         await service.RunOnceAsync();
 
         Assert.Equal(0, monitorService.CallCount);
         Assert.DoesNotContain(logger.Entries, entry => entry.LogLevel == LogLevel.Error);
+    }
+
+    [Fact]
+    public async Task RunOnceAsync_WhenPlcConnectionFails_ShouldSkipMonitorCall()
+    {
+        var logger = new TestLogger<WearPartMonitoringHostedService>();
+        var monitorService = new TrackableWearPartMonitorService();
+        var service = new WearPartMonitoringHostedService(
+            new StubServiceScopeFactory(
+                new StubAppSettingsService
+                {
+                    Current = new AppSettings
+                    {
+                        ResourceNumber = "RES-01",
+                        IsWearPartMonitoringEnabled = true
+                    }
+                },
+                monitorService,
+                new StubPlcStartupConnectionService
+                {
+                    Result = PlcStartupConnectionResult.Failed("PLC 连接失败")
+                }),
+            logger);
+
+        await service.RunOnceAsync();
+
+        Assert.Equal(0, monitorService.CallCount);
+        Assert.Contains(logger.Entries, entry => entry.LogLevel == LogLevel.Warning && entry.Message.Contains("PLC 未连接", StringComparison.Ordinal));
     }
 
     private sealed class StubAppSettingsService : IAppSettingsService
@@ -111,9 +142,12 @@ public sealed class WearPartMonitoringHostedServiceTests
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public StubServiceScopeFactory(IAppSettingsService appSettingsService, IWearPartMonitorService wearPartMonitorService)
+        public StubServiceScopeFactory(
+            IAppSettingsService appSettingsService,
+            IWearPartMonitorService wearPartMonitorService,
+            IPlcStartupConnectionService plcStartupConnectionService)
         {
-            _serviceProvider = new StubServiceProvider(appSettingsService, wearPartMonitorService);
+            _serviceProvider = new StubServiceProvider(appSettingsService, wearPartMonitorService, plcStartupConnectionService);
         }
 
         public IServiceScope CreateScope() => new StubServiceScope(_serviceProvider);
@@ -142,12 +176,16 @@ public sealed class WearPartMonitoringHostedServiceTests
     {
         private readonly Dictionary<Type, object> _services;
 
-        public StubServiceProvider(IAppSettingsService appSettingsService, IWearPartMonitorService wearPartMonitorService)
+        public StubServiceProvider(
+            IAppSettingsService appSettingsService,
+            IWearPartMonitorService wearPartMonitorService,
+            IPlcStartupConnectionService plcStartupConnectionService)
         {
             _services = new Dictionary<Type, object>
             {
                 [typeof(IAppSettingsService)] = appSettingsService,
-                [typeof(IWearPartMonitorService)] = wearPartMonitorService
+                [typeof(IWearPartMonitorService)] = wearPartMonitorService,
+                [typeof(IPlcStartupConnectionService)] = plcStartupConnectionService
             };
         }
 
@@ -156,6 +194,16 @@ public sealed class WearPartMonitoringHostedServiceTests
             return _services.TryGetValue(serviceType, out var service)
                 ? service
                 : null;
+        }
+    }
+
+    private sealed class StubPlcStartupConnectionService : IPlcStartupConnectionService
+    {
+        public PlcStartupConnectionResult Result { get; set; } = PlcStartupConnectionResult.Connected();
+
+        public Task<PlcStartupConnectionResult> EnsureConnectedAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Result);
         }
     }
 
