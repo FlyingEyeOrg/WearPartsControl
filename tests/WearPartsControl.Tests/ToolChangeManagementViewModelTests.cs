@@ -1,4 +1,5 @@
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ViewModels;
 using Xunit;
@@ -8,7 +9,7 @@ namespace WearPartsControl.Tests;
 public sealed class ToolChangeManagementViewModelTests
 {
     [Fact]
-    public async Task SaveCommand_WhenCreatingDefinition_ShouldRefreshDefinitions()
+    public async Task NewCommand_WhenCreatingDefinition_ShouldRefreshDefinitions()
     {
         var service = new StubToolChangeManagementService();
         var viewModel = new ToolChangeManagementViewModel(service, new UiBusyService(TimeSpan.Zero));
@@ -17,21 +18,54 @@ public sealed class ToolChangeManagementViewModelTests
         viewModel.ToolName = "标准刀";
         viewModel.ToolCode = "TL-01";
 
-        await viewModel.SaveCommand.ExecuteAsync(null);
+        await viewModel.NewCommand.ExecuteAsync(null);
 
         Assert.Single(viewModel.Definitions);
         Assert.Equal("标准刀", viewModel.Definitions[0].Name);
         Assert.Equal("TL-01", viewModel.Definitions[0].Code);
         Assert.Same(viewModel.Definitions[0], viewModel.SelectedDefinition);
-        Assert.DoesNotContain("正在新建", viewModel.StatusMessage, StringComparison.Ordinal);
+        Assert.Equal(LocalizedText.Format("ViewModels.ToolChangeManagementVm.CreatedWithName", "标准刀"), viewModel.StatusMessage);
         Assert.Equal(1, service.CreateCount);
+    }
+
+    [Fact]
+    public async Task EditCommand_WhenUpdatingSelectedDefinition_ShouldPersistChanges()
+    {
+        var existing = new ToolChangeDefinition
+        {
+            Id = Guid.NewGuid(),
+            Name = "标准刀",
+            Code = "TL-01"
+        };
+
+        var service = new StubToolChangeManagementService(existing);
+        var viewModel = new ToolChangeManagementViewModel(service, new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+        viewModel.SelectedDefinition = viewModel.Definitions.Single();
+        viewModel.ToolName = "标准刀-改";
+        viewModel.ToolCode = "TL-02";
+
+        await viewModel.EditCommand.ExecuteAsync(null);
+
+        Assert.Equal(1, service.UpdateCount);
+        Assert.Equal("标准刀-改", viewModel.SelectedDefinition?.Name);
+        Assert.Equal("TL-02", viewModel.SelectedDefinition?.Code);
+        Assert.Equal(LocalizedText.Format("ViewModels.ToolChangeManagementVm.UpdatedWithName", "标准刀-改"), viewModel.StatusMessage);
     }
 
     private sealed class StubToolChangeManagementService : IToolChangeManagementService
     {
         private readonly List<ToolChangeDefinition> _definitions = [];
 
+        public StubToolChangeManagementService(params ToolChangeDefinition[] definitions)
+        {
+            _definitions.AddRange(definitions);
+        }
+
         public int CreateCount { get; private set; }
+
+        public int UpdateCount { get; private set; }
 
         public Task<IReadOnlyList<ToolChangeDefinition>> GetAllAsync(CancellationToken cancellationToken = default)
         {
@@ -53,7 +87,19 @@ public sealed class ToolChangeManagementViewModelTests
 
         public Task<ToolChangeDefinition> UpdateAsync(ToolChangeDefinition definition, CancellationToken cancellationToken = default)
         {
-            throw new NotSupportedException();
+            UpdateCount++;
+            var index = _definitions.FindIndex(x => x.Id == definition.Id);
+            if (index >= 0)
+            {
+                _definitions[index] = new ToolChangeDefinition
+                {
+                    Id = definition.Id,
+                    Name = definition.Name,
+                    Code = definition.Code
+                };
+            }
+
+            return Task.FromResult(_definitions[index]);
         }
 
         public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)

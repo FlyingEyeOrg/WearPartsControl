@@ -1,9 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using System.IO;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Domain.Repositories;
 using WearPartsControl.Exceptions;
+using WearPartsControl.Infrastructure.EntityFrameworkCore;
+using WearPartsControl.Infrastructure.EntityFrameworkCore.Repositories;
 using Xunit;
 
 namespace WearPartsControl.Tests;
@@ -44,6 +48,39 @@ public sealed class ToolChangeManagementServiceTests
 
         Assert.Equal("标准刀-改", updated.Name);
         Assert.Equal("TL-02", repository.Entities[0].Code);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_AfterCreateOnSameRepository_ShouldNotThrowTrackingConflict()
+    {
+        var dbFilePath = Path.Combine(Path.GetTempPath(), $"toolchange-tracking-{Guid.NewGuid():N}.db");
+        var factory = new WearPartsControlDbContextFactory($"Data Source={dbFilePath}");
+
+        await using var dbContext = await factory.CreateDbContextAsync();
+        await dbContext.Database.EnsureCreatedAsync();
+
+        try
+        {
+            var repository = new ToolChangeRepository(dbContext);
+            var service = new ToolChangeManagementService(CreateLoggedInAccessor(), repository);
+
+            var created = await service.CreateAsync(new ToolChangeDefinition { Name = "标准刀", Code = "TL-01" });
+            var updated = await service.UpdateAsync(new ToolChangeDefinition { Id = created.Id, Name = "标准刀-改", Code = "TL-02" });
+
+            Assert.Equal("标准刀-改", updated.Name);
+
+            var persisted = await dbContext.ToolChanges.AsNoTracking().SingleAsync();
+            Assert.Equal("标准刀-改", persisted.Name);
+            Assert.Equal("TL-02", persisted.Code);
+        }
+        finally
+        {
+            await dbContext.Database.EnsureDeletedAsync();
+            if (File.Exists(dbFilePath))
+            {
+                File.Delete(dbFilePath);
+            }
+        }
     }
 
     private static CurrentUserAccessor CreateLoggedInAccessor()

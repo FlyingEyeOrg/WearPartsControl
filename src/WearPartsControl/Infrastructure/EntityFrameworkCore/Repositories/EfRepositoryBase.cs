@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using WearPartsControl.Domain.Entities.Interfaces;
 using WearPartsControl.Domain.Repositories;
@@ -72,6 +73,14 @@ public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<T
 
     public virtual Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
+        var trackedEntity = Set.Local.FirstOrDefault(x => EqualityComparer<TId>.Default.Equals(x.Id, entity.Id));
+        if (trackedEntity is not null && !ReferenceEquals(trackedEntity, entity))
+        {
+            DbContext.Entry(trackedEntity).CurrentValues.SetValues(entity);
+            SetUpdateDefaults(trackedEntity);
+            return Task.CompletedTask;
+        }
+
         SetUpdateDefaults(entity);
         Set.Update(entity);
         return Task.CompletedTask;

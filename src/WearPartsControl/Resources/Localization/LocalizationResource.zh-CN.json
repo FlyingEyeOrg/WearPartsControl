@@ -155,14 +155,15 @@
       "Loading": "正在加载换刀类型...",
       "Empty": "当前暂无换刀类型。",
       "Loaded": "已加载 {0} 条换刀类型。",
-      "Saving": "正在保存换刀类型...",
-      "Saved": "换刀类型已保存。",
-      "SavedWithName": "换刀类型 {0} 已保存。",
+      "Editing": "正在编辑换刀类型 {0}。",
+      "CreatingOperation": "正在新增换刀类型...",
+      "CreatedWithName": "换刀类型 {0} 已新增。",
+      "Updating": "正在编辑换刀类型...",
+      "UpdatedWithName": "换刀类型 {0} 已修改。",
       "DeleteConfirmationMessage": "确认删除换刀类型“{0}”吗？",
       "DeleteConfirmationTitle": "删除确认",
       "Deleting": "正在删除换刀类型...",
-      "Deleted": "换刀类型 {0} 已删除。",
-      "Creating": "正在新建换刀类型。"
+      "Deleted": "换刀类型 {0} 已删除。"
     },
     "PartUpdateRecordVm": {
       "PromptLoadCurrent": "请先加载当前设备的易损件更换记录。",

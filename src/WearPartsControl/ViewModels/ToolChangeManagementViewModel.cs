@@ -28,8 +28,8 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
 
         SearchCommand = new RelayCommand(ApplyFilter);
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync(CancellationToken.None), () => !IsBusy);
-        NewCommand = new RelayCommand(CreateNew, () => !IsBusy);
-        SaveCommand = new AsyncRelayCommand(() => SaveAsync(CancellationToken.None), CanSave);
+        NewCommand = new AsyncRelayCommand(() => CreateAsync(CancellationToken.None), CanCreate);
+        EditCommand = new AsyncRelayCommand(() => EditAsync(CancellationToken.None), CanEdit);
         DeleteCommand = new AsyncRelayCommand(() => DeleteAsync(CancellationToken.None), CanDelete);
     }
 
@@ -39,9 +39,9 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
 
     public IAsyncRelayCommand RefreshCommand { get; }
 
-    public IRelayCommand NewCommand { get; }
+    public IAsyncRelayCommand NewCommand { get; }
 
-    public IAsyncRelayCommand SaveCommand { get; }
+    public IAsyncRelayCommand EditCommand { get; }
 
     public IAsyncRelayCommand DeleteCommand { get; }
 
@@ -61,9 +61,11 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
                 {
                     ToolName = value.Name;
                     ToolCode = value.Code;
+                    StatusMessage = LocalizedText.Format("ViewModels.ToolChangeManagementVm.Editing", value.Name);
                 }
 
-                SaveCommand.NotifyCanExecuteChanged();
+                NewCommand.NotifyCanExecuteChanged();
+                EditCommand.NotifyCanExecuteChanged();
                 DeleteCommand.NotifyCanExecuteChanged();
             }
         }
@@ -76,7 +78,8 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         {
             if (SetProperty(ref _toolName, value))
             {
-                SaveCommand.NotifyCanExecuteChanged();
+                NewCommand.NotifyCanExecuteChanged();
+                EditCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -88,7 +91,8 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         {
             if (SetProperty(ref _toolCode, value))
             {
-                SaveCommand.NotifyCanExecuteChanged();
+                NewCommand.NotifyCanExecuteChanged();
+                EditCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -114,7 +118,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
             {
                 RefreshCommand.NotifyCanExecuteChanged();
                 NewCommand.NotifyCanExecuteChanged();
-                SaveCommand.NotifyCanExecuteChanged();
+                EditCommand.NotifyCanExecuteChanged();
                 DeleteCommand.NotifyCanExecuteChanged();
             }
         }
@@ -160,41 +164,70 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         }
     }
 
-    private async Task SaveAsync(CancellationToken cancellationToken)
+    private async Task CreateAsync(CancellationToken cancellationToken)
     {
-        if (!CanSave())
+        if (!CanCreate())
         {
             return;
         }
 
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.ToolChangeManagementVm.Saving");
+        StatusMessage = LocalizedText.Get("ViewModels.ToolChangeManagementVm.CreatingOperation");
         using var _ = _uiBusyService.Enter(StatusMessage);
 
         try
         {
-            var isCreating = SelectedDefinition is null;
             var model = new ToolChangeDefinition
             {
-                Id = SelectedDefinition?.Id ?? Guid.Empty,
                 Name = ToolName,
                 Code = ToolCode
             };
 
-            var saved = SelectedDefinition is null
-                ? await _toolChangeManagementService.CreateAsync(model, cancellationToken).ConfigureAwait(true)
-                : await _toolChangeManagementService.UpdateAsync(model, cancellationToken).ConfigureAwait(true);
+            var saved = await _toolChangeManagementService.CreateAsync(model, cancellationToken).ConfigureAwait(true);
 
-            if (isCreating && !string.IsNullOrWhiteSpace(Keyword))
+            if (!string.IsNullOrWhiteSpace(Keyword))
             {
                 Keyword = string.Empty;
             }
 
             await ReloadDefinitionsAsync(cancellationToken, saved.Id).ConfigureAwait(true);
             SelectedDefinition = Definitions.FirstOrDefault(x => x.Id == saved.Id);
-            StatusMessage = SelectedDefinition is null
-                ? LocalizedText.Get("ViewModels.ToolChangeManagementVm.Saved")
-                : LocalizedText.Format("ViewModels.ToolChangeManagementVm.SavedWithName", saved.Name);
+            StatusMessage = LocalizedText.Format("ViewModels.ToolChangeManagementVm.CreatedWithName", saved.Name);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task EditAsync(CancellationToken cancellationToken)
+    {
+        if (!CanEdit())
+        {
+            return;
+        }
+
+        IsBusy = true;
+        StatusMessage = LocalizedText.Get("ViewModels.ToolChangeManagementVm.Updating");
+        using var _ = _uiBusyService.Enter(StatusMessage);
+
+        try
+        {
+            var model = new ToolChangeDefinition
+            {
+                Id = SelectedDefinition!.Id,
+                Name = ToolName,
+                Code = ToolCode
+            };
+
+            var saved = await _toolChangeManagementService.UpdateAsync(model, cancellationToken).ConfigureAwait(true);
+            await ReloadDefinitionsAsync(cancellationToken, saved.Id).ConfigureAwait(true);
+            SelectedDefinition = Definitions.FirstOrDefault(x => x.Id == saved.Id);
+            StatusMessage = LocalizedText.Format("ViewModels.ToolChangeManagementVm.UpdatedWithName", saved.Name);
         }
         catch (Exception ex)
         {
@@ -233,7 +266,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         {
             await _toolChangeManagementService.DeleteAsync(selected.Id, cancellationToken).ConfigureAwait(true);
             await ReloadDefinitionsAsync(cancellationToken, selectedId: null).ConfigureAwait(true);
-            CreateNew();
+            ClearEditor();
             StatusMessage = LocalizedText.Format("ViewModels.ToolChangeManagementVm.Deleted", selected.Name);
         }
         catch (Exception ex)
@@ -246,12 +279,11 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         }
     }
 
-    private void CreateNew()
+    private void ClearEditor()
     {
         SelectedDefinition = null;
         ToolName = string.Empty;
         ToolCode = string.Empty;
-        StatusMessage = LocalizedText.Get("ViewModels.ToolChangeManagementVm.Creating");
     }
 
     private void ApplyFilter()
@@ -291,9 +323,14 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         }
     }
 
-    private bool CanSave()
+    private bool CanCreate()
     {
         return !IsBusy && !string.IsNullOrWhiteSpace(ToolName) && !string.IsNullOrWhiteSpace(ToolCode);
+    }
+
+    private bool CanEdit()
+    {
+        return !IsBusy && SelectedDefinition is not null && !string.IsNullOrWhiteSpace(ToolName) && !string.IsNullOrWhiteSpace(ToolCode);
     }
 
     private bool CanDelete()

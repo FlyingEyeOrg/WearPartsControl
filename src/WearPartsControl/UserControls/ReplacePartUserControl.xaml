@@ -65,7 +65,7 @@
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center">易损件监控状态：</TextBlock>
+                                       VerticalAlignment="Center">易损件监控：</TextBlock>
                             <TextBox IsReadOnly="True"
                                      Grid.Column="1"
                                      Background="{Binding WearPartMonitoringStatusBackground, Mode=OneWay}"

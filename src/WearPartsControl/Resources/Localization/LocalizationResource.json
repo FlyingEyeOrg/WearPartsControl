@@ -155,14 +155,15 @@
       "Loading": "Loading tool change types...",
       "Empty": "No tool change types found.",
       "Loaded": "Loaded {0} tool change types.",
-      "Saving": "Saving tool change type...",
-      "Saved": "Tool change type saved.",
-      "SavedWithName": "Tool change type {0} saved.",
+      "Editing": "Editing tool change type {0}.",
+      "CreatingOperation": "Creating tool change type...",
+      "CreatedWithName": "Tool change type {0} created.",
+      "Updating": "Updating tool change type...",
+      "UpdatedWithName": "Tool change type {0} updated.",
       "DeleteConfirmationMessage": "Delete tool change type \"{0}\"?",
       "DeleteConfirmationTitle": "Delete Confirmation",
       "Deleting": "Deleting tool change type...",
-      "Deleted": "Tool change type {0} deleted.",
-      "Creating": "Creating a new tool change type."
+      "Deleted": "Tool change type {0} deleted."
     },
     "PartUpdateRecordVm": {
       "PromptLoadCurrent": "Please load wear part replacement history for the current device first.",

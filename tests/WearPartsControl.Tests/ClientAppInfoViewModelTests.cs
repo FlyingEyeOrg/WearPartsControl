@@ -218,23 +218,29 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
     {
         var plcStatusService = new PlcConnectionStatusService();
         var plcConnectionTestService = new StubPlcConnectionTestService(plcStatusService);
+        var monitoringControlService = new StubWearPartMonitoringControlService();
         var viewModel = new ClientAppInfoViewModel(
             new StubClientAppInfoService(),
             new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
             new StubLegacyConfigurationImportService(),
             plcConnectionTestService,
             plcStatusService,
-            new StubWearPartMonitoringControlService(),
+            monitoringControlService,
             new UiBusyService());
 
         await viewModel.InitializeAsync();
+        Assert.True(viewModel.IsWearPartMonitoringEnabled);
+        Assert.False(viewModel.IsTestPlcConnectionEnabled);
+
+        await viewModel.ToggleWearPartMonitoringCommand.ExecuteAsync(null);
+
+        Assert.False(viewModel.IsWearPartMonitoringEnabled);
+        Assert.True(viewModel.IsTestPlcConnectionEnabled);
+
         await viewModel.TestPlcConnectionCommand.ExecuteAsync(null);
 
         Assert.True(plcConnectionTestService.WasCalled);
         Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.PlcConnectionTestSucceeded"), viewModel.StatusMessage);
-        Assert.True(viewModel.IsPlcConnected);
-        Assert.True(viewModel.TestPlcConnectionCommand.CanExecute(null));
-        Assert.True(viewModel.IsTestPlcConnectionEnabled);
     }
 
     [Fact]

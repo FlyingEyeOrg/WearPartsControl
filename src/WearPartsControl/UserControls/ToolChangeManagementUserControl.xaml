@@ -87,11 +87,11 @@
                         <Button Margin="0 8 8 0"
                                 Width="80"
                                 Command="{Binding NewCommand}"
-                                Style="{StaticResource ButtonPrimary}">新建</Button>
+                                Style="{StaticResource ButtonPrimary}">新增</Button>
                         <Button Margin="0 8 8 0"
                                 Width="80"
-                                Command="{Binding SaveCommand}"
-                                Style="{StaticResource ButtonPrimary}">保存</Button>
+                                Command="{Binding EditCommand}"
+                                Style="{StaticResource ButtonPrimary}">编辑</Button>
                         <Button Margin="0 8 8 0"
                                 Width="80"
                                 Command="{Binding DeleteCommand}"
