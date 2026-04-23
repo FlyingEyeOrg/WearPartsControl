@@ -66,6 +66,7 @@ public static class ServiceRegistration
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<AppSettingsService>().As<IAppSettingsService>().SingleInstance();
         builder.RegisterType<PlcService>().AsSelf().SingleInstance();
+        builder.RegisterType<PlcConnectionTestService>().As<IPlcConnectionTestService>().SingleInstance();
         builder.Register(_ => new PlcOperationPipeline(
                 _.Resolve<PlcService>(),
             _.Resolve<Microsoft.Extensions.Logging.ILogger<PlcOperationPipeline>>(),
@@ -91,7 +92,8 @@ public static class ServiceRegistration
         builder.RegisterType<LifetimeReachedReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<ChangePositionReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<WearPartMonitorService>().As<IWearPartMonitorService>().InstancePerDependency();
-        builder.RegisterType<WearPartMonitoringHostedService>().As<IHostedService>().SingleInstance();
+        builder.RegisterType<WearPartMonitoringHostedService>().AsSelf().As<IHostedService>().SingleInstance();
+        builder.RegisterType<WearPartMonitoringControlService>().As<IWearPartMonitoringControlService>().SingleInstance();
         EntityFrameworkCoreServiceRegistration.RegisterServices(builder);
         builder.RegisterType<WearPartDefinitionDomainService>().AsSelf().SingleInstance();
         builder.RegisterType<PartManagementViewModel>().AsSelf().InstancePerDependency();

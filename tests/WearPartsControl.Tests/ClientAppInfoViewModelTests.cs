@@ -3,6 +3,8 @@ using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.LegacyImport;
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.PartServices;
+using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.ViewModels;
 using Xunit;
 
@@ -51,6 +53,9 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             service,
             new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
             new StubLegacyConfigurationImportService(),
+            new StubPlcConnectionTestService(),
+            new PlcConnectionStatusService(),
+            new StubWearPartMonitoringControlService(),
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -113,6 +118,9 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             service,
             new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
             new StubLegacyConfigurationImportService(),
+            new StubPlcConnectionTestService(),
+            new PlcConnectionStatusService(),
+            new StubWearPartMonitoringControlService(),
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -149,6 +157,9 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             service,
             new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
             new StubLegacyConfigurationImportService(),
+            new StubPlcConnectionTestService(),
+            new PlcConnectionStatusService(),
+            new StubWearPartMonitoringControlService(),
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -166,6 +177,9 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             new StubClientAppInfoService(),
             new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
             importService,
+            new StubPlcConnectionTestService(),
+            new PlcConnectionStatusService(),
+            new StubWearPartMonitoringControlService(),
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -187,6 +201,9 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             new StubClientAppInfoService(),
             new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
             new StubLegacyConfigurationImportService(),
+            new StubPlcConnectionTestService(),
+            new PlcConnectionStatusService(),
+            new StubWearPartMonitoringControlService(),
             new UiBusyService());
         var raised = false;
         viewModel.ImportLegacyConfigurationRequested += (_, _) => raised = true;
@@ -194,6 +211,56 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         viewModel.ImportLegacyConfigurationCommand.Execute(null);
 
         Assert.True(raised);
+    }
+
+    [Fact]
+    public async Task TestPlcConnectionCommand_ShouldUpdateStatusWhenConnectionSucceeds()
+    {
+        var plcStatusService = new PlcConnectionStatusService();
+        var plcConnectionTestService = new StubPlcConnectionTestService(plcStatusService);
+        var viewModel = new ClientAppInfoViewModel(
+            new StubClientAppInfoService(),
+            new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
+            new StubLegacyConfigurationImportService(),
+            plcConnectionTestService,
+            plcStatusService,
+            new StubWearPartMonitoringControlService(),
+            new UiBusyService());
+
+        await viewModel.InitializeAsync();
+        await viewModel.TestPlcConnectionCommand.ExecuteAsync(null);
+
+        Assert.True(plcConnectionTestService.WasCalled);
+        Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.PlcConnectionTestSucceeded"), viewModel.StatusMessage);
+        Assert.True(viewModel.IsPlcConnected);
+        Assert.False(viewModel.TestPlcConnectionCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task ToggleWearPartMonitoringCommand_ShouldToggleStateAndStatus()
+    {
+        var monitoringControlService = new StubWearPartMonitoringControlService();
+        var viewModel = new ClientAppInfoViewModel(
+            new StubClientAppInfoService(),
+            new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
+            new StubLegacyConfigurationImportService(),
+            new StubPlcConnectionTestService(),
+            new PlcConnectionStatusService(),
+            monitoringControlService,
+            new UiBusyService());
+
+        await viewModel.InitializeAsync();
+        await viewModel.ToggleWearPartMonitoringCommand.ExecuteAsync(null);
+
+        Assert.False(viewModel.IsWearPartMonitoringEnabled);
+        Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringStopped"), viewModel.StatusMessage);
+
+        await viewModel.ToggleWearPartMonitoringCommand.ExecuteAsync(null);
+
+        Assert.True(viewModel.IsWearPartMonitoringEnabled);
+        Assert.Equal(1, monitoringControlService.EnableCallCount);
+        Assert.Equal(1, monitoringControlService.DisableCallCount);
+        Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringStarted"), viewModel.StatusMessage);
     }
 
     public void Dispose()
@@ -326,6 +393,54 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
                 ClientAppInfo = model,
                 ImportedAppSettings = true
             });
+        }
+    }
+
+    private sealed class StubPlcConnectionTestService : IPlcConnectionTestService
+    {
+        private readonly IPlcConnectionStatusService? _plcConnectionStatusService;
+
+        public StubPlcConnectionTestService(IPlcConnectionStatusService? plcConnectionStatusService = null)
+        {
+            _plcConnectionStatusService = plcConnectionStatusService;
+        }
+
+        public bool WasCalled { get; private set; }
+
+        public Task<PlcStartupConnectionResult> TestAsync(ClientAppInfoModel clientAppInfo, CancellationToken cancellationToken = default)
+        {
+            WasCalled = true;
+            var result = PlcStartupConnectionResult.Connected(LocalizedText.Get("ViewModels.ClientAppInfoVm.PlcConnectionTestSucceeded"));
+            _plcConnectionStatusService?.Set(result);
+            return Task.FromResult(result);
+        }
+    }
+
+    private sealed class StubWearPartMonitoringControlService : IWearPartMonitoringControlService
+    {
+        public int EnableCallCount { get; private set; }
+
+        public int DisableCallCount { get; private set; }
+
+        private bool _isEnabled = true;
+
+        public Task<bool> GetIsEnabledAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(_isEnabled);
+        }
+
+        public Task EnableAsync(CancellationToken cancellationToken = default)
+        {
+            EnableCallCount++;
+            _isEnabled = true;
+            return Task.CompletedTask;
+        }
+
+        public Task DisableAsync(CancellationToken cancellationToken = default)
+        {
+            DisableCallCount++;
+            _isEnabled = false;
+            return Task.CompletedTask;
         }
     }
 }

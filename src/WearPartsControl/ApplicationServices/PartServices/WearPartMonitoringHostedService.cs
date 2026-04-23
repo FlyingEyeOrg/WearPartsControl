@@ -51,6 +51,12 @@ public sealed class WearPartMonitoringHostedService : BackgroundService
                 return;
             }
 
+            if (!settings.IsWearPartMonitoringEnabled)
+            {
+                _logger.LogDebug("跳过后台易损件监控：当前已关闭后台监控。");
+                return;
+            }
+
             var results = await monitorService.MonitorByResourceNumberAsync(settings.ResourceNumber, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation("后台易损件监控完成，资源号 {ResourceNumber}，处理 {Count} 项。", settings.ResourceNumber, results.Count);
         }

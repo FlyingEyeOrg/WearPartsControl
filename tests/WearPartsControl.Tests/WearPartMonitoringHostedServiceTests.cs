@@ -28,6 +28,30 @@ public sealed class WearPartMonitoringHostedServiceTests
         Assert.DoesNotContain(logger.Entries, entry => entry.LogLevel == LogLevel.Error);
     }
 
+    [Fact]
+    public async Task RunOnceAsync_WhenMonitoringDisabled_ShouldSkipMonitorCall()
+    {
+        var logger = new TestLogger<WearPartMonitoringHostedService>();
+        var monitorService = new TrackableWearPartMonitorService();
+        var service = new WearPartMonitoringHostedService(
+            new StubServiceScopeFactory(
+                new StubAppSettingsService
+                {
+                    Current = new AppSettings
+                    {
+                        ResourceNumber = "RES-01",
+                        IsWearPartMonitoringEnabled = false
+                    }
+                },
+                monitorService),
+            logger);
+
+        await service.RunOnceAsync();
+
+        Assert.Equal(0, monitorService.CallCount);
+        Assert.DoesNotContain(logger.Entries, entry => entry.LogLevel == LogLevel.Error);
+    }
+
     private sealed class StubAppSettingsService : IAppSettingsService
     {
         public AppSettings Current { get; set; } = new();
@@ -59,6 +83,22 @@ public sealed class WearPartMonitoringHostedServiceTests
         public Task<IReadOnlyList<WearPartMonitorResult>> MonitorByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
         {
             return Task.FromException<IReadOnlyList<WearPartMonitorResult>>(_exception);
+        }
+
+        public Task<IReadOnlyList<ExceedLimitRecord>> GetExceedLimitRecordsAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    private sealed class TrackableWearPartMonitorService : IWearPartMonitorService
+    {
+        public int CallCount { get; private set; }
+
+        public Task<IReadOnlyList<WearPartMonitorResult>> MonitorByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            return Task.FromResult<IReadOnlyList<WearPartMonitorResult>>([]);
         }
 
         public Task<IReadOnlyList<ExceedLimitRecord>> GetExceedLimitRecordsAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)

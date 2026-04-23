@@ -22,7 +22,8 @@ public sealed class AppSettingsServiceTests
                 ResourceNumber = "RES-001",
                 LoginInputMaxIntervalMilliseconds = 135,
                 AutoLogoutCountdownSeconds = 240,
-                UseWorkNumberLogin = true
+                UseWorkNumberLogin = true,
+                IsWearPartMonitoringEnabled = false
             };
 
             await File.WriteAllTextAsync(legacyPath, JsonSerializer.Serialize(legacySettings));
@@ -36,6 +37,7 @@ public sealed class AppSettingsServiceTests
             Assert.Equal(135, settings.LoginInputMaxIntervalMilliseconds);
             Assert.Equal(240, settings.AutoLogoutCountdownSeconds);
             Assert.True(settings.UseWorkNumberLogin);
+            Assert.False(settings.IsWearPartMonitoringEnabled);
             Assert.False(File.Exists(legacyPath));
             Assert.True(File.Exists(Path.Combine(settingsDirectory, "app-settings.json")));
         }

@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.ApplicationServices.LegacyImport;
 using WearPartsControl.Exceptions;
@@ -17,6 +18,9 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly IClientAppInfoSelectionOptionsProvider _selectionOptionsProvider;
     private readonly ILegacyConfigurationImportService _legacyConfigurationImportService;
+    private readonly IPlcConnectionTestService _plcConnectionTestService;
+    private readonly IPlcConnectionStatusService _plcConnectionStatusService;
+    private readonly IWearPartMonitoringControlService _wearPartMonitoringControlService;
     private readonly IUiBusyService _uiBusyService;
     private readonly List<SiteFactoryOption> _siteFactoryOptions = new();
     private Guid? _clientAppConfigurationId;
@@ -39,19 +43,29 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     private string _siemensSlot = "0";
     private string _statusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.PromptComplete");
     private bool _isStringReverse = true;
+    private bool _isWearPartMonitoringEnabled = true;
 
     public ClientAppInfoViewModel(
         IClientAppInfoService clientAppInfoService,
         IClientAppInfoSelectionOptionsProvider selectionOptionsProvider,
         ILegacyConfigurationImportService legacyConfigurationImportService,
+        IPlcConnectionTestService plcConnectionTestService,
+        IPlcConnectionStatusService plcConnectionStatusService,
+        IWearPartMonitoringControlService wearPartMonitoringControlService,
         IUiBusyService uiBusyService)
     {
         _clientAppInfoService = clientAppInfoService;
         _selectionOptionsProvider = selectionOptionsProvider;
         _legacyConfigurationImportService = legacyConfigurationImportService;
+        _plcConnectionTestService = plcConnectionTestService;
+        _plcConnectionStatusService = plcConnectionStatusService;
+        _wearPartMonitoringControlService = wearPartMonitoringControlService;
         _uiBusyService = uiBusyService;
         SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
         ImportLegacyConfigurationCommand = new RelayCommand(RequestImportLegacyConfiguration, CanImportLegacyConfiguration);
+        TestPlcConnectionCommand = new AsyncRelayCommand(TestPlcConnectionAsync, CanTestPlcConnection);
+        ToggleWearPartMonitoringCommand = new AsyncRelayCommand(ToggleWearPartMonitoringAsync, CanToggleWearPartMonitoring);
+        _plcConnectionStatusService.PropertyChanged += OnPlcConnectionStatusChanged;
 
         foreach (var plcProtocolType in Enum.GetNames<PlcProtocolType>())
         {
@@ -73,6 +87,10 @@ public sealed class ClientAppInfoViewModel : ObservableObject
 
     public IRelayCommand ImportLegacyConfigurationCommand { get; }
 
+    public IAsyncRelayCommand TestPlcConnectionCommand { get; }
+
+    public IAsyncRelayCommand ToggleWearPartMonitoringCommand { get; }
+
     public event EventHandler? ImportLegacyConfigurationRequested;
 
     public bool IsBusy
@@ -85,6 +103,8 @@ public sealed class ClientAppInfoViewModel : ObservableObject
                 OnPropertyChanged(nameof(IsNotBusy));
                 SaveCommand.NotifyCanExecuteChanged();
                 ImportLegacyConfigurationCommand.NotifyCanExecuteChanged();
+                TestPlcConnectionCommand.NotifyCanExecuteChanged();
+                ToggleWearPartMonitoringCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -108,6 +128,24 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     public bool IsSiemensSlotVisible => IsSiemensPlc(PlcProtocolType);
 
     public bool IsStringReverseVisible => SupportsStringReverse(PlcProtocolType);
+
+    public bool IsWearPartMonitoringEnabled
+    {
+        get => _isWearPartMonitoringEnabled;
+        private set
+        {
+            if (SetProperty(ref _isWearPartMonitoringEnabled, value))
+            {
+                OnPropertyChanged(nameof(WearPartMonitoringButtonText));
+            }
+        }
+    }
+
+    public string WearPartMonitoringButtonText => IsWearPartMonitoringEnabled
+        ? LocalizedText.Get("ViewModels.ClientAppInfoVm.StopWearPartMonitoring")
+        : LocalizedText.Get("ViewModels.ClientAppInfoVm.StartWearPartMonitoring");
+
+    public bool IsPlcConnected => _plcConnectionStatusService.Current.Status == PlcStartupConnectionStatus.Connected;
 
     public string StatusMessage
     {
@@ -291,6 +329,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         {
             await LoadSelectionOptionsAsync(cancellationToken).ConfigureAwait(true);
             await LoadSiteFactoryOptionsAsync(cancellationToken).ConfigureAwait(true);
+            IsWearPartMonitoringEnabled = await _wearPartMonitoringControlService.GetIsEnabledAsync(cancellationToken).ConfigureAwait(true);
             var model = await _clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(true);
             Apply(model);
             _isInitialized = true;
@@ -310,6 +349,16 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     }
 
     private bool CanImportLegacyConfiguration()
+    {
+        return !IsBusy;
+    }
+
+    private bool CanTestPlcConnection()
+    {
+        return !IsBusy && !IsPlcConnected;
+    }
+
+    private bool CanToggleWearPartMonitoring()
     {
         return !IsBusy;
     }
@@ -366,9 +415,85 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.ImportCanceled");
     }
 
+    private async Task TestPlcConnectionAsync()
+    {
+        IsBusy = true;
+        StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.TestingPlcConnection");
+        using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.ClientAppInfoVm.TestingPlcConnection"));
+
+        try
+        {
+            var result = await _plcConnectionTestService.TestAsync(BuildCurrentModel()).ConfigureAwait(true);
+            StatusMessage = result.Message;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task ToggleWearPartMonitoringAsync()
+    {
+        IsBusy = true;
+        StatusMessage = IsWearPartMonitoringEnabled
+            ? LocalizedText.Get("ViewModels.ClientAppInfoVm.StoppingWearPartMonitoring")
+            : LocalizedText.Get("ViewModels.ClientAppInfoVm.StartingWearPartMonitoring");
+        using var _ = _uiBusyService.Enter(StatusMessage);
+
+        try
+        {
+            if (IsWearPartMonitoringEnabled)
+            {
+                await _wearPartMonitoringControlService.DisableAsync().ConfigureAwait(true);
+                IsWearPartMonitoringEnabled = false;
+                StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringStopped");
+            }
+            else
+            {
+                await _wearPartMonitoringControlService.EnableAsync().ConfigureAwait(true);
+                IsWearPartMonitoringEnabled = true;
+                StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringStarted");
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
     private void RequestImportLegacyConfiguration()
     {
         ImportLegacyConfigurationRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private ClientAppInfoModel BuildCurrentModel()
+    {
+        var request = BuildSaveRequest();
+        return new ClientAppInfoModel
+        {
+            Id = request.Id,
+            SiteCode = request.SiteCode,
+            FactoryCode = request.FactoryCode,
+            AreaCode = request.AreaCode,
+            ProcedureCode = request.ProcedureCode,
+            EquipmentCode = request.EquipmentCode,
+            ResourceNumber = request.ResourceNumber,
+            PlcProtocolType = request.PlcProtocolType,
+            PlcIpAddress = request.PlcIpAddress,
+            PlcPort = request.PlcPort,
+            ShutdownPointAddress = request.ShutdownPointAddress,
+            SiemensRack = request.SiemensRack,
+            SiemensSlot = request.SiemensSlot,
+            IsStringReverse = request.IsStringReverse
+        };
     }
 
     private ClientAppInfoSaveRequest BuildSaveRequest()
@@ -572,6 +697,17 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         }
 
         options.Add(value.Trim());
+    }
+
+    private void OnPlcConnectionStatusChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(IPlcConnectionStatusService.Current))
+        {
+            return;
+        }
+
+        OnPropertyChanged(nameof(IsPlcConnected));
+        TestPlcConnectionCommand.NotifyCanExecuteChanged();
     }
 
     private static string Normalize(string? value)

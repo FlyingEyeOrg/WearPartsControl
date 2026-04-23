@@ -87,7 +87,8 @@ public sealed class AppSettingsService : IAppSettingsService
                     ? 500
                     : plcPipeline.SlowExecutionThresholdMilliseconds
             },
-            IsSetClientAppInfo = settings.IsSetClientAppInfo
+            IsSetClientAppInfo = settings.IsSetClientAppInfo,
+            IsWearPartMonitoringEnabled = settings.IsWearPartMonitoringEnabled
         };
     }
 
@@ -110,7 +111,8 @@ public sealed class AppSettingsService : IAppSettingsService
                 SlowQueueWaitThresholdMilliseconds = settings.PlcPipeline.SlowQueueWaitThresholdMilliseconds,
                 SlowExecutionThresholdMilliseconds = settings.PlcPipeline.SlowExecutionThresholdMilliseconds
             },
-            IsSetClientAppInfo = settings.IsSetClientAppInfo
+            IsSetClientAppInfo = settings.IsSetClientAppInfo,
+            IsWearPartMonitoringEnabled = settings.IsWearPartMonitoringEnabled
         };
     }
 }

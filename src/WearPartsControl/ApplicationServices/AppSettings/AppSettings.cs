@@ -37,6 +37,11 @@ public sealed class AppSettings
     /// 是否已经设置客户端信息
     /// </summary>
     public bool IsSetClientAppInfo { get; set; }
+
+    /// <summary>
+    /// 是否启用易损件后台监控。
+    /// </summary>
+    public bool IsWearPartMonitoringEnabled { get; set; } = true;
 }
 
 public sealed class PlcPipelineSettings
