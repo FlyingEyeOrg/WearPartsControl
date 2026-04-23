@@ -233,7 +233,8 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         Assert.True(plcConnectionTestService.WasCalled);
         Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.PlcConnectionTestSucceeded"), viewModel.StatusMessage);
         Assert.True(viewModel.IsPlcConnected);
-        Assert.False(viewModel.TestPlcConnectionCommand.CanExecute(null));
+        Assert.True(viewModel.TestPlcConnectionCommand.CanExecute(null));
+        Assert.True(viewModel.IsTestPlcConnectionEnabled);
     }
 
     [Fact]
@@ -253,6 +254,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         await viewModel.ToggleWearPartMonitoringCommand.ExecuteAsync(null);
 
         Assert.False(viewModel.IsWearPartMonitoringEnabled);
+        Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringDisabledStatus"), viewModel.WearPartMonitoringStatusText);
         Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringStopped"), viewModel.StatusMessage);
 
         await viewModel.ToggleWearPartMonitoringCommand.ExecuteAsync(null);
@@ -260,6 +262,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         Assert.True(viewModel.IsWearPartMonitoringEnabled);
         Assert.Equal(1, monitoringControlService.EnableCallCount);
         Assert.Equal(1, monitoringControlService.DisableCallCount);
+        Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringEnabledStatus"), viewModel.WearPartMonitoringStatusText);
         Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringStarted"), viewModel.StatusMessage);
     }
 

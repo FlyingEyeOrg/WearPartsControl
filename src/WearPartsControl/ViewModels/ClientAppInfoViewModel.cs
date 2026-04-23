@@ -61,10 +61,10 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         _plcConnectionStatusService = plcConnectionStatusService;
         _wearPartMonitoringControlService = wearPartMonitoringControlService;
         _uiBusyService = uiBusyService;
-        SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
-        ImportLegacyConfigurationCommand = new RelayCommand(RequestImportLegacyConfiguration, CanImportLegacyConfiguration);
-        TestPlcConnectionCommand = new AsyncRelayCommand(TestPlcConnectionAsync, CanTestPlcConnection);
-        ToggleWearPartMonitoringCommand = new AsyncRelayCommand(ToggleWearPartMonitoringAsync, CanToggleWearPartMonitoring);
+        SaveCommand = new AsyncRelayCommand(SaveAsync, CanSaveCommand);
+        ImportLegacyConfigurationCommand = new RelayCommand(RequestImportLegacyConfiguration, CanImportLegacyConfigurationCommand);
+        TestPlcConnectionCommand = new AsyncRelayCommand(TestPlcConnectionAsync, CanTestPlcConnectionCommand);
+        ToggleWearPartMonitoringCommand = new AsyncRelayCommand(ToggleWearPartMonitoringAsync, CanToggleWearPartMonitoringCommand);
         _plcConnectionStatusService.PropertyChanged += OnPlcConnectionStatusChanged;
 
         foreach (var plcProtocolType in Enum.GetNames<PlcProtocolType>())
@@ -101,10 +101,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             if (SetProperty(ref _isBusy, value))
             {
                 OnPropertyChanged(nameof(IsNotBusy));
-                SaveCommand.NotifyCanExecuteChanged();
-                ImportLegacyConfigurationCommand.NotifyCanExecuteChanged();
-                TestPlcConnectionCommand.NotifyCanExecuteChanged();
-                ToggleWearPartMonitoringCommand.NotifyCanExecuteChanged();
+                NotifyOperationStateChanged();
             }
         }
     }
@@ -119,6 +116,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             if (SetProperty(ref _isDirty, value))
             {
                 SaveCommand.NotifyCanExecuteChanged();
+                OnPropertyChanged(nameof(IsSaveClientAppInfoEnabled));
             }
         }
     }
@@ -137,6 +135,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             if (SetProperty(ref _isWearPartMonitoringEnabled, value))
             {
                 OnPropertyChanged(nameof(WearPartMonitoringButtonText));
+                OnPropertyChanged(nameof(WearPartMonitoringStatusText));
             }
         }
     }
@@ -145,7 +144,19 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         ? LocalizedText.Get("ViewModels.ClientAppInfoVm.StopWearPartMonitoring")
         : LocalizedText.Get("ViewModels.ClientAppInfoVm.StartWearPartMonitoring");
 
+    public string WearPartMonitoringStatusText => IsWearPartMonitoringEnabled
+        ? LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringEnabledStatus")
+        : LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringDisabledStatus");
+
     public bool IsPlcConnected => _plcConnectionStatusService.Current.Status == PlcStartupConnectionStatus.Connected;
+
+    public bool IsSaveClientAppInfoEnabled => CanSaveCommand();
+
+    public bool IsImportLegacyConfigurationEnabled => CanImportLegacyConfigurationCommand();
+
+    public bool IsTestPlcConnectionEnabled => CanTestPlcConnectionCommand();
+
+    public bool IsToggleWearPartMonitoringEnabled => CanToggleWearPartMonitoringCommand();
 
     public string StatusMessage
     {
@@ -343,22 +354,22 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         }
     }
 
-    private bool CanSave()
+    private bool CanSaveCommand()
     {
         return !IsBusy && IsDirty;
     }
 
-    private bool CanImportLegacyConfiguration()
+    private bool CanImportLegacyConfigurationCommand()
     {
         return !IsBusy;
     }
 
-    private bool CanTestPlcConnection()
+    private bool CanTestPlcConnectionCommand()
     {
-        return !IsBusy && !IsPlcConnected;
+        return !IsBusy;
     }
 
-    private bool CanToggleWearPartMonitoring()
+    private bool CanToggleWearPartMonitoringCommand()
     {
         return !IsBusy;
     }
@@ -707,7 +718,20 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         }
 
         OnPropertyChanged(nameof(IsPlcConnected));
+        OnPropertyChanged(nameof(IsTestPlcConnectionEnabled));
         TestPlcConnectionCommand.NotifyCanExecuteChanged();
+    }
+
+    private void NotifyOperationStateChanged()
+    {
+        SaveCommand.NotifyCanExecuteChanged();
+        ImportLegacyConfigurationCommand.NotifyCanExecuteChanged();
+        TestPlcConnectionCommand.NotifyCanExecuteChanged();
+        ToggleWearPartMonitoringCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(IsSaveClientAppInfoEnabled));
+        OnPropertyChanged(nameof(IsImportLegacyConfigurationEnabled));
+        OnPropertyChanged(nameof(IsTestPlcConnectionEnabled));
+        OnPropertyChanged(nameof(IsToggleWearPartMonitoringEnabled));
     }
 
     private static string Normalize(string? value)

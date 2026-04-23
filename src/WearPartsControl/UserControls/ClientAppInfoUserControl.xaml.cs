@@ -1,7 +1,12 @@
 ﻿using System.Windows.Controls;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
+using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ViewModels;
+using WearPartsControl.Views;
 
 namespace WearPartsControl.UserControls
 {
@@ -11,12 +16,25 @@ namespace WearPartsControl.UserControls
     public partial class ClientAppInfoUserControl : UserControl
     {
         private readonly ClientAppInfoViewModel _viewModel;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IAutoLogoutInteractionService _autoLogoutInteractionService;
+        private readonly ICurrentUserAccessor _currentUserAccessor;
+        private readonly IAppSettingsService _appSettingsService;
         private bool _isInitialized;
 
-        public ClientAppInfoUserControl(ClientAppInfoViewModel viewModel)
+        public ClientAppInfoUserControl(
+            ClientAppInfoViewModel viewModel,
+            IServiceProvider serviceProvider,
+            IAutoLogoutInteractionService autoLogoutInteractionService,
+            ICurrentUserAccessor currentUserAccessor,
+            IAppSettingsService appSettingsService)
         {
             InitializeComponent();
             _viewModel = viewModel;
+            _serviceProvider = serviceProvider;
+            _autoLogoutInteractionService = autoLogoutInteractionService;
+            _currentUserAccessor = currentUserAccessor;
+            _appSettingsService = appSettingsService;
             DataContext = viewModel;
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
@@ -51,7 +69,8 @@ namespace WearPartsControl.UserControls
                 Multiselect = false
             };
 
-            if (dialog.ShowDialog() != true)
+            var dialogResult = _autoLogoutInteractionService.RunModal(() => dialog.ShowDialog() == true);
+            if (!dialogResult)
             {
                 _viewModel.NotifyLegacyConfigurationImportCanceled();
                 return;
@@ -65,6 +84,87 @@ namespace WearPartsControl.UserControls
             {
                 System.Windows.MessageBox.Show(ex.Message, LocalizedText.Get("FriendlyErrorTitle"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             }
+        }
+
+        private async void OnImportLegacyConfigurationClicked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (!_viewModel.IsImportLegacyConfigurationEnabled)
+            {
+                return;
+            }
+
+            if (!await EnsureAuthenticatedForConfiguredClientAsync().ConfigureAwait(true))
+            {
+                return;
+            }
+
+            _viewModel.ImportLegacyConfigurationCommand.Execute(null);
+        }
+
+        private async void OnSaveClicked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (!_viewModel.IsSaveClientAppInfoEnabled)
+            {
+                return;
+            }
+
+            if (!await EnsureAuthenticatedForConfiguredClientAsync().ConfigureAwait(true))
+            {
+                return;
+            }
+
+            await _viewModel.SaveCommand.ExecuteAsync(null);
+        }
+
+        private async void OnToggleWearPartMonitoringClicked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (!_viewModel.IsToggleWearPartMonitoringEnabled)
+            {
+                return;
+            }
+
+            if (!await EnsureAuthenticatedForConfiguredClientAsync().ConfigureAwait(true))
+            {
+                return;
+            }
+
+            await _viewModel.ToggleWearPartMonitoringCommand.ExecuteAsync(null);
+        }
+
+        private async void OnTestPlcConnectionClicked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (!_viewModel.IsTestPlcConnectionEnabled)
+            {
+                return;
+            }
+
+            if (!await EnsureAuthenticatedForConfiguredClientAsync().ConfigureAwait(true))
+            {
+                return;
+            }
+
+            await _viewModel.TestPlcConnectionCommand.ExecuteAsync(null);
+        }
+
+        private async Task<bool> EnsureAuthenticatedForConfiguredClientAsync()
+        {
+            var settings = await _appSettingsService.GetAsync().ConfigureAwait(true);
+            if (!settings.IsSetClientAppInfo)
+            {
+                return true;
+            }
+
+            if (_currentUserAccessor.CurrentUser is not null)
+            {
+                return true;
+            }
+
+            var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
+            loginWindow.Owner = System.Windows.Window.GetWindow(this);
+            loginWindow.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
+
+            var dialogResult = _autoLogoutInteractionService.RunModal(() => loginWindow.ShowDialog() == true);
+            return dialogResult && _currentUserAccessor.CurrentUser is not null;
         }
     }
 }

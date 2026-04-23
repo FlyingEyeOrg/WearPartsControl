@@ -22,6 +22,8 @@ public sealed class ToolChangeManagementViewModelTests
         Assert.Single(viewModel.Definitions);
         Assert.Equal("标准刀", viewModel.Definitions[0].Name);
         Assert.Equal("TL-01", viewModel.Definitions[0].Code);
+        Assert.Same(viewModel.Definitions[0], viewModel.SelectedDefinition);
+        Assert.DoesNotContain("正在新建", viewModel.StatusMessage, StringComparison.Ordinal);
         Assert.Equal(1, service.CreateCount);
     }
 

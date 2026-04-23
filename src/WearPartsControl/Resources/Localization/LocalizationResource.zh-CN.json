@@ -115,6 +115,8 @@
       "StopWearPartMonitoring": "关闭易损件监控",
       "StartingWearPartMonitoring": "正在开启易损件监控...",
       "StoppingWearPartMonitoring": "正在关闭易损件监控...",
+      "WearPartMonitoringEnabledStatus": "已开启监控",
+      "WearPartMonitoringDisabledStatus": "未开启监控",
       "WearPartMonitoringStarted": "易损件监控已开启。",
       "WearPartMonitoringStopped": "易损件监控已关闭。",
       "PlcPortInvalid": "PLC 端口必须是整数。",

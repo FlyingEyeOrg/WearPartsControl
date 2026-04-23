@@ -173,6 +173,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
 
         try
         {
+            var isCreating = SelectedDefinition is null;
             var model = new ToolChangeDefinition
             {
                 Id = SelectedDefinition?.Id ?? Guid.Empty,
@@ -184,7 +185,12 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
                 ? await _toolChangeManagementService.CreateAsync(model, cancellationToken).ConfigureAwait(true)
                 : await _toolChangeManagementService.UpdateAsync(model, cancellationToken).ConfigureAwait(true);
 
-            await ReloadDefinitionsAsync(cancellationToken, preserveSelection: false).ConfigureAwait(true);
+            if (isCreating && !string.IsNullOrWhiteSpace(Keyword))
+            {
+                Keyword = string.Empty;
+            }
+
+            await ReloadDefinitionsAsync(cancellationToken, saved.Id).ConfigureAwait(true);
             SelectedDefinition = Definitions.FirstOrDefault(x => x.Id == saved.Id);
             StatusMessage = SelectedDefinition is null
                 ? LocalizedText.Get("ViewModels.ToolChangeManagementVm.Saved")
@@ -226,7 +232,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         try
         {
             await _toolChangeManagementService.DeleteAsync(selected.Id, cancellationToken).ConfigureAwait(true);
-            await ReloadDefinitionsAsync(cancellationToken, preserveSelection: false).ConfigureAwait(true);
+            await ReloadDefinitionsAsync(cancellationToken, selectedId: null).ConfigureAwait(true);
             CreateNew();
             StatusMessage = LocalizedText.Format("ViewModels.ToolChangeManagementVm.Deleted", selected.Name);
         }
@@ -269,7 +275,11 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
 
     private async Task ReloadDefinitionsAsync(CancellationToken cancellationToken, bool preserveSelection)
     {
-        var selectedId = preserveSelection ? SelectedDefinition?.Id : null;
+        await ReloadDefinitionsAsync(cancellationToken, preserveSelection ? SelectedDefinition?.Id : null).ConfigureAwait(true);
+    }
+
+    private async Task ReloadDefinitionsAsync(CancellationToken cancellationToken, Guid? selectedId)
+    {
         var definitions = await _toolChangeManagementService.GetAllAsync(cancellationToken).ConfigureAwait(true);
         _allDefinitions.Clear();
         _allDefinitions.AddRange(definitions);

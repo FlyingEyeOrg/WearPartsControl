@@ -115,6 +115,8 @@
       "StopWearPartMonitoring": "Stop wear part monitoring",
       "StartingWearPartMonitoring": "Starting wear part monitoring...",
       "StoppingWearPartMonitoring": "Stopping wear part monitoring...",
+      "WearPartMonitoringEnabledStatus": "Monitoring enabled",
+      "WearPartMonitoringDisabledStatus": "Monitoring disabled",
       "WearPartMonitoringStarted": "Wear part monitoring started.",
       "WearPartMonitoringStopped": "Wear part monitoring stopped.",
       "PlcPortInvalid": "PLC port must be an integer.",
