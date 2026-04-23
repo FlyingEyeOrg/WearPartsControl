@@ -74,6 +74,7 @@ public sealed class UserConfigViewModelTests
         viewModel.PrdResponsibleWorkId = "PRD002";
         viewModel.ComAccessToken = "token-2";
         viewModel.ComSecret = "secret-2";
+        viewModel.ComNotificationEnabled = false;
         viewModel.SpacerValidationEnabled = false;
         viewModel.SpacerValidationUrl = "https://spacer/save";
         viewModel.SpacerValidationTimeoutMilliseconds = "7200";
@@ -91,6 +92,7 @@ public sealed class UserConfigViewModelTests
         Assert.NotNull(service.LastSaved);
         Assert.Equal("ME002", service.LastSaved!.MeResponsibleWorkId);
         Assert.Equal("PRD002", service.LastSaved.PrdResponsibleWorkId);
+        Assert.False(service.LastSaved.ComNotificationEnabled);
         Assert.False(service.LastSaved.SpacerValidationEnabled);
         Assert.Equal("https://spacer/save", service.LastSaved.SpacerValidationUrl);
         Assert.Equal(7200, service.LastSaved.SpacerValidationTimeoutMilliseconds);
@@ -98,6 +100,17 @@ public sealed class UserConfigViewModelTests
         Assert.Equal("-", service.LastSaved.SpacerValidationCodeSeparator);
         Assert.Equal(10, service.LastSaved.SpacerValidationExpectedSegmentCount);
         Assert.True(dispatcher.RenderCount >= 1);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WithoutSavedValue_ShouldUseComNotificationDefaultTrue()
+    {
+        var viewModel = new UserConfigViewModel(new StubUserConfigService(), new StubComNotificationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+
+        Assert.True(viewModel.ComNotificationEnabled);
+        Assert.False(viewModel.IsDirty);
     }
 
     [Fact]

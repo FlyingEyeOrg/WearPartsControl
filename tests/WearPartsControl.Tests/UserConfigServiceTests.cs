@@ -42,7 +42,7 @@ public sealed class UserConfigServiceTests
             Assert.Equal("PRD001", config.PrdResponsibleWorkId);
             Assert.Equal("token", config.ComAccessToken);
             Assert.Equal("secret", config.ComSecret);
-            Assert.False(config.ComNotificationEnabled);
+            Assert.True(config.ComNotificationEnabled);
             Assert.Equal(UserConfig.DefaultComPushUrl, config.ComPushUrl);
             Assert.Equal(UserConfig.DefaultComDeIpaasKeyAuth, config.ComDeIpaasKeyAuth);
             Assert.Equal(UserConfig.DefaultComAgentId, config.ComAgentId);
@@ -158,6 +158,34 @@ public sealed class UserConfigServiceTests
             var persisted = JsonSerializer.Deserialize<UserConfig>(persistedJson);
             Assert.NotNull(persisted);
             Assert.Equal("https://legacy/com", persisted!.ComPushUrl);
+        }
+        finally
+        {
+            if (Directory.Exists(settingsDirectory))
+            {
+                Directory.Delete(settingsDirectory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task SaveAsync_WhenComNotificationDisabled_ShouldPersistFalseValue()
+    {
+        var settingsDirectory = Path.Combine(Path.GetTempPath(), $"WearPartsControl.UserConfig.{Guid.NewGuid():N}");
+        Directory.CreateDirectory(settingsDirectory);
+
+        try
+        {
+            var service = new UserConfigService(new TypeJsonSaveInfoStore(settingsDirectory));
+
+            await service.SaveAsync(new UserConfig
+            {
+                ComNotificationEnabled = false
+            });
+
+            var config = await service.GetAsync();
+
+            Assert.False(config.ComNotificationEnabled);
         }
         finally
         {

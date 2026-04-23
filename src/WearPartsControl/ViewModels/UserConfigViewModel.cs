@@ -137,7 +137,13 @@ public sealed class UserConfigViewModel : ObservableObject
     public bool ComNotificationEnabled
     {
         get => _comNotificationEnabled;
-        private set => SetProperty(ref _comNotificationEnabled, value);
+        set
+        {
+            if (SetProperty(ref _comNotificationEnabled, value))
+            {
+                UpdateDirtyState();
+            }
+        }
     }
 
     public string ComPushUrl
@@ -472,7 +478,7 @@ public sealed class UserConfigViewModel : ObservableObject
             string.Empty,
             string.Empty,
             string.Empty,
-            false,
+            UserConfig.DefaultComNotificationEnabled,
             UserConfig.DefaultComPushUrl,
             UserConfig.DefaultComDeIpaasKeyAuth,
             UserConfig.DefaultComAgentId,

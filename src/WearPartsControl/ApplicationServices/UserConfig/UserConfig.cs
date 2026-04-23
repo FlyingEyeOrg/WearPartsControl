@@ -5,6 +5,8 @@ namespace WearPartsControl.ApplicationServices.UserConfig;
 [SaveInfoFile("user-config")]
 public sealed class UserConfig
 {
+    public const bool DefaultComNotificationEnabled = true;
+
     public const string DefaultComPushUrl = "https://ipaas.catl.com/gateway/office/ipaas/MSG/office_MSG_push";
 
     public const string DefaultComDeIpaasKeyAuth = "659JOPEldYL55Mi3sqb38H9Txd1q9EYw";
@@ -33,7 +35,7 @@ public sealed class UserConfig
 
     public string ComSecret { get; set; } = string.Empty;
 
-    public bool ComNotificationEnabled { get; set; }
+    public bool ComNotificationEnabled { get; set; } = DefaultComNotificationEnabled;
 
     public string ComPushUrl { get; set; } = DefaultComPushUrl;
 

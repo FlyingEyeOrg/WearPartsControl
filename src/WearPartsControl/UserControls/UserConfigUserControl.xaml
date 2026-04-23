@@ -53,8 +53,7 @@
                            VerticalAlignment="Center">启用 COM 通知：</TextBlock>
                 <CheckBox Grid.Column="1"
                           VerticalAlignment="Center"
-                          IsEnabled="False"
-                          IsChecked="{Binding ComNotificationEnabled, Mode=OneWay}" />
+                          IsChecked="{Binding ComNotificationEnabled}" />
             </Grid>
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>

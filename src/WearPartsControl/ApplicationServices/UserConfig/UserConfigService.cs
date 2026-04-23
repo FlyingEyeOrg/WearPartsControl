@@ -112,7 +112,7 @@ public sealed class UserConfigService : IUserConfigService
 
     private static bool ShouldMigrateLegacyComNotification(UserConfig config)
     {
-        return !config.ComNotificationEnabled
+        return config.ComNotificationEnabled == UserConfig.DefaultComNotificationEnabled
             && string.IsNullOrWhiteSpace(config.ComAccessToken)
             && string.IsNullOrWhiteSpace(config.ComSecret)
             && string.IsNullOrWhiteSpace(config.MeResponsibleWorkId)
