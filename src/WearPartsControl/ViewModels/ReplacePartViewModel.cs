@@ -535,7 +535,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             ? associatedCode
             : toolChanges.Any(x => string.Equals(x.Code, state.SelectedToolCode, StringComparison.OrdinalIgnoreCase))
                 ? state.SelectedToolCode
-                : string.Empty;
+                : toolChanges.FirstOrDefault()?.Code ?? string.Empty;
         SetSelectedToolCode(selectedCode);
     }
 

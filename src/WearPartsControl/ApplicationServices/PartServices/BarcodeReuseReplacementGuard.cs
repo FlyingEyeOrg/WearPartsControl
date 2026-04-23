@@ -49,9 +49,26 @@ public sealed class BarcodeReuseReplacementGuard : IWearPartReplacementGuard
         }
 
         context.LatestRemovalRecord = latestRemovalRecord;
+        context.CurrentValueText = latestRemovalRecord.CurrentValue;
+        context.WarningValueText = latestRemovalRecord.WarningValue;
+        context.ShutdownValueText = latestRemovalRecord.ShutdownValue;
         context.PlcWriteValue = WearPartReplacementValueParser.ParseDouble(
             latestRemovalRecord.CurrentValue,
             context.Definition.CurrentValueDataType,
             context.Definition.CurrentValueAddress);
+        context.CurrentValue = context.PlcWriteValue;
+        context.WarningValue = WearPartReplacementValueParser.ParseDouble(
+            latestRemovalRecord.WarningValue,
+            context.Definition.WarningValueDataType,
+            context.Definition.WarningValueAddress);
+        context.ShutdownValue = WearPartReplacementValueParser.ParseDouble(
+            latestRemovalRecord.ShutdownValue,
+            context.Definition.ShutdownValueDataType,
+            context.Definition.ShutdownValueAddress);
+
+        if (context.CurrentValue >= context.ShutdownValue)
+        {
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.ReusedPartReachedShutdownLifetime"), code: "WearPartReplacement:ReusedPartReachedShutdownLifetime");
+        }
     }
 }

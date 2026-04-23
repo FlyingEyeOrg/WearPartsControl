@@ -12,6 +12,8 @@ public static class PlcReplacementPipelineOperations
     public const string ReadShutdownValue = "Replacement/ReadShutdownValue";
     public const string PulseZeroClear = "Replacement/PulseZeroClear";
     public const string WriteCurrentValue = "Replacement/WriteCurrentValue";
+    public const string WriteWarningValue = "Replacement/WriteWarningValue";
+    public const string WriteDefinitionShutdownValue = "Replacement/WriteDefinitionShutdownValue";
     public const string WriteBarcode = "Replacement/WriteBarcode";
     public const string WriteShutdownSignal = "Replacement/WriteShutdownSignal";
 }

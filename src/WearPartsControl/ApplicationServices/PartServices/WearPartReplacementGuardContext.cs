@@ -17,17 +17,17 @@ public sealed class WearPartReplacementGuardContext
 
     public required string NormalizedReason { get; init; }
 
-    public required string CurrentValueText { get; init; }
+    public required string CurrentValueText { get; set; }
 
-    public required string WarningValueText { get; init; }
+    public required string WarningValueText { get; set; }
 
-    public required string ShutdownValueText { get; init; }
+    public required string ShutdownValueText { get; set; }
 
-    public required double CurrentValue { get; init; }
+    public required double CurrentValue { get; set; }
 
-    public required double WarningValue { get; init; }
+    public required double WarningValue { get; set; }
 
-    public required double ShutdownValue { get; init; }
+    public required double ShutdownValue { get; set; }
 
     public WearPartReplacementRecordEntity? LatestRecord { get; init; }
 

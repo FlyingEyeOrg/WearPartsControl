@@ -449,6 +449,51 @@ public sealed class ReplacePartViewModelTests
         Assert.Equal("TL-01", viewModel.SelectedToolCode);
     }
 
+    [Fact]
+    public async Task InitializeAsync_WhenToolCodesExistWithoutSavedSelection_ShouldDefaultToFirstToolCode()
+    {
+        var definition = new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            PartName = "刀具A",
+            InputMode = "Scanner",
+            CodeMinLength = 8,
+            CodeMaxLength = 32,
+            CurrentValueDataType = "FLOAT",
+            CurrentValueAddress = "DB1.0",
+            WarningValueDataType = "FLOAT",
+            WarningValueAddress = "DB1.2",
+            ShutdownValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB1.4"
+        };
+        var toolChangeManagementService = new StubToolChangeManagementService();
+        toolChangeManagementService.Definitions.Add(new ToolChangeDefinition { Name = "刀型一", Code = "TL-01" });
+        toolChangeManagementService.Definitions.Add(new ToolChangeDefinition { Name = "刀型二", Code = "TL-02" });
+        var viewModel = new ReplacePartViewModel(
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01", ProcedureCode = "模切分条" } },
+            new StubWearPartManagementService([definition]),
+            new StubWearPartReplacementService
+            {
+                Preview = new WearPartReplacementPreview
+                {
+                    WearPartDefinitionId = definition.Id,
+                    ClientAppConfigurationId = Guid.NewGuid(),
+                    CurrentValue = "10",
+                    WarningValue = "20",
+                    ShutdownValue = "30"
+                }
+            },
+            toolChangeManagementService,
+            new StubToolChangeSelectionService(),
+            new UiDispatcher(),
+            new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+
+        Assert.Equal("TL-01", viewModel.SelectedToolCode);
+    }
+
     private static ReplacePartViewModel CreateViewModel(StubAppSettingsService? appSettingsService = null)
     {
         return new ReplacePartViewModel(

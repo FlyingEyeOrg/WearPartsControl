@@ -98,7 +98,14 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
             await guard.ValidateAsync(guardContext, cancellationToken).ConfigureAwait(false);
         }
 
-        if (HasAddress(definition.PlcZeroClearAddress))
+        if (guardContext.LatestRemovalRecord is not null)
+        {
+            await WearPartPlcAccessor.WriteCurrentValueAsync(_plcOperationPipeline, PlcReplacementPipelineOperations.WriteCurrentValue, definition.CurrentValueAddress, definition.CurrentValueDataType, guardContext.CurrentValue, cancellationToken).ConfigureAwait(false);
+            await WearPartPlcAccessor.WriteCurrentValueAsync(_plcOperationPipeline, PlcReplacementPipelineOperations.WriteWarningValue, definition.WarningValueAddress, definition.WarningValueDataType, guardContext.WarningValue, cancellationToken).ConfigureAwait(false);
+            await WearPartPlcAccessor.WriteCurrentValueAsync(_plcOperationPipeline, PlcReplacementPipelineOperations.WriteDefinitionShutdownValue, definition.ShutdownValueAddress, definition.ShutdownValueDataType, guardContext.ShutdownValue, cancellationToken).ConfigureAwait(false);
+            guardContext.PlcWriteValue = guardContext.CurrentValue;
+        }
+        else if (HasAddress(definition.PlcZeroClearAddress))
         {
             await WearPartPlcAccessor.PulseZeroClearSignalAsync(_plcOperationPipeline, PlcReplacementPipelineOperations.PulseZeroClear, definition.PlcZeroClearAddress, cancellationToken).ConfigureAwait(false);
             guardContext.PlcWriteValue = 0d;
@@ -111,7 +118,11 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
         await WearPartPlcAccessor.WriteBarcodeAsync(_plcOperationPipeline, PlcReplacementPipelineOperations.WriteBarcode, definition.BarcodeWriteAddress, normalizedBarcode, cancellationToken).ConfigureAwait(false);
         await WearPartPlcAccessor.WriteShutdownSignalAsync(_plcOperationPipeline, PlcReplacementPipelineOperations.WriteShutdownSignal, clientAppConfiguration.ShutdownPointAddress, shutdown: false, cancellationToken).ConfigureAwait(false);
 
-        var plcResult = new ReplacementExecutionResult(guardContext.PlcWriteValue, currentValue, warningValue, shutdownValue);
+        var plcResult = new ReplacementExecutionResult(
+            guardContext.PlcWriteValue,
+            guardContext.CurrentValueText,
+            guardContext.WarningValueText,
+            guardContext.ShutdownValueText);
 
         var oldBarcode = latestRecord?.NewBarcode;
         if (latestRecord is null

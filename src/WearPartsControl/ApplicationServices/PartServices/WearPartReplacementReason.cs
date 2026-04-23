@@ -35,7 +35,9 @@ public static class WearPartReplacementReason
 
     public static bool RequiresBelowShutdownLifetime(string replacementReason)
     {
-        return string.Equals(NormalizeCode(replacementReason), ChangePosition, StringComparison.Ordinal);
+        var normalizedReason = NormalizeCode(replacementReason);
+        return string.Equals(normalizedReason, ChangePosition, StringComparison.Ordinal)
+            || string.Equals(normalizedReason, Maintenance, StringComparison.Ordinal);
     }
 
     public static bool AllowsBarcodeReuseAfterRemoval(string replacementReason)

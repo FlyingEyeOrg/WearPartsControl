@@ -18,7 +18,11 @@ public sealed class LifetimeReachedReplacementGuard : IWearPartReplacementGuard
         if (WearPartReplacementReason.RequiresBelowShutdownLifetime(context.NormalizedReason)
             && context.CurrentValue >= context.ShutdownValue)
         {
-            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.ChangePositionWindowExceeded"), code: "WearPartReplacement:ChangePositionWindowExceeded");
+            throw new UserFriendlyException(
+                LocalizedText.Format(
+                    "Services.WearPartReplacement.WarningBeforeShutdownWindowRequired",
+                    WearPartReplacementReason.GetDisplayName(context.NormalizedReason)),
+                code: "WearPartReplacement:WarningBeforeShutdownWindowRequired");
         }
 
         return Task.CompletedTask;
