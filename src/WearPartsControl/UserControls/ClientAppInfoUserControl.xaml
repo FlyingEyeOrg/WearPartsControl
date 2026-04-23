@@ -244,7 +244,7 @@
                             Orientation="Horizontal"
                             HorizontalAlignment="Right">
                     <Button Width="120"
-                            Style="{StaticResource ButtonPrimary}"
+                            Style="{StaticResource ButtonDanger}"
                             Visibility="{Binding IsWearPartMonitoringEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"
                             IsEnabled="{Binding IsToggleWearPartMonitoringEnabled}"
                             Click="OnToggleWearPartMonitoringClicked">
@@ -255,7 +255,7 @@
                             Click="OnToggleWearPartMonitoringClicked">
                         <Button.Style>
                             <Style TargetType="Button"
-                                   BasedOn="{StaticResource ButtonDanger}">
+                                   BasedOn="{StaticResource ButtonPrimary}">
                                 <Setter Property="Visibility"
                                         Value="Collapsed" />
                                 <Style.Triggers>
