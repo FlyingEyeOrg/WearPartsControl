@@ -291,6 +291,9 @@
                     <DataGridTextColumn Header="当前寿命"
                                         Binding="{Binding CurrentValue}"
                                         Width="*"></DataGridTextColumn>
+                    <DataGridTextColumn Header="预警寿命"
+                                        Binding="{Binding WarningValue}"
+                                        Width="*"></DataGridTextColumn>
                     <DataGridTextColumn Header="停机寿命"
                                         Binding="{Binding ShutdownValue}"
                                         Width="*"></DataGridTextColumn>
