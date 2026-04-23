@@ -145,10 +145,12 @@ public sealed class PartUpdateRecordViewModelTests
                 ReplacedAt = DateTime.UtcNow.AddMinutes(-1)
             }
         ]);
+        var uiDispatcher = new StubUiDispatcher();
         var viewModel = new PartUpdateRecordViewModel(
             new StubClientAppInfoService(),
             new StubWearPartManagementService([definition]),
             replacementService,
+            uiDispatcher,
             new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
@@ -166,6 +168,7 @@ public sealed class PartUpdateRecordViewModelTests
 
         Assert.Equal(2, viewModel.Records.Count);
         Assert.Equal("NB-2", viewModel.Records[0].NewBarcode);
+        Assert.True(uiDispatcher.RenderCount >= 2);
     }
 
     private static PartUpdateRecordViewModel CreateViewModel(
@@ -176,6 +179,7 @@ public sealed class PartUpdateRecordViewModelTests
             new StubClientAppInfoService(),
             new StubWearPartManagementService(definitions),
             new StubWearPartReplacementService(records),
+            new StubUiDispatcher(),
             new UiBusyService(TimeSpan.Zero));
     }
 
@@ -251,6 +255,25 @@ public sealed class PartUpdateRecordViewModelTests
         public void AddRecord(WearPartReplacementRecord record)
         {
             _records.Insert(0, record);
+        }
+    }
+
+    private sealed class StubUiDispatcher : IUiDispatcher
+    {
+        public int RenderCount { get; private set; }
+
+        public void Run(Action action) => action();
+
+        public Task RunAsync(Action action, System.Windows.Threading.DispatcherPriority priority = System.Windows.Threading.DispatcherPriority.Normal)
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        public Task RenderAsync()
+        {
+            RenderCount++;
+            return Task.CompletedTask;
         }
     }
 }

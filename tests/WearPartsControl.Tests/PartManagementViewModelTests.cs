@@ -13,10 +13,12 @@ public sealed class PartManagementViewModelTests
     public async Task ImportLegacyDefinitionsAsync_ShouldCallLegacyImportServiceAndUpdateStatus()
     {
         var legacyImportService = new StubLegacyDatabaseImportService();
+        var uiDispatcher = new StubUiDispatcher();
         var viewModel = new PartManagementViewModel(
             new StubClientAppInfoService(),
             legacyImportService,
             new StubWearPartManagementService(),
+            uiDispatcher,
             new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
@@ -26,6 +28,7 @@ public sealed class PartManagementViewModelTests
         Assert.Equal("E:\\legacy\\Data.db", legacyImportService.LastPath);
         Assert.Equal(2, result.ImportedWearPartDefinitions);
         Assert.Contains("新增 2 条", viewModel.StatusMessage);
+        Assert.True(uiDispatcher.RenderCount >= 2);
     }
 
     [Fact]
@@ -35,6 +38,7 @@ public sealed class PartManagementViewModelTests
             new StubClientAppInfoService(),
             new StubLegacyDatabaseImportService(),
             new StubWearPartManagementService(),
+            new StubUiDispatcher(),
             new UiBusyService(TimeSpan.Zero));
         var raised = false;
         viewModel.ImportLegacyDefinitionsRequested += (_, _) => raised = true;
@@ -120,6 +124,25 @@ public sealed class PartManagementViewModelTests
         public Task<int> CopyDefinitionsAsync(string sourceResourceNumber, string targetResourceNumber, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
+        }
+    }
+
+    private sealed class StubUiDispatcher : IUiDispatcher
+    {
+        public int RenderCount { get; private set; }
+
+        public void Run(Action action) => action();
+
+        public Task RunAsync(Action action, System.Windows.Threading.DispatcherPriority priority = System.Windows.Threading.DispatcherPriority.Normal)
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        public Task RenderAsync()
+        {
+            RenderCount++;
+            return Task.CompletedTask;
         }
     }
 }

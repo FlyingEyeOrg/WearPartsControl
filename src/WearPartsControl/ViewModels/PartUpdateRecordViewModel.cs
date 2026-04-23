@@ -17,6 +17,7 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly IWearPartManagementService _wearPartManagementService;
     private readonly IWearPartReplacementService _wearPartReplacementService;
+    private readonly IUiDispatcher _uiDispatcher;
     private readonly IUiBusyService _uiBusyService;
     private readonly List<WearPartReplacementRecord> _allRecords = new();
     private readonly List<WearPartReplacementRecord> _filteredRecords = new();
@@ -36,11 +37,13 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
         IClientAppInfoService clientAppInfoService,
         IWearPartManagementService wearPartManagementService,
         IWearPartReplacementService wearPartReplacementService,
+        IUiDispatcher uiDispatcher,
         IUiBusyService uiBusyService)
     {
         _clientAppInfoService = clientAppInfoService;
         _wearPartManagementService = wearPartManagementService;
         _wearPartReplacementService = wearPartReplacementService;
+        _uiDispatcher = uiDispatcher;
         _uiBusyService = uiBusyService;
 
         QueryCommand = new RelayCommand(ApplyFilter, CanQuery);
@@ -173,6 +176,7 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.PartUpdateRecordVm.Loading");
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.PartUpdateRecordVm.Loading"));
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {

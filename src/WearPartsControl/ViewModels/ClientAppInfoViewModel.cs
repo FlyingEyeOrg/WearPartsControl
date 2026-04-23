@@ -352,6 +352,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
 
         IsBusy = true;
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.ClientAppInfoVm.Loading"));
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
         try
         {
             await LoadSelectionOptionsAsync(cancellationToken).ConfigureAwait(true);
@@ -395,6 +396,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.Saving");
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.ClientAppInfoVm.Saving"));
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {
@@ -418,6 +420,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.ImportingLegacyConfiguration");
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.ClientAppInfoVm.ImportingLegacyConfiguration"));
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {
@@ -447,6 +450,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.TestingPlcConnection");
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.ClientAppInfoVm.TestingPlcConnection"));
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {
@@ -470,6 +474,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             ? LocalizedText.Get("ViewModels.ClientAppInfoVm.StoppingWearPartMonitoring")
             : LocalizedText.Get("ViewModels.ClientAppInfoVm.StartingWearPartMonitoring");
         using var _ = _uiBusyService.Enter(StatusMessage);
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {

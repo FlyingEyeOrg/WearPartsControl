@@ -11,6 +11,7 @@ namespace WearPartsControl.ViewModels;
 public sealed class ToolChangeManagementViewModel : ObservableObject
 {
     private readonly IToolChangeManagementService _toolChangeManagementService;
+    private readonly IUiDispatcher _uiDispatcher;
     private readonly IUiBusyService _uiBusyService;
     private readonly List<ToolChangeDefinition> _allDefinitions = new();
     private ToolChangeDefinition? _selectedDefinition;
@@ -21,9 +22,10 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
     private bool _isBusy;
     private bool _isInitialized;
 
-    public ToolChangeManagementViewModel(IToolChangeManagementService toolChangeManagementService, IUiBusyService uiBusyService)
+    public ToolChangeManagementViewModel(IToolChangeManagementService toolChangeManagementService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService)
     {
         _toolChangeManagementService = toolChangeManagementService;
+        _uiDispatcher = uiDispatcher;
         _uiBusyService = uiBusyService;
 
         SearchCommand = new RelayCommand(ApplyFilter);
@@ -145,6 +147,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.ToolChangeManagementVm.Loading");
         using var _ = _uiBusyService.Enter(StatusMessage);
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {
@@ -174,6 +177,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.ToolChangeManagementVm.CreatingOperation");
         using var _ = _uiBusyService.Enter(StatusMessage);
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {
@@ -214,6 +218,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.ToolChangeManagementVm.Updating");
         using var _ = _uiBusyService.Enter(StatusMessage);
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {
@@ -261,6 +266,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.ToolChangeManagementVm.Deleting");
         using var _ = _uiBusyService.Enter(StatusMessage);
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {

@@ -12,7 +12,8 @@ public sealed class ToolChangeManagementViewModelTests
     public async Task NewCommand_WhenCreatingDefinition_ShouldRefreshDefinitions()
     {
         var service = new StubToolChangeManagementService();
-        var viewModel = new ToolChangeManagementViewModel(service, new UiBusyService(TimeSpan.Zero));
+        var uiDispatcher = new StubUiDispatcher();
+        var viewModel = new ToolChangeManagementViewModel(service, uiDispatcher, new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
         viewModel.ToolName = "标准刀";
@@ -26,6 +27,7 @@ public sealed class ToolChangeManagementViewModelTests
         Assert.Same(viewModel.Definitions[0], viewModel.SelectedDefinition);
         Assert.Equal(LocalizedText.Format("ViewModels.ToolChangeManagementVm.CreatedWithName", "标准刀"), viewModel.StatusMessage);
         Assert.Equal(1, service.CreateCount);
+        Assert.True(uiDispatcher.RenderCount >= 2);
     }
 
     [Fact]
@@ -39,7 +41,8 @@ public sealed class ToolChangeManagementViewModelTests
         };
 
         var service = new StubToolChangeManagementService(existing);
-        var viewModel = new ToolChangeManagementViewModel(service, new UiBusyService(TimeSpan.Zero));
+        var uiDispatcher = new StubUiDispatcher();
+        var viewModel = new ToolChangeManagementViewModel(service, uiDispatcher, new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
         viewModel.SelectedDefinition = viewModel.Definitions.Single();
@@ -52,6 +55,7 @@ public sealed class ToolChangeManagementViewModelTests
         Assert.Equal("标准刀-改", viewModel.SelectedDefinition?.Name);
         Assert.Equal("TL-02", viewModel.SelectedDefinition?.Code);
         Assert.Equal(LocalizedText.Format("ViewModels.ToolChangeManagementVm.UpdatedWithName", "标准刀-改"), viewModel.StatusMessage);
+        Assert.True(uiDispatcher.RenderCount >= 2);
     }
 
     private sealed class StubToolChangeManagementService : IToolChangeManagementService
@@ -105,6 +109,25 @@ public sealed class ToolChangeManagementViewModelTests
         public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
+        }
+    }
+
+    private sealed class StubUiDispatcher : IUiDispatcher
+    {
+        public int RenderCount { get; private set; }
+
+        public void Run(Action action) => action();
+
+        public Task RunAsync(Action action, System.Windows.Threading.DispatcherPriority priority = System.Windows.Threading.DispatcherPriority.Normal)
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        public Task RenderAsync()
+        {
+            RenderCount++;
+            return Task.CompletedTask;
         }
     }
 }

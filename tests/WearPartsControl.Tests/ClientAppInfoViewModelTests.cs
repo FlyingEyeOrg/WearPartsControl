@@ -49,6 +49,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
     public async Task SaveCommand_ShouldOnlyEnableWhenFormIsDirty()
     {
         var service = new StubClientAppInfoService();
+        var uiDispatcher = new TrackingUiDispatcher();
         var viewModel = new ClientAppInfoViewModel(
             service,
             new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
@@ -56,7 +57,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             new StubPlcConnectionTestService(),
             new PlcConnectionStatusService(),
             new StubWearPartMonitoringControlService(),
-            new UiDispatcher(),
+            uiDispatcher,
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -89,6 +90,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         Assert.Equal("阴极", service.LastRequest!.AreaCode);
         Assert.Equal("ModbusTcp", service.LastRequest.PlcProtocolType);
         Assert.False(service.LastRequest.IsStringReverse);
+        Assert.True(uiDispatcher.RenderCount >= 2);
     }
 
     [Fact]
@@ -282,6 +284,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
     public async Task ToggleWearPartMonitoringCommand_ShouldToggleStateAndStatus()
     {
         var monitoringControlService = new StubWearPartMonitoringControlService();
+        var uiDispatcher = new TrackingUiDispatcher();
         var viewModel = new ClientAppInfoViewModel(
             new StubClientAppInfoService(),
             new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
@@ -289,7 +292,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             new StubPlcConnectionTestService(),
             new PlcConnectionStatusService(),
             monitoringControlService,
-            new UiDispatcher(),
+            uiDispatcher,
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -308,6 +311,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         Assert.Same(System.Windows.Media.Brushes.ForestGreen, viewModel.WearPartMonitoringStatusBackground);
         Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringEnabledStatus"), viewModel.WearPartMonitoringStatusText);
         Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringStarted"), viewModel.StatusMessage);
+        Assert.True(uiDispatcher.RenderCount >= 3);
     }
 
     public void Dispose()
@@ -487,6 +491,25 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         {
             DisableCallCount++;
             IsEnabled = false;
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class TrackingUiDispatcher : IUiDispatcher
+    {
+        public int RenderCount { get; private set; }
+
+        public void Run(Action action) => action();
+
+        public Task RunAsync(Action action, System.Windows.Threading.DispatcherPriority priority = System.Windows.Threading.DispatcherPriority.Normal)
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        public Task RenderAsync()
+        {
+            RenderCount++;
             return Task.CompletedTask;
         }
     }

@@ -15,6 +15,7 @@ public sealed class PartManagementViewModel : ObservableObject
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly ILegacyDatabaseImportService _legacyDatabaseImportService;
     private readonly IWearPartManagementService _wearPartManagementService;
+    private readonly IUiDispatcher _uiDispatcher;
     private readonly IUiBusyService _uiBusyService;
     private readonly List<WearPartDefinition> _allDefinitions = new();
     private Guid _clientAppConfigurationId;
@@ -29,11 +30,13 @@ public sealed class PartManagementViewModel : ObservableObject
         IClientAppInfoService clientAppInfoService,
         ILegacyDatabaseImportService legacyDatabaseImportService,
         IWearPartManagementService wearPartManagementService,
+        IUiDispatcher uiDispatcher,
         IUiBusyService uiBusyService)
     {
         _clientAppInfoService = clientAppInfoService;
         _legacyDatabaseImportService = legacyDatabaseImportService;
         _wearPartManagementService = wearPartManagementService;
+        _uiDispatcher = uiDispatcher;
         _uiBusyService = uiBusyService;
 
         SearchCommand = new RelayCommand(ApplyFilter);
@@ -143,6 +146,7 @@ public sealed class PartManagementViewModel : ObservableObject
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.PartManagementVm.Loading");
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.PartManagementVm.Loading"));
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {
@@ -250,6 +254,7 @@ public sealed class PartManagementViewModel : ObservableObject
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.PartManagementVm.Deleting");
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.PartManagementVm.Deleting"));
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {
@@ -275,6 +280,7 @@ public sealed class PartManagementViewModel : ObservableObject
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.PartManagementVm.ImportingLegacyDefinitions");
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.PartManagementVm.ImportingLegacyDefinitions"));
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {
