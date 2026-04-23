@@ -79,6 +79,14 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
         var parsedWarningValue = WearPartReplacementValueParser.ParseDouble(warningValue, definition.WarningValueDataType, definition.WarningValueAddress);
         var parsedShutdownValue = WearPartReplacementValueParser.ParseDouble(shutdownValue, definition.ShutdownValueDataType, definition.ShutdownValueAddress);
 
+        WearPartReplacementLifetimeValidator.ValidateOrThrow(
+            currentValue,
+            warningValue,
+            shutdownValue,
+            parsedCurrentValue,
+            parsedWarningValue,
+            parsedShutdownValue);
+
         var guardContext = new WearPartReplacementGuardContext
         {
             Request = request,

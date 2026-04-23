@@ -292,6 +292,8 @@
       "SpacerValidationFailedAndShutdownApplied": "Spacer validation failed and the system applied shutdown protection: {0}",
       "SpacerValidationFailedAndShutdownWriteFailed": "Spacer validation failed and writing the shutdown signal also failed. Validation error: {0}; shutdown write error: {1}",
       "LifetimeNotReached": "The current wear part has not reached warning lifetime, so replacement is not allowed.",
+      "LifetimeValuesUnavailable": "The current, warning, or shutdown lifetime value could not be read, so wear part replacement is not allowed.",
+      "LifetimeThresholdInvalid": "Warning lifetime and shutdown lifetime are invalid. Warning lifetime must be less than shutdown lifetime.",
       "ValueCannotConvert": "The value at PLC address {0} cannot be converted to a number: {1}."
     },
     "WearPartReplacementReason": {

@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Threading;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.Localization.Generated;
 using WearPartsControl.ApplicationServices.LoginService;
@@ -110,6 +111,85 @@ public sealed class MainWindowViewModelTests : IDisposable
 
         Assert.Equal(6, viewModel.Tabs.Count());
         Assert.True(viewModel.IsClientAppInfoConfigured);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WhenProcedureIsNotDieCutSlitting_ShouldHideToolChangeTab()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+        var accessor = new CurrentUserAccessor();
+        var serviceProvider = new StubServiceProvider();
+        var clientAppInfoService = new StubClientAppInfoService
+        {
+            Model = new ClientAppInfoModel
+            {
+                ResourceNumber = "RES-01",
+                ProcedureCode = "涂布"
+            }
+        };
+        var viewModel = CreateViewModel(accessor, new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService(), serviceProvider: serviceProvider, clientAppInfoService: clientAppInfoService);
+
+        await viewModel.InitializeAsync();
+        accessor.SetCurrentUser(new MhrUser
+        {
+            CardId = "CARD-01",
+            WorkId = "WORK-02",
+            AccessLevel = 3
+        });
+
+        Assert.Equal(5, viewModel.Tabs.Count());
+
+        viewModel.TabChangedCommand.Execute(3);
+
+        Assert.Equal(0, serviceProvider.GetResolveCount<ToolChangeManagementUserControl>());
+        Assert.Equal(1, serviceProvider.GetResolveCount<PartUpdateRecordUserControl>());
+        Assert.IsType<PartUpdateRecordUserControl>(viewModel.SelectedContent);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WhenProcedureIsDieCutSlitting_ShouldShowToolChangeTab()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+        var accessor = new CurrentUserAccessor();
+        var serviceProvider = new StubServiceProvider();
+        var clientAppInfoService = new StubClientAppInfoService
+        {
+            Model = new ClientAppInfoModel
+            {
+                ResourceNumber = "RES-01",
+                ProcedureCode = "模切分条"
+            }
+        };
+        var viewModel = CreateViewModel(accessor, new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService(), serviceProvider: serviceProvider, clientAppInfoService: clientAppInfoService);
+
+        await viewModel.InitializeAsync();
+        accessor.SetCurrentUser(new MhrUser
+        {
+            CardId = "CARD-01",
+            WorkId = "WORK-02",
+            AccessLevel = 3
+        });
+
+        Assert.Equal(6, viewModel.Tabs.Count());
+
+        viewModel.TabChangedCommand.Execute(3);
+
+        Assert.Equal(1, serviceProvider.GetResolveCount<ToolChangeManagementUserControl>());
+        Assert.IsType<ToolChangeManagementUserControl>(viewModel.SelectedContent);
     }
 
     [Fact]
@@ -539,7 +619,8 @@ public sealed class MainWindowViewModelTests : IDisposable
         IPlcStartupConnectionService startupConnectionService,
         Func<TimeSpan, CancellationToken, Task>? delayAsync = null,
         StubServiceProvider? serviceProvider = null,
-        StubAppStartupCoordinator? appStartupCoordinator = null)
+        StubAppStartupCoordinator? appStartupCoordinator = null,
+        StubClientAppInfoService? clientAppInfoService = null)
     {
         var stateMachine = new LoginSessionStateMachine(accessor, loginService, delayAsync);
         return new MainWindowViewModel(
@@ -547,6 +628,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             serviceProvider ?? new StubServiceProvider(),
             loginService,
             appSettingsService,
+            clientAppInfoService ?? new StubClientAppInfoService(),
             uiBusyService,
             startupConnectionService,
             stateMachine,
@@ -579,6 +661,24 @@ public sealed class MainWindowViewModelTests : IDisposable
                 cancellationToken.Register(() => PendingTaskSource.TrySetCanceled(cancellationToken));
                 await PendingTaskSource.Task;
             }
+        }
+    }
+
+    private sealed class StubClientAppInfoService : IClientAppInfoService
+    {
+        public ClientAppInfoModel Model { get; set; } = new()
+        {
+            ProcedureCode = "模切分条"
+        };
+
+        public Task<ClientAppInfoModel> GetAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Model);
+        }
+
+        public Task<ClientAppInfoModel> SaveAsync(ClientAppInfoSaveRequest request, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
         }
     }
 

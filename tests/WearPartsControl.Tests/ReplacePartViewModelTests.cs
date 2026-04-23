@@ -330,7 +330,7 @@ public sealed class ReplacePartViewModelTests
         });
 
         var viewModel = new ReplacePartViewModel(
-            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01", IsWearPartMonitoringEnabled = true } },
             new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01" } },
             new StubWearPartManagementService([definition]),
             replacementService,
@@ -347,6 +347,98 @@ public sealed class ReplacePartViewModelTests
         Assert.Equal(30d, viewModel.ShutdownValue);
         Assert.Equal(LocalizedText.Get("ViewModels.ReplacePartVm.LastBarcodeEmpty"), viewModel.LastBarcode);
         Assert.Single(viewModel.ReplacementHistory);
+    }
+
+    [Fact]
+    public async Task ReplaceCommand_WhenLifetimeValuesUnavailable_ShouldNotBeEnabled()
+    {
+        var definition = new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            PartName = "刀具A",
+            InputMode = "Scanner",
+            CodeMinLength = 8,
+            CodeMaxLength = 32,
+            CurrentValueDataType = "FLOAT",
+            CurrentValueAddress = "DB1.0",
+            WarningValueDataType = "FLOAT",
+            WarningValueAddress = "DB1.2",
+            ShutdownValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB1.4"
+        };
+        var viewModel = new ReplacePartViewModel(
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01", IsWearPartMonitoringEnabled = true } },
+            new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01" } },
+            new StubWearPartManagementService([definition]),
+            new StubWearPartReplacementService
+            {
+                Preview = new WearPartReplacementPreview
+                {
+                    WearPartDefinitionId = definition.Id,
+                    ClientAppConfigurationId = Guid.NewGuid(),
+                    CurrentValue = "10",
+                    WarningValue = string.Empty,
+                    ShutdownValue = "30"
+                }
+            },
+            new StubToolChangeManagementService(),
+            new StubToolChangeSelectionService(),
+            new UiDispatcher(),
+            new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+        viewModel.NewBarcode = "BC-02";
+        viewModel.SelectedReplacementReason = WearPartReplacementReason.ProcessDamage;
+
+        Assert.False(viewModel.ReplaceCommand.CanExecute(null));
+        Assert.False(viewModel.HasValidLifetimeValues);
+        Assert.Equal(LocalizedText.Get("Services.WearPartReplacement.LifetimeValuesUnavailable"), viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task ReplaceCommand_WhenLifetimeThresholdInvalid_ShouldNotBeEnabled()
+    {
+        var definition = new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            PartName = "刀具A",
+            InputMode = "Scanner",
+            CodeMinLength = 8,
+            CodeMaxLength = 32,
+            CurrentValueDataType = "FLOAT",
+            CurrentValueAddress = "DB1.0",
+            WarningValueDataType = "FLOAT",
+            WarningValueAddress = "DB1.2",
+            ShutdownValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB1.4"
+        };
+        var viewModel = new ReplacePartViewModel(
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01", IsWearPartMonitoringEnabled = true } },
+            new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01" } },
+            new StubWearPartManagementService([definition]),
+            new StubWearPartReplacementService
+            {
+                Preview = new WearPartReplacementPreview
+                {
+                    WearPartDefinitionId = definition.Id,
+                    ClientAppConfigurationId = Guid.NewGuid(),
+                    CurrentValue = "10",
+                    WarningValue = "30",
+                    ShutdownValue = "20"
+                }
+            },
+            new StubToolChangeManagementService(),
+            new StubToolChangeSelectionService(),
+            new UiDispatcher(),
+            new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+        viewModel.NewBarcode = "BC-02";
+        viewModel.SelectedReplacementReason = WearPartReplacementReason.ProcessDamage;
+
+        Assert.False(viewModel.ReplaceCommand.CanExecute(null));
+        Assert.False(viewModel.HasValidLifetimeValues);
+        Assert.Equal(LocalizedText.Get("Services.WearPartReplacement.LifetimeThresholdInvalid"), viewModel.StatusMessage);
     }
 
     [Fact]
@@ -391,7 +483,7 @@ public sealed class ReplacePartViewModelTests
         });
 
         var viewModel = new ReplacePartViewModel(
-            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01", IsWearPartMonitoringEnabled = true } },
             new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01" } },
             new StubWearPartManagementService([definition]),
             replacementService,

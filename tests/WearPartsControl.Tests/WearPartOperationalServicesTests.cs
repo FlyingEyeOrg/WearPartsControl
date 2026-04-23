@@ -131,6 +131,52 @@ public sealed class WearPartOperationalServicesTests : IDisposable
     }
 
     [Fact]
+    public async Task ReplaceByScanAsync_WhenLifetimeValuesUnavailable_ShouldThrowUserFriendlyException()
+    {
+        var seeded = await SeedAsync("R-OPS-05-MISSING", "M0.5M", warningValueDataType: "String");
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 12);
+        plcService.SetValue("DB1.1", string.Empty);
+        plcService.SetValue("DB1.2", 30);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService);
+
+        var exception = await Assert.ThrowsAsync<UserFriendlyException>(() => service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "BARCODE-0005-M",
+            ReplacementReason = WearPartReplacementReason.ProcessDamage
+        }));
+
+        Assert.Equal(LocalizedText.Get("Services.WearPartReplacement.LifetimeValuesUnavailable"), exception.Message);
+    }
+
+    [Fact]
+    public async Task ReplaceByScanAsync_WhenLifetimeThresholdInvalid_ShouldThrowUserFriendlyException()
+    {
+        var seeded = await SeedAsync("R-OPS-05-INVALID", "M0.5I");
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 12);
+        plcService.SetValue("DB1.1", 30);
+        plcService.SetValue("DB1.2", 20);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService);
+
+        var exception = await Assert.ThrowsAsync<UserFriendlyException>(() => service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "BARCODE-0005-I",
+            ReplacementReason = WearPartReplacementReason.ProcessDamage
+        }));
+
+        Assert.Equal(LocalizedText.Get("Services.WearPartReplacement.LifetimeThresholdInvalid"), exception.Message);
+    }
+
+    [Fact]
     public async Task ReplaceByScanAsync_WhenFirstReplacementAndLifetimeBelowWarning_ShouldAllowReplacement()
     {
         var seeded = await SeedAsync("R-OPS-05-FIRST", "M0.5F");
@@ -998,7 +1044,14 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         Assert.Single(notificationService.WorkNotifications);
     }
 
-    private async Task<(Guid BasicConfigurationId, Guid DefinitionId)> SeedAsync(string resourceNumber, string shutdownPointAddress, string plcZeroClearAddress = "DB1.3", string procedureCode = "P01")
+    private async Task<(Guid BasicConfigurationId, Guid DefinitionId)> SeedAsync(
+        string resourceNumber,
+        string shutdownPointAddress,
+        string plcZeroClearAddress = "DB1.3",
+        string procedureCode = "P01",
+        string currentValueDataType = "Int32",
+        string warningValueDataType = "Int32",
+        string shutdownValueDataType = "Int32")
     {
         var basicConfigurationId = Guid.NewGuid();
         var definitionId = Guid.NewGuid();
@@ -1029,11 +1082,11 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             PartName = "刀具A",
             InputMode = "Barcode",
             CurrentValueAddress = "DB1.0",
-            CurrentValueDataType = "Int32",
+            CurrentValueDataType = currentValueDataType,
             WarningValueAddress = "DB1.1",
-            WarningValueDataType = "Int32",
+            WarningValueDataType = warningValueDataType,
             ShutdownValueAddress = "DB1.2",
-            ShutdownValueDataType = "Int32",
+            ShutdownValueDataType = shutdownValueDataType,
             IsShutdown = true,
             CodeMinLength = 8,
             CodeMaxLength = 32,

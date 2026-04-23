@@ -292,6 +292,8 @@
       "SpacerValidationFailedAndShutdownApplied": "垫片校验失败，系统已执行停机保护：{0}",
       "SpacerValidationFailedAndShutdownWriteFailed": "垫片校验失败，且停机信号写入失败。校验错误：{0}；停机写入错误：{1}",
       "LifetimeNotReached": "检测到当前易损件未达到预警寿命，不允许更换。",
+      "LifetimeValuesUnavailable": "当前寿命、预警寿命或停机寿命读取失败，不能更换易损件。",
+      "LifetimeThresholdInvalid": "预警寿命和停机寿命不符合规范，必须满足预警寿命小于停机寿命。",
       "ValueCannotConvert": "PLC 地址 {0} 的值无法转换为数值：{1}。"
     },
     "WearPartReplacementReason": {

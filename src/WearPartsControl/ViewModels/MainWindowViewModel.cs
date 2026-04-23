@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PlcService;
@@ -24,6 +25,7 @@ namespace WearPartsControl.ViewModels
         private readonly IServiceProvider _serviceProvider;
         private readonly ILoginService _loginService;
         private readonly IAppSettingsService _appSettingsService;
+        private readonly IClientAppInfoService _clientAppInfoService;
         private readonly IUiBusyService _uiBusyService;
         private readonly IPlcStartupConnectionService _plcStartupConnectionService;
         private readonly ILoginSessionStateMachine _loginSessionStateMachine;
@@ -40,12 +42,14 @@ namespace WearPartsControl.ViewModels
         private int _selectedTabIndex;
         private int _initializeStarted;
         private bool _defaultContentPending;
+        private string _procedureCode = string.Empty;
 
         public MainWindowViewModel(
             ILocalizationService localizationService,
             IServiceProvider serviceProvider,
             ILoginService loginService,
             IAppSettingsService appSettingsService,
+            IClientAppInfoService clientAppInfoService,
             IUiBusyService uiBusyService,
             IPlcStartupConnectionService plcStartupConnectionService,
             ILoginSessionStateMachine loginSessionStateMachine,
@@ -59,6 +63,7 @@ namespace WearPartsControl.ViewModels
             _serviceProvider = serviceProvider;
             _loginService = loginService;
             _uiBusyService = uiBusyService;
+            _clientAppInfoService = clientAppInfoService;
             _plcStartupConnectionService = plcStartupConnectionService;
             _loginSessionStateMachine = loginSessionStateMachine;
             _uiDispatcher = uiDispatcher;
@@ -176,6 +181,9 @@ namespace WearPartsControl.ViewModels
                 {
                     appSettings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
                     _loginSessionStateMachine.UpdateSettings(appSettings);
+                    _procedureCode = appSettings.IsSetClientAppInfo
+                        ? (await _clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(false)).ProcedureCode?.Trim() ?? string.Empty
+                        : string.Empty;
                     await _uiDispatcher.RunAsync(() => ApplyClientAppInfoState(appSettings.IsSetClientAppInfo)).ConfigureAwait(false);
                 }).ConfigureAwait(false);
             StartupPerformanceTracker.Mark("应用设置加载完成");
@@ -269,6 +277,7 @@ namespace WearPartsControl.ViewModels
         private void OnTabChanged(int index)
         {
             _selectedTabIndex = index;
+            SelectedTabHeader = GetVisibleTabs().ElementAtOrDefault(index);
             SelectedContent = ResolveTabContent(index);
         }
 
@@ -279,14 +288,26 @@ namespace WearPartsControl.ViewModels
 
         private void OnAppSettingsSaved(object? sender, AppSettings settings)
         {
-            _uiDispatcher.Run(() =>
+            _ = RefreshClientAppInfoStateAsync(settings);
+        }
+
+        private async Task RefreshClientAppInfoStateAsync(AppSettings settings)
+        {
+            var wasConfigured = IsClientAppInfoConfigured;
+            var previousProcedureCode = _procedureCode;
+            var procedureCode = settings.IsSetClientAppInfo
+                ? (await _clientAppInfoService.GetAsync().ConfigureAwait(false)).ProcedureCode?.Trim() ?? string.Empty
+                : string.Empty;
+
+            await _uiDispatcher.RunAsync(() =>
             {
                 _loginSessionStateMachine.UpdateSettings(settings);
-                if (IsClientAppInfoConfigured != settings.IsSetClientAppInfo)
-                {
-                    ApplyClientAppInfoState(settings.IsSetClientAppInfo);
-                }
-            });
+                _procedureCode = procedureCode;
+                ApplyClientAppInfoState(
+                    settings.IsSetClientAppInfo,
+                    refreshSelectedContent: wasConfigured != settings.IsSetClientAppInfo
+                        || !string.Equals(previousProcedureCode, procedureCode, StringComparison.Ordinal));
+            }).ConfigureAwait(false);
         }
 
         private async Task LogoutAsync()
@@ -339,15 +360,17 @@ namespace WearPartsControl.ViewModels
             RefreshSelectedContentForCurrentStateIfNeeded(wasLoggedIn, IsLoggedIn);
         }
 
-        private void ApplyClientAppInfoState(bool isConfigured)
+        private void ApplyClientAppInfoState(bool isConfigured, bool refreshSelectedContent = true)
         {
             IsClientAppInfoConfigured = isConfigured;
+            var visibleTabs = GetVisibleTabs().ToArray();
 
             if (isConfigured)
             {
-                Tabs = _allTabs.ToArray();
+                Tabs = visibleTabs;
                 _defaultContentPending = true;
-                if (Volatile.Read(ref _initializeStarted) == 1)
+                EnsureSelectedTabIndexIsValid(visibleTabs);
+                if (refreshSelectedContent && Volatile.Read(ref _initializeStarted) == 1)
                 {
                     EnsureDefaultContentLoaded();
                 }
@@ -356,9 +379,9 @@ namespace WearPartsControl.ViewModels
             }
 
             _defaultContentPending = false;
-            Tabs = _allTabs.Count > 1
-                ? new[] { _allTabs[1] }
-                : _allTabs.ToArray();
+            Tabs = visibleTabs;
+            _selectedTabIndex = 0;
+            SelectedTabHeader = visibleTabs.ElementAtOrDefault(0);
             SelectedContent = _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
         }
 
@@ -369,6 +392,7 @@ namespace WearPartsControl.ViewModels
                 return;
             }
 
+            EnsureSelectedTabIndexIsValid(GetVisibleTabs().ToArray());
             SelectedContent = ResolveTabContent(_selectedTabIndex);
             _defaultContentPending = false;
         }
@@ -400,20 +424,82 @@ namespace WearPartsControl.ViewModels
                 return _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
             }
 
+            var visibleTabs = GetVisibleTabs().ToArray();
+            if (visibleTabs.Length == 0)
+            {
+                return _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
+            }
+
+            if (index < 0 || index >= visibleTabs.Length)
+            {
+                index = 0;
+            }
+
+            var tabHeader = visibleTabs[index];
+            SelectedTabHeader = tabHeader;
+
             if (!IsLoggedIn && index != 1)
             {
                 return _serviceProvider.GetRequiredService<NeedLoginUserControl>();
             }
 
-            return index switch
+            if (string.Equals(tabHeader, _allTabs[1], StringComparison.Ordinal))
             {
-                1 => _serviceProvider.GetRequiredService<ClientAppInfoUserControl>(),
-                2 => _serviceProvider.GetRequiredService<PartManagementUserControl>(),
-                3 => _serviceProvider.GetRequiredService<ToolChangeManagementUserControl>(),
-                4 => _serviceProvider.GetRequiredService<PartUpdateRecordUserControl>(),
-                5 => _serviceProvider.GetRequiredService<UserConfigUserControl>(),
-                _ => _serviceProvider.GetRequiredService<ReplacePartUserControl>()
-            };
+                return _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
+            }
+
+            if (string.Equals(tabHeader, _allTabs[2], StringComparison.Ordinal))
+            {
+                return _serviceProvider.GetRequiredService<PartManagementUserControl>();
+            }
+
+            if (string.Equals(tabHeader, _allTabs[3], StringComparison.Ordinal))
+            {
+                return _serviceProvider.GetRequiredService<ToolChangeManagementUserControl>();
+            }
+
+            if (string.Equals(tabHeader, _allTabs[4], StringComparison.Ordinal))
+            {
+                return _serviceProvider.GetRequiredService<PartUpdateRecordUserControl>();
+            }
+
+            if (string.Equals(tabHeader, _allTabs[5], StringComparison.Ordinal))
+            {
+                return _serviceProvider.GetRequiredService<UserConfigUserControl>();
+            }
+
+            return _serviceProvider.GetRequiredService<ReplacePartUserControl>();
+        }
+
+        private IEnumerable<string> GetVisibleTabs()
+        {
+            if (!_isClientAppInfoConfigured)
+            {
+                return _allTabs.Count > 1
+                    ? new[] { _allTabs[1] }
+                    : _allTabs.ToArray();
+            }
+
+            return string.Equals(_procedureCode, "模切分条", StringComparison.Ordinal)
+                ? _allTabs.ToArray()
+                : _allTabs.Where((_, index) => index != 3).ToArray();
+        }
+
+        private void EnsureSelectedTabIndexIsValid(IReadOnlyList<string> visibleTabs)
+        {
+            if (visibleTabs.Count == 0)
+            {
+                _selectedTabIndex = 0;
+                SelectedTabHeader = null;
+                return;
+            }
+
+            if (_selectedTabIndex < 0 || _selectedTabIndex >= visibleTabs.Count)
+            {
+                _selectedTabIndex = 0;
+            }
+
+            SelectedTabHeader = visibleTabs[_selectedTabIndex];
         }
 
         private static string ResolveVersion()

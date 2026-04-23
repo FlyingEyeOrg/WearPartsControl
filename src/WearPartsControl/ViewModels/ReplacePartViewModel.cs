@@ -41,6 +41,9 @@ public sealed class ReplacePartViewModel : ObservableObject
     private string _selectedAbSide = string.Empty;
     private string _replacementMessage = string.Empty;
     private string _statusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.PromptSelectAndLoadPreview");
+    private string _currentValueText = string.Empty;
+    private string _warningValueText = string.Empty;
+    private string _shutdownValueText = string.Empty;
     private bool _isBusy;
     private bool _isInitialized;
     private bool _isApplyingToolCode;
@@ -96,6 +99,8 @@ public sealed class ReplacePartViewModel : ObservableObject
     public IAsyncRelayCommand ReplaceCommand { get; }
 
     public bool IsReplaceEnabled => CanReplace();
+
+    public bool HasValidLifetimeValues => string.IsNullOrWhiteSpace(GetLifetimeValidationError());
 
     public bool IsWearPartMonitoringEnabled
     {
@@ -406,6 +411,13 @@ public sealed class ReplacePartViewModel : ObservableObject
             return;
         }
 
+        var lifetimeValidationError = GetLifetimeValidationError();
+        if (!string.IsNullOrWhiteSpace(lifetimeValidationError))
+        {
+            StatusMessage = lifetimeValidationError;
+            return;
+        }
+
         IsBusy = true;
         StatusMessage = LocalizedText.Format("ViewModels.ReplacePartVm.Replacing", SelectedDefinition.PartName);
         using var _ = _uiBusyService.Enter(LocalizedText.Format("ViewModels.ReplacePartVm.Replacing", SelectedDefinition.PartName));
@@ -449,6 +461,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         return !IsBusy
             && IsWearPartMonitoringEnabled
             && SelectedDefinition is not null
+            && string.IsNullOrWhiteSpace(GetLifetimeValidationError())
             && !string.IsNullOrWhiteSpace(NewBarcode)
             && (!IsToolValidationEnabled || !string.IsNullOrWhiteSpace(SelectedToolCode))
             && (!IsCoatingValidationEnabled || !string.IsNullOrWhiteSpace(SelectedAbSide))
@@ -504,6 +517,9 @@ public sealed class ReplacePartViewModel : ObservableObject
             CurrentValue = null;
             WarningValue = null;
             ShutdownValue = null;
+            _currentValueText = string.Empty;
+            _warningValueText = string.Empty;
+            _shutdownValueText = string.Empty;
             LastBarcode = LocalizedText.Get("ViewModels.ReplacePartVm.LastBarcodeEmpty");
             ToolCodeOptions.Clear();
             SetSelectedToolCode(string.Empty);
@@ -515,6 +531,7 @@ public sealed class ReplacePartViewModel : ObservableObject
     {
         ReplaceCommand.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(IsReplaceEnabled));
+        OnPropertyChanged(nameof(HasValidLifetimeValues));
     }
 
     private async Task LoadSelectedDefinitionDetailsAsync(WearPartDefinition? definition, CancellationToken cancellationToken, int loadVersion)
@@ -536,6 +553,16 @@ public sealed class ReplacePartViewModel : ObservableObject
             CurrentValue = ParsePreviewValue(preview.CurrentValue, definition.CurrentValueDataType, definition.CurrentValueAddress);
             WarningValue = ParsePreviewValue(preview.WarningValue, definition.WarningValueDataType, definition.WarningValueAddress);
             ShutdownValue = ParsePreviewValue(preview.ShutdownValue, definition.ShutdownValueDataType, definition.ShutdownValueAddress);
+            _currentValueText = preview.CurrentValue;
+            _warningValueText = preview.WarningValue;
+            _shutdownValueText = preview.ShutdownValue;
+            NotifyReplaceStateChanged();
+
+            var lifetimeValidationError = GetLifetimeValidationError(preview.CurrentValue, preview.WarningValue, preview.ShutdownValue);
+            if (!string.IsNullOrWhiteSpace(lifetimeValidationError))
+            {
+                StatusMessage = lifetimeValidationError;
+            }
 
             var history = await _wearPartReplacementService.GetReplacementHistoryAsync(preview.ClientAppConfigurationId, cancellationToken).ConfigureAwait(true);
             if (loadVersion != _selectionLoadVersion || SelectedDefinition?.Id != definition.Id)
@@ -556,8 +583,26 @@ public sealed class ReplacePartViewModel : ObservableObject
         }
         catch (Exception ex)
         {
+            CurrentValue = null;
+            WarningValue = null;
+            ShutdownValue = null;
+            _currentValueText = string.Empty;
+            _warningValueText = string.Empty;
+            _shutdownValueText = string.Empty;
+            NotifyReplaceStateChanged();
             StatusMessage = ex.Message;
         }
+    }
+
+    private string? GetLifetimeValidationError(string? currentValueText = null, string? warningValueText = null, string? shutdownValueText = null)
+    {
+        return WearPartReplacementLifetimeValidator.GetValidationError(
+            currentValueText ?? _currentValueText,
+            warningValueText ?? _warningValueText,
+            shutdownValueText ?? _shutdownValueText,
+            CurrentValue,
+            WarningValue,
+            ShutdownValue);
     }
 
     private async Task LoadToolCodeStateAsync(WearPartDefinition definition, CancellationToken cancellationToken)
