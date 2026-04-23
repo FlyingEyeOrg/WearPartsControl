@@ -235,12 +235,14 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         await viewModel.InitializeAsync();
 
         Assert.True(viewModel.IsWearPartMonitoringEnabled);
+        Assert.False(viewModel.IsPlcParametersEditable);
         Assert.False(viewModel.IsImportLegacyConfigurationEnabled);
         Assert.False(viewModel.ImportLegacyConfigurationCommand.CanExecute(null));
 
         await viewModel.ToggleWearPartMonitoringCommand.ExecuteAsync(null);
 
         Assert.False(viewModel.IsWearPartMonitoringEnabled);
+        Assert.True(viewModel.IsPlcParametersEditable);
         Assert.True(viewModel.IsImportLegacyConfigurationEnabled);
         Assert.True(viewModel.ImportLegacyConfigurationCommand.CanExecute(null));
     }

@@ -149,7 +149,11 @@
       "DefinitionsLoaded": "已加载资源号 {0} 的 {1} 条易损件定义。",
       "LastBarcodeEmpty": "暂无更换记录",
       "Replacing": "正在更换易损件 {0}...",
-      "ReplaceSucceeded": "易损件 {0} 更换成功，新条码：{1}。"
+      "ReplaceSucceeded": "易损件 {0} 更换成功，新条码：{1}。",
+      "ReplaceConfirmTitle": "更换确认",
+      "ReplaceConfirmMessage": "确认将易损件“{0}”更换为条码“{1}”吗？该操作会立即写入 PLC 并记录更换历史。",
+      "ReplaceConfirmReturningOldPartMessage": "检测到条码“{1}”为当前设备曾使用过的旧件，确认继续将易损件“{0}”更换回来吗？该操作会立即写入 PLC 并记录更换历史。",
+      "ReturningOldPartWarningConfirmMessage": "旧件条码“{0}”当前寿命为 {1}，已达到预警寿命 {2}，停机寿命为 {3}。确认继续更换到当前设备吗？"
     },
     "ToolChangeManagementVm": {
       "PromptLoadCurrent": "请先加载换刀类型主数据。",

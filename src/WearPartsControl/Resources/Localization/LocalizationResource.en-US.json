@@ -149,7 +149,11 @@
       "DefinitionsLoaded": "Loaded {1} wear part definitions for resource number {0}.",
       "LastBarcodeEmpty": "No replacement record",
       "Replacing": "Replacing wear part {0}...",
-      "ReplaceSucceeded": "Wear part {0} replaced successfully. New barcode: {1}."
+      "ReplaceSucceeded": "Wear part {0} replaced successfully. New barcode: {1}.",
+      "ReplaceConfirmTitle": "Replacement Confirmation",
+      "ReplaceConfirmMessage": "Confirm replacing wear part \"{0}\" with barcode \"{1}\"? This operation will immediately write to the PLC and record the replacement history.",
+      "ReplaceConfirmReturningOldPartMessage": "Barcode \"{1}\" was previously used on the current equipment. Confirm replacing wear part \"{0}\" back with this old part? This operation will immediately write to the PLC and record the replacement history.",
+      "ReturningOldPartWarningConfirmMessage": "The old part barcode \"{0}\" currently has lifetime {1}, which has reached the warning lifetime {2}. The shutdown lifetime is {3}. Confirm continuing the replacement on the current equipment?"
     },
     "ToolChangeManagementVm": {
       "PromptLoadCurrent": "Please load tool change master data first.",

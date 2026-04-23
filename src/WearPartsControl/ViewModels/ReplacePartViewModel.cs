@@ -95,6 +95,8 @@ public sealed class ReplacePartViewModel : ObservableObject
 
     public IAsyncRelayCommand ReplaceCommand { get; }
 
+    public bool IsReplaceEnabled => CanReplace();
+
     public bool IsWearPartMonitoringEnabled
     {
         get => _isWearPartMonitoringEnabled;
@@ -104,7 +106,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             {
                 OnPropertyChanged(nameof(IsTabContentEnabled));
                 RefreshCommand.NotifyCanExecuteChanged();
-                ReplaceCommand.NotifyCanExecuteChanged();
+                NotifyReplaceStateChanged();
             }
         }
     }
@@ -137,7 +139,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             if (SetProperty(ref _selectedDefinition, value))
             {
                 ApplySelectedDefinition(value);
-                ReplaceCommand.NotifyCanExecuteChanged();
+                NotifyReplaceStateChanged();
                 _ = LoadSelectedDefinitionDetailsAsync(value, CancellationToken.None, Interlocked.Increment(ref _selectionLoadVersion));
             }
         }
@@ -192,7 +194,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         {
             if (SetProperty(ref _newBarcode, value))
             {
-                ReplaceCommand.NotifyCanExecuteChanged();
+                NotifyReplaceStateChanged();
             }
         }
     }
@@ -204,7 +206,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         {
             if (SetProperty(ref _selectedReplacementReason, value))
             {
-                ReplaceCommand.NotifyCanExecuteChanged();
+                NotifyReplaceStateChanged();
             }
         }
     }
@@ -216,7 +218,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         {
             if (SetProperty(ref _selectedToolCode, value))
             {
-                ReplaceCommand.NotifyCanExecuteChanged();
+                NotifyReplaceStateChanged();
                 if (!_isApplyingToolCode && IsToolValidationEnabled && SelectedDefinition is not null)
                 {
                     _ = SaveToolCodeSelectionAsync(SelectedDefinition.Id, value, CancellationToken.None);
@@ -234,7 +236,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         {
             if (SetProperty(ref _selectedAbSide, value))
             {
-                ReplaceCommand.NotifyCanExecuteChanged();
+                NotifyReplaceStateChanged();
             }
         }
     }
@@ -262,7 +264,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             {
                 OnPropertyChanged(nameof(IsNotBusy));
                 RefreshCommand.NotifyCanExecuteChanged();
-                ReplaceCommand.NotifyCanExecuteChanged();
+                NotifyReplaceStateChanged();
             }
         }
     }
@@ -451,6 +453,44 @@ public sealed class ReplacePartViewModel : ObservableObject
             && !string.IsNullOrWhiteSpace(SelectedReplacementReason);
     }
 
+    public ReplacePartConfirmationContext GetReplacementConfirmationContext()
+    {
+        var normalizedBarcode = NewBarcode?.Trim() ?? string.Empty;
+        if (SelectedDefinition is null || string.IsNullOrWhiteSpace(normalizedBarcode))
+        {
+            return ReplacePartConfirmationContext.Empty;
+        }
+
+        var latestRemovalRecord = ReplacementHistory
+            .Where(x => string.Equals(x.OldBarcode?.Trim(), normalizedBarcode, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(x => x.ReplacedAt)
+            .FirstOrDefault();
+
+        if (latestRemovalRecord is null)
+        {
+            return new ReplacePartConfirmationContext(
+                SelectedDefinition.PartName,
+                normalizedBarcode,
+                IsReturningOldPart: false,
+                HasReachedWarningLifetime: false,
+                CurrentValueText: string.Empty,
+                WarningValueText: string.Empty,
+                ShutdownValueText: string.Empty);
+        }
+
+        var currentValue = TryParseRecordValue(latestRemovalRecord.CurrentValue, SelectedDefinition.CurrentValueDataType, SelectedDefinition.CurrentValueAddress);
+        var warningValue = TryParseRecordValue(latestRemovalRecord.WarningValue, SelectedDefinition.WarningValueDataType, SelectedDefinition.WarningValueAddress);
+
+        return new ReplacePartConfirmationContext(
+            SelectedDefinition.PartName,
+            normalizedBarcode,
+            IsReturningOldPart: true,
+            HasReachedWarningLifetime: currentValue.HasValue && warningValue.HasValue && currentValue.Value >= warningValue.Value,
+            CurrentValueText: latestRemovalRecord.CurrentValue,
+            WarningValueText: latestRemovalRecord.WarningValue,
+            ShutdownValueText: latestRemovalRecord.ShutdownValue);
+    }
+
     private void ApplySelectedDefinition(WearPartDefinition? definition)
     {
         InputMode = definition?.InputMode ?? string.Empty;
@@ -465,7 +505,14 @@ public sealed class ReplacePartViewModel : ObservableObject
             LastBarcode = LocalizedText.Get("ViewModels.ReplacePartVm.LastBarcodeEmpty");
             ToolCodeOptions.Clear();
             SetSelectedToolCode(string.Empty);
+            NotifyReplaceStateChanged();
         }
+    }
+
+    private void NotifyReplaceStateChanged()
+    {
+        ReplaceCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(IsReplaceEnabled));
     }
 
     private async Task LoadSelectedDefinitionDetailsAsync(WearPartDefinition? definition, CancellationToken cancellationToken, int loadVersion)
@@ -598,5 +645,29 @@ public sealed class ReplacePartViewModel : ObservableObject
         }
 
         return WearPartReplacementValueParser.ParseDouble(rawValue, dataType, address);
+    }
+
+    private static double? TryParseRecordValue(string rawValue, string dataType, string address)
+    {
+        try
+        {
+            return ParsePreviewValue(rawValue, dataType, address);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public sealed record ReplacePartConfirmationContext(
+        string PartName,
+        string Barcode,
+        bool IsReturningOldPart,
+        bool HasReachedWarningLifetime,
+        string CurrentValueText,
+        string WarningValueText,
+        string ShutdownValueText)
+    {
+        public static ReplacePartConfirmationContext Empty { get; } = new(string.Empty, string.Empty, false, false, string.Empty, string.Empty, string.Empty);
     }
 }

@@ -61,6 +61,7 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">PLC 类型：</TextBlock>
                         <ComboBox Style="{StaticResource ComboBoxExtend}"
+                                  IsEnabled="{Binding IsPlcParametersEditable}"
                                   Grid.Column="1"
                                   ItemsSource="{Binding PlcProtocolTypes}"
                                   SelectedItem="{Binding PlcProtocolType, UpdateSourceTrigger=PropertyChanged}"
@@ -74,6 +75,7 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">停机地址：</TextBlock>
                         <TextBox Style="{StaticResource TextBoxExtend}"
+                                 IsEnabled="{Binding IsPlcParametersEditable}"
                                  Grid.Column="1"
                                  Text="{Binding ShutdownPointAddress, UpdateSourceTrigger=PropertyChanged}"
                                  ui:InfoElement.Placeholder="请输入 PLC 的停机地址" />
@@ -114,6 +116,7 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">IP 地址：</TextBlock>
                         <TextBox Style="{StaticResource TextBoxExtend}"
+                                 IsEnabled="{Binding IsPlcParametersEditable}"
                                  Grid.Column="1"
                                  Text="{Binding PlcIpAddress, UpdateSourceTrigger=PropertyChanged}"
                                  ui:InfoElement.Placeholder="请输入 PLC 的 IP 地址" />
@@ -127,6 +130,7 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">机架号：</TextBlock>
                         <TextBox Style="{StaticResource TextBoxExtend}"
+                                 IsEnabled="{Binding IsPlcParametersEditable}"
                                  Grid.Column="1"
                                  Text="{Binding SiemensRack, UpdateSourceTrigger=PropertyChanged}"
                                  ui:InfoElement.Placeholder="西门子 PLC 机架号，默认 0" />
@@ -140,6 +144,7 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">插槽号：</TextBlock>
                         <TextBox Style="{StaticResource TextBoxExtend}"
+                                 IsEnabled="{Binding IsPlcParametersEditable}"
                                  Grid.Column="1"
                                  Text="{Binding SiemensSlot, UpdateSourceTrigger=PropertyChanged}"
                                  ui:InfoElement.Placeholder="西门子 PLC 插槽号，默认 0" />
@@ -179,6 +184,7 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center">端口：</TextBlock>
                         <TextBox Grid.Column="1"
+                                 IsEnabled="{Binding IsPlcParametersEditable}"
                                  Style="{StaticResource TextBoxExtend}"
                                  Text="{Binding PlcPort, UpdateSourceTrigger=PropertyChanged}"
                                  ui:InfoElement.Placeholder="请输入 PLC 端口" />
@@ -195,6 +201,7 @@
                         <CheckBox Grid.Column="1"
                                   Style="{StaticResource ToggleButtonSwitch}"
                                   Width="80"
+                                  IsEnabled="{Binding IsPlcParametersEditable}"
                                   IsChecked="{Binding IsStringReverse, UpdateSourceTrigger=PropertyChanged}"
                                   Visibility="{Binding IsStringReverseVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </Grid>

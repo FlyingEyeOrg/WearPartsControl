@@ -261,7 +261,8 @@
                     <Button Margin="8 0 0 0"
                             Grid.Column="1"
                             Width="80"
-                            Command="{Binding ReplaceCommand}"
+                            IsEnabled="{Binding IsReplaceEnabled}"
+                            Click="OnReplaceClicked"
                             Style="{StaticResource ButtonPrimary}">更换</Button>
                 </Grid>
             </StackPanel>

@@ -494,6 +494,128 @@ public sealed class ReplacePartViewModelTests
         Assert.Equal("TL-01", viewModel.SelectedToolCode);
     }
 
+    [Fact]
+    public async Task GetReplacementConfirmationContext_WhenBarcodeIsOldPart_ShouldMarkAsReturningOldPart()
+    {
+        var definition = new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            PartName = "刀具A",
+            InputMode = "Scanner",
+            CodeMinLength = 8,
+            CodeMaxLength = 32,
+            CurrentValueDataType = "FLOAT",
+            CurrentValueAddress = "DB1.0",
+            WarningValueDataType = "FLOAT",
+            WarningValueAddress = "DB1.2",
+            ShutdownValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB1.4"
+        };
+        var replacementService = new StubWearPartReplacementService
+        {
+            Preview = new WearPartReplacementPreview
+            {
+                WearPartDefinitionId = definition.Id,
+                ClientAppConfigurationId = Guid.NewGuid(),
+                CurrentValue = "12.5",
+                WarningValue = "20",
+                ShutdownValue = "30",
+                LastBarcode = "BC-01"
+            }
+        };
+        replacementService.History.Add(new WearPartReplacementRecord
+        {
+            WearPartDefinitionId = definition.Id,
+            PartName = definition.PartName,
+            OldBarcode = "OLD-RETURN-01",
+            NewBarcode = "BC-NEW",
+            CurrentValue = "18",
+            WarningValue = "20",
+            ShutdownValue = "30",
+            ReplacedAt = DateTime.UtcNow
+        });
+
+        var viewModel = new ReplacePartViewModel(
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01" } },
+            new StubWearPartManagementService([definition]),
+            replacementService,
+            new StubToolChangeManagementService(),
+            new StubToolChangeSelectionService(),
+            new UiDispatcher(),
+            new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+        viewModel.NewBarcode = "OLD-RETURN-01";
+
+        var context = viewModel.GetReplacementConfirmationContext();
+
+        Assert.True(context.IsReturningOldPart);
+        Assert.False(context.HasReachedWarningLifetime);
+        Assert.Equal("18", context.CurrentValueText);
+    }
+
+    [Fact]
+    public async Task GetReplacementConfirmationContext_WhenOldPartReachedWarning_ShouldRequireExtraConfirmation()
+    {
+        var definition = new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            PartName = "刀具A",
+            InputMode = "Scanner",
+            CodeMinLength = 8,
+            CodeMaxLength = 32,
+            CurrentValueDataType = "FLOAT",
+            CurrentValueAddress = "DB1.0",
+            WarningValueDataType = "FLOAT",
+            WarningValueAddress = "DB1.2",
+            ShutdownValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB1.4"
+        };
+        var replacementService = new StubWearPartReplacementService
+        {
+            Preview = new WearPartReplacementPreview
+            {
+                WearPartDefinitionId = definition.Id,
+                ClientAppConfigurationId = Guid.NewGuid(),
+                CurrentValue = "12.5",
+                WarningValue = "20",
+                ShutdownValue = "30",
+                LastBarcode = "BC-01"
+            }
+        };
+        replacementService.History.Add(new WearPartReplacementRecord
+        {
+            WearPartDefinitionId = definition.Id,
+            PartName = definition.PartName,
+            OldBarcode = "OLD-RETURN-02",
+            NewBarcode = "BC-NEW",
+            CurrentValue = "20",
+            WarningValue = "20",
+            ShutdownValue = "30",
+            ReplacedAt = DateTime.UtcNow
+        });
+
+        var viewModel = new ReplacePartViewModel(
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01" } },
+            new StubWearPartManagementService([definition]),
+            replacementService,
+            new StubToolChangeManagementService(),
+            new StubToolChangeSelectionService(),
+            new UiDispatcher(),
+            new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+        viewModel.NewBarcode = "OLD-RETURN-02";
+
+        var context = viewModel.GetReplacementConfirmationContext();
+
+        Assert.True(context.IsReturningOldPart);
+        Assert.True(context.HasReachedWarningLifetime);
+        Assert.Equal("30", context.ShutdownValueText);
+    }
+
     private static ReplacePartViewModel CreateViewModel(StubAppSettingsService? appSettingsService = null)
     {
         return new ReplacePartViewModel(

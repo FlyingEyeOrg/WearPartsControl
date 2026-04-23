@@ -43,11 +43,6 @@ public sealed class BarcodeReuseReplacementGuard : IWearPartReplacementGuard
                 code: "WearPartReplacement:BarcodeDuplicated");
         }
 
-        if (!WearPartReplacementReason.AllowsBarcodeReuseAfterRemoval(latestRemovalRecord.ReplacementReason))
-        {
-            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.BarcodeDuplicated"), code: "WearPartReplacement:BarcodeDuplicated");
-        }
-
         context.LatestRemovalRecord = latestRemovalRecord;
         context.CurrentValueText = latestRemovalRecord.CurrentValue;
         context.WarningValueText = latestRemovalRecord.WarningValue;
