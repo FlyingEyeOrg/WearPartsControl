@@ -1016,7 +1016,9 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         Assert.True(results[0].NotificationTriggered);
         Assert.Single(notificationService.GroupNotifications);
         Assert.Empty(notificationService.WorkNotifications);
-        Assert.Contains(LocalizedText.Get("ComNotification.Template.WarningHeading"), notificationService.GroupNotifications[0]);
+        Assert.Contains(LocalizedText.Get("ViewModels.ComNotificationTemplate.WarningHeading"), notificationService.GroupNotifications[0]);
+        Assert.DoesNotContain("ComNotification.Template.", notificationService.GroupNotifications[0]);
+        Assert.DoesNotContain("ViewModels.ComNotificationTemplate.", notificationService.GroupNotifications[0]);
         Assert.Contains("ME1001", notificationService.GroupNotifications[0]);
         Assert.Contains("PRD1001", notificationService.GroupNotifications[0]);
 
@@ -1049,7 +1051,9 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         Assert.Equal(WearPartMonitorStatus.Shutdown, results[0].Status);
         Assert.Contains(plcService.Writes, x => x.Address == "M0.3" && Equals(x.Value, false));
         Assert.Single(notificationService.WorkNotifications);
-        Assert.Contains(LocalizedText.Get("ComNotification.Template.ShutdownHeading"), notificationService.WorkNotifications[0]);
+        Assert.Contains(LocalizedText.Get("ViewModels.ComNotificationTemplate.ShutdownHeading"), notificationService.WorkNotifications[0]);
+        Assert.DoesNotContain("ComNotification.Template.", notificationService.WorkNotifications[0]);
+        Assert.DoesNotContain("ViewModels.ComNotificationTemplate.", notificationService.WorkNotifications[0]);
         Assert.Contains("ME1001", notificationService.WorkNotifications[0]);
         Assert.Contains("PRD1001", notificationService.WorkNotifications[0]);
     }

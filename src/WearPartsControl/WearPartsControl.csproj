@@ -4,7 +4,7 @@
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<UseWPF>true</UseWPF>
-		<ApplicationIcon>assets/app.ico</ApplicationIcon>
+		<ApplicationIcon>Assets\app.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -47,6 +47,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Resource Include="Assets\app.ico" />
 		<Resource Include="Assets\catl.ico" />
 		<Resource Include="Assets\card.png" />
 		<Resource Include="Assets\catl-logo-white.png" />

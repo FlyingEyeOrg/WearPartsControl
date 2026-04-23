@@ -154,10 +154,12 @@ public sealed class UserConfigViewModelTests
         Assert.NotNull(notificationService.LastGroupText);
         Assert.NotNull(notificationService.LastWorkText);
         Assert.Contains("# ", notificationService.LastGroupText!);
-        Assert.Contains(LocalizedText.Get("ComNotification.Template.TestHeading"), notificationService.LastGroupText!);
+        Assert.Contains(LocalizedText.Get("ViewModels.ComNotificationTemplate.TestHeading"), notificationService.LastGroupText!);
         Assert.Contains("RES-TEST", notificationService.LastGroupText!);
         Assert.Contains("ME003", notificationService.LastGroupText!);
         Assert.Contains("PRD003", notificationService.LastGroupText!);
+        Assert.DoesNotContain("ComNotification.Template.", notificationService.LastGroupText!);
+        Assert.DoesNotContain("ViewModels.ComNotificationTemplate.", notificationService.LastGroupText!);
         Assert.Equal(notificationService.LastGroupText, notificationService.LastWorkText);
         Assert.Equal(LocalizedText.Get("ViewModels.UserConfigVm.TestSucceeded"), viewModel.StatusMessage);
         Assert.False(viewModel.IsDirty);

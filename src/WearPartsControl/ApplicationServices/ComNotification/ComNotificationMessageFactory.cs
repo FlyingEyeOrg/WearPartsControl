@@ -10,6 +10,8 @@ public sealed record ComNotificationMessage(string Title, string Markdown);
 
 public static class ComNotificationMessageFactory
 {
+    private const string TemplatePrefix = "ViewModels.ComNotificationTemplate.";
+
     public static ComNotificationMessage CreateTestMessage(
         ClientAppInfoModel? clientAppInfo,
         string? meResponsibleWorkId,
@@ -17,17 +19,17 @@ public static class ComNotificationMessageFactory
     {
         var title = LocalizedText.Get("ViewModels.UserConfigVm.TestNotificationTitle");
         var markdown = BuildMarkdown(
-            LocalizedText.Get("ComNotification.Template.TestHeading"),
+            Template("TestHeading"),
             CreateEnvironment(clientAppInfo),
-            LocalizedText.Get("ComNotification.Template.NotificationInfoHeading"),
+            Template("NotificationInfoHeading"),
             [
                 new NotificationItem(
-                    LocalizedText.Get("ComNotification.Template.DescriptionLabel"),
+                    Template("DescriptionLabel"),
                     LocalizedText.Get("ViewModels.UserConfigVm.TestNotificationBody"))
             ],
             meResponsibleWorkId,
             prdResponsibleWorkId,
-            LocalizedText.Get("ComNotification.Template.TestActionMessage"),
+            Template("TestActionMessage"),
             DateTime.Now);
 
         return new ComNotificationMessage(title, markdown);
@@ -49,22 +51,22 @@ public static class ComNotificationMessageFactory
             ? "Services.WearPartMonitor.ShutdownNotificationTitle"
             : "Services.WearPartMonitor.WarningNotificationTitle");
         var markdown = BuildMarkdown(
-            LocalizedText.Get(isShutdown
-                ? "ComNotification.Template.ShutdownHeading"
-                : "ComNotification.Template.WarningHeading"),
+            Template(isShutdown
+                ? "ShutdownHeading"
+                : "WarningHeading"),
             CreateEnvironment(clientAppConfiguration),
-            LocalizedText.Get("ComNotification.Template.WearPartInfoHeading"),
+            Template("WearPartInfoHeading"),
             [
-                new NotificationItem(LocalizedText.Get("ComNotification.Template.PartNameLabel"), ResolveDisplayValue(partName)),
-                new NotificationItem(LocalizedText.Get("ComNotification.Template.CurrentValueLabel"), FormatNumber(currentValue)),
-                new NotificationItem(LocalizedText.Get("ComNotification.Template.WarningValueLabel"), FormatNumber(warningValue)),
-                new NotificationItem(LocalizedText.Get("ComNotification.Template.ShutdownValueLabel"), FormatNumber(shutdownValue))
+                new NotificationItem(Template("PartNameLabel"), ResolveDisplayValue(partName)),
+                new NotificationItem(Template("CurrentValueLabel"), FormatNumber(currentValue)),
+                new NotificationItem(Template("WarningValueLabel"), FormatNumber(warningValue)),
+                new NotificationItem(Template("ShutdownValueLabel"), FormatNumber(shutdownValue))
             ],
             meResponsibleWorkId,
             prdResponsibleWorkId,
-            LocalizedText.Get(isShutdown
-                ? "ComNotification.Template.ShutdownActionMessage"
-                : "ComNotification.Template.WarningActionMessage"),
+            Template(isShutdown
+                ? "ShutdownActionMessage"
+                : "WarningActionMessage"),
             occurredAt.ToLocalTime());
 
         return new ComNotificationMessage(title, markdown);
@@ -83,28 +85,28 @@ public static class ComNotificationMessageFactory
         var builder = new StringBuilder();
         builder.AppendLine($"# {heading}");
         builder.AppendLine();
-        AppendSummaryLine(builder, LocalizedText.Get("ComNotification.Template.TimeLabel"), occurredAt.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
-        AppendSummaryLine(builder, LocalizedText.Get("ComNotification.Template.SiteLabel"), environment.SiteCode);
-        AppendSummaryLine(builder, LocalizedText.Get("ComNotification.Template.FactoryLabel"), environment.FactoryCode);
-        AppendSummaryLine(builder, LocalizedText.Get("ComNotification.Template.AreaLabel"), environment.AreaCode);
-        AppendSummaryLine(builder, LocalizedText.Get("ComNotification.Template.ProcedureLabel"), environment.ProcedureCode);
-        AppendSummaryLine(builder, LocalizedText.Get("ComNotification.Template.EquipmentCodeLabel"), environment.EquipmentCode);
-        AppendSummaryLine(builder, LocalizedText.Get("ComNotification.Template.ResourceNumberLabel"), environment.ResourceNumber);
+        AppendSummaryLine(builder, Template("TimeLabel"), occurredAt.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
+        AppendSummaryLine(builder, Template("SiteLabel"), environment.SiteCode);
+        AppendSummaryLine(builder, Template("FactoryLabel"), environment.FactoryCode);
+        AppendSummaryLine(builder, Template("AreaLabel"), environment.AreaCode);
+        AppendSummaryLine(builder, Template("ProcedureLabel"), environment.ProcedureCode);
+        AppendSummaryLine(builder, Template("EquipmentCodeLabel"), environment.EquipmentCode);
+        AppendSummaryLine(builder, Template("ResourceNumberLabel"), environment.ResourceNumber);
         builder.AppendLine();
         AppendSection(builder, detailHeading, detailItems);
         builder.AppendLine();
         AppendSection(
             builder,
-            LocalizedText.Get("ComNotification.Template.OwnerInfoHeading"),
+            Template("OwnerInfoHeading"),
             [
-                new NotificationItem(LocalizedText.Get("ComNotification.Template.MeResponsibleLabel"), ResolveDisplayValue(meResponsibleWorkId)),
-                new NotificationItem(LocalizedText.Get("ComNotification.Template.PrdResponsibleLabel"), ResolveDisplayValue(prdResponsibleWorkId))
+                new NotificationItem(Template("MeResponsibleLabel"), ResolveDisplayValue(meResponsibleWorkId)),
+                new NotificationItem(Template("PrdResponsibleLabel"), ResolveDisplayValue(prdResponsibleWorkId))
             ]);
         builder.AppendLine();
         builder.AppendLine(actionMessage);
         builder.AppendLine();
         builder.AppendLine("---");
-        builder.Append(LocalizedText.Get("ComNotification.Template.Footer"));
+        builder.Append(Template("Footer"));
         return builder.ToString();
     }
 
@@ -148,8 +150,13 @@ public static class ComNotificationMessageFactory
     private static string ResolveDisplayValue(string? value)
     {
         return string.IsNullOrWhiteSpace(value)
-            ? LocalizedText.Get("ComNotification.Template.NotConfigured")
+            ? Template("NotConfigured")
             : value.Trim();
+    }
+
+    private static string Template(string name)
+    {
+        return LocalizedText.Get($"{TemplatePrefix}{name}");
     }
 
     private static string FormatNumber(double value)
