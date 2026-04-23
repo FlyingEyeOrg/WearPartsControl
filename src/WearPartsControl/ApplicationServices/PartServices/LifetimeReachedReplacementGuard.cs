@@ -9,6 +9,11 @@ public sealed class LifetimeReachedReplacementGuard : IWearPartReplacementGuard
 
     public Task ValidateAsync(WearPartReplacementGuardContext context, CancellationToken cancellationToken = default)
     {
+        if (context.LatestRecord is null)
+        {
+            return Task.CompletedTask;
+        }
+
         var installedCurrentValue = context.InstalledCurrentValue;
         var installedWarningValue = context.InstalledWarningValue;
         var installedShutdownValue = context.InstalledShutdownValue;
