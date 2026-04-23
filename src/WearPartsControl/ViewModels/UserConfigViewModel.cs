@@ -13,6 +13,7 @@ public sealed class UserConfigViewModel : ObservableObject
     private readonly IUserConfigService _userConfigService;
     private readonly IComNotificationService _comNotificationService;
     private readonly IUiDispatcher _uiDispatcher;
+    private readonly IUiBusyService _uiBusyService;
     private UserConfigSnapshot _originalSnapshot = UserConfigSnapshot.Empty;
     private bool _isBusy;
     private bool _isDirty;
@@ -37,11 +38,12 @@ public sealed class UserConfigViewModel : ObservableObject
     private string _spacerValidationExpectedSegmentCount = UserConfig.DefaultSpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture);
     private string _statusMessage = LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain");
 
-    public UserConfigViewModel(IUserConfigService userConfigService, IComNotificationService comNotificationService, IUiDispatcher uiDispatcher)
+    public UserConfigViewModel(IUserConfigService userConfigService, IComNotificationService comNotificationService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService)
     {
         _userConfigService = userConfigService;
         _comNotificationService = comNotificationService;
         _uiDispatcher = uiDispatcher;
+        _uiBusyService = uiBusyService;
         SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
         TestComNotificationCommand = new AsyncRelayCommand(TestComNotificationAsync, CanTestComNotification);
     }
@@ -264,7 +266,7 @@ public sealed class UserConfigViewModel : ObservableObject
                 _isInitialized = true;
                 StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.Loaded");
             }).ConfigureAwait(false);
-        }, LocalizedText.Get("ViewModels.UserConfigVm.LoadFailedPrefix"), cancellationToken).ConfigureAwait(false);
+        }, LocalizedText.Get("ViewModels.UserConfigVm.LoadFailedPrefix"), LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain"), cancellationToken).ConfigureAwait(false);
     }
 
     private bool CanSave() => IsDirty && !IsBusy;
@@ -284,7 +286,7 @@ public sealed class UserConfigViewModel : ObservableObject
                 StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.Saved");
                 _isInitialized = true;
             }).ConfigureAwait(false);
-        }, LocalizedText.Get("ViewModels.UserConfigVm.SaveFailedPrefix")).ConfigureAwait(false);
+        }, LocalizedText.Get("ViewModels.UserConfigVm.SaveFailedPrefix"), LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain")).ConfigureAwait(false);
     }
 
     private async Task TestComNotificationAsync()
@@ -313,7 +315,7 @@ public sealed class UserConfigViewModel : ObservableObject
                 recipients).ConfigureAwait(false);
 
             await _uiDispatcher.RunAsync(() => StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.TestSucceeded")).ConfigureAwait(false);
-        }, LocalizedText.Get("ViewModels.UserConfigVm.TestFailedPrefix")).ConfigureAwait(false);
+        }, LocalizedText.Get("ViewModels.UserConfigVm.TestFailedPrefix"), LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain")).ConfigureAwait(false);
     }
 
     private string[] ResolveRecipients()
@@ -427,11 +429,13 @@ public sealed class UserConfigViewModel : ObservableObject
             SpacerValidationExpectedSegmentCount?.Trim() ?? string.Empty);
     }
 
-    private async Task ExecuteBusyAsync(Func<Task> action, string errorPrefix, CancellationToken cancellationToken = default)
+    private async Task ExecuteBusyAsync(Func<Task> action, string errorPrefix, string busyMessage, CancellationToken cancellationToken = default)
     {
         try
         {
             await _uiDispatcher.RunAsync(() => IsBusy = true).ConfigureAwait(false);
+            using var _ = _uiBusyService.Enter(busyMessage);
+            await _uiDispatcher.RenderAsync().ConfigureAwait(false);
             await action().ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)

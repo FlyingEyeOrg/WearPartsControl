@@ -171,6 +171,66 @@ public sealed class ReplacePartViewModelTests
     }
 
     [Fact]
+    public async Task ReplaceCommand_ShouldRenderLoadingBeforeReplacing()
+    {
+        var definition = new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            PartName = "刀具A",
+            InputMode = "Scanner",
+            CodeMinLength = 8,
+            CodeMaxLength = 32,
+            CurrentValueDataType = "FLOAT",
+            CurrentValueAddress = "DB1.0",
+            WarningValueDataType = "FLOAT",
+            WarningValueAddress = "DB1.2",
+            ShutdownValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB1.4"
+        };
+        var replacementService = new StubWearPartReplacementService
+        {
+            Preview = new WearPartReplacementPreview
+            {
+                WearPartDefinitionId = definition.Id,
+                ClientAppConfigurationId = Guid.NewGuid(),
+                PartName = definition.PartName,
+                LastBarcode = "OLD-01",
+                CurrentValue = "12.5",
+                WarningValue = "20",
+                ShutdownValue = "30"
+            }
+        };
+        var uiDispatcher = new TrackingUiDispatcher();
+        var viewModel = new ReplacePartViewModel(
+            new StubAppSettingsService
+            {
+                Current = new AppSettings
+                {
+                    ResourceNumber = "RES-01",
+                    IsWearPartMonitoringEnabled = true
+                }
+            },
+            new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01" } },
+            new StubWearPartManagementService([definition]),
+            replacementService,
+            new StubToolChangeManagementService(),
+            new StubToolChangeSelectionService(),
+            uiDispatcher,
+            new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+        viewModel.SelectedDefinition = viewModel.Definitions.Single();
+        viewModel.NewBarcode = "NEW-01";
+        viewModel.SelectedReplacementReason = WearPartReplacementReason.ProcessDamage;
+        var renderCountBeforeReplace = uiDispatcher.RenderCount;
+
+        await viewModel.ReplaceCommand.ExecuteAsync(null);
+
+        Assert.Equal(1, replacementService.ReplaceCallCount);
+        Assert.Equal(renderCountBeforeReplace + 1, uiDispatcher.RenderCount);
+    }
+
+    [Fact]
     public async Task ReplaceCommand_WhenMonitoringDisabled_ShouldNotBeEnabled()
     {
         var definition = new WearPartDefinition
@@ -633,6 +693,8 @@ public sealed class ReplacePartViewModelTests
     {
         public int RunCount { get; private set; }
 
+        public int RenderCount { get; private set; }
+
         public void Run(Action action)
         {
             RunCount++;
@@ -647,6 +709,7 @@ public sealed class ReplacePartViewModelTests
 
         public Task RenderAsync()
         {
+            RenderCount++;
             return Task.CompletedTask;
         }
     }
@@ -800,6 +863,8 @@ public sealed class ReplacePartViewModelTests
 
         public List<WearPartReplacementRecord> History { get; } = [];
 
+        public int ReplaceCallCount { get; private set; }
+
         public Task<WearPartReplacementPreview> GetReplacementPreviewAsync(Guid wearPartDefinitionId, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(Preview);
@@ -807,6 +872,7 @@ public sealed class ReplacePartViewModelTests
 
         public Task<WearPartReplacementRecord> ReplaceByScanAsync(WearPartReplacementRequest request, CancellationToken cancellationToken = default)
         {
+            ReplaceCallCount++;
             var record = new WearPartReplacementRecord
             {
                 Id = Guid.NewGuid(),

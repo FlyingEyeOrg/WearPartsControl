@@ -320,6 +320,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         IsBusy = true;
         StatusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.Loading");
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.ReplacePartVm.Loading"));
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {
@@ -408,6 +409,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         IsBusy = true;
         StatusMessage = LocalizedText.Format("ViewModels.ReplacePartVm.Replacing", SelectedDefinition.PartName);
         using var _ = _uiBusyService.Enter(LocalizedText.Format("ViewModels.ReplacePartVm.Replacing", SelectedDefinition.PartName));
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {

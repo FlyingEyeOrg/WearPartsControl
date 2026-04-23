@@ -36,7 +36,7 @@ public sealed class UserConfigViewModelTests
                 SpacerValidationExpectedSegmentCount = 9
             }
         };
-        var viewModel = new UserConfigViewModel(service, new StubComNotificationService(), new StubUiDispatcher());
+        var viewModel = new UserConfigViewModel(service, new StubComNotificationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
 
@@ -66,7 +66,8 @@ public sealed class UserConfigViewModelTests
     public async Task SaveCommand_ShouldPersistCurrentValuesAndClearDirtyFlag()
     {
         var service = new StubUserConfigService();
-        var viewModel = new UserConfigViewModel(service, new StubComNotificationService(), new StubUiDispatcher());
+        var dispatcher = new StubUiDispatcher();
+        var viewModel = new UserConfigViewModel(service, new StubComNotificationService(), dispatcher, new UiBusyService(TimeSpan.Zero));
         await viewModel.InitializeAsync();
 
         viewModel.MeResponsibleWorkId = "ME002";
@@ -96,6 +97,7 @@ public sealed class UserConfigViewModelTests
         Assert.False(service.LastSaved.SpacerValidationIgnoreServerCertificateErrors);
         Assert.Equal("-", service.LastSaved.SpacerValidationCodeSeparator);
         Assert.Equal(10, service.LastSaved.SpacerValidationExpectedSegmentCount);
+        Assert.True(dispatcher.RenderCount >= 1);
     }
 
     [Fact]
@@ -103,7 +105,7 @@ public sealed class UserConfigViewModelTests
     {
         var service = new StubUserConfigService();
         var notificationService = new StubComNotificationService();
-        var viewModel = new UserConfigViewModel(service, notificationService, new StubUiDispatcher());
+        var viewModel = new UserConfigViewModel(service, notificationService, new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
         await viewModel.InitializeAsync();
 
         viewModel.MeResponsibleWorkId = "ME003";
@@ -200,6 +202,8 @@ public sealed class UserConfigViewModelTests
 
     private sealed class StubUiDispatcher : IUiDispatcher
     {
+        public int RenderCount { get; private set; }
+
         public void Run(Action action) => action();
 
         public Task RunAsync(Action action, System.Windows.Threading.DispatcherPriority priority = System.Windows.Threading.DispatcherPriority.Normal)
@@ -208,6 +212,10 @@ public sealed class UserConfigViewModelTests
             return Task.CompletedTask;
         }
 
-        public Task RenderAsync() => Task.CompletedTask;
+        public Task RenderAsync()
+        {
+            RenderCount++;
+            return Task.CompletedTask;
+        }
     }
 }
