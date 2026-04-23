@@ -84,7 +84,10 @@
       "CurrentUserWorkId": "工号：{0}",
       "CurrentUserAccessLevelEmpty": "权限：--",
       "CurrentUserAccessLevelCountdown": "权限：{0} | 自动注销：{1}",
-      "SoftwareVersion": "软件版本：{0}"
+      "SoftwareVersion": "软件版本：{0}",
+      "LoadingAppSettings": "正在加载应用设置...",
+      "LoadingDefaultContent": "正在装载默认页面...",
+      "InitializingDatabase": "正在初始化本地数据库..."
     },
     "LoginWindowVm": {
       "PromptSwipeCard": "请刷卡登录",
@@ -310,7 +313,7 @@
     },
     "PlcStartupConnection": {
       "Uninitialized": "未初始化",
-      "Connecting": "连接中",
+      "Connecting": "正在连接 PLC 设备...",
       "NotConfigured": "未配置 ClientApp，未连接 PLC。",
       "Connected": "已连接",
       "ConnectFailed": "连接失败：{0}",

@@ -84,7 +84,10 @@
       "CurrentUserWorkId": "Work ID: {0}",
       "CurrentUserAccessLevelEmpty": "Access: --",
       "CurrentUserAccessLevelCountdown": "Access: {0} | Auto logout: {1}",
-      "SoftwareVersion": "Version: {0}"
+      "SoftwareVersion": "Version: {0}",
+      "LoadingAppSettings": "Loading application settings...",
+      "LoadingDefaultContent": "Loading default page...",
+      "InitializingDatabase": "Initializing local database..."
     },
     "LoginWindowVm": {
       "PromptSwipeCard": "Please swipe card to log in",
@@ -310,7 +313,7 @@
     },
     "PlcStartupConnection": {
       "Uninitialized": "Uninitialized",
-      "Connecting": "Connecting",
+      "Connecting": "Connecting PLC device...",
       "NotConfigured": "ClientApp is not configured, PLC connection skipped.",
       "Connected": "Connected",
       "ConnectFailed": "Connection failed: {0}",

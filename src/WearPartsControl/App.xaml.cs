@@ -147,7 +147,7 @@ public partial class App : Application
         {
             if (_appStartupCoordinator is not null)
             {
-                await _appStartupCoordinator.EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
+                await _appStartupCoordinator.EnsureInitializedAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
                 StartupPerformanceTracker.Mark("数据库初始化完成");
             }
 

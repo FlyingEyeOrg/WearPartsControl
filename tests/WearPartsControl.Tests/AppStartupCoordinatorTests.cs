@@ -34,7 +34,7 @@ public sealed class AppStartupCoordinatorTests
         using var cancellationTokenSource = new CancellationTokenSource();
 
         var sharedInitializationTask = coordinator.EnsureInitializedAsync();
-        var canceledWaitTask = coordinator.EnsureInitializedAsync(cancellationTokenSource.Token);
+        var canceledWaitTask = coordinator.EnsureInitializedAsync(cancellationToken: cancellationTokenSource.Token);
         cancellationTokenSource.Cancel();
 
         await Assert.ThrowsAsync<OperationCanceledException>(() => canceledWaitTask);
@@ -68,6 +68,28 @@ public sealed class AppStartupCoordinatorTests
         Assert.False(appSettingsService.Current.IsWearPartMonitoringEnabled);
         Assert.Equal(1, appSettingsService.SaveCallCount);
         Assert.Equal(1, plcStartupConnectionService.CallCount);
+    }
+
+    [Fact]
+    public async Task EnsureInitializedAsync_WhenWearPartMonitoringDisabled_ShouldNotConnectPlc()
+    {
+        var initializer = new StubDatabaseInitializer();
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsWearPartMonitoringEnabled = false,
+                IsSetClientAppInfo = true,
+                ResourceNumber = "RES-01"
+            }
+        };
+        var plcStartupConnectionService = new StubPlcStartupConnectionService();
+        var coordinator = new AppStartupCoordinator(initializer, appSettingsService, plcStartupConnectionService);
+
+        await coordinator.EnsureInitializedAsync();
+
+        Assert.Equal(0, plcStartupConnectionService.CallCount);
+        Assert.Equal(0, appSettingsService.SaveCallCount);
     }
 
     private sealed class StubDatabaseInitializer : IDatabaseInitializer

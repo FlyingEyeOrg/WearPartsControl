@@ -30,6 +30,8 @@ namespace WearPartsControl.ViewModels
         private readonly IUiDispatcher _uiDispatcher;
         private readonly IAppStartupCoordinator _appStartupCoordinator;
         private readonly IReadOnlyList<string> _allTabs;
+        private bool _isStartupBusy;
+        private string _startupLoadingText = string.Empty;
         private string _currentUserWorkIdText = LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserWorkIdEmpty");
         private string _currentUserAccessLevelText = LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserAccessLevelEmpty");
         private IEnumerable<string> _tabs = Array.Empty<string>();
@@ -91,9 +93,9 @@ namespace WearPartsControl.ViewModels
 
         public string SoftwareVersionText { get; }
 
-        public bool IsBusy => _uiBusyService.IsBusy;
+        public bool IsBusy => _isStartupBusy || _uiBusyService.IsBusy;
 
-        public string LoadingText => _uiBusyService.BusyMessage;
+        public string LoadingText => _isStartupBusy ? _startupLoadingText : _uiBusyService.BusyMessage;
 
         public bool HasLoadingText => !string.IsNullOrWhiteSpace(LoadingText);
 
@@ -167,28 +169,99 @@ namespace WearPartsControl.ViewModels
 
             await Task.Yield();
             StartupPerformanceTracker.Mark("主窗口初始化开始");
-            var appSettings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
-            _loginSessionStateMachine.UpdateSettings(appSettings);
-            await _uiDispatcher.RunAsync(() => ApplyClientAppInfoState(appSettings.IsSetClientAppInfo)).ConfigureAwait(false);
+            var appSettings = default(AppSettings);
+            await ExecuteStartupActionAsync(
+                LocalizedText.Get("ViewModels.MainWindowVm.LoadingAppSettings"),
+                async () =>
+                {
+                    appSettings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
+                    _loginSessionStateMachine.UpdateSettings(appSettings);
+                    await _uiDispatcher.RunAsync(() => ApplyClientAppInfoState(appSettings.IsSetClientAppInfo)).ConfigureAwait(false);
+                }).ConfigureAwait(false);
             StartupPerformanceTracker.Mark("应用设置加载完成");
-            EnsureDefaultContentLoaded();
+            await ExecuteStartupActionAsync(
+                LocalizedText.Get("ViewModels.MainWindowVm.LoadingDefaultContent"),
+                () =>
+                {
+                    EnsureDefaultContentLoaded();
+                    return Task.CompletedTask;
+                }).ConfigureAwait(false);
             StartupPerformanceTracker.Mark("默认内容装载完成");
-            await _appStartupCoordinator.EnsureInitializedAsync(cancellationToken).ConfigureAwait(false);
+            await ExecuteStartupActionAsync(
+                LocalizedText.Get("ViewModels.MainWindowVm.InitializingDatabase"),
+                reportLoadingAsync => _appStartupCoordinator.EnsureInitializedAsync(reportLoadingAsync, cancellationToken)).ConfigureAwait(false);
             StartupPerformanceTracker.Mark("启动协调器初始化完成");
+        }
 
-            if (!IsClientAppInfoConfigured)
+        private async Task ExecuteStartupActionAsync(string loadingText, Func<Task> action)
+        {
+            await BeginStartupBusyAsync(loadingText).ConfigureAwait(false);
+            try
             {
-                await _plcStartupConnectionService.EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
-                StartupPerformanceTracker.Mark("首屏前PLC启动连接检查完成（未配置客户端信息）");
+                await action().ConfigureAwait(false);
+            }
+            finally
+            {
+                await EndStartupBusyAsync().ConfigureAwait(false);
+            }
+        }
+
+        private async Task ExecuteStartupActionAsync(string initialLoadingText, Func<Func<string, Task>, Task> action)
+        {
+            await BeginStartupBusyAsync(initialLoadingText).ConfigureAwait(false);
+            try
+            {
+                await action(UpdateStartupLoadingTextAsync).ConfigureAwait(false);
+            }
+            finally
+            {
+                await EndStartupBusyAsync().ConfigureAwait(false);
+            }
+        }
+
+        private async Task BeginStartupBusyAsync(string loadingText)
+        {
+            await _uiDispatcher.RunAsync(() => SetStartupBusyState(true, loadingText)).ConfigureAwait(false);
+            await _uiDispatcher.RenderAsync().ConfigureAwait(false);
+        }
+
+        private async Task UpdateStartupLoadingTextAsync(string loadingText)
+        {
+            await _uiDispatcher.RunAsync(() => SetStartupBusyState(true, loadingText)).ConfigureAwait(false);
+            await _uiDispatcher.RenderAsync().ConfigureAwait(false);
+        }
+
+        private Task EndStartupBusyAsync()
+        {
+            return _uiDispatcher.RunAsync(() => SetStartupBusyState(false, string.Empty));
+        }
+
+        private void SetStartupBusyState(bool isBusy, string loadingText)
+        {
+            var hasChanged = false;
+
+            if (_isStartupBusy != isBusy)
+            {
+                _isStartupBusy = isBusy;
+                hasChanged = true;
+            }
+
+            if (!string.Equals(_startupLoadingText, loadingText, StringComparison.Ordinal))
+            {
+                _startupLoadingText = loadingText;
+                hasChanged = true;
+            }
+
+            if (!hasChanged)
+            {
                 return;
             }
 
-            using (_uiBusyService.Enter(LocalizedText.Get("Services.PlcStartupConnection.Connecting")))
-            {
-                await _plcStartupConnectionService.EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
-            }
-
-            StartupPerformanceTracker.Mark("首屏后PLC启动连接完成");
+            OnPropertyChanged(nameof(IsBusy));
+            OnPropertyChanged(nameof(IsNotBusy));
+            OnPropertyChanged(nameof(LoadingText));
+            OnPropertyChanged(nameof(HasLoadingText));
+            LogoutCommand.NotifyCanExecuteChanged();
         }
 
         private bool CanLogout() => IsLoggedIn;

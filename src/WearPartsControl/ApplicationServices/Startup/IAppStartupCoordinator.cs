@@ -2,5 +2,5 @@ namespace WearPartsControl.ApplicationServices.Startup;
 
 public interface IAppStartupCoordinator
 {
-    Task EnsureInitializedAsync(CancellationToken cancellationToken = default);
+    Task EnsureInitializedAsync(Func<string, Task>? reportLoadingAsync = null, CancellationToken cancellationToken = default);
 }

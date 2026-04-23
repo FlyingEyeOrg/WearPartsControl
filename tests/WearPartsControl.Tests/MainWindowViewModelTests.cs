@@ -358,20 +358,30 @@ public sealed class MainWindowViewModelTests : IDisposable
         {
             PendingResult = new TaskCompletionSource<PlcStartupConnectionResult>(TaskCreationOptions.RunContinuationsAsynchronously)
         };
-        var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(TimeSpan.Zero), startupConnectionService);
+        var startupCoordinator = new StubAppStartupCoordinator
+        {
+            PendingTaskSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+            LoadingMessages =
+            [
+                LocalizedText.Get("ViewModels.MainWindowVm.InitializingDatabase"),
+                LocalizedText.Get("Services.PlcStartupConnection.Connecting")
+            ]
+        };
+        var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(TimeSpan.Zero), startupConnectionService, appStartupCoordinator: startupCoordinator);
 
         var initializeTask = viewModel.InitializeAsync();
 
-    await WaitUntilAsync(() => startupConnectionService.CallCount == 1);
-    await WaitUntilAsync(() => viewModel.IsBusy);
+        await WaitUntilAsync(() => startupCoordinator.CallCount == 1);
+        await WaitUntilAsync(() => viewModel.IsBusy);
+        await WaitUntilAsync(() => viewModel.LoadingText == LocalizedText.Get("Services.PlcStartupConnection.Connecting"));
 
         Assert.True(viewModel.IsBusy);
         Assert.False(viewModel.IsNotBusy);
         Assert.Equal(LocalizedText.Get("Services.PlcStartupConnection.Connecting"), viewModel.LoadingText);
         Assert.True(viewModel.HasLoadingText);
-        Assert.Equal(1, startupConnectionService.CallCount);
+        Assert.Equal(0, startupConnectionService.CallCount);
 
-        startupConnectionService.PendingResult.SetResult(PlcStartupConnectionResult.Connected());
+        startupCoordinator.PendingTaskSource.SetResult();
         await initializeTask;
         await WaitUntilAsync(() => !viewModel.IsBusy && string.IsNullOrEmpty(viewModel.LoadingText));
 
@@ -393,12 +403,14 @@ public sealed class MainWindowViewModelTests : IDisposable
             }
         };
         var startupConnectionService = new StubPlcStartupConnectionService();
-        var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(TimeSpan.Zero), startupConnectionService);
+        var startupCoordinator = new StubAppStartupCoordinator();
+        var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(TimeSpan.Zero), startupConnectionService, appStartupCoordinator: startupCoordinator);
 
         await viewModel.InitializeAsync();
         await viewModel.InitializeAsync();
 
-        Assert.Equal(1, startupConnectionService.CallCount);
+        Assert.Equal(1, startupCoordinator.CallCount);
+        Assert.Equal(0, startupConnectionService.CallCount);
     }
 
     [Fact]
@@ -526,7 +538,8 @@ public sealed class MainWindowViewModelTests : IDisposable
         IUiBusyService uiBusyService,
         IPlcStartupConnectionService startupConnectionService,
         Func<TimeSpan, CancellationToken, Task>? delayAsync = null,
-        StubServiceProvider? serviceProvider = null)
+        StubServiceProvider? serviceProvider = null,
+        StubAppStartupCoordinator? appStartupCoordinator = null)
     {
         var stateMachine = new LoginSessionStateMachine(accessor, loginService, delayAsync);
         return new MainWindowViewModel(
@@ -538,13 +551,36 @@ public sealed class MainWindowViewModelTests : IDisposable
             startupConnectionService,
             stateMachine,
                 new StubUiDispatcher(),
-                new StubAppStartupCoordinator());
+                appStartupCoordinator ?? new StubAppStartupCoordinator());
     }
 
-            private sealed class StubAppStartupCoordinator : IAppStartupCoordinator
+    private sealed class StubAppStartupCoordinator : IAppStartupCoordinator
+    {
+        public int CallCount { get; private set; }
+
+        public TaskCompletionSource? PendingTaskSource { get; set; }
+
+        public IReadOnlyList<string> LoadingMessages { get; set; } = [];
+
+        public async Task EnsureInitializedAsync(Func<string, Task>? reportLoadingAsync = null, CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+
+            foreach (var message in LoadingMessages)
             {
-            public Task EnsureInitializedAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+                if (reportLoadingAsync is not null)
+                {
+                    await reportLoadingAsync(message);
+                }
             }
+
+            if (PendingTaskSource is not null)
+            {
+                cancellationToken.Register(() => PendingTaskSource.TrySetCanceled(cancellationToken));
+                await PendingTaskSource.Task;
+            }
+        }
+    }
 
     private sealed class StubLocalizationService : ILocalizationService
     {
