@@ -56,6 +56,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             new StubPlcConnectionTestService(),
             new PlcConnectionStatusService(),
             new StubWearPartMonitoringControlService(),
+            new UiDispatcher(),
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -121,6 +122,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             new StubPlcConnectionTestService(),
             new PlcConnectionStatusService(),
             new StubWearPartMonitoringControlService(),
+            new UiDispatcher(),
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -160,6 +162,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             new StubPlcConnectionTestService(),
             new PlcConnectionStatusService(),
             new StubWearPartMonitoringControlService(),
+            new UiDispatcher(),
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -180,6 +183,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             new StubPlcConnectionTestService(),
             new PlcConnectionStatusService(),
             new StubWearPartMonitoringControlService(),
+            new UiDispatcher(),
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -204,6 +208,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             new StubPlcConnectionTestService(),
             new PlcConnectionStatusService(),
             new StubWearPartMonitoringControlService(),
+            new UiDispatcher(),
             new UiBusyService());
         var raised = false;
         viewModel.ImportLegacyConfigurationRequested += (_, _) => raised = true;
@@ -226,6 +231,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             plcConnectionTestService,
             plcStatusService,
             monitoringControlService,
+            new UiDispatcher(),
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -254,6 +260,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             new StubPlcConnectionTestService(),
             new PlcConnectionStatusService(),
             monitoringControlService,
+            new UiDispatcher(),
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -433,24 +440,24 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
 
         public int DisableCallCount { get; private set; }
 
-        private bool _isEnabled = true;
+        public bool IsEnabled { get; set; } = true;
 
         public Task<bool> GetIsEnabledAsync(CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(_isEnabled);
+            return Task.FromResult(IsEnabled);
         }
 
         public Task EnableAsync(CancellationToken cancellationToken = default)
         {
             EnableCallCount++;
-            _isEnabled = true;
+            IsEnabled = true;
             return Task.CompletedTask;
         }
 
         public Task DisableAsync(CancellationToken cancellationToken = default)
         {
             DisableCallCount++;
-            _isEnabled = false;
+            IsEnabled = false;
             return Task.CompletedTask;
         }
     }

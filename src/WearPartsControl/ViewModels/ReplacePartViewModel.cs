@@ -19,6 +19,7 @@ public sealed class ReplacePartViewModel : ObservableObject
     private readonly IWearPartReplacementService _wearPartReplacementService;
     private readonly IToolChangeManagementService _toolChangeManagementService;
     private readonly IToolChangeSelectionService _toolChangeSelectionService;
+    private readonly IUiDispatcher _uiDispatcher;
     private readonly IUiBusyService _uiBusyService;
     private readonly List<WearPartDefinition> _allDefinitions = new();
     private bool _isWearPartMonitoringEnabled = true;
@@ -52,6 +53,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         IWearPartReplacementService wearPartReplacementService,
         IToolChangeManagementService toolChangeManagementService,
         IToolChangeSelectionService toolChangeSelectionService,
+        IUiDispatcher uiDispatcher,
         IUiBusyService uiBusyService)
     {
         _appSettingsService = appSettingsService;
@@ -60,6 +62,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         _wearPartReplacementService = wearPartReplacementService;
         _toolChangeManagementService = toolChangeManagementService;
         _toolChangeSelectionService = toolChangeSelectionService;
+        _uiDispatcher = uiDispatcher;
         _uiBusyService = uiBusyService;
         _appSettingsService.SettingsSaved += OnAppSettingsSaved;
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync(), CanRefresh);
@@ -279,11 +282,14 @@ public sealed class ReplacePartViewModel : ObservableObject
 
     private void OnAppSettingsSaved(object? sender, AppSettings settings)
     {
-        ApplyWearPartMonitoringStatus(settings.IsWearPartMonitoringEnabled);
-        if (!settings.IsWearPartMonitoringEnabled)
+        _uiDispatcher.Run(() =>
         {
-            StatusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked");
-        }
+            ApplyWearPartMonitoringStatus(settings.IsWearPartMonitoringEnabled);
+            if (!settings.IsWearPartMonitoringEnabled)
+            {
+                StatusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked");
+            }
+        });
     }
 
     private void ApplyWearPartMonitoringStatus(bool isEnabled)

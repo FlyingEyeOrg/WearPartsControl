@@ -22,6 +22,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     private readonly IPlcConnectionTestService _plcConnectionTestService;
     private readonly IPlcConnectionStatusService _plcConnectionStatusService;
     private readonly IWearPartMonitoringControlService _wearPartMonitoringControlService;
+    private readonly IUiDispatcher _uiDispatcher;
     private readonly IUiBusyService _uiBusyService;
     private readonly List<SiteFactoryOption> _siteFactoryOptions = new();
     private Guid? _clientAppConfigurationId;
@@ -53,6 +54,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         IPlcConnectionTestService plcConnectionTestService,
         IPlcConnectionStatusService plcConnectionStatusService,
         IWearPartMonitoringControlService wearPartMonitoringControlService,
+        IUiDispatcher uiDispatcher,
         IUiBusyService uiBusyService)
     {
         _clientAppInfoService = clientAppInfoService;
@@ -61,6 +63,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         _plcConnectionTestService = plcConnectionTestService;
         _plcConnectionStatusService = plcConnectionStatusService;
         _wearPartMonitoringControlService = wearPartMonitoringControlService;
+        _uiDispatcher = uiDispatcher;
         _uiBusyService = uiBusyService;
         SaveCommand = new AsyncRelayCommand(SaveAsync, CanSaveCommand);
         ImportLegacyConfigurationCommand = new RelayCommand(RequestImportLegacyConfiguration, CanImportLegacyConfigurationCommand);
@@ -725,9 +728,12 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             return;
         }
 
-        OnPropertyChanged(nameof(IsPlcConnected));
-        OnPropertyChanged(nameof(IsTestPlcConnectionEnabled));
-        TestPlcConnectionCommand.NotifyCanExecuteChanged();
+        _uiDispatcher.Run(() =>
+        {
+            OnPropertyChanged(nameof(IsPlcConnected));
+            OnPropertyChanged(nameof(IsTestPlcConnectionEnabled));
+            TestPlcConnectionCommand.NotifyCanExecuteChanged();
+        });
     }
 
     private void NotifyOperationStateChanged()

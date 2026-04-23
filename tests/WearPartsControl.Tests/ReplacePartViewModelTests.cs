@@ -138,6 +138,39 @@ public sealed class ReplacePartViewModelTests
     }
 
     [Fact]
+    public async Task SettingsSaved_ShouldUseUiDispatcherForMonitoringStatusUpdate()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                ResourceNumber = "RES-01",
+                IsWearPartMonitoringEnabled = true
+            }
+        };
+        var uiDispatcher = new TrackingUiDispatcher();
+        var viewModel = new ReplacePartViewModel(
+            appSettingsService,
+            new StubClientAppInfoService(),
+            new StubWearPartManagementService(),
+            new StubWearPartReplacementService(),
+            new StubToolChangeManagementService(),
+            new StubToolChangeSelectionService(),
+            uiDispatcher,
+            new UiBusyService(TimeSpan.Zero));
+
+        await appSettingsService.SaveAsync(new AppSettings
+        {
+            ResourceNumber = "RES-01",
+            IsWearPartMonitoringEnabled = false
+        });
+
+        Assert.Equal(1, uiDispatcher.RunCount);
+        Assert.False(viewModel.IsWearPartMonitoringEnabled);
+        Assert.Equal(LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked"), viewModel.StatusMessage);
+    }
+
+    [Fact]
     public async Task ReplaceCommand_WhenMonitoringDisabled_ShouldNotBeEnabled()
     {
         var definition = new WearPartDefinition
@@ -178,6 +211,7 @@ public sealed class ReplacePartViewModelTests
             },
             new StubToolChangeManagementService(),
             new StubToolChangeSelectionService(),
+            new UiDispatcher(),
             new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
@@ -242,6 +276,7 @@ public sealed class ReplacePartViewModelTests
             replacementService,
             new StubToolChangeManagementService(),
             new StubToolChangeSelectionService(),
+            new UiDispatcher(),
             new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
@@ -302,6 +337,7 @@ public sealed class ReplacePartViewModelTests
             replacementService,
             new StubToolChangeManagementService(),
             new StubToolChangeSelectionService(),
+            new UiDispatcher(),
             new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
@@ -355,6 +391,7 @@ public sealed class ReplacePartViewModelTests
             },
             toolChangeManagementService,
             toolSelectionService,
+            new UiDispatcher(),
             new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
@@ -404,6 +441,7 @@ public sealed class ReplacePartViewModelTests
             },
             toolChangeManagementService,
             toolSelectionService,
+            new UiDispatcher(),
             new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
@@ -420,7 +458,30 @@ public sealed class ReplacePartViewModelTests
             new StubWearPartReplacementService(),
             new StubToolChangeManagementService(),
             new StubToolChangeSelectionService(),
+            new UiDispatcher(),
             new UiBusyService(TimeSpan.Zero));
+    }
+
+    private sealed class TrackingUiDispatcher : IUiDispatcher
+    {
+        public int RunCount { get; private set; }
+
+        public void Run(Action action)
+        {
+            RunCount++;
+            action();
+        }
+
+        public Task RunAsync(Action action, System.Windows.Threading.DispatcherPriority priority = System.Windows.Threading.DispatcherPriority.Normal)
+        {
+            Run(action);
+            return Task.CompletedTask;
+        }
+
+        public Task RenderAsync()
+        {
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class StubToolChangeManagementService : IToolChangeManagementService
