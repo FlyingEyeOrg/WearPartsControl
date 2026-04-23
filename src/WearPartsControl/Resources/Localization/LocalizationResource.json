@@ -280,6 +280,7 @@
       "WarningBeforeShutdownWindowRequired": "{0} replacement is only allowed after reaching warning lifetime and before reaching shutdown lifetime.",
       "BarcodeAlreadyUsed": "Wear part {0} already has a replacement record with barcode {1}, so it cannot be reused.",
       "BarcodeDuplicated": "Barcode already exists. Please use another barcode.",
+      "ReusedPartBlockedAfterNormalReplacement": "Old part barcode {0} was removed by normal end-of-life replacement and is permanently blocked from being installed on the current equipment again.",
       "ReusedPartReachedShutdownLifetime": "The old wear part has already reached shutdown lifetime and cannot be installed on the current equipment again.",
       "ToolCodeRequired": "The current procedure requires a tool code before replacement.",
       "ToolCodeMismatch": "The replacement barcode does not contain the required tool validation code [{0}].",

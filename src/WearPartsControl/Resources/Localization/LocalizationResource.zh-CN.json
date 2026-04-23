@@ -280,6 +280,7 @@
       "WarningBeforeShutdownWindowRequired": "“{0}”只允许在达到预警寿命后、达到停机寿命前执行。",
       "BarcodeAlreadyUsed": "易损件 {0} 已存在条码 {1} 的更换记录，不允许重复使用。",
       "BarcodeDuplicated": "条码重复，请更换其他条码。",
+      "ReusedPartBlockedAfterNormalReplacement": "旧件条码 {0} 曾因“寿命到期，正常更换”下线，已永久禁止重新更换到当前设备。",
       "ReusedPartReachedShutdownLifetime": "旧件寿命已达到停机值，不允许重新更换到当前设备。",
       "ToolCodeRequired": "当前工序要求先输入或选择工具编码。",
       "ToolCodeMismatch": "进行更换的刀编号不包含校验编号【{0}】，请确认。",

@@ -101,8 +101,6 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
         if (guardContext.LatestRemovalRecord is not null)
         {
             await WearPartPlcAccessor.WriteCurrentValueAsync(_plcOperationPipeline, PlcReplacementPipelineOperations.WriteCurrentValue, definition.CurrentValueAddress, definition.CurrentValueDataType, guardContext.CurrentValue, cancellationToken).ConfigureAwait(false);
-            await WearPartPlcAccessor.WriteCurrentValueAsync(_plcOperationPipeline, PlcReplacementPipelineOperations.WriteWarningValue, definition.WarningValueAddress, definition.WarningValueDataType, guardContext.WarningValue, cancellationToken).ConfigureAwait(false);
-            await WearPartPlcAccessor.WriteCurrentValueAsync(_plcOperationPipeline, PlcReplacementPipelineOperations.WriteDefinitionShutdownValue, definition.ShutdownValueAddress, definition.ShutdownValueDataType, guardContext.ShutdownValue, cancellationToken).ConfigureAwait(false);
             guardContext.PlcWriteValue = guardContext.CurrentValue;
         }
         else if (HasAddress(definition.PlcZeroClearAddress))
