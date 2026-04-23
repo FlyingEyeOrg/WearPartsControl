@@ -55,7 +55,7 @@
                 <CheckBox Grid.Column="1"
                           VerticalAlignment="Center"
                           IsEnabled="False"
-                          IsChecked="{Binding ComNotificationEnabled}" />
+                          IsChecked="{Binding ComNotificationEnabled, Mode=OneWay}" />
             </Grid>
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>
