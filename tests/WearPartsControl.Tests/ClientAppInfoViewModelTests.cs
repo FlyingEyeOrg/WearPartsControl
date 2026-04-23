@@ -219,6 +219,33 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task ImportLegacyConfigurationCommand_ShouldOnlyEnableWhenMonitoringDisabled()
+    {
+        var monitoringControlService = new StubWearPartMonitoringControlService();
+        var viewModel = new ClientAppInfoViewModel(
+            new StubClientAppInfoService(),
+            new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
+            new StubLegacyConfigurationImportService(),
+            new StubPlcConnectionTestService(),
+            new PlcConnectionStatusService(),
+            monitoringControlService,
+            new UiDispatcher(),
+            new UiBusyService());
+
+        await viewModel.InitializeAsync();
+
+        Assert.True(viewModel.IsWearPartMonitoringEnabled);
+        Assert.False(viewModel.IsImportLegacyConfigurationEnabled);
+        Assert.False(viewModel.ImportLegacyConfigurationCommand.CanExecute(null));
+
+        await viewModel.ToggleWearPartMonitoringCommand.ExecuteAsync(null);
+
+        Assert.False(viewModel.IsWearPartMonitoringEnabled);
+        Assert.True(viewModel.IsImportLegacyConfigurationEnabled);
+        Assert.True(viewModel.ImportLegacyConfigurationCommand.CanExecute(null));
+    }
+
+    [Fact]
     public async Task TestPlcConnectionCommand_ShouldUpdateStatusWhenConnectionSucceeds()
     {
         var plcStatusService = new PlcConnectionStatusService();

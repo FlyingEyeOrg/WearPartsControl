@@ -141,7 +141,9 @@ public sealed class ClientAppInfoViewModel : ObservableObject
                 OnPropertyChanged(nameof(WearPartMonitoringButtonText));
                 OnPropertyChanged(nameof(WearPartMonitoringStatusText));
                 OnPropertyChanged(nameof(WearPartMonitoringStatusBackground));
+                OnPropertyChanged(nameof(IsImportLegacyConfigurationEnabled));
                 OnPropertyChanged(nameof(IsTestPlcConnectionEnabled));
+                ImportLegacyConfigurationCommand.NotifyCanExecuteChanged();
                 TestPlcConnectionCommand.NotifyCanExecuteChanged();
             }
         }
@@ -372,7 +374,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
 
     private bool CanImportLegacyConfigurationCommand()
     {
-        return !IsBusy;
+        return !IsBusy && !IsWearPartMonitoringEnabled;
     }
 
     private bool CanTestPlcConnectionCommand()
