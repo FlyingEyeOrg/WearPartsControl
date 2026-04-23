@@ -738,12 +738,37 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             return;
         }
 
-        _uiDispatcher.Run(() =>
+        _ = RefreshPlcDependentUiStateAsync();
+    }
+
+    private async Task RefreshPlcDependentUiStateAsync()
+    {
+        bool? monitoringEnabled = null;
+
+        try
         {
+            monitoringEnabled = await _wearPartMonitoringControlService.GetIsEnabledAsync().ConfigureAwait(false);
+        }
+        catch
+        {
+            // 刷新监控状态失败不应阻断 PLC 连接状态自身的 UI 刷新。
+        }
+
+        await _uiDispatcher.RunAsync(() =>
+        {
+            if (monitoringEnabled.HasValue)
+            {
+                IsWearPartMonitoringEnabled = monitoringEnabled.Value;
+            }
+
             OnPropertyChanged(nameof(IsPlcConnected));
+            OnPropertyChanged(nameof(IsImportLegacyConfigurationEnabled));
             OnPropertyChanged(nameof(IsTestPlcConnectionEnabled));
+            OnPropertyChanged(nameof(IsToggleWearPartMonitoringEnabled));
+            ImportLegacyConfigurationCommand.NotifyCanExecuteChanged();
             TestPlcConnectionCommand.NotifyCanExecuteChanged();
-        });
+            ToggleWearPartMonitoringCommand.NotifyCanExecuteChanged();
+        }).ConfigureAwait(false);
     }
 
     private void NotifyOperationStateChanged()

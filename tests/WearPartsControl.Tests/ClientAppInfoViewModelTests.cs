@@ -253,7 +253,8 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
     public async Task TestPlcConnectionCommand_ShouldUpdateStatusWhenConnectionSucceeds()
     {
         var plcStatusService = new PlcConnectionStatusService();
-        var plcConnectionTestService = new StubPlcConnectionTestService(plcStatusService);
+        var uiDispatcher = new TrackingUiDispatcher();
+        var plcConnectionTestService = new StubPlcConnectionTestService(plcStatusService, () => uiDispatcher.RenderCount);
         var monitoringControlService = new StubWearPartMonitoringControlService();
         var viewModel = new ClientAppInfoViewModel(
             new StubClientAppInfoService(),
@@ -262,7 +263,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             plcConnectionTestService,
             plcStatusService,
             monitoringControlService,
-            new UiDispatcher(),
+            uiDispatcher,
             new UiBusyService());
 
         await viewModel.InitializeAsync();
@@ -277,7 +278,36 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         await viewModel.TestPlcConnectionCommand.ExecuteAsync(null);
 
         Assert.True(plcConnectionTestService.WasCalled);
+        Assert.True(plcConnectionTestService.RenderCountAtCall >= 2);
         Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.PlcConnectionTestSucceeded"), viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task PlcConnectionFailure_ShouldRefreshWearPartMonitoringUiState()
+    {
+        var plcStatusService = new PlcConnectionStatusService();
+        var monitoringControlService = new StubWearPartMonitoringControlService { IsEnabled = true };
+        var viewModel = new ClientAppInfoViewModel(
+            new StubClientAppInfoService(),
+            new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
+            new StubLegacyConfigurationImportService(),
+            new StubPlcConnectionTestService(plcStatusService),
+            plcStatusService,
+            monitoringControlService,
+            new UiDispatcher(),
+            new UiBusyService());
+
+        await viewModel.InitializeAsync();
+        Assert.True(viewModel.IsWearPartMonitoringEnabled);
+
+        monitoringControlService.IsEnabled = false;
+        plcStatusService.Set(PlcStartupConnectionResult.Failed("连接失败：测试异常"));
+        await Task.Delay(20);
+
+        Assert.False(viewModel.IsWearPartMonitoringEnabled);
+        Assert.Same(System.Windows.Media.Brushes.DimGray, viewModel.WearPartMonitoringStatusBackground);
+        Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringDisabledStatus"), viewModel.WearPartMonitoringStatusText);
+        Assert.True(viewModel.IsTestPlcConnectionEnabled);
     }
 
     [Fact]
@@ -450,17 +480,22 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
     private sealed class StubPlcConnectionTestService : IPlcConnectionTestService
     {
         private readonly IPlcConnectionStatusService? _plcConnectionStatusService;
+        private readonly Func<int>? _renderCountProvider;
 
-        public StubPlcConnectionTestService(IPlcConnectionStatusService? plcConnectionStatusService = null)
+        public StubPlcConnectionTestService(IPlcConnectionStatusService? plcConnectionStatusService = null, Func<int>? renderCountProvider = null)
         {
             _plcConnectionStatusService = plcConnectionStatusService;
+            _renderCountProvider = renderCountProvider;
         }
 
         public bool WasCalled { get; private set; }
 
+        public int RenderCountAtCall { get; private set; }
+
         public Task<PlcStartupConnectionResult> TestAsync(ClientAppInfoModel clientAppInfo, CancellationToken cancellationToken = default)
         {
             WasCalled = true;
+            RenderCountAtCall = _renderCountProvider?.Invoke() ?? 0;
             var result = PlcStartupConnectionResult.Connected(LocalizedText.Get("ViewModels.ClientAppInfoVm.PlcConnectionTestSucceeded"));
             _plcConnectionStatusService?.Set(result);
             return Task.FromResult(result);
