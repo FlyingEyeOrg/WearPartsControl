@@ -3,7 +3,6 @@ using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
-using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.SpacerManagement;
@@ -44,6 +43,7 @@ public sealed class LegacyConfigurationImportService : ILegacyConfigurationImpor
 
         var legacyAppSetting = await ReadJsonAsync<LegacyAppSetting>(Path.Combine(legacyJsonDirectory, "AppSetting.json"), cancellationToken).ConfigureAwait(false);
         var legacyAppConfig = await ReadJsonAsync<LegacyAppConfig>(Path.Combine(legacyJsonDirectory, "AppConfig.json"), cancellationToken).ConfigureAwait(false);
+        var legacyComNotification = await ReadLegacyComNotificationAsync(legacyJsonDirectory, legacyRootDirectory, cancellationToken).ConfigureAwait(false);
         var legacySpacerValidation = await ReadLegacySpacerValidationAsync(legacyJsonDirectory, legacyRootDirectory, cancellationToken).ConfigureAwait(false);
         var legacyMhrInfos = await ReadJsonAsync<LegacyMhrInfosConfig>(Path.Combine(legacyJsonDirectory, "MHRInfos.json"), cancellationToken).ConfigureAwait(false);
         var legacyMhr = legacyMhrInfos is null
@@ -99,8 +99,9 @@ public sealed class LegacyConfigurationImportService : ILegacyConfigurationImpor
         if (legacyAppConfig is not null)
         {
             result.ImportedUserConfig = await ImportUserConfigAsync(legacyAppConfig, cancellationToken).ConfigureAwait(false);
-            result.ImportedComNotification = await ImportComNotificationAsync(legacyAppConfig, cancellationToken).ConfigureAwait(false);
         }
+
+        result.ImportedComNotification = await ImportComNotificationAsync(legacyAppConfig, legacyComNotification, cancellationToken).ConfigureAwait(false);
 
         if (legacyMhrInfos is not null || legacyMhr is not null)
         {
@@ -169,6 +170,25 @@ public sealed class LegacyConfigurationImportService : ILegacyConfigurationImpor
         return null;
     }
 
+    private static async Task<LegacyComNotificationConfig?> ReadLegacyComNotificationAsync(string legacyJsonDirectory, string legacyRootDirectory, CancellationToken cancellationToken)
+    {
+        foreach (var path in new[]
+                 {
+                     Path.Combine(legacyJsonDirectory, "com-notification.json"),
+                     Path.Combine(legacyRootDirectory, "com-notification.json"),
+                     Path.Combine(legacyRootDirectory, "PrivateData", "Settings", "com-notification.json")
+                 })
+        {
+            var config = await ReadJsonAsync<LegacyComNotificationConfig>(path, cancellationToken).ConfigureAwait(false);
+            if (config is not null)
+            {
+                return config;
+            }
+        }
+
+        return null;
+    }
+
     private async Task<bool> ImportUserConfigAsync(LegacyAppConfig legacyAppConfig, CancellationToken cancellationToken)
     {
         var userConfig = await _saveInfoStore.ReadAsync<UserConfigModel>(cancellationToken).ConfigureAwait(false);
@@ -204,35 +224,54 @@ public sealed class LegacyConfigurationImportService : ILegacyConfigurationImpor
         return true;
     }
 
-    private async Task<bool> ImportComNotificationAsync(LegacyAppConfig legacyAppConfig, CancellationToken cancellationToken)
+    private async Task<bool> ImportComNotificationAsync(LegacyAppConfig? legacyAppConfig, LegacyComNotificationConfig? legacyComNotification, CancellationToken cancellationToken)
     {
-        var accessToken = Normalize(legacyAppConfig.AccessToken);
-        var secret = Normalize(legacyAppConfig.Secret);
-        var userWorkId = Normalize(legacyAppConfig.UserWorkId);
-        if (string.IsNullOrWhiteSpace(accessToken)
-            && string.IsNullOrWhiteSpace(secret)
-            && string.IsNullOrWhiteSpace(userWorkId))
+        var userConfig = await _saveInfoStore.ReadAsync<UserConfigModel>(cancellationToken).ConfigureAwait(false);
+        var hasChanges = false;
+
+        var accessToken = Normalize(legacyAppConfig?.AccessToken);
+        if (!string.IsNullOrWhiteSpace(accessToken))
+        {
+            userConfig.ComAccessToken = accessToken;
+            hasChanges = true;
+        }
+
+        var secret = Normalize(legacyAppConfig?.Secret);
+        if (!string.IsNullOrWhiteSpace(secret))
+        {
+            userConfig.ComSecret = secret;
+            hasChanges = true;
+        }
+
+        var userWorkId = Normalize(legacyAppConfig?.UserWorkId);
+        if (!string.IsNullOrWhiteSpace(userWorkId))
+        {
+            if (string.IsNullOrWhiteSpace(userConfig.MeResponsibleWorkId))
+            {
+                userConfig.MeResponsibleWorkId = userWorkId;
+                hasChanges = true;
+            }
+        }
+
+        if (legacyComNotification is not null)
+        {
+            userConfig.ComNotificationEnabled = legacyComNotification.Enabled;
+            userConfig.ComPushUrl = Normalize(legacyComNotification.PushUrl, UserConfigModel.DefaultComPushUrl);
+            userConfig.ComDeIpaasKeyAuth = Normalize(legacyComNotification.DeIpaasKeyAuth, UserConfigModel.DefaultComDeIpaasKeyAuth);
+            userConfig.ComAgentId = legacyComNotification.AgentId > 0 ? legacyComNotification.AgentId : UserConfigModel.DefaultComAgentId;
+            userConfig.ComGroupTemplateId = legacyComNotification.GroupTemplateId > 0 ? legacyComNotification.GroupTemplateId : UserConfigModel.DefaultComGroupTemplateId;
+            userConfig.ComWorkTemplateId = legacyComNotification.WorkTemplateId > 0 ? legacyComNotification.WorkTemplateId : UserConfigModel.DefaultComWorkTemplateId;
+            userConfig.ComUserType = Normalize(legacyComNotification.UserType, UserConfigModel.DefaultComUserType);
+            userConfig.ComTimeoutMilliseconds = legacyComNotification.TimeoutMilliseconds > 0 ? legacyComNotification.TimeoutMilliseconds : UserConfigModel.DefaultComTimeoutMilliseconds;
+            hasChanges = true;
+        }
+
+        if (!hasChanges)
         {
             return false;
         }
 
-        var options = await _saveInfoStore.ReadAsync<ComNotificationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
-        if (!string.IsNullOrWhiteSpace(accessToken))
-        {
-            options.AccessToken = accessToken;
-        }
-
-        if (!string.IsNullOrWhiteSpace(secret))
-        {
-            options.Secret = secret;
-        }
-
-        if (!string.IsNullOrWhiteSpace(userWorkId))
-        {
-            options.DefaultUserWorkId = userWorkId;
-        }
-
-        await _saveInfoStore.WriteAsync(options, cancellationToken).ConfigureAwait(false);
+        await _saveInfoStore.WriteAsync(userConfig, cancellationToken).ConfigureAwait(false);
         return true;
     }
 
@@ -484,5 +523,24 @@ public sealed class LegacyConfigurationImportService : ILegacyConfigurationImpor
         public string LoginPassword { get; set; } = string.Empty;
 
         public string GetListUrl { get; set; } = string.Empty;
+    }
+
+    private sealed class LegacyComNotificationConfig
+    {
+        public bool Enabled { get; set; }
+
+        public string PushUrl { get; set; } = string.Empty;
+
+        public string DeIpaasKeyAuth { get; set; } = string.Empty;
+
+        public long AgentId { get; set; }
+
+        public long GroupTemplateId { get; set; }
+
+        public long WorkTemplateId { get; set; }
+
+        public string UserType { get; set; } = string.Empty;
+
+        public int TimeoutMilliseconds { get; set; }
     }
 }

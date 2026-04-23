@@ -51,6 +51,90 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center">启用 COM 通知：</TextBlock>
+                <CheckBox Grid.Column="1"
+                          VerticalAlignment="Center"
+                          IsEnabled="False"
+                          IsChecked="{Binding ComNotificationEnabled}" />
+            </Grid>
+            <Grid Margin="8 8 8 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center">PushUrl：</TextBlock>
+                <TextBox Grid.Column="1"
+                         IsReadOnly="True"
+                         Style="{StaticResource TextBoxExtend}"
+                         Text="{Binding ComPushUrl, Mode=OneWay}" />
+            </Grid>
+            <Grid Margin="8 8 8 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center">DeIpaasKeyAuth：</TextBlock>
+                <TextBox Grid.Column="1"
+                         IsReadOnly="True"
+                         Style="{StaticResource TextBoxExtend}"
+                         Text="{Binding ComDeIpaasKeyAuth, Mode=OneWay}" />
+            </Grid>
+            <Grid Margin="8 8 8 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center">AgentId：</TextBlock>
+                <TextBox Grid.Column="1"
+                         IsReadOnly="True"
+                         Style="{StaticResource TextBoxExtend}"
+                         Text="{Binding ComAgentId, Mode=OneWay}" />
+            </Grid>
+            <Grid Margin="8 8 8 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center">GroupTemplateId：</TextBlock>
+                <TextBox Grid.Column="1"
+                         IsReadOnly="True"
+                         Style="{StaticResource TextBoxExtend}"
+                         Text="{Binding ComGroupTemplateId, Mode=OneWay}" />
+            </Grid>
+            <Grid Margin="8 8 8 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center">WorkTemplateId：</TextBlock>
+                <TextBox Grid.Column="1"
+                         IsReadOnly="True"
+                         Style="{StaticResource TextBoxExtend}"
+                         Text="{Binding ComWorkTemplateId, Mode=OneWay}" />
+            </Grid>
+            <Grid Margin="8 8 8 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center">UserType：</TextBlock>
+                <TextBox Grid.Column="1"
+                         IsReadOnly="True"
+                         Style="{StaticResource TextBoxExtend}"
+                         Text="{Binding ComUserType, Mode=OneWay}" />
+            </Grid>
+            <Grid Margin="8 8 8 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock HorizontalAlignment="Left"
                            VerticalAlignment="Center">ComAccessToken：</TextBlock>
                 <TextBox Grid.Column="1"
                          Style="{StaticResource TextBoxExtend}"

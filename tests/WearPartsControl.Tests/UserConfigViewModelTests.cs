@@ -20,6 +20,14 @@ public sealed class UserConfigViewModelTests
                 PrdResponsibleWorkId = "PRD001",
                 ComAccessToken = "token",
                 ComSecret = "secret",
+                ComNotificationEnabled = true,
+                ComPushUrl = "https://example.com/push",
+                ComDeIpaasKeyAuth = "auth-key",
+                ComAgentId = 1642112457,
+                ComGroupTemplateId = 303686603505665,
+                ComWorkTemplateId = 303717003821057,
+                ComUserType = "ding",
+                ComTimeoutMilliseconds = 10000,
                 SpacerValidationEnabled = false,
                 SpacerValidationUrl = "https://spacer/api",
                 SpacerValidationTimeoutMilliseconds = 8000,
@@ -36,6 +44,13 @@ public sealed class UserConfigViewModelTests
         Assert.Equal("PRD001", viewModel.PrdResponsibleWorkId);
         Assert.Equal("token", viewModel.ComAccessToken);
         Assert.Equal("secret", viewModel.ComSecret);
+        Assert.True(viewModel.ComNotificationEnabled);
+        Assert.Equal("https://example.com/push", viewModel.ComPushUrl);
+        Assert.Equal("auth-key", viewModel.ComDeIpaasKeyAuth);
+        Assert.Equal(1642112457, viewModel.ComAgentId);
+        Assert.Equal(303686603505665, viewModel.ComGroupTemplateId);
+        Assert.Equal(303717003821057, viewModel.ComWorkTemplateId);
+        Assert.Equal("ding", viewModel.ComUserType);
         Assert.False(viewModel.SpacerValidationEnabled);
         Assert.Equal("https://spacer/api", viewModel.SpacerValidationUrl);
         Assert.Equal("8000", viewModel.SpacerValidationTimeoutMilliseconds);
@@ -121,6 +136,14 @@ public sealed class UserConfigViewModelTests
                 PrdResponsibleWorkId = Current.PrdResponsibleWorkId,
                 ComAccessToken = Current.ComAccessToken,
                 ComSecret = Current.ComSecret,
+                ComNotificationEnabled = Current.ComNotificationEnabled,
+                ComPushUrl = Current.ComPushUrl,
+                ComDeIpaasKeyAuth = Current.ComDeIpaasKeyAuth,
+                ComAgentId = Current.ComAgentId,
+                ComGroupTemplateId = Current.ComGroupTemplateId,
+                ComWorkTemplateId = Current.ComWorkTemplateId,
+                ComUserType = Current.ComUserType,
+                ComTimeoutMilliseconds = Current.ComTimeoutMilliseconds,
                 SpacerValidationEnabled = Current.SpacerValidationEnabled,
                 SpacerValidationUrl = Current.SpacerValidationUrl,
                 SpacerValidationTimeoutMilliseconds = Current.SpacerValidationTimeoutMilliseconds,
@@ -138,6 +161,14 @@ public sealed class UserConfigViewModelTests
                 PrdResponsibleWorkId = config.PrdResponsibleWorkId,
                 ComAccessToken = config.ComAccessToken,
                 ComSecret = config.ComSecret,
+                ComNotificationEnabled = config.ComNotificationEnabled,
+                ComPushUrl = config.ComPushUrl,
+                ComDeIpaasKeyAuth = config.ComDeIpaasKeyAuth,
+                ComAgentId = config.ComAgentId,
+                ComGroupTemplateId = config.ComGroupTemplateId,
+                ComWorkTemplateId = config.ComWorkTemplateId,
+                ComUserType = config.ComUserType,
+                ComTimeoutMilliseconds = config.ComTimeoutMilliseconds,
                 SpacerValidationEnabled = config.SpacerValidationEnabled,
                 SpacerValidationUrl = config.SpacerValidationUrl,
                 SpacerValidationTimeoutMilliseconds = config.SpacerValidationTimeoutMilliseconds,

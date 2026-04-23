@@ -22,6 +22,13 @@ public sealed class UserConfigViewModel : ObservableObject
     private string _prdResponsibleWorkId = string.Empty;
     private string _comAccessToken = string.Empty;
     private string _comSecret = string.Empty;
+    private bool _comNotificationEnabled;
+    private string _comPushUrl = string.Empty;
+    private string _comDeIpaasKeyAuth = string.Empty;
+    private long _comAgentId;
+    private long _comGroupTemplateId;
+    private long _comWorkTemplateId;
+    private string _comUserType = string.Empty;
     private bool _spacerValidationEnabled = true;
     private string _spacerValidationUrl = string.Empty;
     private string _spacerValidationTimeoutMilliseconds = UserConfig.DefaultSpacerValidationTimeoutMilliseconds.ToString(CultureInfo.InvariantCulture);
@@ -123,6 +130,48 @@ public sealed class UserConfigViewModel : ObservableObject
                 UpdateDirtyState();
             }
         }
+    }
+
+    public bool ComNotificationEnabled
+    {
+        get => _comNotificationEnabled;
+        private set => SetProperty(ref _comNotificationEnabled, value);
+    }
+
+    public string ComPushUrl
+    {
+        get => _comPushUrl;
+        private set => SetProperty(ref _comPushUrl, value);
+    }
+
+    public string ComDeIpaasKeyAuth
+    {
+        get => _comDeIpaasKeyAuth;
+        private set => SetProperty(ref _comDeIpaasKeyAuth, value);
+    }
+
+    public long ComAgentId
+    {
+        get => _comAgentId;
+        private set => SetProperty(ref _comAgentId, value);
+    }
+
+    public long ComGroupTemplateId
+    {
+        get => _comGroupTemplateId;
+        private set => SetProperty(ref _comGroupTemplateId, value);
+    }
+
+    public long ComWorkTemplateId
+    {
+        get => _comWorkTemplateId;
+        private set => SetProperty(ref _comWorkTemplateId, value);
+    }
+
+    public string ComUserType
+    {
+        get => _comUserType;
+        private set => SetProperty(ref _comUserType, value);
     }
 
     public bool SpacerValidationEnabled
@@ -300,6 +349,14 @@ public sealed class UserConfigViewModel : ObservableObject
             PrdResponsibleWorkId = PrdResponsibleWorkId,
             ComAccessToken = ComAccessToken,
             ComSecret = ComSecret,
+            ComNotificationEnabled = ComNotificationEnabled,
+            ComPushUrl = ComPushUrl,
+            ComDeIpaasKeyAuth = ComDeIpaasKeyAuth,
+            ComAgentId = ComAgentId,
+            ComGroupTemplateId = ComGroupTemplateId,
+            ComWorkTemplateId = ComWorkTemplateId,
+            ComUserType = ComUserType,
+            ComTimeoutMilliseconds = UserConfig.DefaultComTimeoutMilliseconds,
             SpacerValidationEnabled = SpacerValidationEnabled,
             SpacerValidationUrl = SpacerValidationUrl,
             SpacerValidationTimeoutMilliseconds = timeoutMilliseconds,
@@ -318,6 +375,13 @@ public sealed class UserConfigViewModel : ObservableObject
             PrdResponsibleWorkId = config.PrdResponsibleWorkId;
             ComAccessToken = config.ComAccessToken;
             ComSecret = config.ComSecret;
+            ComNotificationEnabled = config.ComNotificationEnabled;
+            ComPushUrl = config.ComPushUrl;
+            ComDeIpaasKeyAuth = config.ComDeIpaasKeyAuth;
+            ComAgentId = config.ComAgentId;
+            ComGroupTemplateId = config.ComGroupTemplateId;
+            ComWorkTemplateId = config.ComWorkTemplateId;
+            ComUserType = config.ComUserType;
             SpacerValidationEnabled = config.SpacerValidationEnabled;
             SpacerValidationUrl = config.SpacerValidationUrl;
             SpacerValidationTimeoutMilliseconds = config.SpacerValidationTimeoutMilliseconds.ToString(CultureInfo.InvariantCulture);
@@ -348,6 +412,13 @@ public sealed class UserConfigViewModel : ObservableObject
             PrdResponsibleWorkId?.Trim() ?? string.Empty,
             ComAccessToken?.Trim() ?? string.Empty,
             ComSecret?.Trim() ?? string.Empty,
+            ComNotificationEnabled,
+            ComPushUrl?.Trim() ?? string.Empty,
+            ComDeIpaasKeyAuth?.Trim() ?? string.Empty,
+            ComAgentId,
+            ComGroupTemplateId,
+            ComWorkTemplateId,
+            ComUserType?.Trim() ?? string.Empty,
             SpacerValidationEnabled,
             SpacerValidationUrl?.Trim() ?? string.Empty,
             SpacerValidationTimeoutMilliseconds?.Trim() ?? string.Empty,
@@ -378,6 +449,13 @@ public sealed class UserConfigViewModel : ObservableObject
         string PrdResponsibleWorkId,
         string ComAccessToken,
         string ComSecret,
+        bool ComNotificationEnabled,
+        string ComPushUrl,
+        string ComDeIpaasKeyAuth,
+        long ComAgentId,
+        long ComGroupTemplateId,
+        long ComWorkTemplateId,
+        string ComUserType,
         bool SpacerValidationEnabled,
         string SpacerValidationUrl,
         string SpacerValidationTimeoutMilliseconds,
@@ -385,6 +463,23 @@ public sealed class UserConfigViewModel : ObservableObject
         string SpacerValidationCodeSeparator,
         string SpacerValidationExpectedSegmentCount)
     {
-        public static UserConfigSnapshot Empty { get; } = new(string.Empty, string.Empty, string.Empty, string.Empty, true, string.Empty, UserConfig.DefaultSpacerValidationTimeoutMilliseconds.ToString(CultureInfo.InvariantCulture), true, UserConfig.DefaultSpacerValidationCodeSeparator, UserConfig.DefaultSpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture));
+        public static UserConfigSnapshot Empty { get; } = new(
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            false,
+            UserConfig.DefaultComPushUrl,
+            UserConfig.DefaultComDeIpaasKeyAuth,
+            UserConfig.DefaultComAgentId,
+            UserConfig.DefaultComGroupTemplateId,
+            UserConfig.DefaultComWorkTemplateId,
+            UserConfig.DefaultComUserType,
+            true,
+            string.Empty,
+            UserConfig.DefaultSpacerValidationTimeoutMilliseconds.ToString(CultureInfo.InvariantCulture),
+            true,
+            UserConfig.DefaultSpacerValidationCodeSeparator,
+            UserConfig.DefaultSpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture));
     }
 }

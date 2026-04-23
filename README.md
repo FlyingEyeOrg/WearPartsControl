@@ -117,7 +117,7 @@
 - `ResourceNumber` 用于在客户端配置中查找资源对应的 `SiteCode`，随后由登录服务完成用户认证。
 - 登录成功后，用户信息会同步到 `ICurrentUserAccessor`，主窗口右上角 `LoginBox` 会自动刷新工号、权限与登录按钮状态。
 - 登录服务会将 MHR 返回的用户目录缓存到 `PrivateData/Settings/mhr-user-cache.json`，默认缓存 1 天，可通过 `mhrinfo.json` 的 `CacheDays` 调整。
-- `user-config.json` 当前统一承载负责人、COM 凭据以及垫片校验配置；升级后如果目录里仍有旧的 `spacer-validation.json`，系统会在首次读取用户配置时自动迁移并清理旧文件。
+- `user-config.json` 当前统一承载负责人、COM 通知基础参数、COM 凭据以及垫片校验配置；升级后如果目录里仍有旧的 `com-notification.json` 或 `spacer-validation.json`，系统会在首次读取用户配置时自动迁移并清理旧文件。
 - 客户端信息页首次完成基础信息配置前，不要求用户认证；配置完成后，保存信息、导入旧项目配置、测试 PLC 连接和开启/关闭易损件监控都需要先登录认证。
 - 客户端信息页中的“测试 PLC 连接”按钮会按当前表单值直接发起连接测试；仅在未开启易损件监控时允许点击，即使当前已经连通也允许重复测试，连接成功后会同步刷新全局 PLC 连接状态。
 - 客户端信息页会以彩色状态框显式展示“易损件监控状态”；监控开关保存设置时不会再重建设备基础信息 tab。

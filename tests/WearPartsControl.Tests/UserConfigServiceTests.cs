@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.SpacerManagement;
 using WearPartsControl.ApplicationServices.UserConfig;
@@ -41,6 +42,14 @@ public sealed class UserConfigServiceTests
             Assert.Equal("PRD001", config.PrdResponsibleWorkId);
             Assert.Equal("token", config.ComAccessToken);
             Assert.Equal("secret", config.ComSecret);
+            Assert.False(config.ComNotificationEnabled);
+            Assert.Equal(UserConfig.DefaultComPushUrl, config.ComPushUrl);
+            Assert.Equal(UserConfig.DefaultComDeIpaasKeyAuth, config.ComDeIpaasKeyAuth);
+            Assert.Equal(UserConfig.DefaultComAgentId, config.ComAgentId);
+            Assert.Equal(UserConfig.DefaultComGroupTemplateId, config.ComGroupTemplateId);
+            Assert.Equal(UserConfig.DefaultComWorkTemplateId, config.ComWorkTemplateId);
+            Assert.Equal(UserConfig.DefaultComUserType, config.ComUserType);
+            Assert.Equal(UserConfig.DefaultComTimeoutMilliseconds, config.ComTimeoutMilliseconds);
             Assert.False(config.SpacerValidationEnabled);
             Assert.Equal("https://spacer/save", config.SpacerValidationUrl);
             Assert.Equal(7000, config.SpacerValidationTimeoutMilliseconds);
@@ -94,6 +103,61 @@ public sealed class UserConfigServiceTests
             var persisted = JsonSerializer.Deserialize<UserConfig>(persistedJson);
             Assert.NotNull(persisted);
             Assert.Equal("https://legacy/spacer", persisted!.SpacerValidationUrl);
+        }
+        finally
+        {
+            if (Directory.Exists(settingsDirectory))
+            {
+                Directory.Delete(settingsDirectory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task GetAsync_WhenLegacyComNotificationExists_ShouldMigrateIntoUserConfig()
+    {
+        var settingsDirectory = Path.Combine(Path.GetTempPath(), $"WearPartsControl.UserConfig.{Guid.NewGuid():N}");
+        Directory.CreateDirectory(settingsDirectory);
+
+        try
+        {
+            var store = new TypeJsonSaveInfoStore(settingsDirectory);
+            await store.WriteAsync(new ComNotificationOptionsSaveInfo
+            {
+                Enabled = true,
+                PushUrl = "https://legacy/com",
+                DeIpaasKeyAuth = "legacy-auth",
+                AgentId = 11,
+                GroupTemplateId = 22,
+                WorkTemplateId = 33,
+                UserType = "ding",
+                AccessToken = "token",
+                Secret = "secret",
+                DefaultUserWorkId = "ME001",
+                TimeoutMilliseconds = 12000
+            });
+
+            var service = new UserConfigService(store);
+
+            var config = await service.GetAsync();
+
+            Assert.True(config.ComNotificationEnabled);
+            Assert.Equal("https://legacy/com", config.ComPushUrl);
+            Assert.Equal("legacy-auth", config.ComDeIpaasKeyAuth);
+            Assert.Equal(11, config.ComAgentId);
+            Assert.Equal(22, config.ComGroupTemplateId);
+            Assert.Equal(33, config.ComWorkTemplateId);
+            Assert.Equal("ding", config.ComUserType);
+            Assert.Equal("token", config.ComAccessToken);
+            Assert.Equal("secret", config.ComSecret);
+            Assert.Equal("ME001", config.MeResponsibleWorkId);
+            Assert.Equal(12000, config.ComTimeoutMilliseconds);
+            Assert.False(store.Exists<ComNotificationOptionsSaveInfo>());
+
+            var persistedJson = await File.ReadAllTextAsync(Path.Combine(settingsDirectory, "user-config.json"));
+            var persisted = JsonSerializer.Deserialize<UserConfig>(persistedJson);
+            Assert.NotNull(persisted);
+            Assert.Equal("https://legacy/com", persisted!.ComPushUrl);
         }
         finally
         {

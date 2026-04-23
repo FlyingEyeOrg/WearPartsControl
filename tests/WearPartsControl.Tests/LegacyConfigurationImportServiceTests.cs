@@ -34,6 +34,9 @@ public sealed class LegacyConfigurationImportServiceTests
             await File.WriteAllTextAsync(Path.Combine(jsonDirectory, "AppConfig.json"), """
 {"UseUserNumber":true,"SpacerValidationUrl":"https://legacy/spacer","UserWorkId":"WU001","AccessToken":"TOKEN-001","Secret":"SECRET-001"}
 """);
+            await File.WriteAllTextAsync(Path.Combine(jsonDirectory, "com-notification.json"), """
+{"Enabled":true,"PushUrl":"https://legacy/com","DeIpaasKeyAuth":"legacy-auth","AgentId":123456,"GroupTemplateId":222222,"WorkTemplateId":333333,"UserType":"ding","TimeoutMilliseconds":12000}
+""");
             await File.WriteAllTextAsync(Path.Combine(jsonDirectory, "spacer-validation.json"), """
 {"Enabled":false,"ValidationUrl":"https://legacy/spacer-from-file","TimeoutMilliseconds":9000,"IgnoreServerCertificateErrors":false,"CodeSeparator":"-","ExpectedSegmentCount":10}
 """);
@@ -65,17 +68,21 @@ public sealed class LegacyConfigurationImportServiceTests
             Assert.Equal("WU001", userConfig.MeResponsibleWorkId);
             Assert.Equal("TOKEN-001", userConfig.ComAccessToken);
             Assert.Equal("SECRET-001", userConfig.ComSecret);
+            Assert.True(userConfig.ComNotificationEnabled);
+            Assert.Equal("https://legacy/com", userConfig.ComPushUrl);
+            Assert.Equal("legacy-auth", userConfig.ComDeIpaasKeyAuth);
+            Assert.Equal(123456, userConfig.ComAgentId);
+            Assert.Equal(222222, userConfig.ComGroupTemplateId);
+            Assert.Equal(333333, userConfig.ComWorkTemplateId);
+            Assert.Equal("ding", userConfig.ComUserType);
+            Assert.Equal(12000, userConfig.ComTimeoutMilliseconds);
             Assert.False(userConfig.SpacerValidationEnabled);
             Assert.Equal("https://legacy/spacer-from-file", userConfig.SpacerValidationUrl);
             Assert.Equal(9000, userConfig.SpacerValidationTimeoutMilliseconds);
             Assert.False(userConfig.SpacerValidationIgnoreServerCertificateErrors);
             Assert.Equal("-", userConfig.SpacerValidationCodeSeparator);
             Assert.Equal(10, userConfig.SpacerValidationExpectedSegmentCount);
-
-            var comNotification = await saveInfoStore.ReadAsync<ComNotificationOptionsSaveInfo>();
-            Assert.Equal("TOKEN-001", comNotification.AccessToken);
-            Assert.Equal("SECRET-001", comNotification.Secret);
-            Assert.Equal("WU001", comNotification.DefaultUserWorkId);
+            Assert.False(saveInfoStore.Exists<ComNotificationOptionsSaveInfo>());
 
             var mhrConfig = await saveInfoStore.ReadAsync<MhrConfig>();
             Assert.Equal("mhr-user", mhrConfig.LoginName);

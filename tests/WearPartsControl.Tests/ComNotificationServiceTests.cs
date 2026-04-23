@@ -22,20 +22,16 @@ public sealed class ComNotificationServiceTests
         try
         {
             var store = new TypeJsonSaveInfoStore(settingsDirectory);
-            await store.WriteAsync(new ComNotificationOptionsSaveInfo
-            {
-                Enabled = true,
-                PushUrl = "https://example.com",
-                DeIpaasKeyAuth = "auth-key",
-                UserType = "ding",
-                AccessToken = "legacy-token",
-                Secret = "legacy-secret",
-                DefaultUserWorkId = "LEGACY001"
-            });
-
             var userConfigService = new UserConfigService(store);
             await userConfigService.SaveAsync(new UserConfig
             {
+                ComNotificationEnabled = true,
+                ComPushUrl = "https://example.com",
+                ComDeIpaasKeyAuth = "auth-key",
+                ComAgentId = 1642112457,
+                ComGroupTemplateId = 303686603505665,
+                ComWorkTemplateId = 303717003821057,
+                ComUserType = "ding",
                 MeResponsibleWorkId = "ME1001",
                 PrdResponsibleWorkId = "PRD1001",
                 ComAccessToken = "user-token",
@@ -43,14 +39,13 @@ public sealed class ComNotificationServiceTests
             });
 
             var httpJsonService = new StubHttpJsonService();
-            var service = new ComNotificationService(store, new StubLocalizationService(), httpJsonService, userConfigService, NullLogger<ComNotificationService>.Instance);
+            var service = new ComNotificationService(new StubLocalizationService(), httpJsonService, userConfigService, NullLogger<ComNotificationService>.Instance);
 
             await service.NotifyGroupAsync("title", "text");
 
             Assert.NotNull(httpJsonService.LastRequestBody);
             Assert.Contains("ME1001", httpJsonService.LastRequestBody!);
             Assert.Contains("PRD1001", httpJsonService.LastRequestBody!);
-            Assert.DoesNotContain("LEGACY001", httpJsonService.LastRequestBody!);
             Assert.Contains("user-token", httpJsonService.LastRequestBody!);
             Assert.Contains("user-secret", httpJsonService.LastRequestBody!);
         }
