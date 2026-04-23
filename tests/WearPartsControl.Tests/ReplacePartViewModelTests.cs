@@ -105,6 +105,10 @@ public sealed class ReplacePartViewModelTests
 
         Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringDisabledStatus"), viewModel.WearPartMonitoringStatusText);
         Assert.Same(Brushes.DimGray, viewModel.WearPartMonitoringStatusBackground);
+        Assert.False(viewModel.IsWearPartMonitoringEnabled);
+        Assert.False(viewModel.IsTabContentEnabled);
+        Assert.False(viewModel.RefreshCommand.CanExecute(null));
+        Assert.Equal(LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked"), viewModel.StatusMessage);
     }
 
     [Fact]
@@ -129,6 +133,58 @@ public sealed class ReplacePartViewModelTests
 
         Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringDisabledStatus"), viewModel.WearPartMonitoringStatusText);
         Assert.Same(Brushes.DimGray, viewModel.WearPartMonitoringStatusBackground);
+        Assert.False(viewModel.IsTabContentEnabled);
+        Assert.Equal(LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked"), viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task ReplaceCommand_WhenMonitoringDisabled_ShouldNotBeEnabled()
+    {
+        var definition = new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            PartName = "刀具A",
+            InputMode = "Scanner",
+            CodeMinLength = 8,
+            CodeMaxLength = 32,
+            CurrentValueDataType = "FLOAT",
+            CurrentValueAddress = "DB1.0",
+            WarningValueDataType = "FLOAT",
+            WarningValueAddress = "DB1.2",
+            ShutdownValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB1.4"
+        };
+        var viewModel = new ReplacePartViewModel(
+            new StubAppSettingsService
+            {
+                Current = new AppSettings
+                {
+                    ResourceNumber = "RES-01",
+                    IsWearPartMonitoringEnabled = false
+                }
+            },
+            new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01" } },
+            new StubWearPartManagementService([definition]),
+            new StubWearPartReplacementService
+            {
+                Preview = new WearPartReplacementPreview
+                {
+                    WearPartDefinitionId = definition.Id,
+                    ClientAppConfigurationId = Guid.NewGuid(),
+                    CurrentValue = "12.5",
+                    WarningValue = "20",
+                    ShutdownValue = "30"
+                }
+            },
+            new StubToolChangeManagementService(),
+            new StubToolChangeSelectionService(),
+            new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+        viewModel.NewBarcode = "BC-02";
+        viewModel.SelectedReplacementReason = WearPartReplacementReason.ProcessDamage;
+
+        Assert.False(viewModel.ReplaceCommand.CanExecute(null));
     }
 
     [Fact]

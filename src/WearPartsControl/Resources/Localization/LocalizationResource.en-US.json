@@ -143,6 +143,7 @@
     "ReplacePartVm": {
       "PromptSelectAndLoadPreview": "Please select a wear part and load the preview first.",
       "Loading": "Loading wear part replacement information...",
+      "MonitoringDisabledOperationBlocked": "Wear part monitoring is disabled, so this page cannot be operated.",
       "ResourceNumberMissing": "The current client has no resource number configured, so replacement cannot proceed.",
       "DefinitionsEmpty": "No wear part definitions found for resource number {0}.",
       "DefinitionsLoaded": "Loaded {1} wear part definitions for resource number {0}.",

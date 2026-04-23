@@ -21,6 +21,7 @@ public sealed class ReplacePartViewModel : ObservableObject
     private readonly IToolChangeSelectionService _toolChangeSelectionService;
     private readonly IUiBusyService _uiBusyService;
     private readonly List<WearPartDefinition> _allDefinitions = new();
+    private bool _isWearPartMonitoringEnabled = true;
     private string _wearPartMonitoringStatusText = LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringEnabledStatus");
     private Brush _wearPartMonitoringStatusBackground = Brushes.ForestGreen;
     private WearPartDefinition? _selectedDefinition;
@@ -90,6 +91,22 @@ public sealed class ReplacePartViewModel : ObservableObject
     public IAsyncRelayCommand RefreshCommand { get; }
 
     public IAsyncRelayCommand ReplaceCommand { get; }
+
+    public bool IsWearPartMonitoringEnabled
+    {
+        get => _isWearPartMonitoringEnabled;
+        private set
+        {
+            if (SetProperty(ref _isWearPartMonitoringEnabled, value))
+            {
+                OnPropertyChanged(nameof(IsTabContentEnabled));
+                RefreshCommand.NotifyCanExecuteChanged();
+                ReplaceCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool IsTabContentEnabled => IsWearPartMonitoringEnabled;
 
     public string WearPartMonitoringStatusText
     {
@@ -263,10 +280,15 @@ public sealed class ReplacePartViewModel : ObservableObject
     private void OnAppSettingsSaved(object? sender, AppSettings settings)
     {
         ApplyWearPartMonitoringStatus(settings.IsWearPartMonitoringEnabled);
+        if (!settings.IsWearPartMonitoringEnabled)
+        {
+            StatusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked");
+        }
     }
 
     private void ApplyWearPartMonitoringStatus(bool isEnabled)
     {
+        IsWearPartMonitoringEnabled = isEnabled;
         WearPartMonitoringStatusText = isEnabled
             ? LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringEnabledStatus")
             : LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringDisabledStatus");
@@ -309,6 +331,14 @@ public sealed class ReplacePartViewModel : ObservableObject
                 SelectedAbSide = string.Empty;
             }
 
+            if (!IsWearPartMonitoringEnabled)
+            {
+                SelectedDefinition = null;
+                SetSelectedToolCode(string.Empty);
+                StatusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked");
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(ResourceNumber))
             {
                 SelectedDefinition = null;
@@ -345,7 +375,9 @@ public sealed class ReplacePartViewModel : ObservableObject
                 ApplySelectedDefinition(selectedDefinition);
             }
 
-            StatusMessage = LocalizedText.Format("ViewModels.ReplacePartVm.DefinitionsLoaded", ResourceNumber, Definitions.Count);
+            StatusMessage = IsWearPartMonitoringEnabled
+                ? LocalizedText.Format("ViewModels.ReplacePartVm.DefinitionsLoaded", ResourceNumber, Definitions.Count)
+                : LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked");
             await LoadSelectedDefinitionDetailsAsync(selectedDefinition, cancellationToken, Interlocked.Increment(ref _selectionLoadVersion)).ConfigureAwait(true);
         }
         catch (Exception ex)
@@ -399,12 +431,13 @@ public sealed class ReplacePartViewModel : ObservableObject
 
     private bool CanRefresh()
     {
-        return !IsBusy;
+        return !IsBusy && IsWearPartMonitoringEnabled;
     }
 
     private bool CanReplace()
     {
         return !IsBusy
+            && IsWearPartMonitoringEnabled
             && SelectedDefinition is not null
             && !string.IsNullOrWhiteSpace(NewBarcode)
             && (!IsToolValidationEnabled || !string.IsNullOrWhiteSpace(SelectedToolCode))

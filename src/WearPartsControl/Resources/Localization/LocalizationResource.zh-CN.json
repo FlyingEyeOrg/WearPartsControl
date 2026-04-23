@@ -143,6 +143,7 @@
     "ReplacePartVm": {
       "PromptSelectAndLoadPreview": "请先选择易损件并加载预览。",
       "Loading": "正在加载易损件更换信息...",
+      "MonitoringDisabledOperationBlocked": "未开启易损件监控，当前页面不允许操作。",
       "ResourceNumberMissing": "当前客户端未配置资源号，无法执行易损件更换。",
       "DefinitionsEmpty": "资源号 {0} 暂无易损件定义。",
       "DefinitionsLoaded": "已加载资源号 {0} 的 {1} 条易损件定义。",
