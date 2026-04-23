@@ -16,6 +16,7 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
 
     private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
     private readonly IWearPartRepository _wearPartRepository;
+    private readonly IWearPartReplacementRecordRepository _replacementRecordRepository;
     private readonly IExceedLimitRecordRepository _exceedLimitRecordRepository;
     private readonly IPlcOperationPipeline _plcOperationPipeline;
     private readonly IComNotificationService _notificationService;
@@ -25,6 +26,7 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
         ICurrentUserAccessor currentUserAccessor,
         IClientAppConfigurationRepository clientAppConfigurationRepository,
         IWearPartRepository wearPartRepository,
+        IWearPartReplacementRecordRepository replacementRecordRepository,
         IExceedLimitRecordRepository exceedLimitRecordRepository,
         IPlcOperationPipeline plcOperationPipeline,
         IComNotificationService notificationService,
@@ -33,6 +35,7 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
     {
         _clientAppConfigurationRepository = clientAppConfigurationRepository;
         _wearPartRepository = wearPartRepository;
+        _replacementRecordRepository = replacementRecordRepository;
         _exceedLimitRecordRepository = exceedLimitRecordRepository;
         _plcOperationPipeline = plcOperationPipeline;
         _notificationService = notificationService;
@@ -133,15 +136,23 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
             return false;
         }
 
+        var latestReplacementRecord = await _replacementRecordRepository.GetLatestByDefinitionAsync(definition.Id, cancellationToken).ConfigureAwait(false);
+
         var message = ComNotificationMessageFactory.CreateWearPartAlertMessage(
             clientAppConfiguration,
+            latestReplacementRecord?.NewBarcode,
+            definition.LifetimeType,
             severity,
             definition.PartName,
             currentValue,
             warningValue,
             shutdownValue,
+            userConfig.MeResponsibleName,
             userConfig.MeResponsibleWorkId,
+            userConfig.PrdResponsibleName,
             userConfig.PrdResponsibleWorkId,
+            latestReplacementRecord?.OperatorUserName ?? userConfig.ReplacementOperatorName,
+            latestReplacementRecord?.OperatorWorkNumber,
             occurredAt);
         var entity = new ExceedLimitRecordEntity
         {

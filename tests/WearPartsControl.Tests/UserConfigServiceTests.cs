@@ -23,7 +23,10 @@ public sealed class UserConfigServiceTests
             await service.SaveAsync(new UserConfig
             {
                 MeResponsibleWorkId = "  ME001  ",
+                MeResponsibleName = "  张三  ",
                 PrdResponsibleWorkId = " PRD001 ",
+                PrdResponsibleName = " 李四 ",
+                ReplacementOperatorName = " 王五 ",
                 ComAccessToken = " token ",
                 ComSecret = " secret ",
                 SpacerValidationEnabled = false,
@@ -39,7 +42,10 @@ public sealed class UserConfigServiceTests
             var persisted = JsonSerializer.Deserialize<UserConfig>(json);
 
             Assert.Equal("ME001", config.MeResponsibleWorkId);
+            Assert.Equal("张三", config.MeResponsibleName);
             Assert.Equal("PRD001", config.PrdResponsibleWorkId);
+            Assert.Equal("李四", config.PrdResponsibleName);
+            Assert.Equal("王五", config.ReplacementOperatorName);
             Assert.Equal("token", config.ComAccessToken);
             Assert.Equal("secret", config.ComSecret);
             Assert.True(config.ComNotificationEnabled);
@@ -58,6 +64,7 @@ public sealed class UserConfigServiceTests
             Assert.Equal(9, config.SpacerValidationExpectedSegmentCount);
             Assert.NotNull(persisted);
             Assert.Equal("ME001", persisted!.MeResponsibleWorkId);
+            Assert.Equal("张三", persisted.MeResponsibleName);
         }
         finally
         {

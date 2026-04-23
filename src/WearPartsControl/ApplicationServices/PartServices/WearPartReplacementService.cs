@@ -1,5 +1,6 @@
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Domain.Repositories;
 using WearPartsControl.Exceptions;
@@ -13,6 +14,7 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
     private readonly IWearPartReplacementRecordRepository _replacementRecordRepository;
     private readonly IPlcOperationPipeline _plcOperationPipeline;
     private readonly IReadOnlyList<IWearPartReplacementGuard> _replacementGuards;
+    private readonly IUserConfigService _userConfigService;
 
     public WearPartReplacementService(
         ICurrentUserAccessor currentUserAccessor,
@@ -20,6 +22,7 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
         IWearPartRepository wearPartRepository,
         IWearPartReplacementRecordRepository replacementRecordRepository,
         IPlcOperationPipeline plcOperationPipeline,
+        IUserConfigService userConfigService,
         IEnumerable<IWearPartReplacementGuard> replacementGuards)
         : base(currentUserAccessor)
     {
@@ -27,6 +30,7 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
         _wearPartRepository = wearPartRepository;
         _replacementRecordRepository = replacementRecordRepository;
         _plcOperationPipeline = plcOperationPipeline;
+        _userConfigService = userConfigService;
         _replacementGuards = replacementGuards.OrderBy(x => x.Order).ToArray();
     }
 
@@ -139,6 +143,8 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
             currentBarcode = normalizedBarcode;
         }
 
+        var userConfig = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
+
         var entity = new WearPartReplacementRecordEntity
         {
             ClientAppConfigurationId = clientAppConfiguration.Id,
@@ -151,7 +157,7 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
             WarningValue = warningValue,
             ShutdownValue = shutdownValue,
             OperatorWorkNumber = currentUser.WorkId,
-            OperatorUserName = currentUser.WorkId,
+            OperatorUserName = ResolveOperatorUserName(userConfig.ReplacementOperatorName, currentUser.WorkId),
             ReplacementReason = normalizedReason,
             ReplacementMessage = request.ReplacementMessage?.Trim() ?? string.Empty,
             ReplacedAt = DateTime.UtcNow,
@@ -226,6 +232,16 @@ public sealed class WearPartReplacementService : ApplicationService, IWearPartRe
     private static bool HasAddress(string address)
     {
         return !string.IsNullOrWhiteSpace(address) && !string.Equals(address.Trim(), "######", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ResolveOperatorUserName(string? configuredName, string? workId)
+    {
+        if (!string.IsNullOrWhiteSpace(configuredName))
+        {
+            return configuredName.Trim();
+        }
+
+        return workId?.Trim() ?? string.Empty;
     }
 
     private sealed record ReplacementPreviewValues(string CurrentValue, string WarningValue, string ShutdownValue);

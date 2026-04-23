@@ -86,6 +86,8 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         var records = await repository.ListByClientAppConfigurationAsync(seeded.BasicConfigurationId);
         Assert.Single(records);
         Assert.Equal(WearPartReplacementReason.Normal, records[0].ReplacementReason);
+        Assert.Equal("WORK-OPS", records[0].OperatorWorkNumber);
+        Assert.Equal("更换员甲", records[0].OperatorUserName);
     }
 
     [Fact]
@@ -1006,6 +1008,28 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         plcService.SetValue("DB1.2", 20);
         var notificationService = new FakeComNotificationService();
 
+        await using (var seedContext = await _dbContextFactory.CreateDbContextAsync())
+        {
+            seedContext.WearPartReplacementRecords.Add(new WearPartReplacementRecordEntity
+            {
+                ClientAppConfigurationId = seeded.BasicConfigurationId,
+                WearPartDefinitionId = seeded.DefinitionId,
+                SiteCode = "S01",
+                PartName = "刀具A",
+                CurrentBarcode = "BARCODE-WARN-0000",
+                NewBarcode = "BARCODE-WARN-0001",
+                CurrentValue = "8",
+                WarningValue = "10",
+                ShutdownValue = "20",
+                OperatorWorkNumber = "WORK-OPS",
+                OperatorUserName = "更换员甲",
+                ReplacementReason = WearPartReplacementReason.Normal,
+                ReplacementMessage = string.Empty,
+                ReplacedAt = DateTime.UtcNow.AddMinutes(-10)
+            });
+            await seedContext.SaveChangesAsync();
+        }
+
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         var service = CreateMonitorService(dbContext, plcService, notificationService);
 
@@ -1019,6 +1043,11 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         Assert.Contains(LocalizedText.Get("ViewModels.ComNotificationTemplate.WarningHeading"), notificationService.GroupNotifications[0]);
         Assert.DoesNotContain("ComNotification.Template.", notificationService.GroupNotifications[0]);
         Assert.DoesNotContain("ViewModels.ComNotificationTemplate.", notificationService.GroupNotifications[0]);
+        Assert.Contains("ME负责人甲(ME1001)", notificationService.GroupNotifications[0]);
+        Assert.Contains("PRD负责人乙(PRD1001)", notificationService.GroupNotifications[0]);
+        Assert.Contains("更换员甲(WORK-OPS)", notificationService.GroupNotifications[0]);
+        Assert.Contains("BARCODE-WARN-0001", notificationService.GroupNotifications[0]);
+        Assert.Contains("计次", notificationService.GroupNotifications[0]);
         Assert.Contains("ME1001", notificationService.GroupNotifications[0]);
         Assert.Contains("PRD1001", notificationService.GroupNotifications[0]);
 
@@ -1042,6 +1071,28 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         plcService.SetValue("DB1.2", 20);
         var notificationService = new FakeComNotificationService();
 
+        await using (var seedContext = await _dbContextFactory.CreateDbContextAsync())
+        {
+            seedContext.WearPartReplacementRecords.Add(new WearPartReplacementRecordEntity
+            {
+                ClientAppConfigurationId = seeded.BasicConfigurationId,
+                WearPartDefinitionId = seeded.DefinitionId,
+                SiteCode = "S01",
+                PartName = "刀具A",
+                CurrentBarcode = "BARCODE-SHUT-0000",
+                NewBarcode = "BARCODE-SHUT-0001",
+                CurrentValue = "9",
+                WarningValue = "10",
+                ShutdownValue = "20",
+                OperatorWorkNumber = "WORK-OPS",
+                OperatorUserName = "更换员甲",
+                ReplacementReason = WearPartReplacementReason.Normal,
+                ReplacementMessage = string.Empty,
+                ReplacedAt = DateTime.UtcNow.AddMinutes(-10)
+            });
+            await seedContext.SaveChangesAsync();
+        }
+
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         var service = CreateMonitorService(dbContext, plcService, notificationService);
 
@@ -1054,6 +1105,9 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         Assert.Contains(LocalizedText.Get("ViewModels.ComNotificationTemplate.ShutdownHeading"), notificationService.WorkNotifications[0]);
         Assert.DoesNotContain("ComNotification.Template.", notificationService.WorkNotifications[0]);
         Assert.DoesNotContain("ViewModels.ComNotificationTemplate.", notificationService.WorkNotifications[0]);
+        Assert.Contains("ME负责人甲(ME1001)", notificationService.WorkNotifications[0]);
+        Assert.Contains("PRD负责人乙(PRD1001)", notificationService.WorkNotifications[0]);
+        Assert.Contains("更换员甲(WORK-OPS)", notificationService.WorkNotifications[0]);
         Assert.Contains("ME1001", notificationService.WorkNotifications[0]);
         Assert.Contains("PRD1001", notificationService.WorkNotifications[0]);
     }
@@ -1140,6 +1194,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
             new WearPartReplacementRecordRepository(dbContext),
             plcOperationPipeline,
+            new FakeUserConfigService(),
             [
                 new BarcodeLengthReplacementGuard(),
                 new ToolCodeReplacementGuard(),
@@ -1158,6 +1213,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             new CurrentUserAccessor(),
             new ClientAppConfigurationRepository(dbContext),
             new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
+            new WearPartReplacementRecordRepository(dbContext),
             new ExceedLimitRecordRepository(dbContext),
             plcOperationPipeline,
             notificationService,
@@ -1258,8 +1314,11 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         {
             return ValueTask.FromResult(new UserConfig
             {
+                MeResponsibleName = "ME负责人甲",
                 MeResponsibleWorkId = "ME1001",
-                PrdResponsibleWorkId = "PRD1001"
+                PrdResponsibleName = "PRD负责人乙",
+                PrdResponsibleWorkId = "PRD1001",
+                ReplacementOperatorName = "更换员甲"
             });
         }
 

@@ -111,6 +111,9 @@
                 <DataGridTextColumn Header="更换时间"
                                     Binding="{Binding ReplacedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
                                     Width="*"></DataGridTextColumn>
+                <DataGridTextColumn Header="更换人员"
+                                    Binding="{Binding OperatorUserName}"
+                                    Width="*"></DataGridTextColumn>
                 <DataGridTextColumn Header="操作员"
                                     Binding="{Binding OperatorWorkNumber}"
                                     Width="*"></DataGridTextColumn>

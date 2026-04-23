@@ -18,7 +18,10 @@ public sealed class UserConfigViewModelTests
             Current = new UserConfig
             {
                 MeResponsibleWorkId = "ME001",
+                MeResponsibleName = "张三",
                 PrdResponsibleWorkId = "PRD001",
+                PrdResponsibleName = "李四",
+                ReplacementOperatorName = "王五",
                 ComAccessToken = "token",
                 ComSecret = "secret",
                 ComNotificationEnabled = true,
@@ -42,7 +45,10 @@ public sealed class UserConfigViewModelTests
         await viewModel.InitializeAsync();
 
         Assert.Equal("ME001", viewModel.MeResponsibleWorkId);
+    Assert.Equal("张三", viewModel.MeResponsibleName);
         Assert.Equal("PRD001", viewModel.PrdResponsibleWorkId);
+    Assert.Equal("李四", viewModel.PrdResponsibleName);
+    Assert.Equal("王五", viewModel.ReplacementOperatorName);
         Assert.Equal("token", viewModel.ComAccessToken);
         Assert.Equal("secret", viewModel.ComSecret);
         Assert.True(viewModel.ComNotificationEnabled);
@@ -72,7 +78,10 @@ public sealed class UserConfigViewModelTests
         await viewModel.InitializeAsync();
 
         viewModel.MeResponsibleWorkId = "ME002";
+        viewModel.MeResponsibleName = "赵六";
         viewModel.PrdResponsibleWorkId = "PRD002";
+        viewModel.PrdResponsibleName = "孙七";
+        viewModel.ReplacementOperatorName = "周八";
         viewModel.ComAccessToken = "token-2";
         viewModel.ComSecret = "secret-2";
         viewModel.ComNotificationEnabled = false;
@@ -92,7 +101,10 @@ public sealed class UserConfigViewModelTests
         Assert.Equal(LocalizedText.Get("ViewModels.UserConfigVm.Saved"), viewModel.StatusMessage);
         Assert.NotNull(service.LastSaved);
         Assert.Equal("ME002", service.LastSaved!.MeResponsibleWorkId);
+        Assert.Equal("赵六", service.LastSaved.MeResponsibleName);
         Assert.Equal("PRD002", service.LastSaved.PrdResponsibleWorkId);
+        Assert.Equal("孙七", service.LastSaved.PrdResponsibleName);
+        Assert.Equal("周八", service.LastSaved.ReplacementOperatorName);
         Assert.False(service.LastSaved.ComNotificationEnabled);
         Assert.False(service.LastSaved.SpacerValidationEnabled);
         Assert.Equal("https://spacer/save", service.LastSaved.SpacerValidationUrl);
@@ -135,7 +147,10 @@ public sealed class UserConfigViewModelTests
         await viewModel.InitializeAsync();
 
         viewModel.MeResponsibleWorkId = "ME003";
+        viewModel.MeResponsibleName = "张工";
         viewModel.PrdResponsibleWorkId = "PRD003";
+        viewModel.PrdResponsibleName = "李工";
+        viewModel.ReplacementOperatorName = "王工";
         viewModel.ComAccessToken = "token-3";
         viewModel.ComSecret = "secret-3";
         viewModel.SpacerValidationUrl = "https://spacer/test";
@@ -155,9 +170,10 @@ public sealed class UserConfigViewModelTests
         Assert.NotNull(notificationService.LastWorkText);
         Assert.Contains("# ", notificationService.LastGroupText!);
         Assert.Contains(LocalizedText.Get("ViewModels.ComNotificationTemplate.TestHeading"), notificationService.LastGroupText!);
-        Assert.Contains("RES-TEST", notificationService.LastGroupText!);
-        Assert.Contains("ME003", notificationService.LastGroupText!);
-        Assert.Contains("PRD003", notificationService.LastGroupText!);
+        Assert.Contains("###", notificationService.LastGroupText!);
+        Assert.Contains("张工(ME003)", notificationService.LastGroupText!);
+        Assert.Contains("李工(PRD003)", notificationService.LastGroupText!);
+        Assert.Contains("王工(###)", notificationService.LastGroupText!);
         Assert.DoesNotContain("ComNotification.Template.", notificationService.LastGroupText!);
         Assert.DoesNotContain("ViewModels.ComNotificationTemplate.", notificationService.LastGroupText!);
         Assert.Equal(notificationService.LastGroupText, notificationService.LastWorkText);
@@ -207,7 +223,10 @@ public sealed class UserConfigViewModelTests
             return ValueTask.FromResult(new UserConfig
             {
                 MeResponsibleWorkId = Current.MeResponsibleWorkId,
+                MeResponsibleName = Current.MeResponsibleName,
                 PrdResponsibleWorkId = Current.PrdResponsibleWorkId,
+                PrdResponsibleName = Current.PrdResponsibleName,
+                ReplacementOperatorName = Current.ReplacementOperatorName,
                 ComAccessToken = Current.ComAccessToken,
                 ComSecret = Current.ComSecret,
                 ComNotificationEnabled = Current.ComNotificationEnabled,
@@ -232,7 +251,10 @@ public sealed class UserConfigViewModelTests
             LastSaved = new UserConfig
             {
                 MeResponsibleWorkId = config.MeResponsibleWorkId,
+                MeResponsibleName = config.MeResponsibleName,
                 PrdResponsibleWorkId = config.PrdResponsibleWorkId,
+                PrdResponsibleName = config.PrdResponsibleName,
+                ReplacementOperatorName = config.ReplacementOperatorName,
                 ComAccessToken = config.ComAccessToken,
                 ComSecret = config.ComSecret,
                 ComNotificationEnabled = config.ComNotificationEnabled,

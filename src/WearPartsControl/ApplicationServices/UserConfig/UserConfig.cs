@@ -29,7 +29,13 @@ public sealed class UserConfig
 
     public string MeResponsibleWorkId { get; set; } = string.Empty;
 
+    public string MeResponsibleName { get; set; } = string.Empty;
+
     public string PrdResponsibleWorkId { get; set; } = string.Empty;
+
+    public string PrdResponsibleName { get; set; } = string.Empty;
+
+    public string ReplacementOperatorName { get; set; } = string.Empty;
 
     public string ComAccessToken { get; set; } = string.Empty;
 

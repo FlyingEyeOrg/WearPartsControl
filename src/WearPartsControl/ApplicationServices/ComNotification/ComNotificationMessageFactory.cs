@@ -10,26 +10,50 @@ public sealed record ComNotificationMessage(string Title, string Markdown);
 
 public static class ComNotificationMessageFactory
 {
+    private const string PlaceholderValue = "###";
     private const string TemplatePrefix = "ViewModels.ComNotificationTemplate.";
+    private static readonly IReadOnlyDictionary<string, string> LifetimeTypeAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Meter"] = "记米",
+        ["Count"] = "计次",
+        ["Time"] = "计时",
+        ["记米"] = "记米",
+        ["计次"] = "计次",
+        ["计时"] = "计时"
+    };
 
     public static ComNotificationMessage CreateTestMessage(
         ClientAppInfoModel? clientAppInfo,
+        string? meResponsibleName,
         string? meResponsibleWorkId,
-        string? prdResponsibleWorkId)
+        string? prdResponsibleName,
+        string? prdResponsibleWorkId,
+        string? replacementOperatorName)
     {
         var title = LocalizedText.Get("ViewModels.UserConfigVm.TestNotificationTitle");
         var markdown = BuildMarkdown(
             Template("TestHeading"),
-            CreateEnvironment(clientAppInfo),
+            CreateEnvironment(clientAppInfo, usePlaceholder: true),
+            CreatePeople(
+                meResponsibleName,
+                meResponsibleWorkId,
+                prdResponsibleName,
+                prdResponsibleWorkId,
+                replacementOperatorName,
+                PlaceholderValue),
+            Template("WearPartInfoHeading"),
+            [
+                new NotificationItem(Template("PartNameLabel"), PlaceholderValue),
+                new NotificationItem(Template("BarcodeLabel"), PlaceholderValue),
+                new NotificationItem(Template("LifetimeTypeLabel"), PlaceholderValue),
+                new NotificationItem(Template("CurrentValueLabel"), PlaceholderValue),
+                new NotificationItem(Template("WarningValueLabel"), PlaceholderValue),
+                new NotificationItem(Template("ShutdownValueLabel"), PlaceholderValue)
+            ],
             Template("NotificationInfoHeading"),
             [
-                new NotificationItem(
-                    Template("DescriptionLabel"),
-                    LocalizedText.Get("ViewModels.UserConfigVm.TestNotificationBody"))
+                new NotificationItem(Template("DescriptionLabel"), PlaceholderValue)
             ],
-            meResponsibleWorkId,
-            prdResponsibleWorkId,
-            Template("TestActionMessage"),
             DateTime.Now);
 
         return new ComNotificationMessage(title, markdown);
@@ -37,13 +61,19 @@ public static class ComNotificationMessageFactory
 
     public static ComNotificationMessage CreateWearPartAlertMessage(
         ClientAppConfigurationEntity clientAppConfiguration,
+        string? partBarcode,
+        string? lifetimeType,
         string severity,
         string partName,
         double currentValue,
         double warningValue,
         double shutdownValue,
+        string? meResponsibleName,
         string? meResponsibleWorkId,
+        string? prdResponsibleName,
         string? prdResponsibleWorkId,
+        string? replacementOperatorName,
+        string? replacementOperatorWorkId,
         DateTime occurredAt)
     {
         var isShutdown = string.Equals(severity, "Shutdown", StringComparison.OrdinalIgnoreCase);
@@ -55,18 +85,30 @@ public static class ComNotificationMessageFactory
                 ? "ShutdownHeading"
                 : "WarningHeading"),
             CreateEnvironment(clientAppConfiguration),
+            CreatePeople(
+                meResponsibleName,
+                meResponsibleWorkId,
+                prdResponsibleName,
+                prdResponsibleWorkId,
+                replacementOperatorName,
+                replacementOperatorWorkId),
             Template("WearPartInfoHeading"),
             [
                 new NotificationItem(Template("PartNameLabel"), ResolveDisplayValue(partName)),
+                new NotificationItem(Template("BarcodeLabel"), ResolveDisplayValue(partBarcode)),
+                new NotificationItem(Template("LifetimeTypeLabel"), NormalizeLifetimeType(lifetimeType)),
                 new NotificationItem(Template("CurrentValueLabel"), FormatNumber(currentValue)),
                 new NotificationItem(Template("WarningValueLabel"), FormatNumber(warningValue)),
                 new NotificationItem(Template("ShutdownValueLabel"), FormatNumber(shutdownValue))
             ],
-            meResponsibleWorkId,
-            prdResponsibleWorkId,
-            Template(isShutdown
-                ? "ShutdownActionMessage"
-                : "WarningActionMessage"),
+            Template("NotificationInfoHeading"),
+            [
+                new NotificationItem(
+                    Template("DescriptionLabel"),
+                    Template(isShutdown
+                        ? "ShutdownActionMessage"
+                        : "WarningActionMessage"))
+            ],
             occurredAt.ToLocalTime());
 
         return new ComNotificationMessage(title, markdown);
@@ -75,11 +117,11 @@ public static class ComNotificationMessageFactory
     private static string BuildMarkdown(
         string heading,
         NotificationEnvironment environment,
-        string detailHeading,
-        IReadOnlyList<NotificationItem> detailItems,
-        string? meResponsibleWorkId,
-        string? prdResponsibleWorkId,
-        string actionMessage,
+        NotificationPeople people,
+        string wearPartHeading,
+        IReadOnlyList<NotificationItem> wearPartItems,
+        string notificationHeading,
+        IReadOnlyList<NotificationItem> notificationItems,
         DateTime occurredAt)
     {
         var builder = new StringBuilder();
@@ -92,18 +134,13 @@ public static class ComNotificationMessageFactory
         AppendSummaryLine(builder, Template("ProcedureLabel"), environment.ProcedureCode);
         AppendSummaryLine(builder, Template("EquipmentCodeLabel"), environment.EquipmentCode);
         AppendSummaryLine(builder, Template("ResourceNumberLabel"), environment.ResourceNumber);
+        AppendSummaryLine(builder, Template("MeResponsibleLabel"), people.MeResponsible);
+        AppendSummaryLine(builder, Template("PrdResponsibleLabel"), people.PrdResponsible);
+        AppendSummaryLine(builder, Template("ReplacementPersonLabel"), people.ReplacementOperator);
         builder.AppendLine();
-        AppendSection(builder, detailHeading, detailItems);
+        AppendSection(builder, wearPartHeading, wearPartItems);
         builder.AppendLine();
-        AppendSection(
-            builder,
-            Template("OwnerInfoHeading"),
-            [
-                new NotificationItem(Template("MeResponsibleLabel"), ResolveDisplayValue(meResponsibleWorkId)),
-                new NotificationItem(Template("PrdResponsibleLabel"), ResolveDisplayValue(prdResponsibleWorkId))
-            ]);
-        builder.AppendLine();
-        builder.AppendLine(actionMessage);
+        AppendSection(builder, notificationHeading, notificationItems);
         builder.AppendLine();
         builder.AppendLine("---");
         builder.Append(Template("Footer"));
@@ -112,7 +149,7 @@ public static class ComNotificationMessageFactory
 
     private static void AppendSummaryLine(StringBuilder builder, string label, string? value)
     {
-        builder.AppendLine($"**{label}**: {ResolveDisplayValue(value)}  ");
+        builder.AppendLine($"**{label}**：{ResolveDisplayValue(value)}  ");
     }
 
     private static void AppendSection(StringBuilder builder, string heading, IReadOnlyList<NotificationItem> items)
@@ -125,15 +162,15 @@ public static class ComNotificationMessageFactory
         }
     }
 
-    private static NotificationEnvironment CreateEnvironment(ClientAppInfoModel? clientAppInfo)
+    private static NotificationEnvironment CreateEnvironment(ClientAppInfoModel? clientAppInfo, bool usePlaceholder = false)
     {
         return new NotificationEnvironment(
-            clientAppInfo?.SiteCode,
-            clientAppInfo?.FactoryCode,
-            clientAppInfo?.AreaCode,
-            clientAppInfo?.ProcedureCode,
-            clientAppInfo?.EquipmentCode,
-            clientAppInfo?.ResourceNumber);
+            usePlaceholder ? PlaceholderValue : clientAppInfo?.SiteCode,
+            usePlaceholder ? PlaceholderValue : clientAppInfo?.FactoryCode,
+            usePlaceholder ? PlaceholderValue : clientAppInfo?.AreaCode,
+            usePlaceholder ? PlaceholderValue : clientAppInfo?.ProcedureCode,
+            usePlaceholder ? PlaceholderValue : clientAppInfo?.EquipmentCode,
+            usePlaceholder ? PlaceholderValue : clientAppInfo?.ResourceNumber);
     }
 
     private static NotificationEnvironment CreateEnvironment(ClientAppConfigurationEntity clientAppConfiguration)
@@ -147,11 +184,55 @@ public static class ComNotificationMessageFactory
             clientAppConfiguration.ResourceNumber);
     }
 
+    private static NotificationPeople CreatePeople(
+        string? meResponsibleName,
+        string? meResponsibleWorkId,
+        string? prdResponsibleName,
+        string? prdResponsibleWorkId,
+        string? replacementOperatorName,
+        string? replacementOperatorWorkId,
+        bool usePlaceholder = false)
+    {
+        return new NotificationPeople(
+            FormatPersonDisplay(meResponsibleName, meResponsibleWorkId, usePlaceholder),
+            FormatPersonDisplay(prdResponsibleName, prdResponsibleWorkId, usePlaceholder),
+            FormatPersonDisplay(replacementOperatorName, replacementOperatorWorkId, usePlaceholder));
+    }
+
     private static string ResolveDisplayValue(string? value)
     {
         return string.IsNullOrWhiteSpace(value)
             ? Template("NotConfigured")
             : value.Trim();
+    }
+
+    private static string NormalizeLifetimeType(string? value)
+    {
+        var normalized = value?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return Template("NotConfigured");
+        }
+
+        return LifetimeTypeAliases.TryGetValue(normalized, out var alias)
+            ? alias
+            : normalized;
+    }
+
+    private static string FormatPersonDisplay(string? name, string? workId, bool usePlaceholder)
+    {
+        if (usePlaceholder)
+        {
+            return $"{PlaceholderValue}({PlaceholderValue})";
+        }
+
+        var normalizedName = string.IsNullOrWhiteSpace(name)
+            ? Template("NotConfigured")
+            : name.Trim();
+        var normalizedWorkId = string.IsNullOrWhiteSpace(workId)
+            ? Template("NotConfigured")
+            : workId.Trim();
+        return $"{normalizedName}({normalizedWorkId})";
     }
 
     private static string Template(string name)
@@ -171,6 +252,11 @@ public static class ComNotificationMessageFactory
         string? ProcedureCode,
         string? EquipmentCode,
         string? ResourceNumber);
+
+    private sealed record NotificationPeople(
+        string MeResponsible,
+        string PrdResponsible,
+        string ReplacementOperator);
 
     private sealed record NotificationItem(string Label, string Value);
 }

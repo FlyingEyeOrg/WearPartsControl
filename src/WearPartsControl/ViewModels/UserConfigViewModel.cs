@@ -22,7 +22,10 @@ public sealed class UserConfigViewModel : ObservableObject
     private bool _isInitialized;
     private bool _isUpdatingState;
     private string _meResponsibleWorkId = string.Empty;
+    private string _meResponsibleName = string.Empty;
     private string _prdResponsibleWorkId = string.Empty;
+    private string _prdResponsibleName = string.Empty;
+    private string _replacementOperatorName = string.Empty;
     private string _comAccessToken = string.Empty;
     private string _comSecret = string.Empty;
     private bool _comNotificationEnabled;
@@ -101,12 +104,48 @@ public sealed class UserConfigViewModel : ObservableObject
         }
     }
 
+    public string MeResponsibleName
+    {
+        get => _meResponsibleName;
+        set
+        {
+            if (SetProperty(ref _meResponsibleName, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
     public string PrdResponsibleWorkId
     {
         get => _prdResponsibleWorkId;
         set
         {
             if (SetProperty(ref _prdResponsibleWorkId, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string PrdResponsibleName
+    {
+        get => _prdResponsibleName;
+        set
+        {
+            if (SetProperty(ref _prdResponsibleName, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string ReplacementOperatorName
+    {
+        get => _replacementOperatorName;
+        set
+        {
+            if (SetProperty(ref _replacementOperatorName, value))
             {
                 UpdateDirtyState();
             }
@@ -319,7 +358,13 @@ public sealed class UserConfigViewModel : ObservableObject
             }
 
             var clientAppInfo = await _clientAppInfoService.GetAsync().ConfigureAwait(false);
-            var message = ComNotificationMessageFactory.CreateTestMessage(clientAppInfo, MeResponsibleWorkId, PrdResponsibleWorkId);
+            var message = ComNotificationMessageFactory.CreateTestMessage(
+                clientAppInfo,
+                MeResponsibleName,
+                MeResponsibleWorkId,
+                PrdResponsibleName,
+                PrdResponsibleWorkId,
+                ReplacementOperatorName);
 
             await _comNotificationService.NotifyGroupAsync(
                 message.Title,
@@ -365,7 +410,10 @@ public sealed class UserConfigViewModel : ObservableObject
         return new UserConfig
         {
             MeResponsibleWorkId = MeResponsibleWorkId,
+            MeResponsibleName = MeResponsibleName,
             PrdResponsibleWorkId = PrdResponsibleWorkId,
+            PrdResponsibleName = PrdResponsibleName,
+            ReplacementOperatorName = ReplacementOperatorName,
             ComAccessToken = ComAccessToken,
             ComSecret = ComSecret,
             ComNotificationEnabled = ComNotificationEnabled,
@@ -391,7 +439,10 @@ public sealed class UserConfigViewModel : ObservableObject
         try
         {
             MeResponsibleWorkId = config.MeResponsibleWorkId;
+            MeResponsibleName = config.MeResponsibleName;
             PrdResponsibleWorkId = config.PrdResponsibleWorkId;
+            PrdResponsibleName = config.PrdResponsibleName;
+            ReplacementOperatorName = config.ReplacementOperatorName;
             ComAccessToken = config.ComAccessToken;
             ComSecret = config.ComSecret;
             ComNotificationEnabled = config.ComNotificationEnabled;
@@ -428,7 +479,10 @@ public sealed class UserConfigViewModel : ObservableObject
     {
         return new UserConfigSnapshot(
             MeResponsibleWorkId?.Trim() ?? string.Empty,
+            MeResponsibleName?.Trim() ?? string.Empty,
             PrdResponsibleWorkId?.Trim() ?? string.Empty,
+            PrdResponsibleName?.Trim() ?? string.Empty,
+            ReplacementOperatorName?.Trim() ?? string.Empty,
             ComAccessToken?.Trim() ?? string.Empty,
             ComSecret?.Trim() ?? string.Empty,
             ComNotificationEnabled,
@@ -467,7 +521,10 @@ public sealed class UserConfigViewModel : ObservableObject
 
     private sealed record UserConfigSnapshot(
         string MeResponsibleWorkId,
+        string MeResponsibleName,
         string PrdResponsibleWorkId,
+        string PrdResponsibleName,
+        string ReplacementOperatorName,
         string ComAccessToken,
         string ComSecret,
         bool ComNotificationEnabled,
@@ -485,6 +542,9 @@ public sealed class UserConfigViewModel : ObservableObject
         string SpacerValidationExpectedSegmentCount)
     {
         public static UserConfigSnapshot Empty { get; } = new(
+            string.Empty,
+            string.Empty,
+            string.Empty,
             string.Empty,
             string.Empty,
             string.Empty,

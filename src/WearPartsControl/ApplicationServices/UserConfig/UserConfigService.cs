@@ -66,7 +66,10 @@ public sealed class UserConfigService : IUserConfigService
         return new UserConfig
         {
             MeResponsibleWorkId = config.MeResponsibleWorkId?.Trim() ?? string.Empty,
+            MeResponsibleName = config.MeResponsibleName?.Trim() ?? string.Empty,
             PrdResponsibleWorkId = config.PrdResponsibleWorkId?.Trim() ?? string.Empty,
+            PrdResponsibleName = config.PrdResponsibleName?.Trim() ?? string.Empty,
+            ReplacementOperatorName = config.ReplacementOperatorName?.Trim() ?? string.Empty,
             ComAccessToken = config.ComAccessToken?.Trim() ?? string.Empty,
             ComSecret = config.ComSecret?.Trim() ?? string.Empty,
             ComNotificationEnabled = config.ComNotificationEnabled,
@@ -116,7 +119,10 @@ public sealed class UserConfigService : IUserConfigService
             && string.IsNullOrWhiteSpace(config.ComAccessToken)
             && string.IsNullOrWhiteSpace(config.ComSecret)
             && string.IsNullOrWhiteSpace(config.MeResponsibleWorkId)
+            && string.IsNullOrWhiteSpace(config.MeResponsibleName)
             && string.IsNullOrWhiteSpace(config.PrdResponsibleWorkId)
+            && string.IsNullOrWhiteSpace(config.PrdResponsibleName)
+            && string.IsNullOrWhiteSpace(config.ReplacementOperatorName)
             && string.Equals(config.ComPushUrl, UserConfig.DefaultComPushUrl, StringComparison.Ordinal)
             && string.Equals(config.ComDeIpaasKeyAuth, UserConfig.DefaultComDeIpaasKeyAuth, StringComparison.Ordinal)
             && config.ComAgentId == UserConfig.DefaultComAgentId
@@ -135,7 +141,10 @@ public sealed class UserConfigService : IUserConfigService
             MeResponsibleWorkId = string.IsNullOrWhiteSpace(config.MeResponsibleWorkId)
                 ? legacyConfig.DefaultUserWorkId
                 : config.MeResponsibleWorkId,
+            MeResponsibleName = config.MeResponsibleName,
             PrdResponsibleWorkId = config.PrdResponsibleWorkId,
+            PrdResponsibleName = config.PrdResponsibleName,
+            ReplacementOperatorName = config.ReplacementOperatorName,
             ComAccessToken = string.IsNullOrWhiteSpace(config.ComAccessToken)
                 ? legacyConfig.AccessToken
                 : config.ComAccessToken,
@@ -166,7 +175,10 @@ public sealed class UserConfigService : IUserConfigService
         return Normalize(new UserConfig
         {
             MeResponsibleWorkId = config.MeResponsibleWorkId,
+            MeResponsibleName = config.MeResponsibleName,
             PrdResponsibleWorkId = config.PrdResponsibleWorkId,
+            PrdResponsibleName = config.PrdResponsibleName,
+            ReplacementOperatorName = config.ReplacementOperatorName,
             ComAccessToken = config.ComAccessToken,
             ComSecret = config.ComSecret,
             ComNotificationEnabled = config.ComNotificationEnabled,
