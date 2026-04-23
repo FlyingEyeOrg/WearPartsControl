@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
              xmlns:vm="clr-namespace:WearPartsControl.ViewModels"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              mc:Ignorable="d"
@@ -22,7 +23,8 @@
                     <TextBlock HorizontalAlignment="Center"
                                FontWeight="Bold"
                                FontSize="16"
-                               Foreground="White">易损件更换</TextBlock>
+                               Foreground="White"
+                               Text="{loc:Loc ReplacePartControl.Title}" />
                 </Border>
 
                 <Border Margin="8 8 8 0"
@@ -43,12 +45,19 @@
                                     Orientation="Horizontal">
                             <TextBlock Margin="16 0 0 0"
                                        VerticalAlignment="Center"
-                                       FontWeight="SemiBold"
-                                       Text="{Binding ResourceNumber, Mode=OneWay, StringFormat=当前资源号：{0}}" />
+                                       FontWeight="SemiBold">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0}{1}">
+                                        <Binding Source="{loc:Loc ReplacePartControl.CurrentResourceNumberLabel}" />
+                                        <Binding Path="ResourceNumber" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
                             <Button Margin="16 0 0 0"
                                     Width="80"
                                     Command="{Binding RefreshCommand}"
-                                    Style="{StaticResource ButtonPrimary}">刷新</Button>
+                                    Style="{StaticResource ButtonPrimary}"
+                                    Content="{loc:Loc ReplacePartControl.RefreshButton}" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -65,7 +74,8 @@
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center">易损件监控：</TextBlock>
+                                       VerticalAlignment="Center"
+                                       Text="{loc:Loc ReplacePartControl.MonitoringStatusLabel}" />
                             <TextBox IsReadOnly="True"
                                      Grid.Column="1"
                                      Background="{Binding WearPartMonitoringStatusBackground, Mode=OneWay}"
@@ -78,13 +88,14 @@
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center">当前易损件：</TextBlock>
+                                       VerticalAlignment="Center"
+                                       Text="{loc:Loc ReplacePartControl.CurrentPartLabel}" />
                             <ComboBox Grid.Column="1"
                                       ItemsSource="{Binding Definitions}"
                                       SelectedItem="{Binding SelectedDefinition, Mode=TwoWay}"
                                       DisplayMemberPath="PartName"
                                       Style="{StaticResource ComboBoxExtend}"
-                                      hc:InfoElement.Placeholder="请选择易损件"></ComboBox>
+                                      hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.CurrentPartPlaceholder}"></ComboBox>
                         </Grid>
 
                     </StackPanel>
@@ -96,7 +107,8 @@
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center">当前寿命：</TextBlock>
+                                       VerticalAlignment="Center"
+                                       Text="{loc:Loc ReplacePartControl.CurrentValueLabel}" />
                             <TextBox IsReadOnly="True"
                                      Text="{Binding CurrentValue, Mode=OneWay, TargetNullValue=''}"
                                      Grid.Column="1"></TextBox>
@@ -107,7 +119,8 @@
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center">预警寿命：</TextBlock>
+                                       VerticalAlignment="Center"
+                                       Text="{loc:Loc ReplacePartControl.WarningValueLabel}" />
                             <TextBox IsReadOnly="True"
                                      Text="{Binding WarningValue, Mode=OneWay, TargetNullValue=''}"
                                      Grid.Column="1"></TextBox>
@@ -118,7 +131,8 @@
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center">停机寿命：</TextBlock>
+                                       VerticalAlignment="Center"
+                                       Text="{loc:Loc ReplacePartControl.ShutdownValueLabel}" />
                             <TextBox IsReadOnly="True"
                                      Text="{Binding ShutdownValue, Mode=OneWay, TargetNullValue=''}"
                                      Grid.Column="1"></TextBox>
@@ -131,7 +145,8 @@
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center">输入方式：</TextBlock>
+                                       VerticalAlignment="Center"
+                                       Text="{loc:Loc ReplacePartControl.InputModeLabel}" />
                             <TextBox Grid.Column="1"
                                      IsReadOnly="True"
                                      Text="{Binding InputMode, Mode=OneWay}" />
@@ -142,7 +157,8 @@
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center">条码最小长度：</TextBlock>
+                                       VerticalAlignment="Center"
+                                       Text="{loc:Loc ReplacePartControl.CodeMinLengthLabel}" />
                             <TextBox Grid.Column="1"
                                      IsReadOnly="True"
                                      Text="{Binding CodeMinLength, Mode=OneWay, TargetNullValue=''}" />
@@ -153,7 +169,8 @@
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center">条码最大长度：</TextBlock>
+                                       VerticalAlignment="Center"
+                                       Text="{loc:Loc ReplacePartControl.CodeMaxLengthLabel}" />
                             <TextBox Grid.Column="1"
                                      IsReadOnly="True"
                                      Text="{Binding CodeMaxLength, Mode=OneWay, TargetNullValue=''}" />
@@ -171,7 +188,8 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">当前条码：</TextBlock>
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc ReplacePartControl.CurrentBarcodeLabel}" />
                         <TextBox IsReadOnly="True"
                                  Text="{Binding LastBarcode, Mode=OneWay}"
                                  Grid.Column="1" />
@@ -183,7 +201,8 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">更换原因：</TextBlock>
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc ReplacePartControl.ReplacementReasonLabel}" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding ReplacementReasons}"
                                   DisplayMemberPath="DisplayName"
@@ -199,14 +218,15 @@
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <TextBlock HorizontalAlignment="Left"
-                               VerticalAlignment="Center">工具编码：</TextBlock>
+                               VerticalAlignment="Center"
+                               Text="{loc:Loc ReplacePartControl.ToolCodeLabel}" />
                     <ComboBox Grid.Column="1"
                               ItemsSource="{Binding ToolCodeOptions}"
                               DisplayMemberPath="DisplayText"
                               SelectedValuePath="Code"
                               SelectedValue="{Binding SelectedToolCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                               Style="{StaticResource ComboBoxExtend}"
-                              hc:InfoElement.Placeholder="请选择换刀类型" />
+                              hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.ToolCodePlaceholder}" />
                 </Grid>
                 <Grid Margin="8 8 8 0"
                       Visibility="{Binding IsCoatingValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -215,12 +235,13 @@
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <TextBlock HorizontalAlignment="Left"
-                               VerticalAlignment="Center">A/B面：</TextBlock>
+                               VerticalAlignment="Center"
+                               Text="{loc:Loc ReplacePartControl.AbSideLabel}" />
                     <ComboBox Grid.Column="1"
                               ItemsSource="{Binding AbSideOptions}"
                               SelectedItem="{Binding SelectedAbSide, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                               Style="{StaticResource ComboBoxExtend}"
-                              hc:InfoElement.Placeholder="请选择涂布 A/B 面" />
+                              hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.AbSidePlaceholder}" />
                 </Grid>
                 <Grid Margin="8 8 8 0">
                     <Grid.ColumnDefinitions>
@@ -233,10 +254,11 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">新条码：</TextBlock>
+                                                                     VerticalAlignment="Center"
+                                                                     Text="{loc:Loc ReplacePartControl.NewBarcodeLabel}" />
                         <TextBox Style="{StaticResource TextBoxExtend}"
                                  Text="{Binding NewBarcode, UpdateSourceTrigger=PropertyChanged}"
-                                 hc:InfoElement.Placeholder="请输入条码"
+                                                                 hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.NewBarcodePlaceholder}"
                                  Grid.Column="1"></TextBox>
                     </Grid>
                     <Grid Grid.Column="1"
@@ -246,11 +268,12 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">备注：</TextBlock>
+                                                                     VerticalAlignment="Center"
+                                                                     Text="{loc:Loc ReplacePartControl.RemarkLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding ReplacementMessage, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                 hc:InfoElement.Placeholder="可选备注" />
+                                                                 hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.RemarkPlaceholder}" />
                     </Grid>
                 </Grid>
                 <Grid Margin="8">
@@ -263,7 +286,8 @@
                             Width="80"
                             IsEnabled="{Binding IsReplaceEnabled}"
                             Click="OnReplaceClicked"
-                            Style="{StaticResource ButtonPrimary}">更换</Button>
+                            Style="{StaticResource ButtonPrimary}"
+                            Content="{loc:Loc ReplacePartControl.ReplaceButton}" />
                 </Grid>
             </StackPanel>
             <DataGrid Grid.Row="1"
@@ -276,34 +300,34 @@
                       ItemsSource="{Binding ReplacementHistory}"
                       Style="{StaticResource DataGridBaseStyle}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="名称"
+                    <DataGridTextColumn Header="{loc:Loc ReplacePartControl.NameHeader}"
                                         Binding="{Binding PartName}"
                                         Width="*"></DataGridTextColumn>
-                    <DataGridTextColumn Header="更换原因"
+                    <DataGridTextColumn Header="{loc:Loc ReplacePartControl.ReasonHeader}"
                                         Binding="{Binding ReasonDisplayName}"
                                         Width="*"></DataGridTextColumn>
-                    <DataGridTextColumn Header="当前编码"
+                    <DataGridTextColumn Header="{loc:Loc ReplacePartControl.CurrentBarcodeHeader}"
                                         Binding="{Binding CurrentBarcode}"
                                         Width="*"></DataGridTextColumn>
-                    <DataGridTextColumn Header="新编码"
+                    <DataGridTextColumn Header="{loc:Loc ReplacePartControl.NewBarcodeHeader}"
                                         Binding="{Binding NewBarcode}"
                                         Width="*"></DataGridTextColumn>
-                    <DataGridTextColumn Header="当前寿命"
+                    <DataGridTextColumn Header="{loc:Loc ReplacePartControl.CurrentValueHeader}"
                                         Binding="{Binding CurrentValue}"
                                         Width="*"></DataGridTextColumn>
-                    <DataGridTextColumn Header="预警寿命"
+                    <DataGridTextColumn Header="{loc:Loc ReplacePartControl.WarningValueHeader}"
                                         Binding="{Binding WarningValue}"
                                         Width="*"></DataGridTextColumn>
-                    <DataGridTextColumn Header="停机寿命"
+                    <DataGridTextColumn Header="{loc:Loc ReplacePartControl.ShutdownValueHeader}"
                                         Binding="{Binding ShutdownValue}"
                                         Width="*"></DataGridTextColumn>
-                    <DataGridTextColumn Header="更换时间"
+                    <DataGridTextColumn Header="{loc:Loc ReplacePartControl.ReplacedAtHeader}"
                                         Binding="{Binding ReplacedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
                                         Width="*"></DataGridTextColumn>
-                    <DataGridTextColumn Header="更换人员"
+                    <DataGridTextColumn Header="{loc:Loc ReplacePartControl.OperatorUserNameHeader}"
                                         Binding="{Binding OperatorUserName}"
                                         Width="*"></DataGridTextColumn>
-                    <DataGridTextColumn Header="操作员"
+                    <DataGridTextColumn Header="{loc:Loc ReplacePartControl.OperatorWorkNumberHeader}"
                                         Binding="{Binding OperatorWorkNumber}"
                                         Width="*"></DataGridTextColumn>
                 </DataGrid.Columns>

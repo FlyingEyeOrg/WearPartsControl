@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:hc="https://handyorg.github.io/handycontrol"
+             xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="1000">
@@ -19,7 +20,8 @@
                 <TextBlock HorizontalAlignment="Center"
                            FontWeight="Bold"
                            FontSize="16"
-                           Foreground="White">易损件管理</TextBlock>
+                           Foreground="White"
+                           Text="{loc:Loc PartManagementControl.Title}" />
             </Border>
 
             <Border Margin="8 8 8 0"
@@ -40,8 +42,14 @@
                                    Text="{Binding StatusMessage}" />
                         <TextBlock Margin="24 0 0 0"
                                    VerticalAlignment="Center"
-                                   FontWeight="SemiBold"
-                                   Text="{Binding ResourceNumber, StringFormat=当前资源号：{0}}" />
+                                   FontWeight="SemiBold">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0}{1}">
+                                    <Binding Source="{loc:Loc PartManagementControl.CurrentResourceNumberLabel}" />
+                                    <Binding Path="ResourceNumber" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
                     </DockPanel>
 
                     <WrapPanel Grid.Row="1"
@@ -52,40 +60,47 @@
                                 <ColumnDefinition Width="80" />
                                 <ColumnDefinition Width="180" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock VerticalAlignment="Center">易损件名称：</TextBlock>
+                                <TextBlock VerticalAlignment="Center"
+                                       Text="{loc:Loc PartManagementControl.PartNameLabel}" />
                             <TextBox Grid.Column="1"
                                      Text="{Binding PartNameFilter, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource TextBoxExtend}"
-                                     hc:InfoElement.Placeholder="请输入易损件名称" />
+                                     hc:InfoElement.Placeholder="{loc:Loc PartManagementControl.PartNamePlaceholder}" />
                         </Grid>
                         <Button Margin="0 8 8 0"
                                 Width="80"
                                 Command="{Binding SearchCommand}"
                                 Style="{StaticResource ButtonPrimary}"
-                                hc:IconElement.Geometry="{StaticResource SearchGeometry}">查询</Button>
+                                hc:IconElement.Geometry="{StaticResource SearchGeometry}"
+                                Content="{loc:Loc PartManagementControl.SearchButton}" />
                         <Button Margin="0 8 8 0"
                                 Width="80"
                                 Command="{Binding RefreshCommand}"
-                                Style="{StaticResource ButtonPrimary}">刷新</Button>
+                                Style="{StaticResource ButtonPrimary}"
+                                Content="{loc:Loc PartManagementControl.RefreshButton}" />
                         <Button Margin="0 8 8 0"
                                 Width="80"
                                 Command="{Binding AddCommand}"
                                 Style="{StaticResource ButtonPrimary}"
-                                hc:IconElement.Geometry="{StaticResource AddGeometry}">新增</Button>
+                                hc:IconElement.Geometry="{StaticResource AddGeometry}"
+                                Content="{loc:Loc PartManagementControl.AddButton}" />
                         <Button Margin="0 8 8 0"
                                 Width="80"
                                 Command="{Binding EditCommand}"
                                 Style="{StaticResource ButtonPrimary}"
-                                hc:IconElement.Geometry="{StaticResource DropperGeometry}">编辑</Button>
+                                hc:IconElement.Geometry="{StaticResource DropperGeometry}"
+                                Content="{loc:Loc PartManagementControl.EditButton}" />
                         <Button Margin="0 8 8 0"
                                 Width="80"
                                 Command="{Binding DeleteCommand}"
                                 Style="{StaticResource ButtonPrimary}"
-                                hc:IconElement.Geometry="{StaticResource DeleteGeometry}">删除</Button>
+                                hc:IconElement.Geometry="{StaticResource DeleteGeometry}"
+                                Content="{loc:Loc PartManagementControl.DeleteButton}" />
                         <Button Margin="0 8 8 0"
                             Command="{Binding ImportLegacyDefinitionsCommand}"
                             Style="{StaticResource ButtonPrimary}"
-                            hc:IconElement.Geometry="{StaticResource AddGeometry}">导入旧库易损件</Button>
+                                hc:IconElement.Geometry="{StaticResource AddGeometry}"
+                                Content="{loc:Loc PartManagementControl.ImportLegacyDefinitionsButton}" />
                     </WrapPanel>
                 </Grid>
             </Border>
@@ -110,61 +125,61 @@
                       EnableColumnVirtualization="True"
                       EnableRowVirtualization="True">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="资源号"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.ResourceNumberHeader}"
                                         Binding="{Binding ResourceNumber}"
                                         Width="120" />
-                    <DataGridTextColumn Header="名称"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.NameHeader}"
                                         Binding="{Binding PartName}"
                                         Width="140" />
-                    <DataGridTextColumn Header="寿命类型"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.LifetimeTypeHeader}"
                                         Binding="{Binding LifetimeType}"
                                         Width="90" />
-                    <DataGridCheckBoxColumn Header="到期停机"
+                    <DataGridCheckBoxColumn Header="{loc:Loc PartManagementControl.IsShutdownHeader}"
                                             Binding="{Binding IsShutdown}"
                                             Width="80" />
-                    <DataGridTextColumn Header="当前寿命地址"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.CurrentValueAddressHeader}"
                                         Binding="{Binding CurrentValueAddress}"
                                         Width="120" />
-                    <DataGridTextColumn Header="当前寿命数据类型"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.CurrentValueDataTypeHeader}"
                                         Binding="{Binding CurrentValueDataType}"
                                         Width="120" />
-                    <DataGridTextColumn Header="预警寿命地址"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.WarningValueAddressHeader}"
                                         Binding="{Binding WarningValueAddress}"
                                         Width="120" />
-                    <DataGridTextColumn Header="预警寿命数据类型"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.WarningValueDataTypeHeader}"
                                         Binding="{Binding WarningValueDataType}"
                                         Width="120" />
-                    <DataGridTextColumn Header="停机寿命地址"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.ShutdownValueAddressHeader}"
                                         Binding="{Binding ShutdownValueAddress}"
                                         Width="120" />
-                    <DataGridTextColumn Header="停机寿命数据类型"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.ShutdownValueDataTypeHeader}"
                                         Binding="{Binding ShutdownValueDataType}"
                                         Width="120" />
-                    <DataGridTextColumn Header="输入方式"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.InputModeHeader}"
                                         Binding="{Binding InputMode}"
                                         Width="90" />
-                    <DataGridTextColumn Header="条码最小长度"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.CodeMinLengthHeader}"
                                         Binding="{Binding CodeMinLength}"
                                         Width="90" />
-                    <DataGridTextColumn Header="条码最大长度"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.CodeMaxLengthHeader}"
                                         Binding="{Binding CodeMaxLength}"
                                         Width="90" />
-                    <DataGridTextColumn Header="附加清零地址"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.PlcZeroClearAddressHeader}"
                                         Binding="{Binding PlcZeroClearAddress}"
                                         Width="120" />
-                    <DataGridTextColumn Header="易损件条码地址"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.BarcodeWriteAddressHeader}"
                                         Binding="{Binding BarcodeWriteAddress}"
                                         Width="120" />
-                    <DataGridTextColumn Header="创建时间"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.CreatedAtHeader}"
                                         Binding="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
                                         Width="150" />
-                    <DataGridTextColumn Header="创建人"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.CreatedByHeader}"
                                         Binding="{Binding CreatedBy}"
                                         Width="100" />
-                    <DataGridTextColumn Header="更新时间"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.UpdatedAtHeader}"
                                         Binding="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
                                         Width="150" />
-                    <DataGridTextColumn Header="更新人"
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.UpdatedByHeader}"
                                         Binding="{Binding UpdatedBy}"
                                         Width="100" />
                 </DataGrid.Columns>

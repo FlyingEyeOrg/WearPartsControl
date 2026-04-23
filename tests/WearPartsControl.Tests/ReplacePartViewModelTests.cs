@@ -527,7 +527,7 @@ public sealed class ReplacePartViewModelTests
         var toolChangeManagementService = new StubToolChangeManagementService();
         toolChangeManagementService.Definitions.Add(new ToolChangeDefinition { Name = "刀型一", Code = "TL-01" });
         var viewModel = new ReplacePartViewModel(
-            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01", IsWearPartMonitoringEnabled = true } },
             new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01", ProcedureCode = "模切分条" } },
             new StubWearPartManagementService([definition]),
             new StubWearPartReplacementService
@@ -577,7 +577,7 @@ public sealed class ReplacePartViewModelTests
         toolChangeManagementService.Definitions.Add(new ToolChangeDefinition { Id = toolChangeId, Name = "刀型一", Code = "TL-01" });
         toolChangeManagementService.Definitions.Add(new ToolChangeDefinition { Id = Guid.NewGuid(), Name = "刀型二", Code = "TL-OLD" });
         var viewModel = new ReplacePartViewModel(
-            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01", IsWearPartMonitoringEnabled = true } },
             new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01", ProcedureCode = "模切分条" } },
             new StubWearPartManagementService([definition]),
             new StubWearPartReplacementService
@@ -622,7 +622,7 @@ public sealed class ReplacePartViewModelTests
         toolChangeManagementService.Definitions.Add(new ToolChangeDefinition { Name = "刀型一", Code = "TL-01" });
         toolChangeManagementService.Definitions.Add(new ToolChangeDefinition { Name = "刀型二", Code = "TL-02" });
         var viewModel = new ReplacePartViewModel(
-            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01", IsWearPartMonitoringEnabled = true } },
             new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01", ProcedureCode = "模切分条" } },
             new StubWearPartManagementService([definition]),
             new StubWearPartReplacementService
@@ -688,7 +688,7 @@ public sealed class ReplacePartViewModelTests
         });
 
         var viewModel = new ReplacePartViewModel(
-            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01", IsWearPartMonitoringEnabled = true } },
             new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01" } },
             new StubWearPartManagementService([definition]),
             replacementService,
@@ -749,7 +749,7 @@ public sealed class ReplacePartViewModelTests
         });
 
         var viewModel = new ReplacePartViewModel(
-            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01" } },
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01", IsWearPartMonitoringEnabled = true } },
             new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01" } },
             new StubWearPartManagementService([definition]),
             replacementService,

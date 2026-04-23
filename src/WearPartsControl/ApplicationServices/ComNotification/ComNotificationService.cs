@@ -78,7 +78,7 @@ public sealed class ComNotificationService : IComNotificationService
             }
         };
 
-        await SendAsync(request, userConfig, "群消息", cancellationToken).ConfigureAwait(false);
+        await SendAsync(request, userConfig, L("ComNotification.GroupMessageScene"), cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask NotifyWorkAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default)
@@ -111,7 +111,7 @@ public sealed class ComNotificationService : IComNotificationService
             }
         };
 
-        await SendAsync(request, userConfig, "工作消息", cancellationToken).ConfigureAwait(false);
+        await SendAsync(request, userConfig, L("ComNotification.WorkMessageScene"), cancellationToken).ConfigureAwait(false);
     }
 
     private static List<string> ResolveUsers(UserConfigModel userConfig, IReadOnlyCollection<string>? toUsers)

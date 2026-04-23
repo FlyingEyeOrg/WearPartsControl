@@ -17,6 +17,7 @@ public sealed class WearPartMonitoringControlServiceTests
         {
             Current = new AppSettings
             {
+                IsSetClientAppInfo = true,
                 ResourceNumber = "RES-01",
                 IsWearPartMonitoringEnabled = false
             }
@@ -44,6 +45,7 @@ public sealed class WearPartMonitoringControlServiceTests
         {
             Current = new AppSettings
             {
+                IsSetClientAppInfo = true,
                 ResourceNumber = "RES-01",
                 IsWearPartMonitoringEnabled = false
             }

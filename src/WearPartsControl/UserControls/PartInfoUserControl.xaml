@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
              xmlns:vm="clr-namespace:WearPartsControl.ViewModels"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              mc:Ignorable="d"
@@ -39,7 +40,8 @@
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center">资源号：</TextBlock>
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{loc:Loc PartInfoControl.ResourceNumberLabel}" />
                         <TextBox Grid.Column="1"
                                  IsReadOnly="True"
                                  Text="{Binding ResourceNumber, Mode=OneWay}"
@@ -50,57 +52,62 @@
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center">易损件名称：</TextBlock>
+                                                <TextBlock VerticalAlignment="Center"
+                                                                     Text="{loc:Loc PartInfoControl.PartNameLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding PartName, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                 hc:InfoElement.Placeholder="请输入易损件名称" />
+                                                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.PartNamePlaceholder}" />
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center">当前寿命地址：</TextBlock>
+                                                <TextBlock VerticalAlignment="Center"
+                                                                     Text="{loc:Loc PartInfoControl.CurrentValueAddressLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding CurrentValueAddress, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                 hc:InfoElement.Placeholder="请输入当前寿命 PLC 地址" />
+                                                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.CurrentValueAddressPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center">预警寿命地址：</TextBlock>
+                                                <TextBlock VerticalAlignment="Center"
+                                                                     Text="{loc:Loc PartInfoControl.WarningValueAddressLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding WarningValueAddress, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                 hc:InfoElement.Placeholder="请输入预警寿命 PLC 地址" />
+                                                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.WarningValueAddressPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center">停机寿命地址：</TextBlock>
+                                                <TextBlock VerticalAlignment="Center"
+                                                                     Text="{loc:Loc PartInfoControl.ShutdownValueAddressLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding ShutdownValueAddress, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                 hc:InfoElement.Placeholder="请输入停机寿命 PLC 地址" />
+                                                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.ShutdownValueAddressPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center">寿命类型：</TextBlock>
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{loc:Loc PartInfoControl.LifetimeTypeLabel}" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding LifetimeTypes}"
                                   Text="{Binding LifetimeType, UpdateSourceTrigger=PropertyChanged}"
                                   IsEditable="True"
                                   Style="{StaticResource ComboBoxExtend}"
-                                  hc:InfoElement.Placeholder="请选择寿命类型" />
+                                  hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.LifetimeTypePlaceholder}" />
                     </Grid>
                     <Grid Margin="0 0 0 8"
                           Height="28">
@@ -108,7 +115,8 @@
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center">寿命到期强制停机：</TextBlock>
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{loc:Loc PartInfoControl.IsShutdownLabel}" />
                         <CheckBox Grid.Column="1"
                                   IsChecked="{Binding IsShutdown}"
                                   Style="{StaticResource ToggleButtonSwitch}" />
@@ -118,11 +126,12 @@
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center">附加清零地址：</TextBlock>
+                                                <TextBlock VerticalAlignment="Center"
+                                                                     Text="{loc:Loc PartInfoControl.PlcZeroClearAddressLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding PlcZeroClearAddress, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                 hc:InfoElement.Placeholder="请输入清零地址，可不填" />
+                                                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.PlcZeroClearAddressPlaceholder}" />
                     </Grid>
                 </StackPanel>
 
@@ -133,85 +142,92 @@
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center">当前寿命数据类型：</TextBlock>
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{loc:Loc PartInfoControl.CurrentValueDataTypeLabel}" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding DataTypes}"
                                   Text="{Binding CurrentValueDataType, UpdateSourceTrigger=PropertyChanged}"
                                   IsEditable="True"
                                   Style="{StaticResource ComboBoxExtend}"
-                                  hc:InfoElement.Placeholder="请选择数据类型" />
+                                  hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.DataTypePlaceholder}" />
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center">预警寿命数据类型：</TextBlock>
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{loc:Loc PartInfoControl.WarningValueDataTypeLabel}" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding DataTypes}"
                                   Text="{Binding WarningValueDataType, UpdateSourceTrigger=PropertyChanged}"
                                   IsEditable="True"
                                   Style="{StaticResource ComboBoxExtend}"
-                                  hc:InfoElement.Placeholder="请选择数据类型" />
+                                  hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.DataTypePlaceholder}" />
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center">停机寿命数据类型：</TextBlock>
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{loc:Loc PartInfoControl.ShutdownValueDataTypeLabel}" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding DataTypes}"
                                   Text="{Binding ShutdownValueDataType, UpdateSourceTrigger=PropertyChanged}"
                                   IsEditable="True"
                                   Style="{StaticResource ComboBoxExtend}"
-                                  hc:InfoElement.Placeholder="请选择数据类型" />
+                                  hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.DataTypePlaceholder}" />
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center">条码输入模式：</TextBlock>
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{loc:Loc PartInfoControl.InputModeLabel}" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding InputModes}"
                                   Text="{Binding InputMode, UpdateSourceTrigger=PropertyChanged}"
                                   IsEditable="True"
                                   Style="{StaticResource ComboBoxExtend}"
-                                  hc:InfoElement.Placeholder="请选择输入模式" />
+                                  hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.InputModePlaceholder}" />
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center">条码最小长度：</TextBlock>
+                                                <TextBlock VerticalAlignment="Center"
+                                                                     Text="{loc:Loc PartInfoControl.CodeMinLengthLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding CodeMinLength, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                 hc:InfoElement.Placeholder="请输入最小长度" />
+                                                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.CodeMinLengthPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center">条码最大长度：</TextBlock>
+                                                <TextBlock VerticalAlignment="Center"
+                                                                     Text="{loc:Loc PartInfoControl.CodeMaxLengthLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding CodeMaxLength, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                 hc:InfoElement.Placeholder="请输入最大长度" />
+                                                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.CodeMaxLengthPlaceholder}" />
                     </Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center">易损件条码地址：</TextBlock>
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{loc:Loc PartInfoControl.BarcodeWriteAddressLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding BarcodeWriteAddress, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                 hc:InfoElement.Placeholder="更换时写入 PLC，可不填" />
+                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.BarcodeWriteAddressPlaceholder}" />
                     </Grid>
                 </StackPanel>
             </Grid>

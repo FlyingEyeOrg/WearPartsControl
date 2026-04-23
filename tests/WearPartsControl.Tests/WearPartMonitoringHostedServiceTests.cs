@@ -18,7 +18,12 @@ public sealed class WearPartMonitoringHostedServiceTests
             new StubServiceScopeFactory(
                 new StubAppSettingsService
                 {
-                    Current = new AppSettings { ResourceNumber = "RES-01" }
+                    Current = new AppSettings
+                    {
+                        IsSetClientAppInfo = true,
+                        ResourceNumber = "RES-01",
+                        IsWearPartMonitoringEnabled = true
+                    }
                 },
                 new StubWearPartMonitorService(new BusinessException("PLC 未连接")),
                 new StubPlcStartupConnectionService()),
@@ -41,8 +46,35 @@ public sealed class WearPartMonitoringHostedServiceTests
                 {
                     Current = new AppSettings
                     {
+                        IsSetClientAppInfo = true,
                         ResourceNumber = "RES-01",
                         IsWearPartMonitoringEnabled = false
+                    }
+                },
+                monitorService,
+                new StubPlcStartupConnectionService()),
+            logger);
+
+        await service.RunOnceAsync();
+
+        Assert.Equal(0, monitorService.CallCount);
+        Assert.DoesNotContain(logger.Entries, entry => entry.LogLevel == LogLevel.Error);
+    }
+
+    [Fact]
+    public async Task RunOnceAsync_WhenClientAppInfoNotSet_ShouldSkipMonitorCall()
+    {
+        var logger = new TestLogger<WearPartMonitoringHostedService>();
+        var monitorService = new TrackableWearPartMonitorService();
+        var service = new WearPartMonitoringHostedService(
+            new StubServiceScopeFactory(
+                new StubAppSettingsService
+                {
+                    Current = new AppSettings
+                    {
+                        IsSetClientAppInfo = false,
+                        ResourceNumber = string.Empty,
+                        IsWearPartMonitoringEnabled = true
                     }
                 },
                 monitorService,
@@ -66,6 +98,7 @@ public sealed class WearPartMonitoringHostedServiceTests
                 {
                     Current = new AppSettings
                     {
+                        IsSetClientAppInfo = true,
                         ResourceNumber = "RES-01",
                         IsWearPartMonitoringEnabled = true
                     }

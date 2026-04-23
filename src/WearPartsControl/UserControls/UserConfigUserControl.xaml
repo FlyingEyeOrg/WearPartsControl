@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:hc="https://handyorg.github.io/handycontrol"
+             xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
              mc:Ignorable="d"
              d:DesignWidth="800">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -13,12 +14,14 @@
                 <TextBlock HorizontalAlignment="Center"
                            FontWeight="Bold"
                            FontSize="16"
-                           Foreground="White">用户配置</TextBlock>
+                           Foreground="White"
+                           Text="{loc:Loc UserConfigControl.Title}" />
             </Border>
 
             <TextBlock Margin="8 16 8 0"
                        FontWeight="SemiBold"
-                       Foreground="#FF365082">通知配置</TextBlock>
+                       Foreground="#FF365082"
+                       Text="{loc:Loc UserConfigControl.NotificationSection}" />
 
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>
@@ -26,11 +29,29 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">ME 负责人工号：</TextBlock>
+                           VerticalAlignment="Center"
+                           Text="{loc:Loc UserConfigControl.LanguageLabel}" />
+                <ComboBox Grid.Column="1"
+                          Style="{StaticResource ComboBoxExtend}"
+                          ItemsSource="{Binding LanguageOptions}"
+                          SelectedValue="{Binding SelectedLanguage, UpdateSourceTrigger=PropertyChanged}"
+                          SelectedValuePath="Code"
+                          DisplayMemberPath="DisplayName"
+                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.LanguagePlaceholder}" />
+            </Grid>
+
+            <Grid Margin="8 8 8 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           Text="{loc:Loc UserConfigControl.MeResponsibleWorkIdLabel}" />
                 <TextBox Grid.Column="1"
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding MeResponsibleWorkId, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="请输入 ME 负责人工号" />
+                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.MeResponsibleWorkIdPlaceholder}" />
             </Grid>
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>
@@ -38,11 +59,12 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">ME 负责人姓名：</TextBlock>
+                                                     VerticalAlignment="Center"
+                                                     Text="{loc:Loc UserConfigControl.MeResponsibleNameLabel}" />
                 <TextBox Grid.Column="1"
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding MeResponsibleName, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="请输入 ME 负责人姓名" />
+                                                 hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.MeResponsibleNamePlaceholder}" />
             </Grid>
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>
@@ -50,11 +72,12 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">PRD 负责人工号：</TextBlock>
+                                                     VerticalAlignment="Center"
+                                                     Text="{loc:Loc UserConfigControl.PrdResponsibleWorkIdLabel}" />
                 <TextBox Grid.Column="1"
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding PrdResponsibleWorkId, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="请输入 PRD 负责人工号" />
+                                                 hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.PrdResponsibleWorkIdPlaceholder}" />
             </Grid>
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>
@@ -62,11 +85,12 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">PRD 负责人姓名：</TextBlock>
+                                                     VerticalAlignment="Center"
+                                                     Text="{loc:Loc UserConfigControl.PrdResponsibleNameLabel}" />
                 <TextBox Grid.Column="1"
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding PrdResponsibleName, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="请输入 PRD 负责人姓名" />
+                                                 hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.PrdResponsibleNamePlaceholder}" />
             </Grid>
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>
@@ -74,11 +98,12 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">更换人员姓名：</TextBlock>
+                                                     VerticalAlignment="Center"
+                                                     Text="{loc:Loc UserConfigControl.ReplacementOperatorNameLabel}" />
                 <TextBox Grid.Column="1"
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding ReplacementOperatorName, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="请输入更换人员姓名" />
+                                                 hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.ReplacementOperatorNamePlaceholder}" />
             </Grid>
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>
@@ -86,7 +111,8 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">启用 COM 通知：</TextBlock>
+                           VerticalAlignment="Center"
+                           Text="{loc:Loc UserConfigControl.ComNotificationEnabledLabel}" />
                 <CheckBox Grid.Column="1"
                           VerticalAlignment="Center"
                           IsChecked="{Binding ComNotificationEnabled}" />
@@ -97,7 +123,8 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">PushUrl：</TextBlock>
+                           VerticalAlignment="Center"
+                           Text="{loc:Loc UserConfigControl.ComPushUrlLabel}" />
                 <TextBox Grid.Column="1"
                          IsReadOnly="True"
                          Style="{StaticResource TextBoxExtend}"
@@ -109,7 +136,8 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">DeIpaasKeyAuth：</TextBlock>
+                           VerticalAlignment="Center"
+                           Text="{loc:Loc UserConfigControl.ComDeIpaasKeyAuthLabel}" />
                 <TextBox Grid.Column="1"
                          IsReadOnly="True"
                          Style="{StaticResource TextBoxExtend}"
@@ -121,7 +149,8 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">AgentId：</TextBlock>
+                           VerticalAlignment="Center"
+                           Text="{loc:Loc UserConfigControl.ComAgentIdLabel}" />
                 <TextBox Grid.Column="1"
                          IsReadOnly="True"
                          Style="{StaticResource TextBoxExtend}"
@@ -133,7 +162,8 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">GroupTemplateId：</TextBlock>
+                           VerticalAlignment="Center"
+                           Text="{loc:Loc UserConfigControl.ComGroupTemplateIdLabel}" />
                 <TextBox Grid.Column="1"
                          IsReadOnly="True"
                          Style="{StaticResource TextBoxExtend}"
@@ -145,7 +175,8 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">WorkTemplateId：</TextBlock>
+                           VerticalAlignment="Center"
+                           Text="{loc:Loc UserConfigControl.ComWorkTemplateIdLabel}" />
                 <TextBox Grid.Column="1"
                          IsReadOnly="True"
                          Style="{StaticResource TextBoxExtend}"
@@ -157,7 +188,8 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">UserType：</TextBlock>
+                           VerticalAlignment="Center"
+                           Text="{loc:Loc UserConfigControl.ComUserTypeLabel}" />
                 <TextBox Grid.Column="1"
                          IsReadOnly="True"
                          Style="{StaticResource TextBoxExtend}"
@@ -169,11 +201,12 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">ComAccessToken：</TextBlock>
+                                                     VerticalAlignment="Center"
+                                                     Text="{loc:Loc UserConfigControl.ComAccessTokenLabel}" />
                 <TextBox Grid.Column="1"
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding ComAccessToken, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="请输入 Com 群访问令牌" />
+                                                 hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.ComAccessTokenPlaceholder}" />
             </Grid>
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>
@@ -181,16 +214,18 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">ComSecret：</TextBlock>
+                                                     VerticalAlignment="Center"
+                                                     Text="{loc:Loc UserConfigControl.ComSecretLabel}" />
                 <TextBox Grid.Column="1"
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding ComSecret, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="请输入 Com 群 Secret" />
+                                                 hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.ComSecretPlaceholder}" />
             </Grid>
 
             <TextBlock Margin="8 16 8 0"
                        FontWeight="SemiBold"
-                       Foreground="#FF365082">垫片校验配置</TextBlock>
+                                             Foreground="#FF365082"
+                                             Text="{loc:Loc UserConfigControl.SpacerValidationSection}" />
 
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>
@@ -198,7 +233,8 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">启用垫片校验：</TextBlock>
+                           VerticalAlignment="Center"
+                           Text="{loc:Loc UserConfigControl.SpacerValidationEnabledLabel}" />
                 <CheckBox Grid.Column="1"
                           VerticalAlignment="Center"
                           IsChecked="{Binding SpacerValidationEnabled}" />
@@ -209,11 +245,12 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">校验接口地址：</TextBlock>
+                                                     VerticalAlignment="Center"
+                                                     Text="{loc:Loc UserConfigControl.SpacerValidationUrlLabel}" />
                 <TextBox Grid.Column="1"
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding SpacerValidationUrl, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="请输入垫片校验接口地址" />
+                                                 hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationUrlPlaceholder}" />
             </Grid>
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>
@@ -221,11 +258,12 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">请求超时（毫秒）：</TextBlock>
+                                                     VerticalAlignment="Center"
+                                                     Text="{loc:Loc UserConfigControl.SpacerValidationTimeoutLabel}" />
                 <TextBox Grid.Column="1"
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding SpacerValidationTimeoutMilliseconds, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="请输入超时时间，默认 5000" />
+                                                 hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationTimeoutPlaceholder}" />
             </Grid>
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>
@@ -233,7 +271,8 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">忽略证书错误：</TextBlock>
+                           VerticalAlignment="Center"
+                           Text="{loc:Loc UserConfigControl.SpacerValidationIgnoreCertificateLabel}" />
                 <CheckBox Grid.Column="1"
                           VerticalAlignment="Center"
                           IsChecked="{Binding SpacerValidationIgnoreServerCertificateErrors}" />
@@ -244,11 +283,12 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">条码分隔符：</TextBlock>
+                                                     VerticalAlignment="Center"
+                                                     Text="{loc:Loc UserConfigControl.SpacerValidationCodeSeparatorLabel}" />
                 <TextBox Grid.Column="1"
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding SpacerValidationCodeSeparator, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="请输入条码分隔符，默认 /" />
+                                                 hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationCodeSeparatorPlaceholder}" />
             </Grid>
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>
@@ -256,20 +296,23 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center">条码段数：</TextBlock>
+                       VerticalAlignment="Center"
+                       Text="{loc:Loc UserConfigControl.SpacerValidationExpectedSegmentCountLabel}" />
                 <TextBox Grid.Column="1"
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding SpacerValidationExpectedSegmentCount, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="请输入条码段数，默认 8" />
+                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationExpectedSegmentCountPlaceholder}" />
             </Grid>
 
             <Grid Margin="8 16 8 8">
                 <Button Width="80"
                         Style="{StaticResource ButtonPrimary}"
-                        Command="{Binding SaveCommand}">保存信息</Button>
+                    Command="{Binding SaveCommand}"
+                    Content="{loc:Loc UserConfigControl.SaveButton}" />
                 <Button Width="120"
                         HorizontalAlignment="Right"
-                        Command="{Binding TestComNotificationCommand}">测试 COM 通知</Button>
+                    Command="{Binding TestComNotificationCommand}"
+                    Content="{loc:Loc UserConfigControl.TestComNotificationButton}" />
             </Grid>
             <TextBlock Margin="8 0 8 8"
                        Foreground="#FF365082"

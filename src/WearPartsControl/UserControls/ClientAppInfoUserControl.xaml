@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
              xmlns:ui="https://handyorg.github.io/handycontrol"
              xmlns:vm="clr-namespace:WearPartsControl.ViewModels"
              mc:Ignorable="d"
@@ -16,7 +17,8 @@
                 <TextBlock HorizontalAlignment="Center"
                            FontWeight="Bold"
                            FontSize="16"
-                           Foreground="White">客户端信息</TextBlock>
+                           Foreground="White"
+                           Text="{loc:Loc ClientAppInfoControl.Title}" />
             </Border>
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>
@@ -31,9 +33,10 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">基地：</TextBlock>
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc ClientAppInfoControl.SiteLabel}" />
                         <ComboBox Style="{StaticResource ComboBoxExtend}"
-                                  ui:InfoElement.Placeholder="请选择基地"
+                                  ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.SitePlaceholder}"
                                   DisplayMemberPath="DisplayName"
                                   Grid.Column="1"
                                   ItemsSource="{Binding SiteOptions}"
@@ -46,12 +49,13 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">工序：</TextBlock>
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc ClientAppInfoControl.ProcedureLabel}" />
                         <ComboBox Grid.Column="1"
                                   Style="{StaticResource ComboBoxExtend}"
                                   ItemsSource="{Binding ProcedureOptions}"
                                   SelectedItem="{Binding ProcedureCode, UpdateSourceTrigger=PropertyChanged}"
-                                  ui:InfoElement.Placeholder="请选择工序" />
+                                  ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.ProcedurePlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -59,13 +63,14 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">PLC 类型：</TextBlock>
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc ClientAppInfoControl.PlcProtocolTypeLabel}" />
                         <ComboBox Style="{StaticResource ComboBoxExtend}"
                                   IsEnabled="{Binding IsPlcParametersEditable}"
                                   Grid.Column="1"
                                   ItemsSource="{Binding PlcProtocolTypes}"
                                   SelectedItem="{Binding PlcProtocolType, UpdateSourceTrigger=PropertyChanged}"
-                                  ui:InfoElement.Placeholder="请选择 PLC 类型" />
+                                  ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.PlcProtocolTypePlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -73,12 +78,13 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">停机地址：</TextBlock>
+                                                                     VerticalAlignment="Center"
+                                                                     Text="{loc:Loc ClientAppInfoControl.ShutdownPointAddressLabel}" />
                         <TextBox Style="{StaticResource TextBoxExtend}"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
                                  Grid.Column="1"
                                  Text="{Binding ShutdownPointAddress, UpdateSourceTrigger=PropertyChanged}"
-                                 ui:InfoElement.Placeholder="请输入 PLC 的停机地址" />
+                                                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.ShutdownPointAddressPlaceholder}" />
                     </Grid>
                 </StackPanel>
                 <StackPanel Grid.Column="1"
@@ -89,12 +95,13 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">工厂：</TextBlock>
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc ClientAppInfoControl.FactoryLabel}" />
                         <ComboBox Style="{StaticResource ComboBoxExtend}"
                                   Grid.Column="1"
                                   ItemsSource="{Binding FactoryOptions}"
                                   SelectedItem="{Binding FactoryCode, UpdateSourceTrigger=PropertyChanged}"
-                                  ui:InfoElement.Placeholder="请选择工厂" />
+                                  ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.FactoryPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -102,11 +109,12 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">设备资源号：</TextBlock>
+                                                                     VerticalAlignment="Center"
+                                                                     Text="{loc:Loc ClientAppInfoControl.ResourceNumberLabel}" />
                         <TextBox Style="{StaticResource TextBoxExtend}"
                                  Grid.Column="1"
                                  Text="{Binding ResourceNumber, UpdateSourceTrigger=PropertyChanged}"
-                                 ui:InfoElement.Placeholder="请输入设备资源号" />
+                                                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.ResourceNumberPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -114,12 +122,13 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">IP 地址：</TextBlock>
+                                                                     VerticalAlignment="Center"
+                                                                     Text="{loc:Loc ClientAppInfoControl.PlcIpAddressLabel}" />
                         <TextBox Style="{StaticResource TextBoxExtend}"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
                                  Grid.Column="1"
                                  Text="{Binding PlcIpAddress, UpdateSourceTrigger=PropertyChanged}"
-                                 ui:InfoElement.Placeholder="请输入 PLC 的 IP 地址" />
+                                                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.PlcIpAddressPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0"
                           Visibility="{Binding IsSiemensRackVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -128,12 +137,13 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">机架号：</TextBlock>
+                                                                     VerticalAlignment="Center"
+                                                                     Text="{loc:Loc ClientAppInfoControl.SiemensRackLabel}" />
                         <TextBox Style="{StaticResource TextBoxExtend}"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
                                  Grid.Column="1"
                                  Text="{Binding SiemensRack, UpdateSourceTrigger=PropertyChanged}"
-                                 ui:InfoElement.Placeholder="西门子 PLC 机架号，默认 0" />
+                                                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.SiemensRackPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0"
                           Visibility="{Binding IsSiemensSlotVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -142,12 +152,13 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">插槽号：</TextBlock>
+                                                                     VerticalAlignment="Center"
+                                                                     Text="{loc:Loc ClientAppInfoControl.SiemensSlotLabel}" />
                         <TextBox Style="{StaticResource TextBoxExtend}"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
                                  Grid.Column="1"
                                  Text="{Binding SiemensSlot, UpdateSourceTrigger=PropertyChanged}"
-                                 ui:InfoElement.Placeholder="西门子 PLC 插槽号，默认 0" />
+                                                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.SiemensSlotPlaceholder}" />
                     </Grid>
                 </StackPanel>
                 <StackPanel Grid.Column="2">
@@ -157,12 +168,13 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">区域：</TextBlock>
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc ClientAppInfoControl.AreaLabel}" />
                         <ComboBox Grid.Column="1"
                                   Style="{StaticResource ComboBoxExtend}"
                                   ItemsSource="{Binding AreaOptions}"
                                   SelectedItem="{Binding AreaCode, UpdateSourceTrigger=PropertyChanged}"
-                                  ui:InfoElement.Placeholder="请选择区域" />
+                                  ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.AreaPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -170,11 +182,12 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">设备编号：</TextBlock>
+                                                                     VerticalAlignment="Center"
+                                                                     Text="{loc:Loc ClientAppInfoControl.EquipmentCodeLabel}" />
                         <TextBox Grid.Column="1"
                                  Style="{StaticResource TextBoxExtend}"
                                  Text="{Binding EquipmentCode, UpdateSourceTrigger=PropertyChanged}"
-                                 ui:InfoElement.Placeholder="请输入设备编号" />
+                                                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.EquipmentCodePlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -182,12 +195,13 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">端口：</TextBlock>
+                                                                     VerticalAlignment="Center"
+                                                                     Text="{loc:Loc ClientAppInfoControl.PlcPortLabel}" />
                         <TextBox Grid.Column="1"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
                                  Style="{StaticResource TextBoxExtend}"
                                  Text="{Binding PlcPort, UpdateSourceTrigger=PropertyChanged}"
-                                 ui:InfoElement.Placeholder="请输入 PLC 端口" />
+                                                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.PlcPortPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0"
                           Height="28">
@@ -197,7 +211,8 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
-                                   Visibility="{Binding IsStringReverseVisible, Converter={StaticResource BooleanToVisibilityConverter}}">字符串反转：</TextBlock>
+                                   Visibility="{Binding IsStringReverseVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                   Text="{loc:Loc ClientAppInfoControl.IsStringReverseLabel}" />
                         <CheckBox Grid.Column="1"
                                   Style="{StaticResource ToggleButtonSwitch}"
                                   Width="80"
@@ -219,13 +234,15 @@
                 </Grid.ColumnDefinitions>
                 <Button Width="120"
                         IsEnabled="{Binding IsImportLegacyConfigurationEnabled}"
-                        Click="OnImportLegacyConfigurationClicked">导入旧项目配置</Button>
+                    Click="OnImportLegacyConfigurationClicked"
+                    Content="{loc:Loc ClientAppInfoControl.ImportLegacyConfigurationButton}" />
                 <Button Grid.Column="1"
                         Width="80"
                         Margin="8 0 0 0"
                         IsEnabled="{Binding IsSaveClientAppInfoEnabled}"
                         Click="OnSaveClicked"
-                        Style="{StaticResource ButtonPrimary}">保存信息</Button>
+                    Style="{StaticResource ButtonPrimary}"
+                    Content="{loc:Loc ClientAppInfoControl.SaveButton}" />
                 <Grid Grid.Column="2"
                       Margin="16 0 0 0"
                       VerticalAlignment="Center">
@@ -233,7 +250,8 @@
                         <ColumnDefinition Width="110" />
                         <ColumnDefinition Width="160" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock VerticalAlignment="Center">易损件监控状态：</TextBlock>
+                    <TextBlock VerticalAlignment="Center"
+                               Text="{loc:Loc ClientAppInfoControl.WearPartMonitoringStatusLabel}" />
                     <TextBox Grid.Column="1"
                              IsReadOnly="True"
                              Background="{Binding WearPartMonitoringStatusBackground}"
@@ -272,7 +290,8 @@
                     <Button Width="100"
                             Margin="8 0 0 0"
                             IsEnabled="{Binding IsTestPlcConnectionEnabled}"
-                            Click="OnTestPlcConnectionClicked">测试 PLC 连接</Button>
+                            Click="OnTestPlcConnectionClicked"
+                            Content="{loc:Loc ClientAppInfoControl.TestPlcConnectionButton}" />
                 </StackPanel>
             </Grid>
         </StackPanel>

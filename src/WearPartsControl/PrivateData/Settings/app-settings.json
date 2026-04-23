@@ -5,5 +5,6 @@
     "SlowQueueWaitThresholdMilliseconds": 100,
     "SlowExecutionThresholdMilliseconds": 500
   },
-  "IsSetClientAppInfo": false
+  "IsSetClientAppInfo": false,
+  "IsWearPartMonitoringEnabled": false
 }

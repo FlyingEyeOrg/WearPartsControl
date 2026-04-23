@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:WearPartsControl.UserControls"
+             xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              mc:Ignorable="d"
              d:DesignHeight="80"
@@ -48,13 +49,13 @@
                 <Button x:Name="LoginButton"
                         Style="{StaticResource ButtonPrimary}"
                         Command="{Binding OpenLoginCommand}"
-                        Content="登录"
+                    Content="{loc:Loc LoginBoxControl.LoginButton}"
                         Visibility="{Binding ShowLoginButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                         MinWidth="60" />
                 <Button x:Name="LogoutButton"
                         Margin="0 8 0 0"
                         Command="{Binding LogoutCommand}"
-                        Content="注销"
+                    Content="{loc:Loc LoginBoxControl.LogoutButton}"
                         Visibility="{Binding ShowLogoutButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                         MinWidth="60" />
             </StackPanel>

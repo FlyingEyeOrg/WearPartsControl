@@ -365,7 +365,7 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
     private static string BuildCsvContent(IEnumerable<WearPartReplacementRecord> records)
     {
         var builder = new StringBuilder();
-        builder.AppendLine("名称,更换原因,当前编码,新编码,当前寿命,预警寿命,停机寿命,更换时间,操作员,备注");
+        builder.AppendLine(LocalizedText.Get("ViewModels.PartUpdateRecordVm.ExportCsvHeader"));
 
         foreach (var record in records)
         {

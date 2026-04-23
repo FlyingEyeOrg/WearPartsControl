@@ -20,6 +20,14 @@ public sealed class PlcConnectionTestService : IPlcConnectionTestService
     {
         ArgumentNullException.ThrowIfNull(clientAppInfo);
 
+        var validationMessage = ValidateClientAppInfo(clientAppInfo);
+        if (!string.IsNullOrWhiteSpace(validationMessage))
+        {
+            var notConfigured = PlcStartupConnectionResult.NotConfigured(validationMessage);
+            _plcConnectionStatusService.Set(notConfigured);
+            return notConfigured;
+        }
+
         try
         {
             var connecting = PlcStartupConnectionResult.Connecting(LocalizedText.Get("ViewModels.ClientAppInfoVm.TestingPlcConnection"));
@@ -38,5 +46,25 @@ public sealed class PlcConnectionTestService : IPlcConnectionTestService
             _plcConnectionStatusService.Set(failed);
             return failed;
         }
+    }
+
+    private static string? ValidateClientAppInfo(ClientAppInfoModel clientAppInfo)
+    {
+        return GetRequiredMessage(clientAppInfo.SiteCode, "Services.ClientAppInfo.SiteCodeRequired")
+            ?? GetRequiredMessage(clientAppInfo.FactoryCode, "Services.ClientAppInfo.FactoryCodeRequired")
+            ?? GetRequiredMessage(clientAppInfo.AreaCode, "Services.ClientAppInfo.AreaCodeRequired")
+            ?? GetRequiredMessage(clientAppInfo.ProcedureCode, "Services.ClientAppInfo.ProcedureCodeRequired")
+            ?? GetRequiredMessage(clientAppInfo.EquipmentCode, "Services.ClientAppInfo.EquipmentCodeRequired")
+            ?? GetRequiredMessage(clientAppInfo.ResourceNumber, "Services.ClientAppInfo.ResourceNumberRequired")
+            ?? GetRequiredMessage(clientAppInfo.PlcProtocolType, "Services.ClientAppInfo.PlcProtocolRequired")
+            ?? GetRequiredMessage(clientAppInfo.PlcIpAddress, "Services.ClientAppInfo.PlcIpRequired")
+            ?? GetRequiredMessage(clientAppInfo.ShutdownPointAddress, "Services.ClientAppInfo.ShutdownPointAddressRequired");
+    }
+
+    private static string? GetRequiredMessage(string? value, string localizationKey)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? LocalizedText.Get(localizationKey)
+            : null;
     }
 }

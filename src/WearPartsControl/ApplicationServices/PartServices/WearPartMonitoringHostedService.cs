@@ -47,6 +47,12 @@ public sealed class WearPartMonitoringHostedService : BackgroundService
             var monitorService = scope.ServiceProvider.GetRequiredService<IWearPartMonitorService>();
             var settings = await appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
 
+            if (!settings.IsSetClientAppInfo)
+            {
+                _logger.LogDebug("跳过后台易损件监控：当前未设置客户端基础信息。");
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(settings.ResourceNumber))
             {
                 _logger.LogDebug("跳过后台易损件监控：当前未配置资源号。");

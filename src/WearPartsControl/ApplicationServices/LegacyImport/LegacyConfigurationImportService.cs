@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.SpacerManagement;
@@ -343,7 +344,7 @@ public sealed class LegacyConfigurationImportService : ILegacyConfigurationImpor
 
         if (configurations.Count == 0)
         {
-            throw new UserFriendlyException("旧版数据库中未找到客户端基础配置。", code: "LegacyConfigImport:ClientConfigMissing");
+            throw new UserFriendlyException(LocalizedText.Get("Services.LegacyImport.ClientConfigMissing"), code: "LegacyConfigImport:ClientConfigMissing");
         }
 
         if (!string.IsNullOrWhiteSpace(expectedResourceNumber))
@@ -351,7 +352,7 @@ public sealed class LegacyConfigurationImportService : ILegacyConfigurationImpor
             var matched = configurations.FirstOrDefault(x => string.Equals(Normalize(x.ResourceNumber), expectedResourceNumber, StringComparison.OrdinalIgnoreCase));
             if (matched is null)
             {
-                throw new UserFriendlyException($"旧版数据库中未找到资源号 {expectedResourceNumber} 对应的客户端基础配置。", code: "LegacyConfigImport:ResourceNotFound");
+                throw new UserFriendlyException(LocalizedText.Format("Services.LegacyImport.ResourceNotFound", expectedResourceNumber), code: "LegacyConfigImport:ResourceNotFound");
             }
 
             return matched;
@@ -380,13 +381,13 @@ public sealed class LegacyConfigurationImportService : ILegacyConfigurationImpor
     {
         if (string.IsNullOrWhiteSpace(legacyDatabasePath))
         {
-            throw new UserFriendlyException("旧版 SQLite 数据库文件路径不能为空。", code: "LegacyConfigImport:PathRequired");
+            throw new UserFriendlyException(LocalizedText.Get("Services.LegacyImport.PathRequired"), code: "LegacyConfigImport:PathRequired");
         }
 
         var fullPath = Path.GetFullPath(legacyDatabasePath);
         if (!File.Exists(fullPath))
         {
-            throw new UserFriendlyException($"未找到旧版 SQLite 数据库文件：{fullPath}", code: "LegacyConfigImport:PathNotFound");
+            throw new UserFriendlyException(LocalizedText.Format("Services.LegacyImport.PathNotFound", fullPath), code: "LegacyConfigImport:PathNotFound");
         }
 
         return fullPath;
@@ -397,7 +398,7 @@ public sealed class LegacyConfigurationImportService : ILegacyConfigurationImpor
         var databaseDirectory = Path.GetDirectoryName(legacyDatabasePath);
         if (string.IsNullOrWhiteSpace(databaseDirectory))
         {
-            throw new UserFriendlyException("无法识别旧版数据库所在目录。", code: "LegacyConfigImport:InvalidDirectory");
+            throw new UserFriendlyException(LocalizedText.Get("Services.LegacyImport.InvalidDirectory"), code: "LegacyConfigImport:InvalidDirectory");
         }
 
         var directoryInfo = new DirectoryInfo(databaseDirectory);

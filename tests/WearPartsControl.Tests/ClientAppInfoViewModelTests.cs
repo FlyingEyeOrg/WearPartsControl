@@ -94,6 +94,28 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
     }
 
     [Fact]
+    public void InitialState_ShouldShowMonitoringDisabledBeforeInitializationCompletes()
+    {
+        var viewModel = new ClientAppInfoViewModel(
+            new StubClientAppInfoService(),
+            new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
+            new StubLegacyConfigurationImportService(),
+            new StubPlcConnectionTestService(),
+            new PlcConnectionStatusService(),
+            new StubWearPartMonitoringControlService { IsEnabled = false },
+            new UiDispatcher(),
+            new UiBusyService());
+
+        Assert.False(viewModel.IsWearPartMonitoringEnabled);
+        Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.StartWearPartMonitoring"), viewModel.WearPartMonitoringButtonText);
+        Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringDisabledStatus"), viewModel.WearPartMonitoringStatusText);
+        Assert.Same(System.Windows.Media.Brushes.DimGray, viewModel.WearPartMonitoringStatusBackground);
+        Assert.True(viewModel.IsPlcParametersEditable);
+        Assert.False(viewModel.IsToggleWearPartMonitoringEnabled);
+        Assert.False(viewModel.IsTestPlcConnectionEnabled);
+    }
+
+    [Fact]
     public async Task InitializeAsync_WhenProcedureIsEmpty_ShouldUseFirstProcedureOptionAsDefault()
     {
         var service = new StubClientAppInfoService
@@ -280,6 +302,47 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         Assert.True(plcConnectionTestService.WasCalled);
         Assert.True(plcConnectionTestService.RenderCountAtCall >= 2);
         Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.PlcConnectionTestSucceeded"), viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task TestPlcConnectionCommand_WhenBaseInfoMissing_ShouldShowValidationMessage()
+    {
+        var viewModel = new ClientAppInfoViewModel(
+            new StubClientAppInfoService
+            {
+                Model = new ClientAppInfoModel()
+            },
+            new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
+            new StubLegacyConfigurationImportService(),
+            new StubPlcConnectionTestService(),
+            new PlcConnectionStatusService(),
+            new StubWearPartMonitoringControlService { IsEnabled = false },
+            new UiDispatcher(),
+            new UiBusyService());
+
+        await viewModel.InitializeAsync();
+        Assert.False(viewModel.IsTestPlcConnectionEnabled);
+    }
+
+    [Fact]
+    public async Task ToggleWearPartMonitoringCommand_WhenBaseInfoMissing_ShouldStayDisabled()
+    {
+        var viewModel = new ClientAppInfoViewModel(
+            new StubClientAppInfoService
+            {
+                Model = new ClientAppInfoModel()
+            },
+            new JsonClientAppInfoSelectionOptionsProvider(new StubLocalizationService()),
+            new StubLegacyConfigurationImportService(),
+            new StubPlcConnectionTestService(),
+            new PlcConnectionStatusService(),
+            new StubWearPartMonitoringControlService { IsEnabled = false },
+            new UiDispatcher(),
+            new UiBusyService());
+
+        await viewModel.InitializeAsync();
+
+        Assert.False(viewModel.IsToggleWearPartMonitoringEnabled);
     }
 
     [Fact]
@@ -527,6 +590,37 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             DisableCallCount++;
             IsEnabled = false;
             return Task.CompletedTask;
+        }
+    }
+
+    private sealed class TrackingPlcOperationPipeline : IPlcOperationPipeline
+    {
+        public bool ConnectCalled { get; private set; }
+
+        public Task ConnectAsync(string operationName, PlcConnectionOptions options, CancellationToken cancellationToken = default)
+        {
+            ConnectCalled = true;
+            return Task.CompletedTask;
+        }
+
+        public Task DisconnectAsync(string operationName, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<bool> IsConnectedAsync(string operationName, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<TValue> ReadAsync<TValue>(string operationName, string address, int retryCount = 1, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task WriteAsync<TValue>(string operationName, string address, TValue value, int retryCount = 1, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
         }
     }
 

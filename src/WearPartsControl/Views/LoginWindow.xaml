@@ -4,8 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
         mc:Ignorable="d"
-        Title="登录"
+    Title="{loc:Loc LoginWindowView.Title}"
         Height="420"
         Width="800"
         ResizeMode="NoResize"
@@ -36,12 +37,16 @@
                               Content="{Binding LoginPrompt}" />
                     <TextBlock Margin="0 16 0 0"
                                HorizontalAlignment="Center"
-                               Foreground="Gray"
-                               Text="{Binding ResourceNumber, StringFormat=当前资源号：{0}}" />
+                               Foreground="Gray">
+                        <Run Text="{loc:Loc LoginWindowView.ResourceNumberLabel}" />
+                        <Run Text="{Binding ResourceNumber}" />
+                    </TextBlock>
                     <TextBlock Margin="0 8 0 0"
                                HorizontalAlignment="Center"
-                               Foreground="Gray"
-                               Text="{Binding SiteCode, StringFormat=基地：{0}}" />
+                               Foreground="Gray">
+                        <Run Text="{loc:Loc LoginWindowView.SiteLabel}" />
+                        <Run Text="{Binding SiteCode}" />
+                    </TextBlock>
                     <Grid Margin="0 16 0 0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
@@ -58,7 +63,8 @@
                                 Margin="8 0 0 0"
                                 Style="{StaticResource ButtonPrimary}"
                                 Width="80"
-                                Command="{Binding LoginCommand}">登录</Button>
+                            Command="{Binding LoginCommand}"
+                            Content="{loc:Loc LoginWindowView.LoginButton}" />
                     </Grid>
                     <TextBlock Margin="0 16 0 0"
                                TextWrapping="Wrap"

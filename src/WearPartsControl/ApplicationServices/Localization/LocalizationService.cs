@@ -47,6 +47,7 @@ public sealed class LocalizationService : ILocalizationService
         CultureInfo.CurrentUICulture = culture;
         CultureInfo.DefaultThreadCurrentCulture = culture;
         CultureInfo.DefaultThreadCurrentUICulture = culture;
+        LocalizationBindingSource.Instance.Refresh();
 
         var config = new LocalizationOptionsSaveInfo { CultureName = culture.Name };
         await _saveInfoStore.WriteAsync(config, cancellationToken).ConfigureAwait(false);

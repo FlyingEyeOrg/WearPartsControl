@@ -83,4 +83,41 @@ public sealed class AppSettingsServiceTests
             }
         }
     }
+
+    [Fact]
+    public async Task GetAsync_WhenMonitoringFlagMissing_ShouldDefaultToDisabled()
+    {
+        var settingsDirectory = Path.Combine(Path.GetTempPath(), $"WearPartsControl.Tests.{Guid.NewGuid():N}");
+        Directory.CreateDirectory(settingsDirectory);
+
+        try
+        {
+            var path = Path.Combine(settingsDirectory, "app-settings.json");
+            await File.WriteAllTextAsync(path, """
+{
+  "ResourceNumber": "",
+  "LoginInputMaxIntervalMilliseconds": 2000,
+  "PlcPipeline": {
+    "SlowQueueWaitThresholdMilliseconds": 100,
+    "SlowExecutionThresholdMilliseconds": 500
+  },
+  "IsSetClientAppInfo": false
+}
+""");
+
+            var store = new TypeJsonSaveInfoStore(settingsDirectory);
+            var service = new AppSettingsService(store, settingsDirectory);
+
+            var settings = await service.GetAsync();
+
+            Assert.False(settings.IsWearPartMonitoringEnabled);
+        }
+        finally
+        {
+            if (Directory.Exists(settingsDirectory))
+            {
+                Directory.Delete(settingsDirectory, true);
+            }
+        }
+    }
 }

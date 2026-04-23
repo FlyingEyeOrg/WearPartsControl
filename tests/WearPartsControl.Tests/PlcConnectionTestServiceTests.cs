@@ -1,4 +1,5 @@
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PlcService;
 using Xunit;
 
@@ -15,9 +16,16 @@ public sealed class PlcConnectionTestServiceTests
 
         var result = await service.TestAsync(new ClientAppInfoModel
         {
+            SiteCode = "S01",
+            FactoryCode = "F01",
+            AreaCode = "阳极",
+            ProcedureCode = "搅拌",
+            EquipmentCode = "EQ-01",
+            ResourceNumber = "RES-01",
             PlcProtocolType = "SiemensS1500",
             PlcIpAddress = "192.168.0.10",
             PlcPort = 102,
+            ShutdownPointAddress = "M0.0",
             SiemensRack = 0,
             SiemensSlot = 0,
             IsStringReverse = false
@@ -27,6 +35,21 @@ public sealed class PlcConnectionTestServiceTests
         Assert.Equal(PlcStartupConnectionStatus.Connected, statusService.Current.Status);
         Assert.NotNull(pipeline.LastOptions);
         Assert.Equal("192.168.0.10", pipeline.LastOptions!.IpAddress);
+    }
+
+    [Fact]
+    public async Task TestAsync_WhenBaseInfoMissing_ShouldReturnNotConfiguredAndSkipPipeline()
+    {
+        var pipeline = new StubPlcOperationPipeline();
+        var statusService = new PlcConnectionStatusService();
+        var service = new PlcConnectionTestService(pipeline, statusService);
+
+        var result = await service.TestAsync(new ClientAppInfoModel());
+
+        Assert.Equal(PlcStartupConnectionStatus.NotConfigured, result.Status);
+        Assert.Equal(LocalizedText.Get("Services.ClientAppInfo.SiteCodeRequired"), result.Message);
+        Assert.Equal(PlcStartupConnectionStatus.NotConfigured, statusService.Current.Status);
+        Assert.Null(pipeline.LastOptions);
     }
 
     private sealed class StubPlcOperationPipeline : IPlcOperationPipeline

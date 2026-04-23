@@ -3,6 +3,7 @@ using System.Text;
 using System.IO;
 using System.Threading;
 using Microsoft.Win32;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ViewModels;
 
@@ -54,7 +55,7 @@ public partial class PartUpdateRecordUserControl : UserControl
             var dialog = new SaveFileDialog
             {
                 FileName = e.SuggestedFileName,
-                Filter = "CSV 文件|*.csv|所有文件|*.*",
+                Filter = LocalizedText.Get("Dialogs.CsvFileFilter"),
                 DefaultExt = ".csv",
                 AddExtension = true,
                 OverwritePrompt = true

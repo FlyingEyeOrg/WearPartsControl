@@ -1,6 +1,7 @@
 using System.IO;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Exceptions;
 using WearPartsControl.Infrastructure.EntityFrameworkCore;
@@ -32,13 +33,13 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
     {
         if (string.IsNullOrWhiteSpace(legacyDatabasePath))
         {
-            throw new UserFriendlyException("旧版 SQLite 数据库文件路径不能为空。");
+            throw new UserFriendlyException(LocalizedText.Get("Services.LegacyImport.PathRequired"));
         }
 
         var fullPath = Path.GetFullPath(legacyDatabasePath);
         if (!File.Exists(fullPath))
         {
-            throw new UserFriendlyException($"未找到旧版 SQLite 数据库文件：{fullPath}");
+            throw new UserFriendlyException(LocalizedText.Format("Services.LegacyImport.PathNotFound", fullPath));
         }
 
         var result = new LegacyDatabaseImportResult
@@ -244,7 +245,12 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
                 ShutdownValue = legacyExceedLimitRecord.ShutdownValue,
                 Severity = ShutdownSeverity,
                 OccurredAt = legacyExceedLimitRecord.OccurredAt,
-                NotificationMessage = $"旧版数据库导入：资源号 {configurationMap.Values.First(x => x.Id == clientAppConfigurationId).ResourceNumber} 的易损件 {definition.PartName} 当前值 {legacyExceedLimitRecord.CurrentValue}，停机值 {legacyExceedLimitRecord.ShutdownValue}。",
+                NotificationMessage = LocalizedText.Format(
+                    "Services.LegacyImport.ExceedLimitNotificationMessage",
+                    configurationMap.Values.First(x => x.Id == clientAppConfigurationId).ResourceNumber,
+                    definition.PartName,
+                    legacyExceedLimitRecord.CurrentValue,
+                    legacyExceedLimitRecord.ShutdownValue),
                 CreatedAt = legacyExceedLimitRecord.OccurredAt,
                 UpdatedAt = legacyExceedLimitRecord.OccurredAt
             });
@@ -260,12 +266,12 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
     {
         if (clientAppConfigurationId == Guid.Empty)
         {
-            throw new UserFriendlyException("当前客户端未配置有效的客户端信息，无法导入旧库易损件。");
+            throw new UserFriendlyException(LocalizedText.Get("Services.LegacyImport.InvalidClientConfigurationForWearPartImport"));
         }
 
         if (string.IsNullOrWhiteSpace(resourceNumber))
         {
-            throw new UserFriendlyException("当前客户端未配置资源号，无法导入旧库易损件。");
+            throw new UserFriendlyException(LocalizedText.Get("Services.LegacyImport.ResourceNumberMissingForWearPartImport"));
         }
 
         var fullPath = ValidateLegacyDatabasePath(legacyDatabasePath);
@@ -284,7 +290,7 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
             .ConfigureAwait(false);
         if (!clientConfigurationExists)
         {
-            throw new UserFriendlyException("当前客户端基础配置不存在，无法导入旧库易损件。");
+            throw new UserFriendlyException(LocalizedText.Get("Services.LegacyImport.ClientConfigurationNotFoundForWearPartImport"));
         }
 
         var trackedDefinitions = await dbContext.WearPartDefinitions
@@ -371,13 +377,13 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
     {
         if (string.IsNullOrWhiteSpace(legacyDatabasePath))
         {
-            throw new UserFriendlyException("旧版 SQLite 数据库文件路径不能为空。");
+            throw new UserFriendlyException(LocalizedText.Get("Services.LegacyImport.PathRequired"));
         }
 
         var fullPath = Path.GetFullPath(legacyDatabasePath);
         if (!File.Exists(fullPath))
         {
-            throw new UserFriendlyException($"未找到旧版 SQLite 数据库文件：{fullPath}");
+            throw new UserFriendlyException(LocalizedText.Format("Services.LegacyImport.PathNotFound", fullPath));
         }
 
         return fullPath;

@@ -41,7 +41,7 @@ public sealed class AppSettings
     /// <summary>
     /// 是否启用易损件后台监控。
     /// </summary>
-    public bool IsWearPartMonitoringEnabled { get; set; } = true;
+    public bool IsWearPartMonitoringEnabled { get; set; }
 }
 
 public sealed class PlcPipelineSettings

@@ -4,9 +4,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
         xmlns:uc="clr-namespace:WearPartsControl.UserControls"
         mc:Ignorable="d"
-        Title="编辑易损件"
+    Title="{loc:Loc EditPartWindowView.Title}"
         Width="860"
         SizeToContent="Height"
         ResizeMode="NoResize">
@@ -25,10 +26,12 @@
                         HorizontalAlignment="Right">
                 <Button Width="80"
                         Margin="0 0 8 0"
-                        Command="{Binding CancelCommand}">取消</Button>
+                    Command="{Binding CancelCommand}"
+                    Content="{loc:Loc EditPartWindowView.CancelButton}" />
                 <Button Width="100"
                         Style="{StaticResource ButtonPrimary}"
-                        Command="{Binding SaveCommand}">保存修改</Button>
+                    Command="{Binding SaveCommand}"
+                    Content="{loc:Loc EditPartWindowView.SaveButton}" />
             </StackPanel>
         </Grid>
 

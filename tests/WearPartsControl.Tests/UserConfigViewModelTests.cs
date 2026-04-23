@@ -40,7 +40,8 @@ public sealed class UserConfigViewModelTests
                 SpacerValidationExpectedSegmentCount = 9
             }
         };
-        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), service, new StubComNotificationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        var localizationService = new StubLocalizationService();
+        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), service, new StubComNotificationService(), localizationService, new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
 
@@ -64,6 +65,7 @@ public sealed class UserConfigViewModelTests
         Assert.False(viewModel.SpacerValidationIgnoreServerCertificateErrors);
         Assert.Equal("-", viewModel.SpacerValidationCodeSeparator);
         Assert.Equal("9", viewModel.SpacerValidationExpectedSegmentCount);
+        Assert.Equal("zh-CN", viewModel.SelectedLanguage);
         Assert.False(viewModel.IsDirty);
         Assert.Equal(LocalizedText.Get("ViewModels.UserConfigVm.Loaded"), viewModel.StatusMessage);
         Assert.False(viewModel.IsBusy);
@@ -74,7 +76,8 @@ public sealed class UserConfigViewModelTests
     {
         var service = new StubUserConfigService();
         var dispatcher = new StubUiDispatcher();
-        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), service, new StubComNotificationService(), dispatcher, new UiBusyService(TimeSpan.Zero));
+        var localizationService = new StubLocalizationService();
+        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), service, new StubComNotificationService(), localizationService, dispatcher, new UiBusyService(TimeSpan.Zero));
         await viewModel.InitializeAsync();
 
         viewModel.MeResponsibleWorkId = "ME002";
@@ -91,6 +94,7 @@ public sealed class UserConfigViewModelTests
         viewModel.SpacerValidationIgnoreServerCertificateErrors = false;
         viewModel.SpacerValidationCodeSeparator = "-";
         viewModel.SpacerValidationExpectedSegmentCount = "10";
+        viewModel.SelectedLanguage = "en-US";
 
         Assert.True(viewModel.IsDirty);
         Assert.True(viewModel.SaveCommand.CanExecute(null));
@@ -112,13 +116,14 @@ public sealed class UserConfigViewModelTests
         Assert.False(service.LastSaved.SpacerValidationIgnoreServerCertificateErrors);
         Assert.Equal("-", service.LastSaved.SpacerValidationCodeSeparator);
         Assert.Equal(10, service.LastSaved.SpacerValidationExpectedSegmentCount);
+        Assert.Equal("en-US", localizationService.LastCultureName);
         Assert.True(dispatcher.RenderCount >= 1);
     }
 
     [Fact]
     public async Task InitializeAsync_WithoutSavedValue_ShouldUseComNotificationDefaultTrue()
     {
-        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubComNotificationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubComNotificationService(), new StubLocalizationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
 
@@ -143,7 +148,7 @@ public sealed class UserConfigViewModelTests
                 ResourceNumber = "RES-TEST"
             }
         };
-        var viewModel = new UserConfigViewModel(clientAppInfoService, service, notificationService, new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        var viewModel = new UserConfigViewModel(clientAppInfoService, service, notificationService, new StubLocalizationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
         await viewModel.InitializeAsync();
 
         viewModel.MeResponsibleWorkId = "ME003";
@@ -325,5 +330,25 @@ public sealed class UserConfigViewModelTests
             RenderCount++;
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class StubLocalizationService : ILocalizationService
+    {
+        public string? LastCultureName { get; private set; }
+
+        public string this[string name] => LocalizedText.Get(name);
+
+        public ApplicationServices.Localization.Generated.LocalizationCatalog Catalog { get; } = new(static key => LocalizedText.Get(key));
+
+        public ValueTask InitializeAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+
+        public ValueTask SetCultureAsync(string cultureName, CancellationToken cancellationToken = default)
+        {
+            LastCultureName = cultureName;
+            CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(cultureName);
+            return ValueTask.CompletedTask;
+        }
+
+        public System.Globalization.CultureInfo CurrentCulture { get; private set; } = System.Globalization.CultureInfo.GetCultureInfo("zh-CN");
     }
 }

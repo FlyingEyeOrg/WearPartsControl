@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -14,6 +15,7 @@ public sealed class UserConfigViewModel : ObservableObject
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly IUserConfigService _userConfigService;
     private readonly IComNotificationService _comNotificationService;
+    private readonly ILocalizationService _localizationService;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly IUiBusyService _uiBusyService;
     private UserConfigSnapshot _originalSnapshot = UserConfigSnapshot.Empty;
@@ -41,18 +43,25 @@ public sealed class UserConfigViewModel : ObservableObject
     private bool _spacerValidationIgnoreServerCertificateErrors = true;
     private string _spacerValidationCodeSeparator = UserConfig.DefaultSpacerValidationCodeSeparator;
     private string _spacerValidationExpectedSegmentCount = UserConfig.DefaultSpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture);
+    private string _selectedLanguage = "zh-CN";
     private string _statusMessage = LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain");
 
-    public UserConfigViewModel(IClientAppInfoService clientAppInfoService, IUserConfigService userConfigService, IComNotificationService comNotificationService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService)
+    public UserConfigViewModel(IClientAppInfoService clientAppInfoService, IUserConfigService userConfigService, IComNotificationService comNotificationService, ILocalizationService localizationService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService)
     {
         _clientAppInfoService = clientAppInfoService;
         _userConfigService = userConfigService;
         _comNotificationService = comNotificationService;
+        _localizationService = localizationService;
         _uiDispatcher = uiDispatcher;
         _uiBusyService = uiBusyService;
         SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
         TestComNotificationCommand = new AsyncRelayCommand(TestComNotificationAsync, CanTestComNotification);
+        LanguageOptions.Add(new LanguageOption("zh-CN", "简体中文"));
+        LanguageOptions.Add(new LanguageOption("en-US", "English"));
+        _selectedLanguage = _localizationService.CurrentCulture.Name;
     }
+
+    public ObservableCollection<LanguageOption> LanguageOptions { get; } = new();
 
     public IAsyncRelayCommand SaveCommand { get; }
 
@@ -90,6 +99,18 @@ public sealed class UserConfigViewModel : ObservableObject
     {
         get => _statusMessage;
         private set => SetProperty(ref _statusMessage, value);
+    }
+
+    public string SelectedLanguage
+    {
+        get => _selectedLanguage;
+        set
+        {
+            if (SetProperty(ref _selectedLanguage, value))
+            {
+                UpdateDirtyState();
+            }
+        }
     }
 
     public string MeResponsibleWorkId
@@ -327,6 +348,7 @@ public sealed class UserConfigViewModel : ObservableObject
         {
             var config = BuildConfig();
             await _userConfigService.SaveAsync(config).ConfigureAwait(false);
+            await _localizationService.SetCultureAsync(SelectedLanguage).ConfigureAwait(false);
             await _uiDispatcher.RunAsync(() =>
             {
                 _originalSnapshot = CaptureSnapshot();
@@ -458,6 +480,7 @@ public sealed class UserConfigViewModel : ObservableObject
             SpacerValidationIgnoreServerCertificateErrors = config.SpacerValidationIgnoreServerCertificateErrors;
             SpacerValidationCodeSeparator = config.SpacerValidationCodeSeparator;
             SpacerValidationExpectedSegmentCount = config.SpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture);
+            SelectedLanguage = _localizationService.CurrentCulture.Name;
         }
         finally
         {
@@ -497,7 +520,8 @@ public sealed class UserConfigViewModel : ObservableObject
             SpacerValidationTimeoutMilliseconds?.Trim() ?? string.Empty,
             SpacerValidationIgnoreServerCertificateErrors,
             SpacerValidationCodeSeparator?.Trim() ?? string.Empty,
-            SpacerValidationExpectedSegmentCount?.Trim() ?? string.Empty);
+            SpacerValidationExpectedSegmentCount?.Trim() ?? string.Empty,
+            SelectedLanguage?.Trim() ?? string.Empty);
     }
 
     private async Task ExecuteBusyAsync(Func<Task> action, string errorPrefix, string busyMessage, CancellationToken cancellationToken = default)
@@ -519,6 +543,8 @@ public sealed class UserConfigViewModel : ObservableObject
         }
     }
 
+    public sealed record LanguageOption(string Code, string DisplayName);
+
     private sealed record UserConfigSnapshot(
         string MeResponsibleWorkId,
         string MeResponsibleName,
@@ -539,7 +565,8 @@ public sealed class UserConfigViewModel : ObservableObject
         string SpacerValidationTimeoutMilliseconds,
         bool SpacerValidationIgnoreServerCertificateErrors,
         string SpacerValidationCodeSeparator,
-        string SpacerValidationExpectedSegmentCount)
+        string SpacerValidationExpectedSegmentCount,
+        string SelectedLanguage)
     {
         public static UserConfigSnapshot Empty { get; } = new(
             string.Empty,
@@ -561,6 +588,7 @@ public sealed class UserConfigViewModel : ObservableObject
             UserConfig.DefaultSpacerValidationTimeoutMilliseconds.ToString(CultureInfo.InvariantCulture),
             true,
             UserConfig.DefaultSpacerValidationCodeSeparator,
-            UserConfig.DefaultSpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture));
+            UserConfig.DefaultSpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture),
+            "zh-CN");
     }
 }

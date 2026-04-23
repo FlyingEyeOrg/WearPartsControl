@@ -45,7 +45,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     private string _siemensSlot = "0";
     private string _statusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.PromptComplete");
     private bool _isStringReverse = true;
-    private bool _isWearPartMonitoringEnabled = true;
+    private bool _isWearPartMonitoringEnabled;
 
     public ClientAppInfoViewModel(
         IClientAppInfoService clientAppInfoService,
@@ -383,12 +383,12 @@ public sealed class ClientAppInfoViewModel : ObservableObject
 
     private bool CanTestPlcConnectionCommand()
     {
-        return !IsBusy && !IsWearPartMonitoringEnabled;
+        return !IsBusy && !IsWearPartMonitoringEnabled && HasRequiredClientAppInfo();
     }
 
     private bool CanToggleWearPartMonitoringCommand()
     {
-        return !IsBusy;
+        return !IsBusy && HasRequiredClientAppInfo();
     }
 
     private async Task SaveAsync()
@@ -621,6 +621,23 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         }
 
         IsDirty = _originalSnapshot != CaptureSnapshot();
+        OnPropertyChanged(nameof(IsTestPlcConnectionEnabled));
+        OnPropertyChanged(nameof(IsToggleWearPartMonitoringEnabled));
+        TestPlcConnectionCommand.NotifyCanExecuteChanged();
+        ToggleWearPartMonitoringCommand.NotifyCanExecuteChanged();
+    }
+
+    private bool HasRequiredClientAppInfo()
+    {
+        return !string.IsNullOrWhiteSpace(Normalize(SiteCode))
+            && !string.IsNullOrWhiteSpace(Normalize(FactoryCode))
+            && !string.IsNullOrWhiteSpace(Normalize(AreaCode))
+            && !string.IsNullOrWhiteSpace(Normalize(ProcedureCode))
+            && !string.IsNullOrWhiteSpace(Normalize(EquipmentCode))
+            && !string.IsNullOrWhiteSpace(Normalize(ResourceNumber))
+            && !string.IsNullOrWhiteSpace(Normalize(PlcProtocolType))
+            && !string.IsNullOrWhiteSpace(Normalize(PlcIpAddress))
+            && !string.IsNullOrWhiteSpace(Normalize(ShutdownPointAddress));
     }
 
     private async Task LoadSiteFactoryOptionsAsync(CancellationToken cancellationToken)

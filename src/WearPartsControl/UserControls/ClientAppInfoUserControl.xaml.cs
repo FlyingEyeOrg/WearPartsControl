@@ -64,7 +64,7 @@ namespace WearPartsControl.UserControls
             var dialog = new OpenFileDialog
             {
                 Title = LocalizedText.Get("ViewModels.ClientAppInfoVm.ImportDialogTitle"),
-                Filter = "SQLite 数据库|*.db;*.sqlite;*.sqlite3|所有文件|*.*",
+                Filter = LocalizedText.Get("Dialogs.SQLiteDatabaseFilter"),
                 CheckFileExists = true,
                 Multiselect = false
             };
