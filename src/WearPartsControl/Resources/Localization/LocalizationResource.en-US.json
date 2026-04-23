@@ -206,6 +206,33 @@
       "TestSucceeded": "COM notification test sent successfully.",
       "TestFailedPrefix": "COM notification test failed: "
     },
+    "ComNotificationTemplate": {
+      "TestHeading": "COME notification test",
+      "WarningHeading": "Wear part warning notification",
+      "ShutdownHeading": "Wear part shutdown notification",
+      "TimeLabel": "Time",
+      "SiteLabel": "Site",
+      "FactoryLabel": "Factory",
+      "AreaLabel": "Area",
+      "ProcedureLabel": "Procedure",
+      "EquipmentCodeLabel": "Equipment code",
+      "ResourceNumberLabel": "Resource number",
+      "NotificationInfoHeading": "Notification details",
+      "WearPartInfoHeading": "Wear part details",
+      "OwnerInfoHeading": "Responsible owners",
+      "DescriptionLabel": "Description",
+      "PartNameLabel": "Name",
+      "CurrentValueLabel": "Current value",
+      "WarningValueLabel": "Warning value",
+      "ShutdownValueLabel": "Shutdown value",
+      "MeResponsibleLabel": "ME owner",
+      "PrdResponsibleLabel": "PRD owner",
+      "NotConfigured": "Not configured",
+      "TestActionMessage": "Please confirm that both the group notification and the COM work notification were received.",
+      "WarningActionMessage": "Please ask the responsible personnel to inspect and handle it as soon as possible.",
+      "ShutdownActionMessage": "Please ask the responsible personnel to confirm the equipment status and handle it immediately.",
+      "Footer": "This message was sent automatically by the system."
+    },
     "WearPartEditorVm": {
       "ResourceNumberMissing": "No resource number is configured, so the wear part cannot be saved.",
       "CurrentResourceNumber": "Current resource number: {0}",
@@ -305,7 +332,6 @@
     },
     "WearPartMonitor": {
       "ClientConfigurationNotFoundByResourceNumber": "No client configuration found for resource number {0}.",
-      "NotificationMessage": "Resource number {0}, wear part {1}, current value {2}, warning value {3}, shutdown value {4}, severity {5}.",
       "ShutdownNotificationTitle": "Wear part shutdown lifetime reached",
       "WarningNotificationTitle": "Wear part lifetime warning"
     },

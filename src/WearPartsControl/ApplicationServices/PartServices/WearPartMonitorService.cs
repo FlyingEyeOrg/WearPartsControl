@@ -1,9 +1,11 @@
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PlcService;
+using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Domain.Repositories;
 using WearPartsControl.Exceptions;
+using UserConfigModel = WearPartsControl.ApplicationServices.UserConfig.UserConfig;
 
 namespace WearPartsControl.ApplicationServices.PartServices;
 
@@ -17,6 +19,7 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
     private readonly IExceedLimitRecordRepository _exceedLimitRecordRepository;
     private readonly IPlcOperationPipeline _plcOperationPipeline;
     private readonly IComNotificationService _notificationService;
+    private readonly IUserConfigService _userConfigService;
 
     public WearPartMonitorService(
         ICurrentUserAccessor currentUserAccessor,
@@ -24,7 +27,8 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
         IWearPartRepository wearPartRepository,
         IExceedLimitRecordRepository exceedLimitRecordRepository,
         IPlcOperationPipeline plcOperationPipeline,
-        IComNotificationService notificationService)
+        IComNotificationService notificationService,
+        IUserConfigService userConfigService)
         : base(currentUserAccessor)
     {
         _clientAppConfigurationRepository = clientAppConfigurationRepository;
@@ -32,6 +36,7 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
         _exceedLimitRecordRepository = exceedLimitRecordRepository;
         _plcOperationPipeline = plcOperationPipeline;
         _notificationService = notificationService;
+        _userConfigService = userConfigService;
     }
 
     public async Task<IReadOnlyList<WearPartMonitorResult>> MonitorByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
@@ -50,6 +55,7 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
         await _plcOperationPipeline.ConnectAsync(PlcMonitoringPipelineOperations.Connect, connectionOptions, cancellationToken).ConfigureAwait(false);
 
         var now = DateTime.UtcNow;
+        var userConfig = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
         var shouldSaveChanges = false;
         var plcResults = new List<MonitorSnapshot>(definitions.Count);
         foreach (var definition in definitions)
@@ -74,12 +80,12 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
 
             if (snapshot.Status == WearPartMonitorStatus.Warning)
             {
-                notificationTriggered = await HandleEventAsync(clientAppConfiguration, snapshot.Definition, snapshot.CurrentValue, snapshot.WarningValue, snapshot.ShutdownValue, now, WarningSeverity, cancellationToken).ConfigureAwait(false);
+                notificationTriggered = await HandleEventAsync(clientAppConfiguration, userConfig, snapshot.Definition, snapshot.CurrentValue, snapshot.WarningValue, snapshot.ShutdownValue, now, WarningSeverity, cancellationToken).ConfigureAwait(false);
                 shouldSaveChanges |= notificationTriggered;
             }
             else if (snapshot.Status == WearPartMonitorStatus.Shutdown)
             {
-                notificationTriggered = await HandleEventAsync(clientAppConfiguration, snapshot.Definition, snapshot.CurrentValue, snapshot.WarningValue, snapshot.ShutdownValue, now, ShutdownSeverity, cancellationToken).ConfigureAwait(false);
+                notificationTriggered = await HandleEventAsync(clientAppConfiguration, userConfig, snapshot.Definition, snapshot.CurrentValue, snapshot.WarningValue, snapshot.ShutdownValue, now, ShutdownSeverity, cancellationToken).ConfigureAwait(false);
                 shouldSaveChanges |= notificationTriggered;
             }
 
@@ -113,6 +119,7 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
 
     private async Task<bool> HandleEventAsync(
         ClientAppConfigurationEntity clientAppConfiguration,
+        UserConfigModel userConfig,
         WearPartDefinitionEntity definition,
         double currentValue,
         double warningValue,
@@ -126,7 +133,16 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
             return false;
         }
 
-        var message = LocalizedText.Format("Services.WearPartMonitor.NotificationMessage", clientAppConfiguration.ResourceNumber, definition.PartName, currentValue, warningValue, shutdownValue, severity);
+        var message = ComNotificationMessageFactory.CreateWearPartAlertMessage(
+            clientAppConfiguration,
+            severity,
+            definition.PartName,
+            currentValue,
+            warningValue,
+            shutdownValue,
+            userConfig.MeResponsibleWorkId,
+            userConfig.PrdResponsibleWorkId,
+            occurredAt);
         var entity = new ExceedLimitRecordEntity
         {
             ClientAppConfigurationId = clientAppConfiguration.Id,
@@ -137,18 +153,18 @@ public sealed class WearPartMonitorService : ApplicationService, IWearPartMonito
             ShutdownValue = shutdownValue,
             Severity = severity,
             OccurredAt = occurredAt,
-            NotificationMessage = message
+            NotificationMessage = message.Markdown
         };
 
         await _exceedLimitRecordRepository.AddAsync(entity, cancellationToken).ConfigureAwait(false);
 
         if (severity == ShutdownSeverity)
         {
-            await _notificationService.NotifyWorkAsync(LocalizedText.Get("Services.WearPartMonitor.ShutdownNotificationTitle"), message, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _notificationService.NotifyWorkAsync(message.Title, message.Markdown, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            await _notificationService.NotifyGroupAsync(LocalizedText.Get("Services.WearPartMonitor.WarningNotificationTitle"), message, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _notificationService.NotifyGroupAsync(message.Title, message.Markdown, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         return true;

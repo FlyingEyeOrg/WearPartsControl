@@ -2,6 +2,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.UserConfig;
@@ -10,6 +11,7 @@ namespace WearPartsControl.ViewModels;
 
 public sealed class UserConfigViewModel : ObservableObject
 {
+    private readonly IClientAppInfoService _clientAppInfoService;
     private readonly IUserConfigService _userConfigService;
     private readonly IComNotificationService _comNotificationService;
     private readonly IUiDispatcher _uiDispatcher;
@@ -38,8 +40,9 @@ public sealed class UserConfigViewModel : ObservableObject
     private string _spacerValidationExpectedSegmentCount = UserConfig.DefaultSpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture);
     private string _statusMessage = LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain");
 
-    public UserConfigViewModel(IUserConfigService userConfigService, IComNotificationService comNotificationService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService)
+    public UserConfigViewModel(IClientAppInfoService clientAppInfoService, IUserConfigService userConfigService, IComNotificationService comNotificationService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService)
     {
+        _clientAppInfoService = clientAppInfoService;
         _userConfigService = userConfigService;
         _comNotificationService = comNotificationService;
         _uiDispatcher = uiDispatcher;
@@ -315,9 +318,17 @@ public sealed class UserConfigViewModel : ObservableObject
                 throw new InvalidOperationException(LocalizedText.Get("ViewModels.UserConfigVm.ResponsibleMissing"));
             }
 
+            var clientAppInfo = await _clientAppInfoService.GetAsync().ConfigureAwait(false);
+            var message = ComNotificationMessageFactory.CreateTestMessage(clientAppInfo, MeResponsibleWorkId, PrdResponsibleWorkId);
+
             await _comNotificationService.NotifyGroupAsync(
-                LocalizedText.Get("ViewModels.UserConfigVm.TestNotificationTitle"),
-                LocalizedText.Get("ViewModels.UserConfigVm.TestNotificationBody"),
+                message.Title,
+                message.Markdown,
+                recipients).ConfigureAwait(false);
+
+            await _comNotificationService.NotifyWorkAsync(
+                message.Title,
+                message.Markdown,
                 recipients).ConfigureAwait(false);
 
             await _uiDispatcher.RunAsync(() => StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.TestSucceeded")).ConfigureAwait(false);

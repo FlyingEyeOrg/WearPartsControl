@@ -7,6 +7,7 @@ using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.ApplicationServices.SpacerManagement;
+using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Domain.Repositories;
 using WearPartsControl.Domain.Services;
@@ -1015,12 +1016,18 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         Assert.True(results[0].NotificationTriggered);
         Assert.Single(notificationService.GroupNotifications);
         Assert.Empty(notificationService.WorkNotifications);
+        Assert.Contains(LocalizedText.Get("ComNotification.Template.WarningHeading"), notificationService.GroupNotifications[0]);
+        Assert.Contains("ME1001", notificationService.GroupNotifications[0]);
+        Assert.Contains("PRD1001", notificationService.GroupNotifications[0]);
 
         await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
         var repository = new ExceedLimitRecordRepository(verifyContext);
         var records = await repository.ListByClientAppConfigurationAsync(seeded.BasicConfigurationId);
         Assert.Single(records);
         Assert.Equal("Warning", records[0].Severity);
+        Assert.StartsWith("# ", records[0].NotificationMessage, StringComparison.Ordinal);
+        Assert.Contains("ME1001", records[0].NotificationMessage);
+        Assert.Contains("PRD1001", records[0].NotificationMessage);
     }
 
     [Fact]
@@ -1042,6 +1049,9 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         Assert.Equal(WearPartMonitorStatus.Shutdown, results[0].Status);
         Assert.Contains(plcService.Writes, x => x.Address == "M0.3" && Equals(x.Value, false));
         Assert.Single(notificationService.WorkNotifications);
+        Assert.Contains(LocalizedText.Get("ComNotification.Template.ShutdownHeading"), notificationService.WorkNotifications[0]);
+        Assert.Contains("ME1001", notificationService.WorkNotifications[0]);
+        Assert.Contains("PRD1001", notificationService.WorkNotifications[0]);
     }
 
     private async Task<(Guid BasicConfigurationId, Guid DefinitionId)> SeedAsync(
@@ -1146,7 +1156,8 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
             new ExceedLimitRecordRepository(dbContext),
             plcOperationPipeline,
-            notificationService);
+            notificationService,
+            new FakeUserConfigService());
     }
 
     public void Dispose()
@@ -1234,6 +1245,23 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         {
             WorkNotifications.Add($"{title}:{text}");
             return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class FakeUserConfigService : IUserConfigService
+    {
+        public ValueTask<UserConfig> GetAsync(CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(new UserConfig
+            {
+                MeResponsibleWorkId = "ME1001",
+                PrdResponsibleWorkId = "PRD1001"
+            });
+        }
+
+        public ValueTask SaveAsync(UserConfig config, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
         }
     }
 

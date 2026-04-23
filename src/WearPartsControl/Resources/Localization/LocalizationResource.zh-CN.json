@@ -206,6 +206,33 @@
       "TestSucceeded": "COM 通知测试发送成功。",
       "TestFailedPrefix": "COM 通知测试失败："
     },
+    "ComNotificationTemplate": {
+      "TestHeading": "COME 通知测试",
+      "WarningHeading": "易损件预警通知",
+      "ShutdownHeading": "易损件停机通知",
+      "TimeLabel": "时间",
+      "SiteLabel": "基地",
+      "FactoryLabel": "工厂",
+      "AreaLabel": "区域",
+      "ProcedureLabel": "工序",
+      "EquipmentCodeLabel": "设备编号",
+      "ResourceNumberLabel": "设备资源号",
+      "NotificationInfoHeading": "通知信息",
+      "WearPartInfoHeading": "易损件信息",
+      "OwnerInfoHeading": "负责人信息",
+      "DescriptionLabel": "说明",
+      "PartNameLabel": "名称",
+      "CurrentValueLabel": "当前值",
+      "WarningValueLabel": "预警值",
+      "ShutdownValueLabel": "停机值",
+      "MeResponsibleLabel": "ME负责人",
+      "PrdResponsibleLabel": "PRD负责人",
+      "NotConfigured": "未配置",
+      "TestActionMessage": "请确认群组通知和 COM 用户工作通知均已收到。",
+      "WarningActionMessage": "请相关人员尽快检查并处理。",
+      "ShutdownActionMessage": "请相关人员确认设备状态并处理。",
+      "Footer": "本消息由系统自动发送。"
+    },
     "WearPartEditorVm": {
       "ResourceNumberMissing": "当前未配置资源号，无法保存易损件。",
       "CurrentResourceNumber": "当前资源号：{0}",
@@ -305,7 +332,6 @@
     },
     "WearPartMonitor": {
       "ClientConfigurationNotFoundByResourceNumber": "未找到资源号为 {0} 的客户端配置。",
-      "NotificationMessage": "资源号 {0} 的易损件 {1} 当前值 {2}，预警值 {3}，停机值 {4}，级别 {5}。",
       "ShutdownNotificationTitle": "易损件寿命停机",
       "WarningNotificationTitle": "易损件寿命预警"
     },

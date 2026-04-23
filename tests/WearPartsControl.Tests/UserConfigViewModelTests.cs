@@ -1,4 +1,5 @@
 using WearPartsControl.ApplicationServices.ComNotification;
+using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.ApplicationServices;
@@ -36,7 +37,7 @@ public sealed class UserConfigViewModelTests
                 SpacerValidationExpectedSegmentCount = 9
             }
         };
-        var viewModel = new UserConfigViewModel(service, new StubComNotificationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), service, new StubComNotificationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
 
@@ -67,7 +68,7 @@ public sealed class UserConfigViewModelTests
     {
         var service = new StubUserConfigService();
         var dispatcher = new StubUiDispatcher();
-        var viewModel = new UserConfigViewModel(service, new StubComNotificationService(), dispatcher, new UiBusyService(TimeSpan.Zero));
+        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), service, new StubComNotificationService(), dispatcher, new UiBusyService(TimeSpan.Zero));
         await viewModel.InitializeAsync();
 
         viewModel.MeResponsibleWorkId = "ME002";
@@ -105,7 +106,7 @@ public sealed class UserConfigViewModelTests
     [Fact]
     public async Task InitializeAsync_WithoutSavedValue_ShouldUseComNotificationDefaultTrue()
     {
-        var viewModel = new UserConfigViewModel(new StubUserConfigService(), new StubComNotificationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubComNotificationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
 
@@ -114,15 +115,27 @@ public sealed class UserConfigViewModelTests
     }
 
     [Fact]
-    public async Task TestComNotificationCommand_ShouldSaveDirtyValuesAndSendToDistinctRecipients()
+    public async Task TestComNotificationCommand_ShouldSaveDirtyValuesAndSendGroupAndWorkNotifications()
     {
         var service = new StubUserConfigService();
         var notificationService = new StubComNotificationService();
-        var viewModel = new UserConfigViewModel(service, notificationService, new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        var clientAppInfoService = new StubClientAppInfoService
+        {
+            Current = new ClientAppInfoModel
+            {
+                SiteCode = "S01",
+                FactoryCode = "F01",
+                AreaCode = "A01",
+                ProcedureCode = "P01",
+                EquipmentCode = "EQ01",
+                ResourceNumber = "RES-TEST"
+            }
+        };
+        var viewModel = new UserConfigViewModel(clientAppInfoService, service, notificationService, new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
         await viewModel.InitializeAsync();
 
         viewModel.MeResponsibleWorkId = "ME003";
-        viewModel.PrdResponsibleWorkId = "ME003";
+        viewModel.PrdResponsibleWorkId = "PRD003";
         viewModel.ComAccessToken = "token-3";
         viewModel.ComSecret = "secret-3";
         viewModel.SpacerValidationUrl = "https://spacer/test";
@@ -130,11 +143,55 @@ public sealed class UserConfigViewModelTests
         await viewModel.TestComNotificationCommand.ExecuteAsync(null);
 
         Assert.NotNull(service.LastSaved);
-        Assert.NotNull(notificationService.LastUsers);
-        Assert.Single(notificationService.LastUsers!);
-        Assert.Contains("ME003", notificationService.LastUsers!);
+        Assert.NotNull(notificationService.LastGroupUsers);
+        Assert.NotNull(notificationService.LastWorkUsers);
+        Assert.Equal(2, notificationService.LastGroupUsers!.Count);
+        Assert.Equal(2, notificationService.LastWorkUsers!.Count);
+        Assert.Contains("ME003", notificationService.LastGroupUsers!);
+        Assert.Contains("PRD003", notificationService.LastGroupUsers!);
+        Assert.Equal(1, notificationService.GroupCallCount);
+        Assert.Equal(1, notificationService.WorkCallCount);
+        Assert.NotNull(notificationService.LastGroupText);
+        Assert.NotNull(notificationService.LastWorkText);
+        Assert.Contains("# ", notificationService.LastGroupText!);
+        Assert.Contains(LocalizedText.Get("ComNotification.Template.TestHeading"), notificationService.LastGroupText!);
+        Assert.Contains("RES-TEST", notificationService.LastGroupText!);
+        Assert.Contains("ME003", notificationService.LastGroupText!);
+        Assert.Contains("PRD003", notificationService.LastGroupText!);
+        Assert.Equal(notificationService.LastGroupText, notificationService.LastWorkText);
         Assert.Equal(LocalizedText.Get("ViewModels.UserConfigVm.TestSucceeded"), viewModel.StatusMessage);
         Assert.False(viewModel.IsDirty);
+    }
+
+    private sealed class StubClientAppInfoService : IClientAppInfoService
+    {
+        public ClientAppInfoModel Current { get; set; } = new();
+
+        public Task<ClientAppInfoModel> GetAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new ClientAppInfoModel
+            {
+                Id = Current.Id,
+                SiteCode = Current.SiteCode,
+                FactoryCode = Current.FactoryCode,
+                AreaCode = Current.AreaCode,
+                ProcedureCode = Current.ProcedureCode,
+                EquipmentCode = Current.EquipmentCode,
+                ResourceNumber = Current.ResourceNumber,
+                PlcProtocolType = Current.PlcProtocolType,
+                PlcIpAddress = Current.PlcIpAddress,
+                PlcPort = Current.PlcPort,
+                ShutdownPointAddress = Current.ShutdownPointAddress,
+                SiemensRack = Current.SiemensRack,
+                SiemensSlot = Current.SiemensSlot,
+                IsStringReverse = Current.IsStringReverse
+            });
+        }
+
+        public Task<ClientAppInfoModel> SaveAsync(ClientAppInfoSaveRequest request, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
     }
 
     private sealed class StubUserConfigService : IUserConfigService
@@ -198,17 +255,31 @@ public sealed class UserConfigViewModelTests
 
     private sealed class StubComNotificationService : IComNotificationService
     {
-        public IReadOnlyCollection<string>? LastUsers { get; private set; }
+        public int GroupCallCount { get; private set; }
+
+        public int WorkCallCount { get; private set; }
+
+        public IReadOnlyCollection<string>? LastGroupUsers { get; private set; }
+
+        public IReadOnlyCollection<string>? LastWorkUsers { get; private set; }
+
+        public string? LastGroupText { get; private set; }
+
+        public string? LastWorkText { get; private set; }
 
         public ValueTask NotifyGroupAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default)
         {
-            LastUsers = toUsers;
+            GroupCallCount++;
+            LastGroupUsers = toUsers;
+            LastGroupText = text;
             return ValueTask.CompletedTask;
         }
 
         public ValueTask NotifyWorkAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default)
         {
-            LastUsers = toUsers;
+            WorkCallCount++;
+            LastWorkUsers = toUsers;
+            LastWorkText = text;
             return ValueTask.CompletedTask;
         }
     }
