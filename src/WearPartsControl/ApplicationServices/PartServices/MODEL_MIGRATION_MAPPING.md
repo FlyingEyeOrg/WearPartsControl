@@ -74,7 +74,7 @@
 | `BasicModelId` | `ClientAppConfigurationId` | `string` -> `Guid` |
 | `Site` | `SiteCode` | `string` -> `string` |
 | `Name` | `PartName` | `string` -> `string` |
-| `OldNo` | `OldBarcode` | `string?` -> `string?` |
+| `OldNo` | `CurrentBarcode` | `string?` -> `string?` |
 | `NewNo` | `NewBarcode` | `string` -> `string` |
 | `WarnValue` | `WarningValue` | `string` -> `string` |
 | `OperatorNo` | `OperatorWorkNumber` | `string` -> `string` |

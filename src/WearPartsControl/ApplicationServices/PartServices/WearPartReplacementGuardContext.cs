@@ -29,6 +29,12 @@ public sealed class WearPartReplacementGuardContext
 
     public required double ShutdownValue { get; set; }
 
+    public required double InstalledCurrentValue { get; init; }
+
+    public required double InstalledWarningValue { get; init; }
+
+    public required double InstalledShutdownValue { get; init; }
+
     public WearPartReplacementRecordEntity? LatestRecord { get; init; }
 
     public WearPartReplacementRecordEntity? LatestRemovalRecord { get; set; }

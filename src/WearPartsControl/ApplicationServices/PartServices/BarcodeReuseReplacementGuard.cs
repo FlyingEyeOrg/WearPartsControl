@@ -33,7 +33,7 @@ public sealed class BarcodeReuseReplacementGuard : IWearPartReplacementGuard
         }
 
         var latestRemovalRecord = await _replacementRecordRepository
-            .GetLatestByOldBarcodeAsync(context.Definition.Id, context.NormalizedBarcode, cancellationToken)
+            .GetLatestByCurrentBarcodeAsync(context.Definition.Id, context.NormalizedBarcode, cancellationToken)
             .ConfigureAwait(false);
 
         if (latestRemovalRecord is null)

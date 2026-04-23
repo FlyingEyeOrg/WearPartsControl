@@ -361,7 +361,7 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
     private static string BuildCsvContent(IEnumerable<WearPartReplacementRecord> records)
     {
         var builder = new StringBuilder();
-        builder.AppendLine("名称,更换原因,旧编码,新编码,当前寿命,预警寿命,停机寿命,更换时间,操作员,备注");
+        builder.AppendLine("名称,更换原因,当前编码,新编码,当前寿命,预警寿命,停机寿命,更换时间,操作员,备注");
 
         foreach (var record in records)
         {
@@ -369,7 +369,7 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
             {
                 Escape(record.PartName),
                 Escape(record.ReasonDisplayName),
-                Escape(record.OldBarcode ?? string.Empty),
+                Escape(record.CurrentBarcode ?? string.Empty),
                 Escape(record.NewBarcode),
                 Escape(record.CurrentValue),
                 Escape(record.WarningValue),

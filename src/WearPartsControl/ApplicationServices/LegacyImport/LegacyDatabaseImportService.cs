@@ -185,7 +185,7 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
                 WearPartDefinitionId = definition.Id,
                 SiteCode = NormalizeOrEmpty(legacyReplacementRecord.Site),
                 PartName = definition.PartName,
-                OldBarcode = NormalizeNullable(legacyReplacementRecord.OldBarcode),
+                CurrentBarcode = NormalizeNullable(legacyReplacementRecord.CurrentBarcode),
                 NewBarcode = NormalizeOrEmpty(legacyReplacementRecord.NewBarcode),
                 CurrentValue = NormalizeOrEmpty(legacyReplacementRecord.CurrentValue),
                 WarningValue = NormalizeOrEmpty(legacyReplacementRecord.WarningValue),
@@ -451,7 +451,7 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
             BasicModelId = GetString(reader, "BasicModelId"),
             Site = GetString(reader, "Site"),
             Name = GetString(reader, "Name"),
-            OldBarcode = GetString(reader, "OldNo"),
+            CurrentBarcode = GetString(reader, "OldNo"),
             NewBarcode = GetString(reader, "NewNo"),
             CurrentValue = GetString(reader, "CurrentValue"),
             WarningValue = GetString(reader, "WarnValue"),
@@ -593,7 +593,7 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
         public string BasicModelId { get; set; } = string.Empty;
         public string Site { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
-        public string OldBarcode { get; set; } = string.Empty;
+        public string CurrentBarcode { get; set; } = string.Empty;
         public string NewBarcode { get; set; } = string.Empty;
         public string CurrentValue { get; set; } = string.Empty;
         public string WarningValue { get; set; } = string.Empty;

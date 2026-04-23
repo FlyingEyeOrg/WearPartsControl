@@ -47,7 +47,9 @@ public sealed class LegacyDatabaseImportServiceTests : IDisposable
         Assert.Equal("RES-IMPORT-01", configuration.ResourceNumber);
         Assert.Equal("刀具A", definition.PartName);
         Assert.Null(definition.ToolChangeId);
+        Assert.Equal("BARCODE-OLD", replacement.CurrentBarcode);
         Assert.Equal("BARCODE-NEW", replacement.NewBarcode);
+        Assert.Equal("12", replacement.CurrentValue);
         Assert.Equal("Shutdown", exceed.Severity);
     }
 

@@ -527,7 +527,7 @@ public sealed class ReplacePartViewModelTests
         {
             WearPartDefinitionId = definition.Id,
             PartName = definition.PartName,
-            OldBarcode = "OLD-RETURN-01",
+            CurrentBarcode = "OLD-RETURN-01",
             NewBarcode = "BC-NEW",
             CurrentValue = "18",
             WarningValue = "20",
@@ -588,7 +588,7 @@ public sealed class ReplacePartViewModelTests
         {
             WearPartDefinitionId = definition.Id,
             PartName = definition.PartName,
-            OldBarcode = "OLD-RETURN-02",
+            CurrentBarcode = "OLD-RETURN-02",
             NewBarcode = "BC-NEW",
             CurrentValue = "20",
             WarningValue = "20",
@@ -813,7 +813,7 @@ public sealed class ReplacePartViewModelTests
                 ClientAppConfigurationId = Preview.ClientAppConfigurationId,
                 WearPartDefinitionId = request.WearPartDefinitionId,
                 PartName = History.FirstOrDefault(x => x.WearPartDefinitionId == request.WearPartDefinitionId)?.PartName ?? "刀具A",
-                OldBarcode = Preview.LastBarcode,
+                CurrentBarcode = Preview.LastBarcode,
                 NewBarcode = request.NewBarcode.Trim(),
                 CurrentValue = Preview.CurrentValue,
                 WarningValue = Preview.WarningValue,

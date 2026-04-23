@@ -202,7 +202,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             WearPartDefinitionId = seeded.DefinitionId,
             SiteCode = "S01",
             PartName = "刀具A",
-            OldBarcode = "OLD-0001",
+            CurrentBarcode = "OLD-0001",
             NewBarcode = "BARCODE-0006",
             CurrentValue = "30",
             WarningValue = "20",
@@ -243,7 +243,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             WearPartDefinitionId = seeded.DefinitionId,
             SiteCode = "S01",
             PartName = "刀具A",
-            OldBarcode = "OLD-0001",
+            CurrentBarcode = "OLD-0001",
             NewBarcode = "BARCODE-0006A",
             CurrentValue = "18",
             WarningValue = "20",
@@ -286,7 +286,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             WearPartDefinitionId = seeded.DefinitionId,
             SiteCode = "S01",
             PartName = "刀具A",
-            OldBarcode = "OLD-0001",
+            CurrentBarcode = "OLD-0001",
             NewBarcode = "BARCODE-0006B",
             CurrentValue = "18",
             WarningValue = "20",
@@ -361,7 +361,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
                 WearPartDefinitionId = seeded.DefinitionId,
                 SiteCode = "S01",
                 PartName = "刀具A",
-                OldBarcode = null,
+                CurrentBarcode = null,
                 NewBarcode = "BARCODE-REUSE",
                 CurrentValue = "18",
                 WarningValue = "20",
@@ -378,7 +378,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
                 WearPartDefinitionId = seeded.DefinitionId,
                 SiteCode = "S01",
                 PartName = "刀具A",
-                OldBarcode = "BARCODE-REUSE",
+                CurrentBarcode = "BARCODE-REUSE",
                 NewBarcode = "BARCODE-NEWER",
                 CurrentValue = "18",
                 WarningValue = "20",
@@ -426,7 +426,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
                 WearPartDefinitionId = seeded.DefinitionId,
                 SiteCode = "S01",
                 PartName = "刀具A",
-                OldBarcode = null,
+                CurrentBarcode = null,
                 NewBarcode = "BARCODE-REUSE-SHUTDOWN",
                 CurrentValue = "30",
                 WarningValue = "20",
@@ -443,7 +443,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
                 WearPartDefinitionId = seeded.DefinitionId,
                 SiteCode = "S01",
                 PartName = "刀具A",
-                OldBarcode = "BARCODE-REUSE-SHUTDOWN",
+                CurrentBarcode = "BARCODE-REUSE-SHUTDOWN",
                 NewBarcode = "BARCODE-NEWER-SHUTDOWN",
                 CurrentValue = "30",
                 WarningValue = "20",
@@ -487,7 +487,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
                 WearPartDefinitionId = seeded.DefinitionId,
                 SiteCode = "S01",
                 PartName = "刀具A",
-                OldBarcode = null,
+                CurrentBarcode = null,
                 NewBarcode = "BARCODE-REUSE-MAINT",
                 CurrentValue = "18",
                 WarningValue = "20",
@@ -504,7 +504,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
                 WearPartDefinitionId = seeded.DefinitionId,
                 SiteCode = "S01",
                 PartName = "刀具A",
-                OldBarcode = "BARCODE-REUSE-MAINT",
+                CurrentBarcode = "BARCODE-REUSE-MAINT",
                 NewBarcode = "BARCODE-NEWER-MAINT",
                 CurrentValue = "18",
                 WarningValue = "20",
@@ -534,6 +534,81 @@ public sealed class WearPartOperationalServicesTests : IDisposable
     }
 
     [Fact]
+    public async Task ReplaceByScanAsync_WhenMaintenanceUsesReusedOldPart_ShouldValidateInstalledPartLifetimeWindow()
+    {
+        var seeded = await SeedAsync("R-OPS-07C1", "M0.7C1", plcZeroClearAddress: "######");
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 111);
+        plcService.SetValue("DB1.1", 100);
+        plcService.SetValue("DB1.2", 120);
+
+        await using var seedContext = await _dbContextFactory.CreateDbContextAsync();
+        seedContext.WearPartReplacementRecords.AddRange(
+            new WearPartReplacementRecordEntity
+            {
+                ClientAppConfigurationId = seeded.BasicConfigurationId,
+                WearPartDefinitionId = seeded.DefinitionId,
+                SiteCode = "S01",
+                PartName = "刀具A",
+                CurrentBarcode = null,
+                NewBarcode = "BARCODE-REUSE-MAINT-WINDOW",
+                CurrentValue = "80",
+                WarningValue = "100",
+                ShutdownValue = "120",
+                OperatorWorkNumber = "WORK-OPS",
+                OperatorUserName = "WORK-OPS",
+                ReplacementReason = WearPartReplacementReason.Normal,
+                ReplacementMessage = string.Empty,
+                ReplacedAt = DateTime.UtcNow.AddMinutes(-10)
+            },
+            new WearPartReplacementRecordEntity
+            {
+                ClientAppConfigurationId = seeded.BasicConfigurationId,
+                WearPartDefinitionId = seeded.DefinitionId,
+                SiteCode = "S01",
+                PartName = "刀具A",
+                CurrentBarcode = "BARCODE-REUSE-MAINT-WINDOW",
+                NewBarcode = "BARCODE-CURRENT-MAINT-WINDOW",
+                CurrentValue = "80",
+                WarningValue = "100",
+                ShutdownValue = "120",
+                OperatorWorkNumber = "WORK-OPS",
+                OperatorUserName = "WORK-OPS",
+                ReplacementReason = WearPartReplacementReason.Maintenance,
+                ReplacementMessage = string.Empty,
+                ReplacedAt = DateTime.UtcNow.AddMinutes(-5)
+            });
+        await seedContext.SaveChangesAsync();
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService);
+
+        var result = await service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "BARCODE-REUSE-MAINT-WINDOW",
+            ReplacementReason = WearPartReplacementReason.Maintenance
+        });
+
+        Assert.Equal("BARCODE-REUSE-MAINT-WINDOW", result.NewBarcode);
+        Assert.Contains(plcService.Writes, x => x.Address == "DB1.0" && Equals(x.Value, 80));
+        Assert.DoesNotContain(plcService.Writes, x => x.Address == "DB1.1");
+        Assert.DoesNotContain(plcService.Writes, x => x.Address == "DB1.2");
+
+        await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
+        var repository = new WearPartReplacementRecordRepository(verifyContext);
+        var records = await repository.ListByClientAppConfigurationAsync(seeded.BasicConfigurationId);
+        var latestRecord = records[0];
+        Assert.Equal("BARCODE-CURRENT-MAINT-WINDOW", latestRecord.CurrentBarcode);
+        Assert.Equal("BARCODE-REUSE-MAINT-WINDOW", latestRecord.NewBarcode);
+        Assert.Equal("111", latestRecord.CurrentValue);
+        Assert.Equal("100", latestRecord.WarningValue);
+        Assert.Equal("120", latestRecord.ShutdownValue);
+        Assert.Equal("80", latestRecord.DataValue);
+    }
+
+    [Fact]
     public async Task ReplaceByScanAsync_WhenBarcodeRemovedByNormalReplacement_ShouldBlockReusePermanently()
     {
         var seeded = await SeedAsync("R-OPS-07D", "M0.7D", plcZeroClearAddress: "######");
@@ -551,7 +626,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
                 WearPartDefinitionId = seeded.DefinitionId,
                 SiteCode = "S01",
                 PartName = "刀具A",
-                OldBarcode = null,
+                CurrentBarcode = null,
                 NewBarcode = "BARCODE-REUSE-NORMAL",
                 CurrentValue = "18",
                 WarningValue = "20",
@@ -568,7 +643,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
                 WearPartDefinitionId = seeded.DefinitionId,
                 SiteCode = "S01",
                 PartName = "刀具A",
-                OldBarcode = "BARCODE-REUSE-NORMAL",
+                CurrentBarcode = "BARCODE-REUSE-NORMAL",
                 NewBarcode = "BARCODE-NEWER-NORMAL",
                 CurrentValue = "20",
                 WarningValue = "20",
@@ -614,7 +689,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
                 WearPartDefinitionId = seeded.DefinitionId,
                 SiteCode = "S01",
                 PartName = "刀具A",
-                OldBarcode = null,
+                CurrentBarcode = null,
                 NewBarcode = "BARCODE-REUSE-FAIL",
                 CurrentValue = "18",
                 WarningValue = "20",
@@ -631,7 +706,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
                 WearPartDefinitionId = seeded.DefinitionId,
                 SiteCode = "S01",
                 PartName = "刀具A",
-                OldBarcode = "BARCODE-REUSE-FAIL",
+                CurrentBarcode = "BARCODE-REUSE-FAIL",
                 NewBarcode = "BARCODE-NEWER-FAIL",
                 CurrentValue = "18",
                 WarningValue = "20",

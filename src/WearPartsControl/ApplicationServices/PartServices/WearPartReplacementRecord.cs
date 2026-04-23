@@ -34,9 +34,9 @@ public sealed class WearPartReplacementRecord
     public string PartName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 旧条码。
+    /// 当前设备上的条码。
     /// </summary>
-    public string? OldBarcode { get; set; }
+    public string? CurrentBarcode { get; set; }
 
     /// <summary>
     /// 新条码。

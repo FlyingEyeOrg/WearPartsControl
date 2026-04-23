@@ -462,7 +462,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         }
 
         var latestRemovalRecord = ReplacementHistory
-            .Where(x => string.Equals(x.OldBarcode?.Trim(), normalizedBarcode, StringComparison.OrdinalIgnoreCase))
+            .Where(x => string.Equals(x.CurrentBarcode?.Trim(), normalizedBarcode, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(x => x.ReplacedAt)
             .FirstOrDefault();
 

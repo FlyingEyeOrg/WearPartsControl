@@ -90,8 +90,8 @@
                 <DataGridTextColumn Header="名称"
                                     Binding="{Binding PartName}"
                                     Width="*"></DataGridTextColumn>
-                <DataGridTextColumn Header="旧编码"
-                                    Binding="{Binding OldBarcode}"
+                <DataGridTextColumn Header="当前编码"
+                                    Binding="{Binding CurrentBarcode}"
                                     Width="*"></DataGridTextColumn>
                 <DataGridTextColumn Header="新编码"
                                     Binding="{Binding NewBarcode}"

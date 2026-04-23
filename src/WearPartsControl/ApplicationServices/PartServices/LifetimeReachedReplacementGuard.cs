@@ -9,14 +9,18 @@ public sealed class LifetimeReachedReplacementGuard : IWearPartReplacementGuard
 
     public Task ValidateAsync(WearPartReplacementGuardContext context, CancellationToken cancellationToken = default)
     {
+        var installedCurrentValue = context.InstalledCurrentValue;
+        var installedWarningValue = context.InstalledWarningValue;
+        var installedShutdownValue = context.InstalledShutdownValue;
+
         if (WearPartReplacementReason.RequiresWarningLifetime(context.NormalizedReason)
-            && context.CurrentValue < context.WarningValue)
+            && installedCurrentValue < installedWarningValue)
         {
             throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.LifetimeNotReached"), code: "WearPartReplacement:LifetimeNotReached");
         }
 
         if (WearPartReplacementReason.RequiresBelowShutdownLifetime(context.NormalizedReason)
-            && context.CurrentValue >= context.ShutdownValue)
+            && installedCurrentValue >= installedShutdownValue)
         {
             throw new UserFriendlyException(
                 LocalizedText.Format(

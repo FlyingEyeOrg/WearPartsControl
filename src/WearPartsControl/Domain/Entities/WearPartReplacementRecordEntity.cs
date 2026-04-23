@@ -26,7 +26,7 @@ public sealed class WearPartReplacementRecordEntity : Entity, IHasAuditTime, IHa
 
     public string PartName { get; set; } = string.Empty;
 
-    public string? OldBarcode { get; set; }
+    public string? CurrentBarcode { get; set; }
 
     public string NewBarcode { get; set; } = string.Empty;
 

@@ -19,7 +19,7 @@ public sealed class WearPartReplacementRecordEntityConfiguration : IEntityTypeCo
         builder.Property(x => x.DeletedAt);
         builder.Property(x => x.SiteCode).HasMaxLength(64).IsRequired();
         builder.Property(x => x.PartName).HasMaxLength(128).IsRequired();
-        builder.Property(x => x.OldBarcode).HasMaxLength(128);
+        builder.Property(x => x.CurrentBarcode).HasColumnName("OldBarcode").HasMaxLength(128);
         builder.Property(x => x.NewBarcode).HasMaxLength(128).IsRequired();
         builder.Property(x => x.CurrentValue).HasMaxLength(128).IsRequired();
         builder.Property(x => x.WarningValue).HasMaxLength(128).IsRequired();
