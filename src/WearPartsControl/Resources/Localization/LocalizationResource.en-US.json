@@ -192,6 +192,8 @@
       "Saved": "User configuration saved successfully.",
       "SaveFailedPrefix": "Failed to save user configuration: ",
       "ResponsibleMissing": "Please configure at least one responsible person.",
+      "SpacerValidationTimeoutInvalid": "Spacer validation timeout must be an integer greater than 0.",
+      "SpacerValidationExpectedSegmentCountInvalid": "Spacer barcode segment count must be an integer greater than 0.",
       "TestNotificationTitle": "WearPartsControl test notification",
       "TestNotificationBody": "This is a test notification from the user configuration page.",
       "TestSucceeded": "COM notification test sent successfully.",

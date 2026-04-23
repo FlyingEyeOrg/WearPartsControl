@@ -1,3 +1,4 @@
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
@@ -21,6 +22,12 @@ public sealed class UserConfigViewModel : ObservableObject
     private string _prdResponsibleWorkId = string.Empty;
     private string _comAccessToken = string.Empty;
     private string _comSecret = string.Empty;
+    private bool _spacerValidationEnabled = true;
+    private string _spacerValidationUrl = string.Empty;
+    private string _spacerValidationTimeoutMilliseconds = UserConfig.DefaultSpacerValidationTimeoutMilliseconds.ToString(CultureInfo.InvariantCulture);
+    private bool _spacerValidationIgnoreServerCertificateErrors = true;
+    private string _spacerValidationCodeSeparator = UserConfig.DefaultSpacerValidationCodeSeparator;
+    private string _spacerValidationExpectedSegmentCount = UserConfig.DefaultSpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture);
     private string _statusMessage = LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain");
 
     public UserConfigViewModel(IUserConfigService userConfigService, IComNotificationService comNotificationService, IUiDispatcher uiDispatcher)
@@ -118,6 +125,78 @@ public sealed class UserConfigViewModel : ObservableObject
         }
     }
 
+    public bool SpacerValidationEnabled
+    {
+        get => _spacerValidationEnabled;
+        set
+        {
+            if (SetProperty(ref _spacerValidationEnabled, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string SpacerValidationUrl
+    {
+        get => _spacerValidationUrl;
+        set
+        {
+            if (SetProperty(ref _spacerValidationUrl, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string SpacerValidationTimeoutMilliseconds
+    {
+        get => _spacerValidationTimeoutMilliseconds;
+        set
+        {
+            if (SetProperty(ref _spacerValidationTimeoutMilliseconds, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public bool SpacerValidationIgnoreServerCertificateErrors
+    {
+        get => _spacerValidationIgnoreServerCertificateErrors;
+        set
+        {
+            if (SetProperty(ref _spacerValidationIgnoreServerCertificateErrors, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string SpacerValidationCodeSeparator
+    {
+        get => _spacerValidationCodeSeparator;
+        set
+        {
+            if (SetProperty(ref _spacerValidationCodeSeparator, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string SpacerValidationExpectedSegmentCount
+    {
+        get => _spacerValidationExpectedSegmentCount;
+        set
+        {
+            if (SetProperty(ref _spacerValidationExpectedSegmentCount, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         if (_isInitialized)
@@ -203,12 +282,30 @@ public sealed class UserConfigViewModel : ObservableObject
 
     private UserConfig BuildConfig()
     {
+        if (!int.TryParse(SpacerValidationTimeoutMilliseconds?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var timeoutMilliseconds)
+            || timeoutMilliseconds <= 0)
+        {
+            throw new InvalidOperationException(LocalizedText.Get("ViewModels.UserConfigVm.SpacerValidationTimeoutInvalid"));
+        }
+
+        if (!int.TryParse(SpacerValidationExpectedSegmentCount?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var expectedSegmentCount)
+            || expectedSegmentCount <= 0)
+        {
+            throw new InvalidOperationException(LocalizedText.Get("ViewModels.UserConfigVm.SpacerValidationExpectedSegmentCountInvalid"));
+        }
+
         return new UserConfig
         {
             MeResponsibleWorkId = MeResponsibleWorkId,
             PrdResponsibleWorkId = PrdResponsibleWorkId,
             ComAccessToken = ComAccessToken,
-            ComSecret = ComSecret
+            ComSecret = ComSecret,
+            SpacerValidationEnabled = SpacerValidationEnabled,
+            SpacerValidationUrl = SpacerValidationUrl,
+            SpacerValidationTimeoutMilliseconds = timeoutMilliseconds,
+            SpacerValidationIgnoreServerCertificateErrors = SpacerValidationIgnoreServerCertificateErrors,
+            SpacerValidationCodeSeparator = SpacerValidationCodeSeparator,
+            SpacerValidationExpectedSegmentCount = expectedSegmentCount
         };
     }
 
@@ -221,6 +318,12 @@ public sealed class UserConfigViewModel : ObservableObject
             PrdResponsibleWorkId = config.PrdResponsibleWorkId;
             ComAccessToken = config.ComAccessToken;
             ComSecret = config.ComSecret;
+            SpacerValidationEnabled = config.SpacerValidationEnabled;
+            SpacerValidationUrl = config.SpacerValidationUrl;
+            SpacerValidationTimeoutMilliseconds = config.SpacerValidationTimeoutMilliseconds.ToString(CultureInfo.InvariantCulture);
+            SpacerValidationIgnoreServerCertificateErrors = config.SpacerValidationIgnoreServerCertificateErrors;
+            SpacerValidationCodeSeparator = config.SpacerValidationCodeSeparator;
+            SpacerValidationExpectedSegmentCount = config.SpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture);
         }
         finally
         {
@@ -244,7 +347,13 @@ public sealed class UserConfigViewModel : ObservableObject
             MeResponsibleWorkId?.Trim() ?? string.Empty,
             PrdResponsibleWorkId?.Trim() ?? string.Empty,
             ComAccessToken?.Trim() ?? string.Empty,
-            ComSecret?.Trim() ?? string.Empty);
+            ComSecret?.Trim() ?? string.Empty,
+            SpacerValidationEnabled,
+            SpacerValidationUrl?.Trim() ?? string.Empty,
+            SpacerValidationTimeoutMilliseconds?.Trim() ?? string.Empty,
+            SpacerValidationIgnoreServerCertificateErrors,
+            SpacerValidationCodeSeparator?.Trim() ?? string.Empty,
+            SpacerValidationExpectedSegmentCount?.Trim() ?? string.Empty);
     }
 
     private async Task ExecuteBusyAsync(Func<Task> action, string errorPrefix, CancellationToken cancellationToken = default)
@@ -268,8 +377,14 @@ public sealed class UserConfigViewModel : ObservableObject
         string MeResponsibleWorkId,
         string PrdResponsibleWorkId,
         string ComAccessToken,
-        string ComSecret)
+        string ComSecret,
+        bool SpacerValidationEnabled,
+        string SpacerValidationUrl,
+        string SpacerValidationTimeoutMilliseconds,
+        bool SpacerValidationIgnoreServerCertificateErrors,
+        string SpacerValidationCodeSeparator,
+        string SpacerValidationExpectedSegmentCount)
     {
-        public static UserConfigSnapshot Empty { get; } = new(string.Empty, string.Empty, string.Empty, string.Empty);
+        public static UserConfigSnapshot Empty { get; } = new(string.Empty, string.Empty, string.Empty, string.Empty, true, string.Empty, UserConfig.DefaultSpacerValidationTimeoutMilliseconds.ToString(CultureInfo.InvariantCulture), true, UserConfig.DefaultSpacerValidationCodeSeparator, UserConfig.DefaultSpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture));
     }
 }

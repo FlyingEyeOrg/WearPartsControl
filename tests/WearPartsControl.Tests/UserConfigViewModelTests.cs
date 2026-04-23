@@ -19,7 +19,13 @@ public sealed class UserConfigViewModelTests
                 MeResponsibleWorkId = "ME001",
                 PrdResponsibleWorkId = "PRD001",
                 ComAccessToken = "token",
-                ComSecret = "secret"
+                ComSecret = "secret",
+                SpacerValidationEnabled = false,
+                SpacerValidationUrl = "https://spacer/api",
+                SpacerValidationTimeoutMilliseconds = 8000,
+                SpacerValidationIgnoreServerCertificateErrors = false,
+                SpacerValidationCodeSeparator = "-",
+                SpacerValidationExpectedSegmentCount = 9
             }
         };
         var viewModel = new UserConfigViewModel(service, new StubComNotificationService(), new StubUiDispatcher());
@@ -30,6 +36,12 @@ public sealed class UserConfigViewModelTests
         Assert.Equal("PRD001", viewModel.PrdResponsibleWorkId);
         Assert.Equal("token", viewModel.ComAccessToken);
         Assert.Equal("secret", viewModel.ComSecret);
+        Assert.False(viewModel.SpacerValidationEnabled);
+        Assert.Equal("https://spacer/api", viewModel.SpacerValidationUrl);
+        Assert.Equal("8000", viewModel.SpacerValidationTimeoutMilliseconds);
+        Assert.False(viewModel.SpacerValidationIgnoreServerCertificateErrors);
+        Assert.Equal("-", viewModel.SpacerValidationCodeSeparator);
+        Assert.Equal("9", viewModel.SpacerValidationExpectedSegmentCount);
         Assert.False(viewModel.IsDirty);
         Assert.Equal(LocalizedText.Get("ViewModels.UserConfigVm.Loaded"), viewModel.StatusMessage);
         Assert.False(viewModel.IsBusy);
@@ -46,6 +58,12 @@ public sealed class UserConfigViewModelTests
         viewModel.PrdResponsibleWorkId = "PRD002";
         viewModel.ComAccessToken = "token-2";
         viewModel.ComSecret = "secret-2";
+        viewModel.SpacerValidationEnabled = false;
+        viewModel.SpacerValidationUrl = "https://spacer/save";
+        viewModel.SpacerValidationTimeoutMilliseconds = "7200";
+        viewModel.SpacerValidationIgnoreServerCertificateErrors = false;
+        viewModel.SpacerValidationCodeSeparator = "-";
+        viewModel.SpacerValidationExpectedSegmentCount = "10";
 
         Assert.True(viewModel.IsDirty);
         Assert.True(viewModel.SaveCommand.CanExecute(null));
@@ -57,6 +75,12 @@ public sealed class UserConfigViewModelTests
         Assert.NotNull(service.LastSaved);
         Assert.Equal("ME002", service.LastSaved!.MeResponsibleWorkId);
         Assert.Equal("PRD002", service.LastSaved.PrdResponsibleWorkId);
+        Assert.False(service.LastSaved.SpacerValidationEnabled);
+        Assert.Equal("https://spacer/save", service.LastSaved.SpacerValidationUrl);
+        Assert.Equal(7200, service.LastSaved.SpacerValidationTimeoutMilliseconds);
+        Assert.False(service.LastSaved.SpacerValidationIgnoreServerCertificateErrors);
+        Assert.Equal("-", service.LastSaved.SpacerValidationCodeSeparator);
+        Assert.Equal(10, service.LastSaved.SpacerValidationExpectedSegmentCount);
     }
 
     [Fact]
@@ -71,6 +95,7 @@ public sealed class UserConfigViewModelTests
         viewModel.PrdResponsibleWorkId = "ME003";
         viewModel.ComAccessToken = "token-3";
         viewModel.ComSecret = "secret-3";
+        viewModel.SpacerValidationUrl = "https://spacer/test";
 
         await viewModel.TestComNotificationCommand.ExecuteAsync(null);
 
@@ -95,7 +120,13 @@ public sealed class UserConfigViewModelTests
                 MeResponsibleWorkId = Current.MeResponsibleWorkId,
                 PrdResponsibleWorkId = Current.PrdResponsibleWorkId,
                 ComAccessToken = Current.ComAccessToken,
-                ComSecret = Current.ComSecret
+                ComSecret = Current.ComSecret,
+                SpacerValidationEnabled = Current.SpacerValidationEnabled,
+                SpacerValidationUrl = Current.SpacerValidationUrl,
+                SpacerValidationTimeoutMilliseconds = Current.SpacerValidationTimeoutMilliseconds,
+                SpacerValidationIgnoreServerCertificateErrors = Current.SpacerValidationIgnoreServerCertificateErrors,
+                SpacerValidationCodeSeparator = Current.SpacerValidationCodeSeparator,
+                SpacerValidationExpectedSegmentCount = Current.SpacerValidationExpectedSegmentCount
             });
         }
 
@@ -106,7 +137,13 @@ public sealed class UserConfigViewModelTests
                 MeResponsibleWorkId = config.MeResponsibleWorkId,
                 PrdResponsibleWorkId = config.PrdResponsibleWorkId,
                 ComAccessToken = config.ComAccessToken,
-                ComSecret = config.ComSecret
+                ComSecret = config.ComSecret,
+                SpacerValidationEnabled = config.SpacerValidationEnabled,
+                SpacerValidationUrl = config.SpacerValidationUrl,
+                SpacerValidationTimeoutMilliseconds = config.SpacerValidationTimeoutMilliseconds,
+                SpacerValidationIgnoreServerCertificateErrors = config.SpacerValidationIgnoreServerCertificateErrors,
+                SpacerValidationCodeSeparator = config.SpacerValidationCodeSeparator,
+                SpacerValidationExpectedSegmentCount = config.SpacerValidationExpectedSegmentCount
             };
             Current = LastSaved;
             return ValueTask.CompletedTask;

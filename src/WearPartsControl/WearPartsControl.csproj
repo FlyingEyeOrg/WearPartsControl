@@ -32,9 +32,6 @@
 		<None Update="PrivateData\Settings\com-notification.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="PrivateData\Settings\spacer-validation.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
 		<None Update="PrivateData\Settings\mhrinfo.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

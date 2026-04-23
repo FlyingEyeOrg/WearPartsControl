@@ -34,6 +34,9 @@ public sealed class LegacyConfigurationImportServiceTests
             await File.WriteAllTextAsync(Path.Combine(jsonDirectory, "AppConfig.json"), """
 {"UseUserNumber":true,"SpacerValidationUrl":"https://legacy/spacer","UserWorkId":"WU001","AccessToken":"TOKEN-001","Secret":"SECRET-001"}
 """);
+            await File.WriteAllTextAsync(Path.Combine(jsonDirectory, "spacer-validation.json"), """
+{"Enabled":false,"ValidationUrl":"https://legacy/spacer-from-file","TimeoutMilliseconds":9000,"IgnoreServerCertificateErrors":false,"CodeSeparator":"-","ExpectedSegmentCount":10}
+""");
             await File.WriteAllTextAsync(Path.Combine(jsonDirectory, "MHRInfos.json"), """
 {"LoginName":"mhr-user","Password":"mhr-pass","MHRInfos":[{"Site":"F1","LoginUrl":"https://mhr/login","GetUsersUrl":"https://mhr/users"}]}
 """);
@@ -62,15 +65,17 @@ public sealed class LegacyConfigurationImportServiceTests
             Assert.Equal("WU001", userConfig.MeResponsibleWorkId);
             Assert.Equal("TOKEN-001", userConfig.ComAccessToken);
             Assert.Equal("SECRET-001", userConfig.ComSecret);
+            Assert.False(userConfig.SpacerValidationEnabled);
+            Assert.Equal("https://legacy/spacer-from-file", userConfig.SpacerValidationUrl);
+            Assert.Equal(9000, userConfig.SpacerValidationTimeoutMilliseconds);
+            Assert.False(userConfig.SpacerValidationIgnoreServerCertificateErrors);
+            Assert.Equal("-", userConfig.SpacerValidationCodeSeparator);
+            Assert.Equal(10, userConfig.SpacerValidationExpectedSegmentCount);
 
             var comNotification = await saveInfoStore.ReadAsync<ComNotificationOptionsSaveInfo>();
             Assert.Equal("TOKEN-001", comNotification.AccessToken);
             Assert.Equal("SECRET-001", comNotification.Secret);
             Assert.Equal("WU001", comNotification.DefaultUserWorkId);
-
-            var spacerValidation = await saveInfoStore.ReadAsync<SpacerValidationOptionsSaveInfo>();
-            Assert.True(spacerValidation.Enabled);
-            Assert.Equal("https://legacy/spacer", spacerValidation.ValidationUrl);
 
             var mhrConfig = await saveInfoStore.ReadAsync<MhrConfig>();
             Assert.Equal("mhr-user", mhrConfig.LoginName);

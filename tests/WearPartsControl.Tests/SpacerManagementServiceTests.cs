@@ -4,8 +4,8 @@ using System.Threading;
 using Microsoft.Extensions.Logging.Abstractions;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
-using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.SpacerManagement;
+using WearPartsControl.ApplicationServices.UserConfig;
 using Xunit;
 
 namespace WearPartsControl.Tests;
@@ -17,10 +17,10 @@ public sealed class SpacerManagementServiceTests
     {
         var store = new StubSaveInfoStore
         {
-            Options = new SpacerValidationOptionsSaveInfo
+            Config = new UserConfig
             {
-                CodeSeparator = "-",
-                ExpectedSegmentCount = 8
+                SpacerValidationCodeSeparator = "-",
+                SpacerValidationExpectedSegmentCount = 8
             }
         };
 
@@ -41,27 +41,18 @@ public sealed class SpacerManagementServiceTests
         Assert.Equal("AB", info.ABSite);
     }
 
-    private sealed class StubSaveInfoStore : ISaveInfoStore
+    private sealed class StubSaveInfoStore : IUserConfigService
     {
-        public SpacerValidationOptionsSaveInfo Options { get; set; } = new();
+        public UserConfig Config { get; set; } = new();
 
-        public ValueTask<T> ReadAsync<T>(CancellationToken cancellationToken = default) where T : class, new()
+        public ValueTask<UserConfig> GetAsync(CancellationToken cancellationToken = default)
         {
-            if (typeof(T) == typeof(SpacerValidationOptionsSaveInfo))
-            {
-                return ValueTask.FromResult((T)(object)Options);
-            }
-
-            return ValueTask.FromResult(new T());
+            return ValueTask.FromResult(Config);
         }
 
-        public ValueTask WriteAsync<T>(T model, CancellationToken cancellationToken = default) where T : class, new()
+        public ValueTask SaveAsync(UserConfig config, CancellationToken cancellationToken = default)
         {
-            if (model is SpacerValidationOptionsSaveInfo options)
-            {
-                Options = options;
-            }
-
+            Config = config;
             return ValueTask.CompletedTask;
         }
     }

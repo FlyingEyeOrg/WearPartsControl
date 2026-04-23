@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
-using WearPartsControl.ApplicationServices.SaveInfoService;
+using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.Exceptions;
+using UserConfigModel = WearPartsControl.ApplicationServices.UserConfig.UserConfig;
 
 namespace WearPartsControl.ApplicationServices.SpacerManagement;
 
@@ -21,17 +22,17 @@ public sealed class SpacerManagementService : ISpacerManagementService
 
     private readonly ILocalizationService _localizationService;
     private readonly IHttpJsonService _httpJsonService;
-    private readonly ISaveInfoStore _saveInfoStore;
+    private readonly IUserConfigService _userConfigService;
     private readonly ILogger<SpacerManagementService> _logger;
 
     public SpacerManagementService(
         ILocalizationService localizationService,
-        ISaveInfoStore saveInfoStore,
+        IUserConfigService userConfigService,
         IHttpJsonService httpJsonService,
         ILogger<SpacerManagementService> logger)
     {
         _localizationService = localizationService;
-        _saveInfoStore = saveInfoStore;
+        _userConfigService = userConfigService;
         _httpJsonService = httpJsonService;
         _logger = logger;
     }
@@ -43,9 +44,13 @@ public sealed class SpacerManagementService : ISpacerManagementService
             throw new UserFriendlyException(L("SpacerManagement.CodeEmpty"));
         }
 
-        var options = await _saveInfoStore.ReadAsync<SpacerValidationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
-        var separator = string.IsNullOrWhiteSpace(options.CodeSeparator) ? "/" : options.CodeSeparator;
-        var expectedCount = options.ExpectedSegmentCount > 0 ? options.ExpectedSegmentCount : 8;
+        var userConfig = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
+        var separator = string.IsNullOrWhiteSpace(userConfig.SpacerValidationCodeSeparator)
+            ? UserConfigModel.DefaultSpacerValidationCodeSeparator
+            : userConfig.SpacerValidationCodeSeparator;
+        var expectedCount = userConfig.SpacerValidationExpectedSegmentCount > 0
+            ? userConfig.SpacerValidationExpectedSegmentCount
+            : UserConfigModel.DefaultSpacerValidationExpectedSegmentCount;
 
         var parts = code.Split(separator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length != expectedCount)
@@ -73,23 +78,23 @@ public sealed class SpacerManagementService : ISpacerManagementService
     {
         ArgumentNullException.ThrowIfNull(info);
 
-        var options = await _saveInfoStore.ReadAsync<SpacerValidationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
-        if (!options.Enabled)
+        var userConfig = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
+        if (!userConfig.SpacerValidationEnabled)
         {
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(options.ValidationUrl))
+        if (string.IsNullOrWhiteSpace(userConfig.SpacerValidationUrl))
         {
             throw new UserFriendlyException(L("SpacerManagement.ValidationUrlEmpty"));
         }
 
-        if (options.TimeoutMilliseconds <= 0)
+        if (userConfig.SpacerValidationTimeoutMilliseconds <= 0)
         {
             throw new UserFriendlyException(L("SpacerManagement.TimeoutInvalid"));
         }
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, options.ValidationUrl)
+        using var request = new HttpRequestMessage(HttpMethod.Post, userConfig.SpacerValidationUrl)
         {
             Content = JsonContent.Create(info)
         };
@@ -101,8 +106,8 @@ public sealed class SpacerManagementService : ISpacerManagementService
                 request,
                 new HttpRequestExecutionOptions
                 {
-                    TimeoutMilliseconds = options.TimeoutMilliseconds,
-                    IgnoreServerCertificateErrors = options.IgnoreServerCertificateErrors
+                    TimeoutMilliseconds = userConfig.SpacerValidationTimeoutMilliseconds,
+                    IgnoreServerCertificateErrors = userConfig.SpacerValidationIgnoreServerCertificateErrors
                 },
                 cancellationToken).ConfigureAwait(false);
 

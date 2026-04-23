@@ -44,6 +44,7 @@ public sealed class LegacyConfigurationImportService : ILegacyConfigurationImpor
 
         var legacyAppSetting = await ReadJsonAsync<LegacyAppSetting>(Path.Combine(legacyJsonDirectory, "AppSetting.json"), cancellationToken).ConfigureAwait(false);
         var legacyAppConfig = await ReadJsonAsync<LegacyAppConfig>(Path.Combine(legacyJsonDirectory, "AppConfig.json"), cancellationToken).ConfigureAwait(false);
+        var legacySpacerValidation = await ReadLegacySpacerValidationAsync(legacyJsonDirectory, legacyRootDirectory, cancellationToken).ConfigureAwait(false);
         var legacyMhrInfos = await ReadJsonAsync<LegacyMhrInfosConfig>(Path.Combine(legacyJsonDirectory, "MHRInfos.json"), cancellationToken).ConfigureAwait(false);
         var legacyMhr = legacyMhrInfos is null
             ? await ReadJsonAsync<LegacyMhrConfig>(Path.Combine(legacyJsonDirectory, "MHR.json"), cancellationToken).ConfigureAwait(false)
@@ -90,9 +91,13 @@ public sealed class LegacyConfigurationImportService : ILegacyConfigurationImpor
 
         await _appSettingsService.SaveAsync(appSettings, cancellationToken).ConfigureAwait(false);
 
+        if (legacyAppConfig is not null || legacySpacerValidation is not null)
+        {
+            result.ImportedSpacerValidation = await ImportSpacerValidationAsync(legacyAppConfig, legacySpacerValidation, cancellationToken).ConfigureAwait(false);
+        }
+
         if (legacyAppConfig is not null)
         {
-            result.ImportedSpacerValidation = await ImportSpacerValidationAsync(legacyAppConfig, cancellationToken).ConfigureAwait(false);
             result.ImportedUserConfig = await ImportUserConfigAsync(legacyAppConfig, cancellationToken).ConfigureAwait(false);
             result.ImportedComNotification = await ImportComNotificationAsync(legacyAppConfig, cancellationToken).ConfigureAwait(false);
         }
@@ -106,19 +111,62 @@ public sealed class LegacyConfigurationImportService : ILegacyConfigurationImpor
         return result;
     }
 
-    private async Task<bool> ImportSpacerValidationAsync(LegacyAppConfig legacyAppConfig, CancellationToken cancellationToken)
+    private async Task<bool> ImportSpacerValidationAsync(LegacyAppConfig? legacyAppConfig, SpacerValidationOptionsSaveInfo? legacySpacerValidation, CancellationToken cancellationToken)
     {
-        var validationUrl = Normalize(legacyAppConfig.SpacerValidationUrl);
-        if (string.IsNullOrWhiteSpace(validationUrl))
+        var userConfig = await _saveInfoStore.ReadAsync<UserConfigModel>(cancellationToken).ConfigureAwait(false);
+        var hasChanges = false;
+
+        if (legacySpacerValidation is not null)
+        {
+            userConfig.SpacerValidationEnabled = legacySpacerValidation.Enabled;
+            userConfig.SpacerValidationUrl = Normalize(legacySpacerValidation.ValidationUrl);
+            userConfig.SpacerValidationTimeoutMilliseconds = legacySpacerValidation.TimeoutMilliseconds > 0
+                ? legacySpacerValidation.TimeoutMilliseconds
+                : UserConfigModel.DefaultSpacerValidationTimeoutMilliseconds;
+            userConfig.SpacerValidationIgnoreServerCertificateErrors = legacySpacerValidation.IgnoreServerCertificateErrors;
+            userConfig.SpacerValidationCodeSeparator = Normalize(legacySpacerValidation.CodeSeparator, UserConfigModel.DefaultSpacerValidationCodeSeparator);
+            userConfig.SpacerValidationExpectedSegmentCount = legacySpacerValidation.ExpectedSegmentCount > 0
+                ? legacySpacerValidation.ExpectedSegmentCount
+                : UserConfigModel.DefaultSpacerValidationExpectedSegmentCount;
+            hasChanges = true;
+        }
+        else
+        {
+            var validationUrl = Normalize(legacyAppConfig?.SpacerValidationUrl);
+            if (!string.IsNullOrWhiteSpace(validationUrl))
+            {
+                userConfig.SpacerValidationEnabled = true;
+                userConfig.SpacerValidationUrl = validationUrl;
+                hasChanges = true;
+            }
+        }
+
+        if (!hasChanges)
         {
             return false;
         }
 
-        var options = await _saveInfoStore.ReadAsync<SpacerValidationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
-        options.ValidationUrl = validationUrl;
-        options.Enabled = true;
-        await _saveInfoStore.WriteAsync(options, cancellationToken).ConfigureAwait(false);
+        await _saveInfoStore.WriteAsync(userConfig, cancellationToken).ConfigureAwait(false);
         return true;
+    }
+
+    private static async Task<SpacerValidationOptionsSaveInfo?> ReadLegacySpacerValidationAsync(string legacyJsonDirectory, string legacyRootDirectory, CancellationToken cancellationToken)
+    {
+        foreach (var path in new[]
+                 {
+                     Path.Combine(legacyJsonDirectory, "spacer-validation.json"),
+                     Path.Combine(legacyRootDirectory, "spacer-validation.json"),
+                     Path.Combine(legacyRootDirectory, "PrivateData", "Settings", "spacer-validation.json")
+                 })
+        {
+            var config = await ReadJsonAsync<SpacerValidationOptionsSaveInfo>(path, cancellationToken).ConfigureAwait(false);
+            if (config is not null)
+            {
+                return config;
+            }
+        }
+
+        return null;
     }
 
     private async Task<bool> ImportUserConfigAsync(LegacyAppConfig legacyAppConfig, CancellationToken cancellationToken)

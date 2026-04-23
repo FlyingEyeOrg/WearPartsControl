@@ -1,1 +1,1 @@
-{"MeResponsibleWorkId":"","PrdResponsibleWorkId":"","ComAccessToken":"","ComSecret":""}
+{"MeResponsibleWorkId":"","PrdResponsibleWorkId":"","ComAccessToken":"","ComSecret":"","SpacerValidationEnabled":true,"SpacerValidationUrl":"","SpacerValidationTimeoutMilliseconds":5000,"SpacerValidationIgnoreServerCertificateErrors":true,"SpacerValidationCodeSeparator":"/","SpacerValidationExpectedSegmentCount":8}

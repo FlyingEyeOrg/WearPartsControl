@@ -1,8 +1,0 @@
-{
-  "Enabled": true,
-  "ValidationUrl": "",
-  "TimeoutMilliseconds": 5000,
-  "IgnoreServerCertificateErrors": true,
-  "CodeSeparator": "/",
-  "ExpectedSegmentCount": 8
-}

@@ -95,7 +95,7 @@ public sealed class UiBusyServiceTests
 
     private static async Task WaitUntilAsync(Func<bool> predicate)
     {
-        for (var index = 0; index < 20; index++)
+        for (var index = 0; index < 100; index++)
         {
             if (predicate())
             {

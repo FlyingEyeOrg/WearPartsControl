@@ -91,6 +91,37 @@ public sealed class TypeJsonSaveInfoStore : ISaveInfoStore
         }
     }
 
+    public bool Exists<T>() where T : class, new()
+    {
+        var path = GetMappedFilePath(typeof(T));
+        return File.Exists(path);
+    }
+
+    public async ValueTask DeleteAsync<T>(CancellationToken cancellationToken = default) where T : class, new()
+    {
+        var path = GetMappedFilePath(typeof(T));
+        var gate = _fileLocks.GetOrAdd(path, _ => new SemaphoreSlim(1, 1));
+
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            var tempPath = path + ".tmp";
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
     private string GetMappedFilePath(Type modelType)
     {
         return _mappedFilePathCache.GetOrAdd(modelType, ResolveFilePath);

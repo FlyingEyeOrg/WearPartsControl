@@ -192,6 +192,8 @@
       "Saved": "用户配置保存成功。",
       "SaveFailedPrefix": "用户配置保存失败：",
       "ResponsibleMissing": "请至少配置一个负责人。",
+      "SpacerValidationTimeoutInvalid": "垫片校验超时时间必须是大于 0 的整数。",
+      "SpacerValidationExpectedSegmentCountInvalid": "垫片条码段数必须是大于 0 的整数。",
       "TestNotificationTitle": "WearPartsControl 测试通知",
       "TestNotificationBody": "这是一条来自用户配置页面的测试通知。",
       "TestSucceeded": "COM 通知测试发送成功。",
