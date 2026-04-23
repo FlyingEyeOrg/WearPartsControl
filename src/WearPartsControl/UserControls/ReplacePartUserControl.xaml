@@ -65,12 +65,12 @@
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center">PLC连接状态：</TextBlock>
+                                       VerticalAlignment="Center">易损件监控状态：</TextBlock>
                             <TextBox IsReadOnly="True"
                                      Grid.Column="1"
-                                     Background="{Binding PlcConnectionStatusBackground, Mode=OneWay}"
+                                     Background="{Binding WearPartMonitoringStatusBackground, Mode=OneWay}"
                                      Foreground="White"
-                                     Text="{Binding PlcConnectionStatusText, Mode=OneWay}" />
+                                     Text="{Binding WearPartMonitoringStatusText, Mode=OneWay}" />
                         </Grid>
                         <Grid Margin="0 8 0 0">
                             <Grid.ColumnDefinitions>

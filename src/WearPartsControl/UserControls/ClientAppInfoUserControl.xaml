@@ -216,16 +216,23 @@
                 <Button Grid.Column="1"
                         Width="80"
                         Margin="8 0 0 0"
-                    IsEnabled="{Binding IsSaveClientAppInfoEnabled}"
+                        IsEnabled="{Binding IsSaveClientAppInfoEnabled}"
                         Click="OnSaveClicked"
                         Style="{StaticResource ButtonPrimary}">保存信息</Button>
-                <StackPanel Grid.Column="2"
-                            Margin="16 0 0 0"
-                            VerticalAlignment="Center">
-                    <TextBlock FontWeight="SemiBold">易损件监控状态</TextBlock>
-                    <TextBlock Margin="0 8 0 0"
-                               Text="{Binding WearPartMonitoringStatusText}" />
-                </StackPanel>
+                <Grid Grid.Column="2"
+                      Margin="16 0 0 0"
+                      VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="160" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock VerticalAlignment="Center">易损件监控状态：</TextBlock>
+                    <TextBox Grid.Column="1"
+                             IsReadOnly="True"
+                             Background="{Binding WearPartMonitoringStatusBackground}"
+                             Foreground="White"
+                             Text="{Binding WearPartMonitoringStatusText}" />
+                </Grid>
                 <StackPanel Grid.Column="3"
                             Orientation="Horizontal"
                             HorizontalAlignment="Right">

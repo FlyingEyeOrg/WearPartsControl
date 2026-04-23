@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
 using System.Windows.Media;
 using WearPartsControl.ApplicationServices;
@@ -9,7 +8,6 @@ using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
-using WearPartsControl.ApplicationServices.PlcService;
 
 namespace WearPartsControl.ViewModels;
 
@@ -22,10 +20,9 @@ public sealed class ReplacePartViewModel : ObservableObject
     private readonly IToolChangeManagementService _toolChangeManagementService;
     private readonly IToolChangeSelectionService _toolChangeSelectionService;
     private readonly IUiBusyService _uiBusyService;
-    private readonly IPlcConnectionStatusService _plcConnectionStatusService;
     private readonly List<WearPartDefinition> _allDefinitions = new();
-    private string _plcConnectionStatusText = LocalizedText.Get("Services.PlcStartupConnection.Uninitialized");
-    private Brush _plcConnectionStatusBackground = Brushes.Gray;
+    private string _wearPartMonitoringStatusText = LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringEnabledStatus");
+    private Brush _wearPartMonitoringStatusBackground = Brushes.ForestGreen;
     private WearPartDefinition? _selectedDefinition;
     private string _resourceNumber = string.Empty;
     private string _procedureCode = string.Empty;
@@ -54,8 +51,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         IWearPartReplacementService wearPartReplacementService,
         IToolChangeManagementService toolChangeManagementService,
         IToolChangeSelectionService toolChangeSelectionService,
-        IUiBusyService uiBusyService,
-        IPlcConnectionStatusService plcConnectionStatusService)
+        IUiBusyService uiBusyService)
     {
         _appSettingsService = appSettingsService;
         _clientAppInfoService = clientAppInfoService;
@@ -64,8 +60,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         _toolChangeManagementService = toolChangeManagementService;
         _toolChangeSelectionService = toolChangeSelectionService;
         _uiBusyService = uiBusyService;
-        _plcConnectionStatusService = plcConnectionStatusService;
-        _plcConnectionStatusService.PropertyChanged += OnPlcConnectionStatusChanged;
+        _appSettingsService.SettingsSaved += OnAppSettingsSaved;
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync(), CanRefresh);
         ReplaceCommand = new AsyncRelayCommand(ReplaceAsync, CanReplace);
 
@@ -80,7 +75,6 @@ public sealed class ReplacePartViewModel : ObservableObject
         }
 
         SelectedReplacementReason = ReplacementReasons.FirstOrDefault()?.Code ?? string.Empty;
-        Apply(_plcConnectionStatusService.Current);
     }
 
     public ObservableCollection<WearPartDefinition> Definitions { get; } = new();
@@ -97,16 +91,16 @@ public sealed class ReplacePartViewModel : ObservableObject
 
     public IAsyncRelayCommand ReplaceCommand { get; }
 
-    public string PlcConnectionStatusText
+    public string WearPartMonitoringStatusText
     {
-        get => _plcConnectionStatusText;
-        private set => SetProperty(ref _plcConnectionStatusText, value);
+        get => _wearPartMonitoringStatusText;
+        private set => SetProperty(ref _wearPartMonitoringStatusText, value);
     }
 
-    public Brush PlcConnectionStatusBackground
+    public Brush WearPartMonitoringStatusBackground
     {
-        get => _plcConnectionStatusBackground;
-        private set => SetProperty(ref _plcConnectionStatusBackground, value);
+        get => _wearPartMonitoringStatusBackground;
+        private set => SetProperty(ref _wearPartMonitoringStatusBackground, value);
     }
 
     public string ResourceNumber
@@ -266,27 +260,19 @@ public sealed class ReplacePartViewModel : ObservableObject
         _isInitialized = true;
     }
 
-    private void OnPlcConnectionStatusChanged(object? sender, PropertyChangedEventArgs e)
+    private void OnAppSettingsSaved(object? sender, AppSettings settings)
     {
-        if (e.PropertyName != nameof(IPlcConnectionStatusService.Current))
-        {
-            return;
-        }
-
-        Apply(_plcConnectionStatusService.Current);
+        ApplyWearPartMonitoringStatus(settings.IsWearPartMonitoringEnabled);
     }
 
-    private void Apply(PlcStartupConnectionResult result)
+    private void ApplyWearPartMonitoringStatus(bool isEnabled)
     {
-        PlcConnectionStatusText = result.Message;
-        PlcConnectionStatusBackground = result.Status switch
-        {
-            PlcStartupConnectionStatus.Connecting => Brushes.Goldenrod,
-            PlcStartupConnectionStatus.Connected => Brushes.ForestGreen,
-            PlcStartupConnectionStatus.NotConfigured => Brushes.DimGray,
-            PlcStartupConnectionStatus.Uninitialized => Brushes.Gray,
-            _ => Brushes.Firebrick
-        };
+        WearPartMonitoringStatusText = isEnabled
+            ? LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringEnabledStatus")
+            : LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringDisabledStatus");
+        WearPartMonitoringStatusBackground = isEnabled
+            ? Brushes.ForestGreen
+            : Brushes.DimGray;
     }
 
     private async Task RefreshAsync()
@@ -309,6 +295,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         {
             var settings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(true);
             ResourceNumber = settings.ResourceNumber?.Trim() ?? string.Empty;
+            ApplyWearPartMonitoringStatus(settings.IsWearPartMonitoringEnabled);
             var clientInfo = await _clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(true);
             _procedureCode = clientInfo.ProcedureCode?.Trim() ?? string.Empty;
             OnPropertyChanged(nameof(IsToolValidationEnabled));

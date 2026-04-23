@@ -89,33 +89,52 @@ public sealed class ReplacePartViewModelTests
     }
 
     [Fact]
-    public void StatusChanged_ShouldUpdateStatusWhenClientAppNotConfigured()
+    public async Task InitializeAsync_ShouldLoadMonitoringStatusWhenDisabled()
     {
-        var plcConnectionStatusService = new PlcConnectionStatusService();
-        var viewModel = CreateViewModel(plcConnectionStatusService);
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                ResourceNumber = "RES-01",
+                IsWearPartMonitoringEnabled = false
+            }
+        };
+        var viewModel = CreateViewModel(appSettingsService);
 
-        plcConnectionStatusService.Set(PlcStartupConnectionResult.NotConfigured());
+        await viewModel.InitializeAsync();
 
-        Assert.Equal(LocalizedText.Get("Services.PlcStartupConnection.NotConfigured"), viewModel.PlcConnectionStatusText);
-        Assert.Same(Brushes.DimGray, viewModel.PlcConnectionStatusBackground);
+        Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringDisabledStatus"), viewModel.WearPartMonitoringStatusText);
+        Assert.Same(Brushes.DimGray, viewModel.WearPartMonitoringStatusBackground);
     }
 
     [Fact]
-    public void StatusChanged_ShouldUpdateStatusWhenConnectionSucceeded()
+    public async Task SettingsSaved_ShouldUpdateMonitoringStatus()
     {
-        var plcConnectionStatusService = new PlcConnectionStatusService();
-        var viewModel = CreateViewModel(plcConnectionStatusService);
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                ResourceNumber = "RES-01",
+                IsWearPartMonitoringEnabled = true
+            }
+        };
+        var viewModel = CreateViewModel(appSettingsService);
 
-        plcConnectionStatusService.Set(PlcStartupConnectionResult.Connected());
+        await viewModel.InitializeAsync();
+        await appSettingsService.SaveAsync(new AppSettings
+        {
+            ResourceNumber = "RES-01",
+            IsWearPartMonitoringEnabled = false
+        });
 
-        Assert.Equal(plcConnectionStatusService.Current.Message, viewModel.PlcConnectionStatusText);
-        Assert.Same(Brushes.ForestGreen, viewModel.PlcConnectionStatusBackground);
+        Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringDisabledStatus"), viewModel.WearPartMonitoringStatusText);
+        Assert.Same(Brushes.DimGray, viewModel.WearPartMonitoringStatusBackground);
     }
 
     [Fact]
     public void Created_WhenNoDefinitionSelected_ShouldKeepNumericDisplayFieldsEmpty()
     {
-        var viewModel = CreateViewModel(new PlcConnectionStatusService());
+        var viewModel = CreateViewModel();
 
         Assert.Null(viewModel.CodeMinLength);
         Assert.Null(viewModel.CodeMaxLength);
@@ -167,8 +186,7 @@ public sealed class ReplacePartViewModelTests
             replacementService,
             new StubToolChangeManagementService(),
             new StubToolChangeSelectionService(),
-            new UiBusyService(TimeSpan.Zero),
-            new PlcConnectionStatusService());
+            new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
 
@@ -228,8 +246,7 @@ public sealed class ReplacePartViewModelTests
             replacementService,
             new StubToolChangeManagementService(),
             new StubToolChangeSelectionService(),
-            new UiBusyService(TimeSpan.Zero),
-            new PlcConnectionStatusService());
+            new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
         viewModel.SelectedReplacementReason = WearPartReplacementReason.ProcessDamage;
@@ -282,8 +299,7 @@ public sealed class ReplacePartViewModelTests
             },
             toolChangeManagementService,
             toolSelectionService,
-            new UiBusyService(TimeSpan.Zero),
-            new PlcConnectionStatusService());
+            new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
 
@@ -332,25 +348,23 @@ public sealed class ReplacePartViewModelTests
             },
             toolChangeManagementService,
             toolSelectionService,
-            new UiBusyService(TimeSpan.Zero),
-            new PlcConnectionStatusService());
+            new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
 
         Assert.Equal("TL-01", viewModel.SelectedToolCode);
     }
 
-    private static ReplacePartViewModel CreateViewModel(IPlcConnectionStatusService plcConnectionStatusService)
+    private static ReplacePartViewModel CreateViewModel(StubAppSettingsService? appSettingsService = null)
     {
         return new ReplacePartViewModel(
-            new StubAppSettingsService(),
+            appSettingsService ?? new StubAppSettingsService(),
             new StubClientAppInfoService(),
             new StubWearPartManagementService(),
             new StubWearPartReplacementService(),
             new StubToolChangeManagementService(),
             new StubToolChangeSelectionService(),
-            new UiBusyService(TimeSpan.Zero),
-            plcConnectionStatusService);
+            new UiBusyService(TimeSpan.Zero));
     }
 
     private sealed class StubToolChangeManagementService : IToolChangeManagementService
@@ -391,7 +405,8 @@ public sealed class ReplacePartViewModelTests
                 ResourceNumber = Current.ResourceNumber,
                 LoginInputMaxIntervalMilliseconds = Current.LoginInputMaxIntervalMilliseconds,
                 AutoLogoutCountdownSeconds = Current.AutoLogoutCountdownSeconds,
-                IsSetClientAppInfo = Current.IsSetClientAppInfo
+                IsSetClientAppInfo = Current.IsSetClientAppInfo,
+                IsWearPartMonitoringEnabled = Current.IsWearPartMonitoringEnabled
             });
         }
 

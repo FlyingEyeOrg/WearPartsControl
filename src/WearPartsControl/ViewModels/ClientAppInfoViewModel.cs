@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
@@ -136,6 +137,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             {
                 OnPropertyChanged(nameof(WearPartMonitoringButtonText));
                 OnPropertyChanged(nameof(WearPartMonitoringStatusText));
+                OnPropertyChanged(nameof(WearPartMonitoringStatusBackground));
             }
         }
     }
@@ -147,6 +149,10 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     public string WearPartMonitoringStatusText => IsWearPartMonitoringEnabled
         ? LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringEnabledStatus")
         : LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringDisabledStatus");
+
+    public Brush WearPartMonitoringStatusBackground => IsWearPartMonitoringEnabled
+        ? Brushes.ForestGreen
+        : Brushes.DimGray;
 
     public bool IsPlcConnected => _plcConnectionStatusService.Current.Status == PlcStartupConnectionStatus.Connected;
 

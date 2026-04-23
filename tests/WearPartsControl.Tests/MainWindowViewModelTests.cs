@@ -153,6 +153,69 @@ public sealed class MainWindowViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task AppSettingsSaved_WhenOnlyMonitoringFlagChanges_ShouldNotRecreateBasicInfoContent()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                IsWearPartMonitoringEnabled = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+        var serviceProvider = new StubServiceProvider();
+        var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService(), serviceProvider: serviceProvider);
+
+        await viewModel.InitializeAsync();
+        viewModel.TabChangedCommand.Execute(1);
+        var selectedContent = viewModel.SelectedContent;
+        var resolveCount = serviceProvider.GetResolveCount<ClientAppInfoUserControl>();
+
+        await appSettingsService.SaveAsync(new AppSettings
+        {
+            IsSetClientAppInfo = true,
+            IsWearPartMonitoringEnabled = false,
+            AutoLogoutCountdownSeconds = 360,
+            ResourceNumber = appSettingsService.Current.ResourceNumber
+        });
+
+        Assert.Same(selectedContent, viewModel.SelectedContent);
+        Assert.Equal(resolveCount, serviceProvider.GetResolveCount<ClientAppInfoUserControl>());
+    }
+
+    [Fact]
+    public async Task CurrentUserChanged_OnBasicInfoTab_ShouldNotRecreateBasicInfoContent()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+        var accessor = new CurrentUserAccessor();
+        var serviceProvider = new StubServiceProvider();
+        var viewModel = CreateViewModel(accessor, new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService(), serviceProvider: serviceProvider);
+
+        await viewModel.InitializeAsync();
+        viewModel.TabChangedCommand.Execute(1);
+        var selectedContent = viewModel.SelectedContent;
+        var resolveCount = serviceProvider.GetResolveCount<ClientAppInfoUserControl>();
+
+        accessor.SetCurrentUser(new MhrUser
+        {
+            CardId = "CARD-01",
+            WorkId = "WORK-02",
+            AccessLevel = 3
+        });
+
+        Assert.Same(selectedContent, viewModel.SelectedContent);
+        Assert.Equal(resolveCount, serviceProvider.GetResolveCount<ClientAppInfoUserControl>());
+    }
+
+    [Fact]
     public async Task CurrentUserChanged_WhenLoggedInAfterNeedLoginShown_ShouldRestoreRequestedTabContent()
     {
         var appSettingsService = new StubAppSettingsService
@@ -406,7 +469,8 @@ public sealed class MainWindowViewModelTests : IDisposable
                 ResourceNumber = Current.ResourceNumber,
                 LoginInputMaxIntervalMilliseconds = Current.LoginInputMaxIntervalMilliseconds,
                 AutoLogoutCountdownSeconds = Current.AutoLogoutCountdownSeconds,
-                IsSetClientAppInfo = Current.IsSetClientAppInfo
+                IsSetClientAppInfo = Current.IsSetClientAppInfo,
+                IsWearPartMonitoringEnabled = Current.IsWearPartMonitoringEnabled
             });
         }
 

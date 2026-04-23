@@ -209,7 +209,10 @@ namespace WearPartsControl.ViewModels
             _uiDispatcher.Run(() =>
             {
                 _loginSessionStateMachine.UpdateSettings(settings);
-                ApplyClientAppInfoState(settings.IsSetClientAppInfo);
+                if (IsClientAppInfoConfigured != settings.IsSetClientAppInfo)
+                {
+                    ApplyClientAppInfoState(settings.IsSetClientAppInfo);
+                }
             });
         }
 
@@ -305,6 +308,11 @@ namespace WearPartsControl.ViewModels
             }
 
             if (!IsClientAppInfoConfigured || Volatile.Read(ref _initializeStarted) == 0)
+            {
+                return;
+            }
+
+            if (_selectedTabIndex == 1)
             {
                 return;
             }
