@@ -284,6 +284,64 @@ public sealed class MainWindowTests
     }
 
     [Fact]
+    public void ExitFromTrayAsync_WhenNotLoggedInAndLoginCanceled_ShouldNotExit()
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+
+        WpfTestHost.Run(() =>
+        {
+            var autoLogoutInteractionService = new RecordingAutoLogoutInteractionService();
+            var window = CreateWindow(autoLogoutInteractionService, showLoginDialog: () => false);
+
+            try
+            {
+                window.Show();
+                InvokePrivate(window, "SendToTray", true, false);
+
+                InvokePrivate<Task>(window, "ExitFromTrayAsync").GetAwaiter().GetResult();
+
+                var trayIcon = Assert.IsType<NotifyIcon>(window.FindName("TrayNotifyIcon"));
+                Assert.Equal(System.Windows.Visibility.Visible, trayIcon.Visibility);
+                Assert.True(GetPrivateField<bool>(window, "_isInTray"));
+                Assert.False(GetPrivateField<bool>(window, "_isExitRequested"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        }, ensureApplicationResources: true);
+    }
+
+    [Fact]
+    public void ExitFromTrayAsync_WhenNotLoggedInAndLoginSucceeds_ShouldExit()
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+
+        WpfTestHost.Run(() =>
+        {
+            var autoLogoutInteractionService = new RecordingAutoLogoutInteractionService();
+            var window = CreateWindow(autoLogoutInteractionService, showLoginDialog: () => true);
+
+            try
+            {
+                window.Show();
+                InvokePrivate(window, "SendToTray", true, false);
+
+                InvokePrivate<Task>(window, "ExitFromTrayAsync").GetAwaiter().GetResult();
+
+                Assert.True(GetPrivateField<bool>(window, "_isExitRequested"));
+            }
+            finally
+            {
+                if (window.IsLoaded)
+                {
+                    window.Close();
+                }
+            }
+        }, ensureApplicationResources: true);
+    }
+
+    [Fact]
     public void OnMainWindowActivated_WhenStillInTray_ShouldKeepTrayIconVisible()
     {
         using var cultureScope = new TestCultureScope("en-US");
@@ -316,7 +374,10 @@ public sealed class MainWindowTests
         }, ensureApplicationResources: true);
     }
 
-    private static MainWindow CreateWindow(RecordingAutoLogoutInteractionService autoLogoutInteractionService, bool isLoggedIn = false)
+    private static MainWindow CreateWindow(
+        RecordingAutoLogoutInteractionService autoLogoutInteractionService,
+        bool isLoggedIn = false,
+        Func<bool>? showLoginDialog = null)
     {
         var currentUserAccessor = new CurrentUserAccessor();
         var loginService = new StubLoginService();
@@ -345,7 +406,7 @@ public sealed class MainWindowTests
             new StubUiDispatcher(),
             new StubAppStartupCoordinator());
 
-        return new MainWindow(viewModel, new StubServiceProvider(), autoLogoutInteractionService);
+        return new MainWindow(viewModel, new StubServiceProvider(), autoLogoutInteractionService, showLoginDialog);
     }
 
     private static void InvokePrivate(object target, string methodName, params object?[] args)

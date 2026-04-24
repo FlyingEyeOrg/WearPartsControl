@@ -17,6 +17,7 @@ namespace WearPartsControl.Views
         private readonly MainWindowViewModel _viewModel;
         private readonly IServiceProvider _serviceProvider;
         private readonly IAutoLogoutInteractionService _autoLogoutInteractionService;
+        private readonly Func<bool> _showLoginDialog;
         private bool _isClosingIntercepted;
         private bool _isExitRequested;
         private bool _isInTray;
@@ -24,11 +25,16 @@ namespace WearPartsControl.Views
         private WindowState _windowStateBeforeTray = WindowState.Normal;
         private Rect _windowBoundsBeforeTray = Rect.Empty;
 
-        public MainWindow(MainWindowViewModel viewModel, IServiceProvider serviceProvider, IAutoLogoutInteractionService autoLogoutInteractionService)
+        public MainWindow(
+            MainWindowViewModel viewModel,
+            IServiceProvider serviceProvider,
+            IAutoLogoutInteractionService autoLogoutInteractionService,
+            Func<bool>? showLoginDialog = null)
         {
             _viewModel = viewModel;
             _serviceProvider = serviceProvider;
             _autoLogoutInteractionService = autoLogoutInteractionService;
+            _showLoginDialog = showLoginDialog ?? ShowLoginDialog;
             RestoreFromTrayCommand = new RelayCommand(RestoreFromTray);
             ExitFromTrayCommand = new AsyncRelayCommand(ExitFromTrayAsync);
             DataContext = viewModel;
@@ -59,10 +65,7 @@ namespace WearPartsControl.Views
 
         private void OnLoginRequested(object? sender, EventArgs e)
         {
-            var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
-            loginWindow.Owner = this;
-            loginWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            _autoLogoutInteractionService.RunModal(() => loginWindow.ShowDialog());
+            _ = _showLoginDialog();
         }
 
         private void OnUserInteraction(object? sender, RoutedEventArgs e)
@@ -195,6 +198,24 @@ namespace WearPartsControl.Views
 
         private async Task ExitFromTrayAsync()
         {
+            if (!_viewModel.IsLoggedIn)
+            {
+                if (!PromptLoginForTrayExit())
+                {
+                    return;
+                }
+
+                if (Application.Current is not App loginApp)
+                {
+                    _isExitRequested = true;
+                    Close();
+                    return;
+                }
+
+                await RequestApplicationShutdownAsync(loginApp, "用户登录后从托盘退出程序").ConfigureAwait(true);
+                return;
+            }
+
             if (!EnsureUserCanExit())
             {
                 return;
@@ -213,6 +234,11 @@ namespace WearPartsControl.Views
             }
 
             await RequestApplicationShutdownAsync(app, "用户从托盘退出程序").ConfigureAwait(true);
+        }
+
+        private bool PromptLoginForTrayExit()
+        {
+            return _showLoginDialog();
         }
 
         private bool EnsureUserCanExit()
@@ -321,6 +347,14 @@ namespace WearPartsControl.Views
                 _isExitRequested = app.IsShutdownRequested;
                 _isClosingIntercepted = false;
             }
+        }
+
+        private bool ShowLoginDialog()
+        {
+            var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
+            loginWindow.Owner = this;
+            loginWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            return _autoLogoutInteractionService.RunModal(() => loginWindow.ShowDialog() == true);
         }
 
         private void HideTrayIcon()
