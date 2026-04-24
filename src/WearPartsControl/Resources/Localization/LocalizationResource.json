@@ -439,6 +439,8 @@
       "LoadFailedPrefix": "Failed to load user configuration: ",
       "Saved": "User configuration saved successfully.",
       "SaveFailedPrefix": "Failed to save user configuration: ",
+      "LanguageZhCn": "Simplified Chinese",
+      "LanguageEnUs": "English",
       "ResponsibleMissing": "Please configure at least one responsible person.",
       "SpacerValidationTimeoutInvalid": "Spacer validation timeout must be an integer greater than 0.",
       "SpacerValidationExpectedSegmentCountInvalid": "Spacer barcode segment count must be an integer greater than 0.",
@@ -489,6 +491,7 @@
     "LegacyImport": {
       "ClientConfigMissing": "No client base configuration was found in the legacy database.",
       "ResourceNotFound": "No client base configuration was found in the legacy database for resource number {0}.",
+      "CommandLinePathMissing": "Startup argument {0} is missing the legacy SQLite database file path.",
       "PathRequired": "The legacy SQLite database file path cannot be empty.",
       "PathNotFound": "Legacy SQLite database file was not found: {0}",
       "InvalidDirectory": "The directory of the legacy database cannot be determined.",

@@ -1,4 +1,5 @@
 using System.IO;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices.LegacyImport;
@@ -25,7 +26,7 @@ public static class LegacyImportCommandLine
 
             if (index == args.Count - 1 || string.IsNullOrWhiteSpace(args[index + 1]))
             {
-                throw new UserFriendlyException($"启动参数 {ImportArgumentName} 缺少旧版 SQLite 数据库文件路径。");
+                throw new UserFriendlyException(LocalizedText.Format("Services.LegacyImport.CommandLinePathMissing", ImportArgumentName));
             }
 
             return Path.GetFullPath(args[index + 1]);

@@ -439,6 +439,8 @@
       "LoadFailedPrefix": "用户配置加载失败：",
       "Saved": "用户配置保存成功。",
       "SaveFailedPrefix": "用户配置保存失败：",
+      "LanguageZhCn": "简体中文",
+      "LanguageEnUs": "英文",
       "ResponsibleMissing": "请至少配置一个负责人。",
       "SpacerValidationTimeoutInvalid": "垫片校验超时时间必须是大于 0 的整数。",
       "SpacerValidationExpectedSegmentCountInvalid": "垫片条码段数必须是大于 0 的整数。",
@@ -489,6 +491,7 @@
     "LegacyImport": {
       "ClientConfigMissing": "旧版数据库中未找到客户端基础配置。",
       "ResourceNotFound": "旧版数据库中未找到资源号 {0} 对应的客户端基础配置。",
+      "CommandLinePathMissing": "启动参数 {0} 缺少旧版 SQLite 数据库文件路径。",
       "PathRequired": "旧版 SQLite 数据库文件路径不能为空。",
       "PathNotFound": "未找到旧版 SQLite 数据库文件：{0}",
       "InvalidDirectory": "无法识别旧版数据库所在目录。",

@@ -56,8 +56,7 @@ public sealed class UserConfigViewModel : ObservableObject
         _uiBusyService = uiBusyService;
         SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
         TestComNotificationCommand = new AsyncRelayCommand(TestComNotificationAsync, CanTestComNotification);
-        LanguageOptions.Add(new LanguageOption("zh-CN", "简体中文"));
-        LanguageOptions.Add(new LanguageOption("en-US", "English"));
+        RefreshLanguageOptions();
         _selectedLanguage = _localizationService.CurrentCulture.Name;
     }
 
@@ -351,6 +350,7 @@ public sealed class UserConfigViewModel : ObservableObject
             await _localizationService.SetCultureAsync(SelectedLanguage).ConfigureAwait(false);
             await _uiDispatcher.RunAsync(() =>
             {
+                RefreshLanguageOptions();
                 _originalSnapshot = CaptureSnapshot();
                 IsDirty = false;
                 StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.Saved");
@@ -413,6 +413,13 @@ public sealed class UserConfigViewModel : ObservableObject
         .Select(static value => value.Trim())
         .Distinct(StringComparer.OrdinalIgnoreCase)
         .ToArray();
+    }
+
+    private void RefreshLanguageOptions()
+    {
+        LanguageOptions.Clear();
+        LanguageOptions.Add(new LanguageOption("zh-CN", LocalizedText.Get("ViewModels.UserConfigVm.LanguageZhCn")));
+        LanguageOptions.Add(new LanguageOption("en-US", LocalizedText.Get("ViewModels.UserConfigVm.LanguageEnUs")));
     }
 
     private UserConfig BuildConfig()
