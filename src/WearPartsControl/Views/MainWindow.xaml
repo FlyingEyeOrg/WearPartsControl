@@ -82,7 +82,7 @@
                 <TextBlock HorizontalAlignment="Center"
                            Style="{StaticResource TextBlockDefaultPrimary}"
                            Margin="0 8 0 0"
-                           Text="{Binding LoadingText}"
+                           Text="{Binding LoadingText, Mode=OneWay}"
                            Visibility="{Binding HasLoadingText, Converter={StaticResource BooleanToVisibilityConverter}}" />
             </StackPanel>
         </Border>

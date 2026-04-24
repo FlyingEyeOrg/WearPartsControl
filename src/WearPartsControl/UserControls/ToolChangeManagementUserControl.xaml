@@ -38,7 +38,7 @@
                     <TextBlock VerticalAlignment="Center"
                                Foreground="{StaticResource InfoBrush}"
                                FontWeight="SemiBold"
-                               Text="{Binding StatusMessage}" />
+                               Text="{Binding StatusMessage, Mode=OneWay}" />
 
                     <WrapPanel Grid.Row="1"
                                Margin="0 8 0 0">

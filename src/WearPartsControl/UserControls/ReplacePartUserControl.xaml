@@ -40,7 +40,7 @@
                         <TextBlock Foreground="{StaticResource InfoBrush}"
                                    VerticalAlignment="Center"
                                    FontWeight="SemiBold"
-                                   Text="{Binding StatusMessage}" />
+                               Text="{Binding StatusMessage, Mode=OneWay}" />
                         <StackPanel Grid.Column="1"
                                     Orientation="Horizontal">
                             <TextBlock Margin="16 0 0 0"

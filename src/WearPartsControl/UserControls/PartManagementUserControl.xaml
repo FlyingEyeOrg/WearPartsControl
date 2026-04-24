@@ -39,7 +39,7 @@
                         <TextBlock VerticalAlignment="Center"
                                    Foreground="{StaticResource InfoBrush}"
                                    FontWeight="SemiBold"
-                                   Text="{Binding StatusMessage}" />
+                                   Text="{Binding StatusMessage, Mode=OneWay}" />
                         <TextBlock Margin="24 0 0 0"
                                    VerticalAlignment="Center"
                                    FontWeight="SemiBold">
