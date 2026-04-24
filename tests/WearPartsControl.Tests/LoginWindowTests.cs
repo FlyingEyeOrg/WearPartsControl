@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.ExceptionServices;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -30,6 +29,7 @@ public sealed class LoginWindowTests
                 new StubClientAppConfigurationRepository(),
                 new StubAppSettingsService(),
                 new StubUiDispatcher());
+            viewModel.InitializeAsync().GetAwaiter().GetResult();
 
             var window = new LoginWindow(viewModel);
 
@@ -58,9 +58,11 @@ public sealed class LoginWindowTests
 
         var thread = new Thread(() =>
         {
+            var ownsApplication = false;
+
             try
             {
-                EnsureApplicationResources();
+                ownsApplication = EnsureApplicationResources();
                 action();
             }
             catch (Exception ex)
@@ -69,7 +71,7 @@ public sealed class LoginWindowTests
             }
             finally
             {
-                if (Application.Current is not null)
+                if (ownsApplication && Application.Current is not null)
                 {
                     Application.Current.Shutdown();
                 }
@@ -88,17 +90,20 @@ public sealed class LoginWindowTests
         }
     }
 
-    private static void EnsureApplicationResources()
+    private static bool EnsureApplicationResources()
     {
+        var ownsApplication = false;
+
         if (Application.Current is null)
         {
             _ = new Application();
+            ownsApplication = true;
         }
 
         var resources = Application.Current!.Resources;
         if (resources.Contains("ButtonPrimary"))
         {
-            return;
+            return ownsApplication;
         }
 
         resources.MergedDictionaries.Add(new ResourceDictionary
@@ -110,6 +115,7 @@ public sealed class LoginWindowTests
             Source = new Uri("pack://application:,,,/HandyControl;component/Themes/Theme.xaml", UriKind.Absolute)
         });
         resources["BooleanToVisibilityConverter"] = new BooleanToVisibilityConverter();
+        return ownsApplication;
     }
 
     private static void DrainDispatcher()

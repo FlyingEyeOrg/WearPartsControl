@@ -45,7 +45,9 @@
                                    FontWeight="SemiBold">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0}{1}">
-                                    <Binding Source="{loc:Loc PartManagementControl.CurrentResourceNumberLabel}" />
+                                    <Binding Source="{x:Static loc:LocalizationBindingSource.Instance}"
+                                             Path="[PartManagementControl.CurrentResourceNumberLabel]"
+                                             Mode="OneWay" />
                                     <Binding Path="ResourceNumber" />
                                 </MultiBinding>
                             </TextBlock.Text>

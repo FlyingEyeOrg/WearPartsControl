@@ -46,7 +46,9 @@
                                    FontWeight="SemiBold">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0}{1}">
-                                    <Binding Source="{loc:Loc PartUpdateRecordControl.CurrentResourceNumberLabel}" />
+                                    <Binding Source="{x:Static loc:LocalizationBindingSource.Instance}"
+                                             Path="[PartUpdateRecordControl.CurrentResourceNumberLabel]"
+                                             Mode="OneWay" />
                                     <Binding Path="ResourceNumber" />
                                 </MultiBinding>
                             </TextBlock.Text>
@@ -175,9 +177,13 @@
                        VerticalAlignment="Center">
                 <TextBlock.Text>
                     <MultiBinding StringFormat="{}{0}{1}{2}">
-                        <Binding Source="{loc:Loc PartUpdateRecordControl.TotalPagesPrefix}" />
+                        <Binding Source="{x:Static loc:LocalizationBindingSource.Instance}"
+                                 Path="[PartUpdateRecordControl.TotalPagesPrefix]"
+                                 Mode="OneWay" />
                         <Binding Path="TotalPages" />
-                        <Binding Source="{loc:Loc PartUpdateRecordControl.TotalPagesSuffix}" />
+                        <Binding Source="{x:Static loc:LocalizationBindingSource.Instance}"
+                                 Path="[PartUpdateRecordControl.TotalPagesSuffix]"
+                                 Mode="OneWay" />
                     </MultiBinding>
                 </TextBlock.Text>
             </TextBlock>
