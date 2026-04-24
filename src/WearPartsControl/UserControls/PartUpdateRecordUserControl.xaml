@@ -36,6 +36,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock VerticalAlignment="Center"
+                               TextWrapping="WrapWithOverflow"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource InfoBrush}"
                                Text="{Binding StatusMessage, Mode=OneWay}" />
@@ -139,15 +140,15 @@
             <TextBlock VerticalAlignment="Center"
                        Text="{loc:Loc PartUpdateRecordControl.PageSizePrefix}" />
             <ComboBox Margin="8 0 0 0"
-                  Width="80"
-                  ItemsSource="{Binding PageSizeOptions}"
-                  SelectedItem="{Binding SelectedPageSize, Mode=TwoWay}"
-                  Style="{StaticResource ComboBoxExtend}" />
+                      Width="80"
+                      ItemsSource="{Binding PageSizeOptions}"
+                      SelectedItem="{Binding SelectedPageSize, Mode=TwoWay}"
+                      Style="{StaticResource ComboBoxExtend}" />
             <TextBlock Margin="8 0 0 0"
-                   VerticalAlignment="Center"
-                   Text="{loc:Loc PartUpdateRecordControl.PageSizeSuffix}" />
+                       VerticalAlignment="Center"
+                       Text="{loc:Loc PartUpdateRecordControl.PageSizeSuffix}" />
             <Button Style="{StaticResource ButtonIconCircular}"
-                Margin="16 0 0 0"
+                    Margin="16 0 0 0"
                     Command="{Binding PreviousPageCommand}"
                     hc:IconElement.Geometry="{StaticResource LeftGeometry}"></Button>
             <TextBox Margin="8 0 0 0"

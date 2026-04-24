@@ -36,6 +36,7 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock VerticalAlignment="Center"
+                               TextWrapping="WrapWithOverflow"
                                Foreground="{StaticResource InfoBrush}"
                                FontWeight="SemiBold"
                                Text="{Binding StatusMessage, Mode=OneWay}" />
@@ -47,12 +48,12 @@
                                 <ColumnDefinition Width="80" />
                                 <ColumnDefinition Width="180" />
                             </Grid.ColumnDefinitions>
-                                                        <TextBlock VerticalAlignment="Center"
-                                                                             Text="{loc:Loc ToolChangeManagementControl.NameLabel}" />
+                            <TextBlock VerticalAlignment="Center"
+                                       Text="{loc:Loc ToolChangeManagementControl.NameLabel}" />
                             <TextBox Grid.Column="1"
                                      Text="{Binding ToolName, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource TextBoxExtend}"
-                                                                         hc:InfoElement.Placeholder="{loc:Loc ToolChangeManagementControl.NamePlaceholder}" />
+                                     hc:InfoElement.Placeholder="{loc:Loc ToolChangeManagementControl.NamePlaceholder}" />
                         </Grid>
 
                         <Grid Margin="0 8 8 0">
@@ -60,12 +61,12 @@
                                 <ColumnDefinition Width="80" />
                                 <ColumnDefinition Width="180" />
                             </Grid.ColumnDefinitions>
-                                                        <TextBlock VerticalAlignment="Center"
-                                                                             Text="{loc:Loc ToolChangeManagementControl.CodeLabel}" />
+                            <TextBlock VerticalAlignment="Center"
+                                       Text="{loc:Loc ToolChangeManagementControl.CodeLabel}" />
                             <TextBox Grid.Column="1"
                                      Text="{Binding ToolCode, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource TextBoxExtend}"
-                                                                         hc:InfoElement.Placeholder="{loc:Loc ToolChangeManagementControl.CodePlaceholder}" />
+                                     hc:InfoElement.Placeholder="{loc:Loc ToolChangeManagementControl.CodePlaceholder}" />
                         </Grid>
 
                         <Grid Margin="0 8 8 0">
@@ -73,7 +74,7 @@
                                 <ColumnDefinition Width="80" />
                                 <ColumnDefinition Width="180" />
                             </Grid.ColumnDefinitions>
-                                <TextBlock VerticalAlignment="Center"
+                            <TextBlock VerticalAlignment="Center"
                                        Text="{loc:Loc ToolChangeManagementControl.KeywordLabel}" />
                             <TextBox Grid.Column="1"
                                      Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"

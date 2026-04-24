@@ -37,6 +37,7 @@
 
                     <DockPanel LastChildFill="False">
                         <TextBlock VerticalAlignment="Center"
+                                   TextWrapping="WrapWithOverflow"
                                    Foreground="{StaticResource InfoBrush}"
                                    FontWeight="SemiBold"
                                    Text="{Binding StatusMessage, Mode=OneWay}" />
@@ -62,7 +63,7 @@
                                 <ColumnDefinition Width="80" />
                                 <ColumnDefinition Width="180" />
                             </Grid.ColumnDefinitions>
-                                <TextBlock VerticalAlignment="Center"
+                            <TextBlock VerticalAlignment="Center"
                                        Text="{loc:Loc PartManagementControl.PartNameLabel}" />
                             <TextBox Grid.Column="1"
                                      Text="{Binding PartNameFilter, UpdateSourceTrigger=PropertyChanged}"
@@ -99,8 +100,8 @@
                                 hc:IconElement.Geometry="{StaticResource DeleteGeometry}"
                                 Content="{loc:Loc PartManagementControl.DeleteButton}" />
                         <Button Margin="0 8 8 0"
-                            Command="{Binding ImportLegacyDefinitionsCommand}"
-                            Style="{StaticResource ButtonPrimary}"
+                                Command="{Binding ImportLegacyDefinitionsCommand}"
+                                Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource AddGeometry}"
                                 Content="{loc:Loc PartManagementControl.ImportLegacyDefinitionsButton}" />
                     </WrapPanel>
