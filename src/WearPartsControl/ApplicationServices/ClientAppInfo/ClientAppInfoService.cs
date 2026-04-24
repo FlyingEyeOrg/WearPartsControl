@@ -10,13 +10,16 @@ public sealed class ClientAppInfoService : IClientAppInfoService
 {
     private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
     private readonly IAppSettingsService _appSettingsService;
+    private readonly IClientAppInfoSelectionOptionsProvider _selectionOptionsProvider;
 
     public ClientAppInfoService(
         IClientAppConfigurationRepository clientAppConfigurationRepository,
-        IAppSettingsService appSettingsService)
+        IAppSettingsService appSettingsService,
+        IClientAppInfoSelectionOptionsProvider selectionOptionsProvider)
     {
         _clientAppConfigurationRepository = clientAppConfigurationRepository;
         _appSettingsService = appSettingsService;
+        _selectionOptionsProvider = selectionOptionsProvider;
     }
 
     public async Task<ClientAppInfoModel> GetAsync(CancellationToken cancellationToken = default)
@@ -29,7 +32,8 @@ public sealed class ClientAppInfoService : IClientAppInfoService
         }
 
         var entity = await _clientAppConfigurationRepository.GetByResourceNumberAsync(resourceNumber, cancellationToken).ConfigureAwait(false);
-        return entity is null ? CreateDefaultModel(resourceNumber) : Map(entity);
+        var model = entity is null ? CreateDefaultModel(resourceNumber) : Map(entity);
+        return await NormalizeSelectionValuesAsync(model, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<ClientAppInfoModel> SaveAsync(ClientAppInfoSaveRequest request, CancellationToken cancellationToken = default)
@@ -65,6 +69,9 @@ public sealed class ClientAppInfoService : IClientAppInfoService
             entity = new ClientAppConfigurationEntity();
         }
 
+        request.AreaCode = await _selectionOptionsProvider.MapAreaOptionAsync(request.AreaCode, "zh-CN", cancellationToken).ConfigureAwait(false);
+        request.ProcedureCode = await _selectionOptionsProvider.MapProcedureOptionAsync(request.ProcedureCode, "zh-CN", cancellationToken).ConfigureAwait(false);
+
         Apply(entity, request, normalizedResourceNumber);
 
         if (entity.CreatedAt == default || entity.Id == Guid.Empty)
@@ -83,7 +90,15 @@ public sealed class ClientAppInfoService : IClientAppInfoService
         settings.IsSetClientAppInfo = true;
         await _appSettingsService.SaveAsync(settings, cancellationToken).ConfigureAwait(false);
 
-        return Map(entity);
+        var savedModel = Map(entity);
+        return await NormalizeSelectionValuesAsync(savedModel, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<ClientAppInfoModel> NormalizeSelectionValuesAsync(ClientAppInfoModel model, CancellationToken cancellationToken)
+    {
+        model.AreaCode = await _selectionOptionsProvider.MapAreaOptionAsync(model.AreaCode, "zh-CN", cancellationToken).ConfigureAwait(false);
+        model.ProcedureCode = await _selectionOptionsProvider.MapProcedureOptionAsync(model.ProcedureCode, "zh-CN", cancellationToken).ConfigureAwait(false);
+        return model;
     }
 
     private static void Apply(ClientAppConfigurationEntity entity, ClientAppInfoSaveRequest request, string normalizedResourceNumber)

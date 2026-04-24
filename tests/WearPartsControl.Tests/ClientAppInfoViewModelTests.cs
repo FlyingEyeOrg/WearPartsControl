@@ -426,7 +426,26 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             var localizationService = new MutableLocalizationService("zh-CN");
             var uiDispatcher = new TrackingUiDispatcher();
             var viewModel = new ClientAppInfoViewModel(
-                new StubClientAppInfoService(),
+                new StubClientAppInfoService
+                {
+                    Model = new ClientAppInfoModel
+                    {
+                        Id = Guid.NewGuid(),
+                        SiteCode = "S01",
+                        FactoryCode = "F01",
+                        AreaCode = "阳极",
+                        ProcedureCode = "凹版",
+                        EquipmentCode = "EQ01",
+                        ResourceNumber = "RES01",
+                        PlcProtocolType = "SiemensS1500",
+                        PlcIpAddress = "127.0.0.1",
+                        PlcPort = 102,
+                        ShutdownPointAddress = "M0.0",
+                        SiemensRack = 0,
+                        SiemensSlot = 0,
+                        IsStringReverse = true
+                    }
+                },
                 new JsonClientAppInfoSelectionOptionsProvider(localizationService),
                 new StubLegacyConfigurationImportService(),
                 new StubPlcConnectionTestService(),
@@ -437,12 +456,16 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
 
             await viewModel.InitializeAsync();
             Assert.Contains("阳极", viewModel.AreaOptions);
+            Assert.Equal("阳极", viewModel.AreaCode);
+            Assert.Equal("凹版", viewModel.ProcedureCode);
 
             await localizationService.SetCultureAsync("en-US");
             LocalizationBindingSource.Instance.Refresh();
 
             await WaitUntilAsync(() => viewModel.AreaOptions.Contains("Anode") && viewModel.ProcedureOptions.Contains("Gravure"));
 
+            Assert.Equal("Anode", viewModel.AreaCode);
+            Assert.Equal("Gravure", viewModel.ProcedureCode);
             Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.StartWearPartMonitoring"), viewModel.WearPartMonitoringButtonText);
             Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.Loaded"), viewModel.StatusMessage);
             Assert.True(uiDispatcher.RenderCount >= 1 || viewModel.AreaOptions.Contains("Anode"));

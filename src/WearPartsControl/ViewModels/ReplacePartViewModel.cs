@@ -73,7 +73,7 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync(), CanRefresh);
         ReplaceCommand = new AsyncRelayCommand(ReplaceAsync, CanReplace);
 
-        foreach (var reason in WearPartReplacementReason.All)
+        foreach (var reason in WearPartReplacementReason.CreateOptions())
         {
             ReplacementReasons.Add(reason);
         }
@@ -733,7 +733,7 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
     {
         var selectedReason = SelectedReplacementReason;
         ReplacementReasons.Clear();
-        foreach (var reason in WearPartReplacementReason.All)
+        foreach (var reason in WearPartReplacementReason.CreateOptions())
         {
             ReplacementReasons.Add(reason);
         }

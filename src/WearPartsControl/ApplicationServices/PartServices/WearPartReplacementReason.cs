@@ -16,14 +16,19 @@ public static class WearPartReplacementReason
     private const string LegacyChangePosition = "寿命到期，更换位置";
     private const string LegacyMaintenance = "寿命到期维保";
 
-    public static readonly IReadOnlyList<WearPartReplacementReasonOption> All =
-    [
-        new(Normal, "Services.WearPartReplacementReason.Normal"),
-        new(ProcessDamage, "Services.WearPartReplacementReason.ProcessDamage"),
-        new(Cutover, "Services.WearPartReplacementReason.Cutover"),
-        new(ChangePosition, "Services.WearPartReplacementReason.ChangePosition"),
-        new(Maintenance, "Services.WearPartReplacementReason.Maintenance")
-    ];
+    public static readonly IReadOnlyList<WearPartReplacementReasonOption> All = CreateOptions();
+
+    public static IReadOnlyList<WearPartReplacementReasonOption> CreateOptions()
+    {
+        return
+        [
+            new(Normal, "Services.WearPartReplacementReason.Normal"),
+            new(ProcessDamage, "Services.WearPartReplacementReason.ProcessDamage"),
+            new(Cutover, "Services.WearPartReplacementReason.Cutover"),
+            new(ChangePosition, "Services.WearPartReplacementReason.ChangePosition"),
+            new(Maintenance, "Services.WearPartReplacementReason.Maintenance")
+        ];
+    }
 
     public static bool RequiresWarningLifetime(string replacementReason)
     {

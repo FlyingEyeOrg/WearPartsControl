@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Globalization;
 using System.Text.Json;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -362,7 +363,7 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
             await LoadSiteFactoryOptionsAsync(cancellationToken).ConfigureAwait(true);
             IsWearPartMonitoringEnabled = await _wearPartMonitoringControlService.GetIsEnabledAsync(cancellationToken).ConfigureAwait(true);
             var model = await _clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(true);
-            Apply(model);
+            await ApplyLocalizedAsync(model, cancellationToken).ConfigureAwait(true);
             _isInitialized = true;
             SetLocalizedStatusMessage(() => string.IsNullOrWhiteSpace(model.ResourceNumber)
                 ? LocalizedText.Get("ViewModels.ClientAppInfoVm.PromptComplete")
@@ -405,7 +406,7 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
         {
             var request = BuildSaveRequest();
             var saved = await _clientAppInfoService.SaveAsync(request).ConfigureAwait(true);
-            Apply(saved);
+            await ApplyLocalizedAsync(saved).ConfigureAwait(true);
             SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ClientAppInfoVm.Saved"));
         }
         catch (Exception ex)
@@ -428,7 +429,7 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
         try
         {
             var result = await _legacyConfigurationImportService.ImportAsync(legacyDatabasePath, cancellationToken).ConfigureAwait(true);
-            Apply(result.ClientAppInfo);
+            await ApplyLocalizedAsync(result.ClientAppInfo, cancellationToken).ConfigureAwait(true);
             SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.ClientAppInfoVm.ImportedLegacyConfiguration", result.ResourceNumber));
             return result;
         }
@@ -567,6 +568,13 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
             SiemensSlot = siemensSlot,
             IsStringReverse = IsStringReverseVisible && IsStringReverse
         };
+    }
+
+    private async Task ApplyLocalizedAsync(ClientAppInfoModel model, CancellationToken cancellationToken = default)
+    {
+        model.AreaCode = await _selectionOptionsProvider.MapAreaOptionAsync(model.AreaCode, CultureInfo.CurrentUICulture.Name, cancellationToken).ConfigureAwait(true);
+        model.ProcedureCode = await _selectionOptionsProvider.MapProcedureOptionAsync(model.ProcedureCode, CultureInfo.CurrentUICulture.Name, cancellationToken).ConfigureAwait(true);
+        Apply(model);
     }
 
     private void Apply(ClientAppInfoModel model)
@@ -862,6 +870,8 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
         var selectedAreaCode = AreaCode;
         var selectedProcedureCode = ProcedureCode;
         var options = await _selectionOptionsProvider.GetAsync().ConfigureAwait(false);
+        var localizedAreaCode = await _selectionOptionsProvider.MapAreaOptionAsync(selectedAreaCode, CultureInfo.CurrentUICulture.Name).ConfigureAwait(false);
+        var localizedProcedureCode = await _selectionOptionsProvider.MapProcedureOptionAsync(selectedProcedureCode, CultureInfo.CurrentUICulture.Name).ConfigureAwait(false);
 
         await _uiDispatcher.RunAsync(() =>
         {
@@ -880,10 +890,10 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
                     ProcedureOptions.Add(procedure);
                 }
 
-                EnsureOption(AreaOptions, selectedAreaCode);
-                EnsureOption(ProcedureOptions, selectedProcedureCode);
-                AreaCode = ResolveAreaCode(selectedAreaCode);
-                ProcedureCode = ResolveProcedureCode(selectedProcedureCode);
+                EnsureOption(AreaOptions, localizedAreaCode);
+                EnsureOption(ProcedureOptions, localizedProcedureCode);
+                AreaCode = ResolveAreaCode(localizedAreaCode);
+                ProcedureCode = ResolveProcedureCode(localizedProcedureCode);
             }
             finally
             {

@@ -297,6 +297,8 @@ public sealed class ReplacePartViewModelTests
         var viewModel = CreateViewModel(appSettingsService);
 
         await viewModel.InitializeAsync();
+        viewModel.SelectedReplacementReason = WearPartReplacementReason.ProcessDamage;
+        var previousReasonOption = viewModel.ReplacementReasons.Single(static option => option.Code == WearPartReplacementReason.ProcessDamage);
 
         using var _ = new TestCultureScope("en-US");
         LocalizationBindingSource.Instance.Refresh();
@@ -304,6 +306,9 @@ public sealed class ReplacePartViewModelTests
         Assert.Equal(LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked"), viewModel.StatusMessage);
         Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringDisabledStatus"), viewModel.WearPartMonitoringStatusText);
         Assert.Equal(LocalizedText.Get("ViewModels.ReplacePartVm.LastBarcodeEmpty"), viewModel.LastBarcode);
+        Assert.Equal(WearPartReplacementReason.ProcessDamage, viewModel.SelectedReplacementReason);
+        Assert.NotSame(previousReasonOption, viewModel.ReplacementReasons.Single(static option => option.Code == WearPartReplacementReason.ProcessDamage));
+        Assert.Equal(LocalizedText.Get("Services.WearPartReplacementReason.ProcessDamage"), viewModel.ReplacementReasons.Single(static option => option.Code == WearPartReplacementReason.ProcessDamage).DisplayName);
     }
 
     [Fact]

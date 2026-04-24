@@ -2,6 +2,7 @@ using System.IO;
 using Microsoft.EntityFrameworkCore;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.Infrastructure.EntityFrameworkCore;
 using Xunit;
@@ -34,7 +35,8 @@ public sealed class ClientAppInfoServiceTests : IDisposable
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         var service = new ClientAppInfoService(
             new WearPartsControl.Infrastructure.EntityFrameworkCore.Repositories.ClientAppConfigurationRepository(dbContext),
-            appSettingsService);
+            appSettingsService,
+            new StubClientAppInfoSelectionOptionsProvider());
 
         var saved = await service.SaveAsync(new ClientAppInfoSaveRequest
         {
@@ -122,7 +124,8 @@ public sealed class ClientAppInfoServiceTests : IDisposable
 
         var service = new ClientAppInfoService(
             new WearPartsControl.Infrastructure.EntityFrameworkCore.Repositories.ClientAppConfigurationRepository(dbContext),
-            appSettingsService);
+            appSettingsService,
+            new StubClientAppInfoSelectionOptionsProvider());
 
         var saved = await service.SaveAsync(new ClientAppInfoSaveRequest
         {
@@ -178,6 +181,24 @@ public sealed class ClientAppInfoServiceTests : IDisposable
         }
         catch (IOException)
         {
+        }
+    }
+
+    private sealed class StubClientAppInfoSelectionOptionsProvider : IClientAppInfoSelectionOptionsProvider
+    {
+        public Task<ClientAppInfoSelectionOptions> GetAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new ClientAppInfoSelectionOptions());
+        }
+
+        public Task<string> MapAreaOptionAsync(string value, string targetCultureName, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(value);
+        }
+
+        public Task<string> MapProcedureOptionAsync(string value, string targetCultureName, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(value);
         }
     }
 }
