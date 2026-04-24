@@ -33,6 +33,12 @@
 
             <TextBlock Margin="8 16 8 0"
                        FontWeight="SemiBold"
+                       Foreground="{StaticResource InfoBrush}"
+                       TextWrapping="Wrap"
+                       Text="{Binding StatusMessage, Mode=OneWay}" />
+
+            <TextBlock Margin="8 16 8 0"
+                       FontWeight="SemiBold"
                        Foreground="#FF365082"
                        Text="{loc:Loc UserConfigControl.LanguageSection}" />
 
@@ -331,10 +337,6 @@
                         Command="{Binding TestComNotificationCommand}"
                         Content="{loc:Loc UserConfigControl.TestComNotificationButton}" />
             </Grid>
-            <TextBlock Margin="8 0 8 8"
-                       Foreground="#FF365082"
-                       TextWrapping="Wrap"
-                       Text="{Binding StatusMessage, Mode=OneWay}" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>
