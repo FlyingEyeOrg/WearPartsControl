@@ -480,6 +480,9 @@
     },
     "WearPartEditorVm": {
       "ResourceNumberMissing": "当前未配置资源号，无法保存易损件。",
+      "LifetimeTypeMeter": "记米",
+      "LifetimeTypeCount": "计次",
+      "LifetimeTypeTime": "计时",
       "CurrentResourceNumber": "当前资源号：{0}",
       "Editing": "正在编辑资源号 {0} 的易损件。",
       "Saving": "正在保存易损件...",

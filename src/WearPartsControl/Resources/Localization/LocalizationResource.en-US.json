@@ -480,6 +480,9 @@
     },
     "WearPartEditorVm": {
       "ResourceNumberMissing": "No resource number is configured, so the wear part cannot be saved.",
+      "LifetimeTypeMeter": "Meter",
+      "LifetimeTypeCount": "Count",
+      "LifetimeTypeTime": "Time",
       "CurrentResourceNumber": "Current resource number: {0}",
       "Editing": "Editing wear parts for resource number {0}.",
       "Saving": "Saving wear part...",

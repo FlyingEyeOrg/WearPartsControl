@@ -124,8 +124,9 @@
                                    Text="{loc:Loc PartInfoControl.LifetimeTypeLabel}" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding LifetimeTypes}"
-                                  Text="{Binding LifetimeType, UpdateSourceTrigger=PropertyChanged}"
-                                  IsEditable="True"
+                                  DisplayMemberPath="DisplayName"
+                                  SelectedValuePath="Code"
+                                  SelectedValue="{Binding LifetimeType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   Style="{StaticResource ComboBoxExtend}"
                                   hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.LifetimeTypePlaceholder}" />
                     </Grid>

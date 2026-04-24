@@ -14,17 +14,20 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
 {
     private static readonly IReadOnlyDictionary<string, string> LifetimeTypeAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
-        ["Meter"] = "记米",
-        ["Count"] = "计次",
-        ["Time"] = "计时",
-        ["记米"] = "记米",
-        ["计次"] = "计次",
-        ["计时"] = "计时"
+        ["Meter"] = "Meter",
+        ["Count"] = "Count",
+        ["Time"] = "Time",
+        ["记米"] = "Meter",
+        ["计次"] = "Count",
+        ["计时"] = "Time"
     };
 
     private const string DefaultCreateInputMode = "Manual";
     private const string DefaultCreateDataType = "FLOAT";
-    private const string DefaultCreateLifetimeType = "计次";
+    private const string LifetimeTypeMeterCode = "Meter";
+    private const string LifetimeTypeCountCode = "Count";
+    private const string LifetimeTypeTimeCode = "Time";
+    private const string DefaultCreateLifetimeType = LifetimeTypeCountCode;
     private const string DefaultCreateCodeMinLength = "0";
     private const string DefaultCreateCodeMaxLength = "0";
 
@@ -63,10 +66,7 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
             InputModes.Add(item);
         }
 
-        foreach (var item in new[] { "记米", "计次", "计时" })
-        {
-            LifetimeTypes.Add(item);
-        }
+        RefreshLifetimeTypeOptions();
 
         foreach (var item in new[] { "FLOAT", "DOUBLE", "INT32", "BOOL", "STRING", "JSON" })
         {
@@ -81,7 +81,7 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
 
     public ObservableCollection<string> InputModes { get; } = new();
 
-    public ObservableCollection<string> LifetimeTypes { get; } = new();
+    public ObservableCollection<LifetimeTypeOption> LifetimeTypes { get; } = new();
 
     public ObservableCollection<string> DataTypes { get; } = new();
 
@@ -191,7 +191,7 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
     public string LifetimeType
     {
         get => _lifetimeType;
-        set => SetEditorProperty(ref _lifetimeType, value);
+        set => SetEditorProperty(ref _lifetimeType, NormalizeLifetimeType(value));
     }
 
     public string PlcZeroClearAddress
@@ -392,10 +392,32 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
 
     protected override void OnLocalizationRefreshed()
     {
+        RefreshLifetimeTypeOptions();
+
         if (_statusMessageFactory is not null)
         {
             StatusMessage = _statusMessageFactory();
         }
+    }
+
+    private void RefreshLifetimeTypeOptions()
+    {
+        UpdateLifetimeTypeOptionDisplayName(LifetimeTypeMeterCode, LocalizedText.Get("ViewModels.WearPartEditorVm.LifetimeTypeMeter"));
+        UpdateLifetimeTypeOptionDisplayName(LifetimeTypeCountCode, LocalizedText.Get("ViewModels.WearPartEditorVm.LifetimeTypeCount"));
+        UpdateLifetimeTypeOptionDisplayName(LifetimeTypeTimeCode, LocalizedText.Get("ViewModels.WearPartEditorVm.LifetimeTypeTime"));
+    }
+
+    private void UpdateLifetimeTypeOptionDisplayName(string code, string displayName)
+    {
+        var option = LifetimeTypes.FirstOrDefault(existing => string.Equals(existing.Code, code, StringComparison.Ordinal));
+
+        if (option is null)
+        {
+            LifetimeTypes.Add(new LifetimeTypeOption(code, displayName));
+            return;
+        }
+
+        option.DisplayName = displayName;
     }
 
     private void SetLocalizedStatusMessage(Func<string> factory)
@@ -408,5 +430,24 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
     {
         _statusMessageFactory = null;
         StatusMessage = message;
+    }
+
+    public sealed class LifetimeTypeOption : ObservableObject
+    {
+        private string _displayName;
+
+        public LifetimeTypeOption(string code, string displayName)
+        {
+            Code = code;
+            _displayName = displayName;
+        }
+
+        public string Code { get; }
+
+        public string DisplayName
+        {
+            get => _displayName;
+            set => SetProperty(ref _displayName, value);
+        }
     }
 }

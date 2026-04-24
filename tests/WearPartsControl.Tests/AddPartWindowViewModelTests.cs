@@ -20,7 +20,8 @@ public sealed class AddPartWindowViewModelTests
         Assert.Equal("FLOAT", viewModel.CurrentValueDataType);
         Assert.Equal("FLOAT", viewModel.WarningValueDataType);
         Assert.Equal("FLOAT", viewModel.ShutdownValueDataType);
-        Assert.Equal("计次", viewModel.LifetimeType);
+        Assert.Equal("Count", viewModel.LifetimeType);
+        Assert.Equal("计次", Assert.Single(viewModel.LifetimeTypes, option => option.Code == "Count").DisplayName);
         Assert.Equal("0", viewModel.CodeMinLength);
         Assert.Equal("0", viewModel.CodeMaxLength);
         Assert.False(viewModel.IsShutdown);
@@ -60,7 +61,7 @@ public sealed class AddPartWindowViewModelTests
         Assert.Equal("INT32", viewModel.CurrentValueDataType);
         Assert.Equal("BOOL", viewModel.WarningValueDataType);
         Assert.Equal("STRING", viewModel.ShutdownValueDataType);
-        Assert.Equal("计次", viewModel.LifetimeType);
+        Assert.Equal("Count", viewModel.LifetimeType);
         Assert.Equal("6", viewModel.CodeMinLength);
         Assert.Equal("18", viewModel.CodeMaxLength);
         Assert.True(viewModel.IsShutdown);
@@ -122,6 +123,24 @@ public sealed class AddPartWindowViewModelTests
         LocalizationBindingSource.Instance.Refresh();
 
         Assert.Equal(LocalizedText.Format("ViewModels.WearPartEditorVm.CurrentResourceNumber", "RES-001"), viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public void LocalizationRefresh_ShouldUpdateLifetimeTypeDisplayNameForCurrentSelection()
+    {
+        using var cultureScope = new TestCultureScope("zh-CN");
+        var viewModel = new AddPartWindowViewModel(new StubWearPartManagementService(), new UiBusyService());
+
+        viewModel.InitializeForCreate(Guid.NewGuid(), "RES-001");
+
+        Assert.Equal("Count", viewModel.LifetimeType);
+        Assert.Equal("计次", Assert.Single(viewModel.LifetimeTypes, option => option.Code == "Count").DisplayName);
+
+        using var _ = new TestCultureScope("en-US");
+        LocalizationBindingSource.Instance.Refresh();
+
+        Assert.Equal("Count", viewModel.LifetimeType);
+        Assert.Equal("Count", Assert.Single(viewModel.LifetimeTypes, option => option.Code == "Count").DisplayName);
     }
 
     private sealed class StubWearPartManagementService : IWearPartManagementService
