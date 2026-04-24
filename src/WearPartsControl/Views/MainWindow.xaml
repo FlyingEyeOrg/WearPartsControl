@@ -36,26 +36,26 @@
                                 Orientation="Horizontal">
                         <Image x:Name="LogoImage"
                                Source="pack://application:,,,/WearPartsControl;component/Assets/catl.ico"
-                               Width="200" />
+                               Width="240" />
                     </StackPanel>
                     <Border Grid.Column="1"
                             Width="1"
                             Background="{StaticResource PrimaryBrush}" />
-                    <Label x:Name="TitleLabel"
-                           Margin="8 0 8 0"
-                           Style="{StaticResource BaseStyle}"
-                           VerticalContentAlignment="Center"
-                           HorizontalAlignment="Center"
-                           Grid.Column="2"
-                           FontSize="40"
-                              FontWeight="Bold"
-                              Content="{Binding BrandTitle, Mode=OneWay}" />
+                    <TextBlock x:Name="TitleLabel"
+                               Margin="8 0 8 0"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               Grid.Column="2"
+                               FontSize="40"
+                               FontWeight="Bold"
+                               Text="{Binding BrandTitle, Mode=OneWay}" />
                     <Border Grid.Column="3"
                             Width="1"
                             Background="{StaticResource PrimaryBrush}" />
                     <uc:LoginBox x:Name="LoginBoxControl"
                                  Margin="8"
-                                 Width="300"
+                                 Width="360"
                                  IsEnabled="{Binding IsClientAppInfoConfigured}"
                                  Grid.Column="4" />
                 </Grid>
@@ -65,7 +65,7 @@
             <uc:UserTabControl Grid.Row="1"
                                Headers="{Binding Tabs}"
                                TabIndex="0"
-                           SelectedContent="{Binding SelectedContent, Mode=OneWay}"
+                               SelectedContent="{Binding SelectedContent, Mode=OneWay}"
                                Command="{Binding TabChangedCommand}" />
         </Grid>
         <Border Background="#40FFFFFF"
