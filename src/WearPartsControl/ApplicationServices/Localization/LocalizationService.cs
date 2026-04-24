@@ -18,11 +18,13 @@ public sealed class LocalizationService : ILocalizationService
     private static readonly ResourceManager ResourceManager = new("WearPartsControl.Resources.LocalizationResource", typeof(LocalizationService).Assembly);
 
     private readonly ISaveInfoStore _saveInfoStore;
+    private readonly IUserConfigService _userConfigService;
     private readonly LocalizationCatalog _catalog;
 
-    public LocalizationService(ISaveInfoStore saveInfoStore)
+    public LocalizationService(ISaveInfoStore saveInfoStore, IUserConfigService userConfigService)
     {
         _saveInfoStore = saveInfoStore;
+        _userConfigService = userConfigService;
         _catalog = new LocalizationCatalog(GetString);
     }
 
@@ -34,27 +36,8 @@ public sealed class LocalizationService : ILocalizationService
 
     public async ValueTask InitializeAsync(CancellationToken cancellationToken = default)
     {
-        var userConfig = await _saveInfoStore.ReadAsync<UserConfigModel>(cancellationToken).ConfigureAwait(false);
-        var storedCultureName = NormalizeCultureName(userConfig.Language);
-
-        if (string.IsNullOrWhiteSpace(storedCultureName))
-        {
-            var legacyConfig = await _saveInfoStore.ReadAsync<LocalizationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
-            storedCultureName = NormalizeCultureName(legacyConfig.CultureName);
-
-            if (!string.IsNullOrWhiteSpace(storedCultureName))
-            {
-                userConfig.Language = storedCultureName;
-                await _saveInfoStore.WriteAsync(userConfig, cancellationToken).ConfigureAwait(false);
-
-                if (_saveInfoStore is TypeJsonSaveInfoStore fileStore && fileStore.Exists<LocalizationOptionsSaveInfo>())
-                {
-                    await fileStore.DeleteAsync<LocalizationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
-                }
-            }
-        }
-
-        await SetCultureAsync(storedCultureName, cancellationToken).ConfigureAwait(false);
+        var userConfig = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
+        await SetCultureAsync(userConfig.Language, cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask SetCultureAsync(string cultureName, CancellationToken cancellationToken = default)

@@ -18,7 +18,7 @@ public sealed class LocalizationServiceTests : IDisposable
     public async Task Catalog_ShouldReturnStructuredTabs_ForEnglishCulture()
     {
         var store = new FakeSaveInfoStore();
-        var service = new LocalizationService(store);
+        var service = CreateService(store);
 
         await service.SetCultureAsync("en-US");
 
@@ -38,7 +38,7 @@ public sealed class LocalizationServiceTests : IDisposable
     public async Task Catalog_ShouldReturnStructuredTabs_ForChineseCulture()
     {
         var store = new FakeSaveInfoStore();
-        var service = new LocalizationService(store);
+        var service = CreateService(store);
 
         await service.SetCultureAsync("zh-CN");
 
@@ -60,7 +60,7 @@ public sealed class LocalizationServiceTests : IDisposable
         var store = new FakeSaveInfoStore();
         await store.WriteAsync(new LocalizationOptionsSaveInfo { CultureName = "zh-CN" });
 
-        var service = new LocalizationService(store);
+        var service = CreateService(store);
         await service.InitializeAsync();
 
         Assert.Equal("zh-CN", service.CurrentCulture.Name);
@@ -74,7 +74,7 @@ public sealed class LocalizationServiceTests : IDisposable
         await store.WriteAsync(new UserConfig { Language = "en-US" });
         await store.WriteAsync(new LocalizationOptionsSaveInfo { CultureName = "zh-CN" });
 
-        var service = new LocalizationService(store);
+        var service = CreateService(store);
         await service.InitializeAsync();
 
         Assert.Equal("en-US", service.CurrentCulture.Name);
@@ -86,7 +86,7 @@ public sealed class LocalizationServiceTests : IDisposable
     public async Task SetCultureAsync_ShouldUpdateUserConfigLanguage()
     {
         var store = new FakeSaveInfoStore();
-        var service = new LocalizationService(store);
+        var service = CreateService(store);
 
         await service.SetCultureAsync("en-US");
 
@@ -99,11 +99,26 @@ public sealed class LocalizationServiceTests : IDisposable
     public async Task Indexer_ShouldFallbackToKey_WhenResourceMissing()
     {
         var store = new FakeSaveInfoStore();
-        var service = new LocalizationService(store);
+        var service = CreateService(store);
 
         await service.SetCultureAsync("en-US");
 
         Assert.Equal("Missing.Key", service["Missing.Key"]);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_ShouldUseNormalizedLanguageFromUserConfigService()
+    {
+        var store = new FakeSaveInfoStore();
+        await store.WriteAsync(new UserConfig { Language = " en-US " });
+
+        var service = CreateService(store);
+
+        await service.InitializeAsync();
+
+        Assert.Equal("en-US", service.CurrentCulture.Name);
+        var persistedUserConfig = await store.ReadAsync<UserConfig>();
+        Assert.Equal("en-US", persistedUserConfig.Language);
     }
 
     public void Dispose()
@@ -112,6 +127,11 @@ public sealed class LocalizationServiceTests : IDisposable
         CultureInfo.CurrentUICulture = _originalCurrentUiCulture;
         CultureInfo.DefaultThreadCurrentCulture = _originalDefaultThreadCurrentCulture;
         CultureInfo.DefaultThreadCurrentUICulture = _originalDefaultThreadCurrentUiCulture;
+    }
+
+    private static LocalizationService CreateService(FakeSaveInfoStore store)
+    {
+        return new LocalizationService(store, new UserConfigService(store));
     }
 
     private sealed class FakeSaveInfoStore : ISaveInfoStore
