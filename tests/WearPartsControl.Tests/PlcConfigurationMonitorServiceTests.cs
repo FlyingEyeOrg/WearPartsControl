@@ -118,6 +118,38 @@ public sealed class PlcConfigurationMonitorServiceTests
         Assert.True(plcService.IsConnected);
     }
 
+    [Fact]
+    public async Task SettingsSaved_WhenLoadingClientConfigurationThrows_ShouldSetFailedStatus()
+    {
+        var appSettingsService = new StubAppSettingsService();
+        var clientAppInfoService = new StubClientAppInfoService
+        {
+            ThrowOnGet = new InvalidOperationException("config missing")
+        };
+        var plcService = new StubPlcService();
+        var plcOperationPipeline = new PlcOperationPipeline(plcService, new TestLogger<PlcOperationPipeline>());
+        var connectionStatusService = new PlcConnectionStatusService();
+        using var monitorService = new PlcConfigurationMonitorService(
+            appSettingsService,
+            new StubServiceScopeFactory(clientAppInfoService),
+            plcOperationPipeline,
+            connectionStatusService,
+            new TestLogger<PlcConfigurationMonitorService>());
+
+        await appSettingsService.SaveAsync(new AppSettings
+        {
+            IsSetClientAppInfo = true,
+            ResourceNumber = "RES-PLC-01"
+        });
+
+        await WaitForAsync(() => connectionStatusService.Current.Status == PlcStartupConnectionStatus.Failed);
+
+        Assert.Empty(plcService.ConnectCalls);
+        Assert.Equal(
+            LocalizedText.Format("Services.PlcStartupConnection.ConnectFailed", "config missing"),
+            connectionStatusService.Current.Message);
+    }
+
     private static ClientAppInfoModel CreateClientAppInfoModel(string ipAddress)
     {
         return new ClientAppInfoModel
@@ -176,8 +208,15 @@ public sealed class PlcConfigurationMonitorServiceTests
     {
         public ClientAppInfoModel Current { get; set; } = CreateClientAppInfoModel("192.168.0.10");
 
+        public Exception? ThrowOnGet { get; set; }
+
         public Task<ClientAppInfoModel> GetAsync(CancellationToken cancellationToken = default)
         {
+            if (ThrowOnGet is not null)
+            {
+                throw ThrowOnGet;
+            }
+
             return Task.FromResult(Current);
         }
 

@@ -111,54 +111,66 @@ public sealed class PlcConfigurationMonitorService : IDisposable
 
     private async Task RefreshConnectionAsync(CancellationToken cancellationToken)
     {
-        var settings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
-        if (!settings.IsSetClientAppInfo || string.IsNullOrWhiteSpace(settings.ResourceNumber))
-        {
-            await _plcOperationPipeline.DisconnectAsync(PlcConfigurationPipelineOperations.DisconnectWhenNotConfigured, cancellationToken).ConfigureAwait(false);
-            _lastAppliedConfigurationKey = null;
-            _plcConnectionStatusService.Set(PlcStartupConnectionResult.NotConfigured());
-            return;
-        }
-
-        await using var scope = _serviceScopeFactory.CreateAsyncScope();
-        var clientAppInfoService = scope.ServiceProvider.GetRequiredService<IClientAppInfoService>();
-        var clientAppInfo = await clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(clientAppInfo.ResourceNumber)
-            || string.IsNullOrWhiteSpace(clientAppInfo.PlcProtocolType)
-            || string.IsNullOrWhiteSpace(clientAppInfo.PlcIpAddress))
-        {
-            await _plcOperationPipeline.DisconnectAsync(PlcConfigurationPipelineOperations.DisconnectWhenInvalid, cancellationToken).ConfigureAwait(false);
-            _lastAppliedConfigurationKey = null;
-            _plcConnectionStatusService.Set(PlcStartupConnectionResult.NotConfigured());
-            return;
-        }
-
-        var configurationKey = CreateConfigurationKey(clientAppInfo);
-        if (string.Equals(_lastAppliedConfigurationKey, configurationKey, StringComparison.Ordinal))
-        {
-            return;
-        }
+        var resourceNumber = string.Empty;
 
         try
         {
-            _plcConnectionStatusService.Set(PlcStartupConnectionResult.Connecting(LocalizedText.Get("Services.PlcStartupConnection.Reconnecting")));
-            await _plcOperationPipeline.ConnectAsync(PlcConfigurationPipelineOperations.ApplyAndReconnect, PlcConnectionOptionsFactory.Create(clientAppInfo), cancellationToken).ConfigureAwait(false);
-
-            _lastAppliedConfigurationKey = configurationKey;
-            _plcConnectionStatusService.Set(PlcStartupConnectionResult.Connected(LocalizedText.Get("Services.PlcStartupConnection.Reconfigured")));
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            _logger.LogWarning(ex, LocalizedText.Get("Services.PlcConfigurationMonitor.LogApplySettingsFailed"), clientAppInfo.ResourceNumber);
-
-            var isConnected = await _plcOperationPipeline.IsConnectedAsync(PlcConfigurationPipelineOperations.CheckConnectionState, cancellationToken).ConfigureAwait(false);
-            if (isConnected)
+            var settings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
+            resourceNumber = settings.ResourceNumber?.Trim() ?? string.Empty;
+            if (!settings.IsSetClientAppInfo || string.IsNullOrWhiteSpace(settings.ResourceNumber))
             {
-                _plcConnectionStatusService.Set(PlcStartupConnectionResult.Connected(
-                    LocalizedText.Format("Services.PlcStartupConnection.ReconfiguredFailedKeepCurrent", ex.Message)));
+                await _plcOperationPipeline.DisconnectAsync(PlcConfigurationPipelineOperations.DisconnectWhenNotConfigured, cancellationToken).ConfigureAwait(false);
+                _lastAppliedConfigurationKey = null;
+                _plcConnectionStatusService.Set(PlcStartupConnectionResult.NotConfigured());
                 return;
             }
 
+            await using var scope = _serviceScopeFactory.CreateAsyncScope();
+            var clientAppInfoService = scope.ServiceProvider.GetRequiredService<IClientAppInfoService>();
+            var clientAppInfo = await clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(clientAppInfo.ResourceNumber)
+                || string.IsNullOrWhiteSpace(clientAppInfo.PlcProtocolType)
+                || string.IsNullOrWhiteSpace(clientAppInfo.PlcIpAddress))
+            {
+                await _plcOperationPipeline.DisconnectAsync(PlcConfigurationPipelineOperations.DisconnectWhenInvalid, cancellationToken).ConfigureAwait(false);
+                _lastAppliedConfigurationKey = null;
+                _plcConnectionStatusService.Set(PlcStartupConnectionResult.NotConfigured());
+                return;
+            }
+
+            var configurationKey = CreateConfigurationKey(clientAppInfo);
+            if (string.Equals(_lastAppliedConfigurationKey, configurationKey, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            try
+            {
+                _plcConnectionStatusService.Set(PlcStartupConnectionResult.Connecting(LocalizedText.Get("Services.PlcStartupConnection.Reconnecting")));
+                await _plcOperationPipeline.ConnectAsync(PlcConfigurationPipelineOperations.ApplyAndReconnect, PlcConnectionOptionsFactory.Create(clientAppInfo), cancellationToken).ConfigureAwait(false);
+
+                _lastAppliedConfigurationKey = configurationKey;
+                _plcConnectionStatusService.Set(PlcStartupConnectionResult.Connected(LocalizedText.Get("Services.PlcStartupConnection.Reconfigured")));
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex, LocalizedText.Get("Services.PlcConfigurationMonitor.LogApplySettingsFailed"), clientAppInfo.ResourceNumber);
+
+                var isConnected = await _plcOperationPipeline.IsConnectedAsync(PlcConfigurationPipelineOperations.CheckConnectionState, cancellationToken).ConfigureAwait(false);
+                if (isConnected)
+                {
+                    _plcConnectionStatusService.Set(PlcStartupConnectionResult.Connected(
+                        LocalizedText.Format("Services.PlcStartupConnection.ReconfiguredFailedKeepCurrent", ex.Message)));
+                    return;
+                }
+
+                _plcConnectionStatusService.Set(PlcStartupConnectionResult.Failed(
+                    LocalizedText.Format("Services.PlcStartupConnection.ConnectFailed", ex.Message)));
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, LocalizedText.Get("Services.PlcConfigurationMonitor.LogApplySettingsFailed"), resourceNumber);
             _plcConnectionStatusService.Set(PlcStartupConnectionResult.Failed(
                 LocalizedText.Format("Services.PlcStartupConnection.ConnectFailed", ex.Message)));
         }

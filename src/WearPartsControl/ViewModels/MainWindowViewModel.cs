@@ -82,7 +82,7 @@ namespace WearPartsControl.ViewModels
             _appSettingsService = appSettingsService;
             _allTabs = Array.Empty<string>();
 
-            RefreshLocalizedShellState(refreshSelectedContent: false);
+            RefreshLocalizedShellState(refreshSelectedContent: false, synchronizeLocalizationCulture: true);
             _loginSessionStateMachine.StateChanged += OnLoginSessionStateChanged;
             _appSettingsService.SettingsSaved += OnAppSettingsSaved;
             _uiBusyService.PropertyChanged += OnUiBusyServicePropertyChanged;
@@ -366,7 +366,7 @@ namespace WearPartsControl.ViewModels
 
         private void OnLocalizationRefreshed(object? sender, EventArgs e)
         {
-            _uiDispatcher.Run(() => RefreshLocalizedShellState(refreshSelectedContent: true));
+            _uiDispatcher.Run(() => RefreshLocalizedShellState(refreshSelectedContent: true, synchronizeLocalizationCulture: false));
         }
 
         private void ApplyLoginState(LoginSessionState state)
@@ -393,9 +393,12 @@ namespace WearPartsControl.ViewModels
             RefreshSelectedContentForCurrentStateIfNeeded(wasLoggedIn, IsLoggedIn);
         }
 
-        private void RefreshLocalizedShellState(bool refreshSelectedContent)
+        private void RefreshLocalizedShellState(bool refreshSelectedContent, bool synchronizeLocalizationCulture)
         {
-            EnsureLocalizationCultureMatchesUserConfig();
+            if (synchronizeLocalizationCulture)
+            {
+                EnsureLocalizationCultureMatchesUserConfig();
+            }
 
             Title = _localizationService["MainWindow.Title"];
             BrandTitle = _localizationService["MainWindowView.BrandTitle"];

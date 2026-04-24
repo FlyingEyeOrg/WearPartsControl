@@ -106,6 +106,39 @@ public sealed class UserControlXamlLoadTests
         }, ensureApplicationResources: true);
     }
 
+    [Fact]
+    public void LoginBox_ShouldLoadWithoutXamlParseException()
+    {
+        WpfTestHost.Run(() =>
+        {
+            var control = new LoginBox();
+
+            Assert.NotNull(control);
+        }, ensureApplicationResources: true);
+    }
+
+    [Fact]
+    public void NeedLoginUserControl_ShouldLoadWithoutXamlParseException()
+    {
+        WpfTestHost.Run(() =>
+        {
+            var control = new NeedLoginUserControl(new NeedLoginViewModel());
+
+            Assert.NotNull(control);
+        }, ensureApplicationResources: true);
+    }
+
+    [Fact]
+    public void UserTabControl_ShouldLoadWithoutXamlParseException()
+    {
+        WpfTestHost.Run(() =>
+        {
+            var control = new UserTabControl();
+
+            Assert.NotNull(control);
+        }, ensureApplicationResources: true);
+    }
+
     private static T CreateUninitialized<T>() where T : class
     {
         return (T)RuntimeHelpers.GetUninitializedObject(typeof(T));

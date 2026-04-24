@@ -33,16 +33,28 @@ public sealed class AppStartupCoordinator : IAppStartupCoordinator
 
     private Task GetOrCreateInitializationTask(Func<string, Task>? reportLoadingAsync)
     {
-        if (_initializationTask is not null)
+        var initializationTask = _initializationTask;
+        if (CanReuseInitializationTask(initializationTask))
         {
-            return _initializationTask;
+            return initializationTask!;
         }
 
         lock (_syncRoot)
         {
-            _initializationTask ??= InitializeCoreAsync(reportLoadingAsync);
-            return _initializationTask;
+            if (!CanReuseInitializationTask(_initializationTask))
+            {
+                _initializationTask = InitializeCoreAsync(reportLoadingAsync);
+            }
+
+            return _initializationTask!;
         }
+    }
+
+    private static bool CanReuseInitializationTask(Task? initializationTask)
+    {
+        return initializationTask is not null
+            && !initializationTask.IsFaulted
+            && !initializationTask.IsCanceled;
     }
 
     private async Task InitializeCoreAsync(Func<string, Task>? reportLoadingAsync)

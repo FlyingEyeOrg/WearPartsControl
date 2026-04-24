@@ -533,7 +533,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         var chineseBrandTitle = viewModel.BrandTitle;
         var chineseFirstTab = viewModel.Tabs.First();
 
-        using var _ = new TestCultureScope("en-US");
+        using var cultureScope = new TestCultureScope("en-US");
         LocalizationBindingSource.Instance.Refresh();
 
         Assert.NotEqual(chineseTitle, viewModel.Title);
@@ -576,6 +576,41 @@ public sealed class MainWindowViewModelTests : IDisposable
         Assert.Equal("en-US", localizationService.CurrentCulture.Name);
         Assert.Equal("en-US", localizationService.LastSetCultureName);
         Assert.Equal(LocalizedText.Get("MainWindow.Title"), viewModel.Title);
+    }
+
+    [Fact]
+    public void LocalizationRefresh_ShouldNotReloadUserConfigSynchronously()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+        var userConfigService = new StubUserConfigService
+        {
+            Current = new UserConfig
+            {
+                Language = "zh-CN"
+            }
+        };
+
+        _ = CreateViewModel(
+            new CurrentUserAccessor(),
+            new StubLoginService(),
+            appSettingsService,
+            new UiBusyService(),
+            new StubPlcStartupConnectionService(),
+            userConfigService: userConfigService);
+
+        Assert.Equal(1, userConfigService.GetAsyncCallCount);
+
+        using var cultureScope = new TestCultureScope("en-US");
+        LocalizationBindingSource.Instance.Refresh();
+
+        Assert.Equal(1, userConfigService.GetAsyncCallCount);
     }
 
     [Fact]
@@ -851,8 +886,11 @@ public sealed class MainWindowViewModelTests : IDisposable
     {
         public UserConfig Current { get; set; } = new();
 
+        public int GetAsyncCallCount { get; private set; }
+
         public ValueTask<UserConfig> GetAsync(CancellationToken cancellationToken = default)
         {
+            GetAsyncCallCount++;
             return ValueTask.FromResult(new UserConfig
             {
                 Language = Current.Language

@@ -92,15 +92,39 @@ public sealed class AppStartupCoordinatorTests
         Assert.Equal(0, appSettingsService.SaveCallCount);
     }
 
+    [Fact]
+    public async Task EnsureInitializedAsync_WhenInitializationPreviouslyFaulted_ShouldRetry()
+    {
+        var initializer = new StubDatabaseInitializer
+        {
+            FailuresRemaining = 1
+        };
+        var coordinator = new AppStartupCoordinator(initializer, new StubAppSettingsService(), new StubPlcStartupConnectionService());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => coordinator.EnsureInitializedAsync());
+
+        await coordinator.EnsureInitializedAsync();
+
+        Assert.Equal(2, initializer.CallCount);
+    }
+
     private sealed class StubDatabaseInitializer : IDatabaseInitializer
     {
         public int CallCount { get; private set; }
 
         public TaskCompletionSource? PendingTaskSource { get; set; }
 
+        public int FailuresRemaining { get; set; }
+
         public Task InitializeAsync(CancellationToken cancellationToken = default)
         {
             CallCount++;
+
+            if (FailuresRemaining > 0)
+            {
+                FailuresRemaining--;
+                throw new InvalidOperationException("transient init failure");
+            }
 
             if (PendingTaskSource is not null)
             {
