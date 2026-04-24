@@ -35,6 +35,7 @@ public sealed class UserConfigViewModelTests
                 ComTimeoutMilliseconds = 10000,
                 SpacerValidationEnabled = false,
                 SpacerValidationUrl = "https://spacer/api",
+                SpacerValidationUrlRelease = "https://spacer/release",
                 SpacerValidationTimeoutMilliseconds = 8000,
                 SpacerValidationIgnoreServerCertificateErrors = false,
                 SpacerValidationCodeSeparator = "-",
@@ -90,7 +91,6 @@ public sealed class UserConfigViewModelTests
         viewModel.ComSecret = "secret-2";
         viewModel.ComNotificationEnabled = false;
         viewModel.SpacerValidationEnabled = false;
-        viewModel.SpacerValidationUrl = "https://spacer/save";
         viewModel.SpacerValidationTimeoutMilliseconds = "7200";
         viewModel.SpacerValidationIgnoreServerCertificateErrors = false;
         viewModel.SpacerValidationCodeSeparator = "-";
@@ -113,7 +113,8 @@ public sealed class UserConfigViewModelTests
         Assert.Equal("en-US", service.LastSaved.Language);
         Assert.False(service.LastSaved.ComNotificationEnabled);
         Assert.False(service.LastSaved.SpacerValidationEnabled);
-        Assert.Equal("https://spacer/save", service.LastSaved.SpacerValidationUrl);
+        Assert.Equal(UserConfig.DefaultSpacerValidationUrl, service.LastSaved.SpacerValidationUrl);
+        Assert.Equal(UserConfig.DefaultSpacerValidationUrlRelease, service.LastSaved.SpacerValidationUrlRelease);
         Assert.Equal(7200, service.LastSaved.SpacerValidationTimeoutMilliseconds);
         Assert.False(service.LastSaved.SpacerValidationIgnoreServerCertificateErrors);
         Assert.Equal("-", service.LastSaved.SpacerValidationCodeSeparator);
@@ -160,7 +161,6 @@ public sealed class UserConfigViewModelTests
         viewModel.ReplacementOperatorName = "王工";
         viewModel.ComAccessToken = "token-3";
         viewModel.ComSecret = "secret-3";
-        viewModel.SpacerValidationUrl = "https://spacer/test";
 
         await viewModel.TestComNotificationCommand.ExecuteAsync(null);
 
@@ -247,6 +247,7 @@ public sealed class UserConfigViewModelTests
                 ComTimeoutMilliseconds = Current.ComTimeoutMilliseconds,
                 SpacerValidationEnabled = Current.SpacerValidationEnabled,
                 SpacerValidationUrl = Current.SpacerValidationUrl,
+                SpacerValidationUrlRelease = Current.SpacerValidationUrlRelease,
                 SpacerValidationTimeoutMilliseconds = Current.SpacerValidationTimeoutMilliseconds,
                 SpacerValidationIgnoreServerCertificateErrors = Current.SpacerValidationIgnoreServerCertificateErrors,
                 SpacerValidationCodeSeparator = Current.SpacerValidationCodeSeparator,
@@ -276,6 +277,7 @@ public sealed class UserConfigViewModelTests
                 ComTimeoutMilliseconds = config.ComTimeoutMilliseconds,
                 SpacerValidationEnabled = config.SpacerValidationEnabled,
                 SpacerValidationUrl = config.SpacerValidationUrl,
+                SpacerValidationUrlRelease = config.SpacerValidationUrlRelease,
                 SpacerValidationTimeoutMilliseconds = config.SpacerValidationTimeoutMilliseconds,
                 SpacerValidationIgnoreServerCertificateErrors = config.SpacerValidationIgnoreServerCertificateErrors,
                 SpacerValidationCodeSeparator = config.SpacerValidationCodeSeparator,

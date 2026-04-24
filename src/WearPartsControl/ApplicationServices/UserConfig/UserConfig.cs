@@ -23,6 +23,10 @@ public sealed class UserConfig
 
     public const int DefaultComTimeoutMilliseconds = 10000;
 
+    public const string DefaultSpacerValidationUrl = "https://172.18.65.139:65530/vulnerable-parts-service/api/v1.0/spacer-validation-data/verify";
+
+    public const string DefaultSpacerValidationUrlRelease = "https://172.18.65.139:65530/vulnerable-parts-service/api/v1.0/spacer-validation-data/verify";
+
     public const string DefaultSpacerValidationCodeSeparator = "/";
 
     public const int DefaultSpacerValidationTimeoutMilliseconds = 5000;
@@ -63,7 +67,9 @@ public sealed class UserConfig
 
     public bool SpacerValidationEnabled { get; set; } = true;
 
-    public string SpacerValidationUrl { get; set; } = string.Empty;
+    public string SpacerValidationUrl { get; set; } = DefaultSpacerValidationUrl;
+
+    public string SpacerValidationUrlRelease { get; set; } = DefaultSpacerValidationUrlRelease;
 
     public int SpacerValidationTimeoutMilliseconds { get; set; } = DefaultSpacerValidationTimeoutMilliseconds;
 

@@ -103,7 +103,12 @@ public sealed class UserConfigService : IUserConfigService
                 ? config.ComTimeoutMilliseconds
                 : UserConfig.DefaultComTimeoutMilliseconds,
             SpacerValidationEnabled = config.SpacerValidationEnabled,
-            SpacerValidationUrl = config.SpacerValidationUrl?.Trim() ?? string.Empty,
+            SpacerValidationUrl = string.IsNullOrWhiteSpace(config.SpacerValidationUrl)
+                ? UserConfig.DefaultSpacerValidationUrl
+                : config.SpacerValidationUrl.Trim(),
+            SpacerValidationUrlRelease = string.IsNullOrWhiteSpace(config.SpacerValidationUrlRelease)
+                ? UserConfig.DefaultSpacerValidationUrlRelease
+                : config.SpacerValidationUrlRelease.Trim(),
             SpacerValidationTimeoutMilliseconds = config.SpacerValidationTimeoutMilliseconds > 0
                 ? config.SpacerValidationTimeoutMilliseconds
                 : UserConfig.DefaultSpacerValidationTimeoutMilliseconds,
@@ -119,7 +124,8 @@ public sealed class UserConfigService : IUserConfigService
 
     private static bool ShouldMigrateLegacySpacerValidation(UserConfig config)
     {
-        return string.IsNullOrWhiteSpace(config.SpacerValidationUrl)
+        return string.Equals(config.SpacerValidationUrl, UserConfig.DefaultSpacerValidationUrl, StringComparison.Ordinal)
+            && string.Equals(config.SpacerValidationUrlRelease, UserConfig.DefaultSpacerValidationUrlRelease, StringComparison.Ordinal)
             && config.SpacerValidationEnabled
             && config.SpacerValidationTimeoutMilliseconds == UserConfig.DefaultSpacerValidationTimeoutMilliseconds
             && config.SpacerValidationIgnoreServerCertificateErrors
@@ -182,6 +188,7 @@ public sealed class UserConfigService : IUserConfigService
             ComTimeoutMilliseconds = legacyConfig.TimeoutMilliseconds,
             SpacerValidationEnabled = config.SpacerValidationEnabled,
             SpacerValidationUrl = config.SpacerValidationUrl,
+            SpacerValidationUrlRelease = config.SpacerValidationUrlRelease,
             SpacerValidationTimeoutMilliseconds = config.SpacerValidationTimeoutMilliseconds,
             SpacerValidationIgnoreServerCertificateErrors = config.SpacerValidationIgnoreServerCertificateErrors,
             SpacerValidationCodeSeparator = config.SpacerValidationCodeSeparator,
@@ -213,6 +220,7 @@ public sealed class UserConfigService : IUserConfigService
             ComTimeoutMilliseconds = config.ComTimeoutMilliseconds,
             SpacerValidationEnabled = legacyConfig.Enabled,
             SpacerValidationUrl = legacyConfig.ValidationUrl,
+            SpacerValidationUrlRelease = config.SpacerValidationUrlRelease,
             SpacerValidationTimeoutMilliseconds = legacyConfig.TimeoutMilliseconds,
             SpacerValidationIgnoreServerCertificateErrors = legacyConfig.IgnoreServerCertificateErrors,
             SpacerValidationCodeSeparator = legacyConfig.CodeSeparator,
@@ -244,6 +252,7 @@ public sealed class UserConfigService : IUserConfigService
             ComTimeoutMilliseconds = config.ComTimeoutMilliseconds,
             SpacerValidationEnabled = config.SpacerValidationEnabled,
             SpacerValidationUrl = config.SpacerValidationUrl,
+            SpacerValidationUrlRelease = config.SpacerValidationUrlRelease,
             SpacerValidationTimeoutMilliseconds = config.SpacerValidationTimeoutMilliseconds,
             SpacerValidationIgnoreServerCertificateErrors = config.SpacerValidationIgnoreServerCertificateErrors,
             SpacerValidationCodeSeparator = config.SpacerValidationCodeSeparator,

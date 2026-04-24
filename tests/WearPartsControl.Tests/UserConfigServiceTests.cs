@@ -61,6 +61,7 @@ public sealed class UserConfigServiceTests
             Assert.Equal(UserConfig.DefaultComTimeoutMilliseconds, config.ComTimeoutMilliseconds);
             Assert.False(config.SpacerValidationEnabled);
             Assert.Equal("https://spacer/save", config.SpacerValidationUrl);
+            Assert.Equal(UserConfig.DefaultSpacerValidationUrlRelease, config.SpacerValidationUrlRelease);
             Assert.Equal(7000, config.SpacerValidationTimeoutMilliseconds);
             Assert.False(config.SpacerValidationIgnoreServerCertificateErrors);
             Assert.Equal("-", config.SpacerValidationCodeSeparator);
@@ -104,6 +105,7 @@ public sealed class UserConfigServiceTests
 
             Assert.False(config.SpacerValidationEnabled);
             Assert.Equal("https://legacy/spacer", config.SpacerValidationUrl);
+            Assert.Equal(UserConfig.DefaultSpacerValidationUrlRelease, config.SpacerValidationUrlRelease);
             Assert.Equal(6000, config.SpacerValidationTimeoutMilliseconds);
             Assert.False(config.SpacerValidationIgnoreServerCertificateErrors);
             Assert.Equal("-", config.SpacerValidationCodeSeparator);
@@ -114,6 +116,37 @@ public sealed class UserConfigServiceTests
             var persisted = JsonSerializer.Deserialize<UserConfig>(persistedJson);
             Assert.NotNull(persisted);
             Assert.Equal("https://legacy/spacer", persisted!.SpacerValidationUrl);
+            Assert.Equal(UserConfig.DefaultSpacerValidationUrlRelease, persisted.SpacerValidationUrlRelease);
+        }
+        finally
+        {
+            if (Directory.Exists(settingsDirectory))
+            {
+                Directory.Delete(settingsDirectory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task GetAsync_WhenUserConfigMissing_ShouldUseDefaultReadonlyValues()
+    {
+        var settingsDirectory = Path.Combine(Path.GetTempPath(), $"WearPartsControl.UserConfig.{Guid.NewGuid():N}");
+        Directory.CreateDirectory(settingsDirectory);
+
+        try
+        {
+            var service = new UserConfigService(new TypeJsonSaveInfoStore(settingsDirectory));
+
+            var config = await service.GetAsync();
+
+            Assert.Equal(UserConfig.DefaultComPushUrl, config.ComPushUrl);
+            Assert.Equal(UserConfig.DefaultComDeIpaasKeyAuth, config.ComDeIpaasKeyAuth);
+            Assert.Equal(UserConfig.DefaultComAgentId, config.ComAgentId);
+            Assert.Equal(UserConfig.DefaultComGroupTemplateId, config.ComGroupTemplateId);
+            Assert.Equal(UserConfig.DefaultComWorkTemplateId, config.ComWorkTemplateId);
+            Assert.Equal(UserConfig.DefaultComUserType, config.ComUserType);
+            Assert.Equal(UserConfig.DefaultSpacerValidationUrl, config.SpacerValidationUrl);
+            Assert.Equal(UserConfig.DefaultSpacerValidationUrlRelease, config.SpacerValidationUrlRelease);
         }
         finally
         {

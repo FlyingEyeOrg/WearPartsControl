@@ -42,7 +42,8 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
     private long _comWorkTemplateId;
     private string _comUserType = string.Empty;
     private bool _spacerValidationEnabled = true;
-    private string _spacerValidationUrl = string.Empty;
+    private string _spacerValidationUrl = UserConfig.DefaultSpacerValidationUrl;
+    private string _spacerValidationUrlRelease = UserConfig.DefaultSpacerValidationUrlRelease;
     private string _spacerValidationTimeoutMilliseconds = UserConfig.DefaultSpacerValidationTimeoutMilliseconds.ToString(CultureInfo.InvariantCulture);
     private bool _spacerValidationIgnoreServerCertificateErrors = true;
     private string _spacerValidationCodeSeparator = UserConfig.DefaultSpacerValidationCodeSeparator;
@@ -558,6 +559,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             ComTimeoutMilliseconds = UserConfig.DefaultComTimeoutMilliseconds,
             SpacerValidationEnabled = SpacerValidationEnabled,
             SpacerValidationUrl = SpacerValidationUrl,
+            SpacerValidationUrlRelease = _spacerValidationUrlRelease,
             SpacerValidationTimeoutMilliseconds = timeoutMilliseconds,
             SpacerValidationIgnoreServerCertificateErrors = SpacerValidationIgnoreServerCertificateErrors,
             SpacerValidationCodeSeparator = SpacerValidationCodeSeparator,
@@ -586,6 +588,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             ComUserType = config.ComUserType;
             SpacerValidationEnabled = config.SpacerValidationEnabled;
             SpacerValidationUrl = config.SpacerValidationUrl;
+            _spacerValidationUrlRelease = config.SpacerValidationUrlRelease;
             SpacerValidationTimeoutMilliseconds = config.SpacerValidationTimeoutMilliseconds.ToString(CultureInfo.InvariantCulture);
             SpacerValidationIgnoreServerCertificateErrors = config.SpacerValidationIgnoreServerCertificateErrors;
             SpacerValidationCodeSeparator = config.SpacerValidationCodeSeparator;
@@ -735,7 +738,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             UserConfig.DefaultComWorkTemplateId,
             UserConfig.DefaultComUserType,
             true,
-            string.Empty,
+            UserConfig.DefaultSpacerValidationUrl,
             UserConfig.DefaultSpacerValidationTimeoutMilliseconds.ToString(CultureInfo.InvariantCulture),
             true,
             UserConfig.DefaultSpacerValidationCodeSeparator,

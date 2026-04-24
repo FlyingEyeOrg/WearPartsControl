@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Threading;
 using WearPartsControl.ApplicationServices;
@@ -49,6 +50,26 @@ public sealed class UserConfigUserControlTests
         }, ensureApplicationResources: true);
     }
 
+    [Fact]
+    public void UserConfigUserControl_ShouldRenderConfiguredReadonlyTextBoxesAsReadOnly()
+    {
+        using var cultureScope = new TestCultureScope("zh-CN");
+
+        WpfTestHost.Run(() =>
+        {
+            using var host = UserConfigUserControlHost.Create(CreateViewModel());
+
+            Assert.All(host.ReadonlyTextBoxes, static textBox => Assert.True(textBox.IsReadOnly));
+            Assert.Contains(host.ReadonlyTextBoxes, static textBox => GetBoundPropertyPath(textBox) == nameof(UserConfigViewModel.SpacerValidationUrl));
+            Assert.Contains(host.ReadonlyTextBoxes, static textBox => GetBoundPropertyPath(textBox) == nameof(UserConfigViewModel.ComPushUrl));
+            Assert.Contains(host.ReadonlyTextBoxes, static textBox => GetBoundPropertyPath(textBox) == nameof(UserConfigViewModel.ComDeIpaasKeyAuth));
+            Assert.Contains(host.ReadonlyTextBoxes, static textBox => GetBoundPropertyPath(textBox) == nameof(UserConfigViewModel.ComAgentId));
+            Assert.Contains(host.ReadonlyTextBoxes, static textBox => GetBoundPropertyPath(textBox) == nameof(UserConfigViewModel.ComGroupTemplateId));
+            Assert.Contains(host.ReadonlyTextBoxes, static textBox => GetBoundPropertyPath(textBox) == nameof(UserConfigViewModel.ComWorkTemplateId));
+            Assert.Contains(host.ReadonlyTextBoxes, static textBox => GetBoundPropertyPath(textBox) == nameof(UserConfigViewModel.ComUserType));
+        }, ensureApplicationResources: true);
+    }
+
     private static UserConfigViewModel CreateViewModel()
     {
         return new UserConfigViewModel(
@@ -86,16 +107,22 @@ public sealed class UserConfigUserControlTests
         return null;
     }
 
+    private static string? GetBoundPropertyPath(TextBox textBox)
+    {
+        return BindingOperations.GetBinding(textBox, TextBox.TextProperty)?.Path?.Path;
+    }
+
     private sealed class UserConfigUserControlHost : IDisposable
     {
         private readonly Window _window;
 
-        private UserConfigUserControlHost(Window window, UserConfigUserControl control, UserConfigViewModel viewModel, ComboBox languageComboBox)
+        private UserConfigUserControlHost(Window window, UserConfigUserControl control, UserConfigViewModel viewModel, ComboBox languageComboBox, IReadOnlyList<TextBox> readonlyTextBoxes)
         {
             _window = window;
             Control = control;
             ViewModel = viewModel;
             LanguageComboBox = languageComboBox;
+            ReadonlyTextBoxes = readonlyTextBoxes;
         }
 
         public UserConfigUserControl Control { get; }
@@ -104,10 +131,13 @@ public sealed class UserConfigUserControlTests
 
         public ComboBox LanguageComboBox { get; }
 
+        public IReadOnlyList<TextBox> ReadonlyTextBoxes { get; }
+
         public IReadOnlyList<string> GetSectionHeaders()
         {
             return FindDescendants<TextBlock>(Control)
                 .Where(static textBlock => textBlock.FontWeight == FontWeights.SemiBold)
+                .Where(static textBlock => textBlock.Foreground is SolidColorBrush { Color: { } color } && color == (Color)ColorConverter.ConvertFromString("#FF365082"))
                 .Select(static textBlock => textBlock.Text)
                 .ToArray();
         }
@@ -130,7 +160,11 @@ public sealed class UserConfigUserControlTests
             var languageComboBox = FindDescendant<ComboBox>(control);
             Assert.NotNull(languageComboBox);
 
-            return new UserConfigUserControlHost(window, control, viewModel, languageComboBox!);
+            var readonlyTextBoxes = FindDescendants<TextBox>(control)
+                .Where(static textBox => textBox.IsReadOnly)
+                .ToArray();
+
+            return new UserConfigUserControlHost(window, control, viewModel, languageComboBox!, readonlyTextBoxes);
         }
 
         public void DrainDispatcher()
