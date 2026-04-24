@@ -78,13 +78,13 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                                                     VerticalAlignment="Center"
-                                                                     Text="{loc:Loc ClientAppInfoControl.ShutdownPointAddressLabel}" />
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc ClientAppInfoControl.ShutdownPointAddressLabel}" />
                         <TextBox Style="{StaticResource TextBoxExtend}"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
                                  Grid.Column="1"
                                  Text="{Binding ShutdownPointAddress, UpdateSourceTrigger=PropertyChanged}"
-                                                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.ShutdownPointAddressPlaceholder}" />
+                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.ShutdownPointAddressPlaceholder}" />
                     </Grid>
                 </StackPanel>
                 <StackPanel Grid.Column="1"
@@ -109,12 +109,12 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                                                     VerticalAlignment="Center"
-                                                                     Text="{loc:Loc ClientAppInfoControl.ResourceNumberLabel}" />
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc ClientAppInfoControl.ResourceNumberLabel}" />
                         <TextBox Style="{StaticResource TextBoxExtend}"
                                  Grid.Column="1"
                                  Text="{Binding ResourceNumber, UpdateSourceTrigger=PropertyChanged}"
-                                                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.ResourceNumberPlaceholder}" />
+                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.ResourceNumberPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -122,13 +122,13 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                                                     VerticalAlignment="Center"
-                                                                     Text="{loc:Loc ClientAppInfoControl.PlcIpAddressLabel}" />
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc ClientAppInfoControl.PlcIpAddressLabel}" />
                         <TextBox Style="{StaticResource TextBoxExtend}"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
                                  Grid.Column="1"
                                  Text="{Binding PlcIpAddress, UpdateSourceTrigger=PropertyChanged}"
-                                                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.PlcIpAddressPlaceholder}" />
+                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.PlcIpAddressPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0"
                           Visibility="{Binding IsSiemensRackVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -137,13 +137,13 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                                                     VerticalAlignment="Center"
-                                                                     Text="{loc:Loc ClientAppInfoControl.SiemensRackLabel}" />
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc ClientAppInfoControl.SiemensRackLabel}" />
                         <TextBox Style="{StaticResource TextBoxExtend}"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
                                  Grid.Column="1"
                                  Text="{Binding SiemensRack, UpdateSourceTrigger=PropertyChanged}"
-                                                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.SiemensRackPlaceholder}" />
+                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.SiemensRackPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0"
                           Visibility="{Binding IsSiemensSlotVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -152,13 +152,13 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                                                     VerticalAlignment="Center"
-                                                                     Text="{loc:Loc ClientAppInfoControl.SiemensSlotLabel}" />
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc ClientAppInfoControl.SiemensSlotLabel}" />
                         <TextBox Style="{StaticResource TextBoxExtend}"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
                                  Grid.Column="1"
                                  Text="{Binding SiemensSlot, UpdateSourceTrigger=PropertyChanged}"
-                                                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.SiemensSlotPlaceholder}" />
+                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.SiemensSlotPlaceholder}" />
                     </Grid>
                 </StackPanel>
                 <StackPanel Grid.Column="2">
@@ -182,12 +182,12 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                                                     VerticalAlignment="Center"
-                                                                     Text="{loc:Loc ClientAppInfoControl.EquipmentCodeLabel}" />
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc ClientAppInfoControl.EquipmentCodeLabel}" />
                         <TextBox Grid.Column="1"
                                  Style="{StaticResource TextBoxExtend}"
                                  Text="{Binding EquipmentCode, UpdateSourceTrigger=PropertyChanged}"
-                                                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.EquipmentCodePlaceholder}" />
+                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.EquipmentCodePlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
@@ -195,13 +195,13 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Left"
-                                                                     VerticalAlignment="Center"
-                                                                     Text="{loc:Loc ClientAppInfoControl.PlcPortLabel}" />
+                                   VerticalAlignment="Center"
+                                   Text="{loc:Loc ClientAppInfoControl.PlcPortLabel}" />
                         <TextBox Grid.Column="1"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
                                  Style="{StaticResource TextBoxExtend}"
                                  Text="{Binding PlcPort, UpdateSourceTrigger=PropertyChanged}"
-                                                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.PlcPortPlaceholder}" />
+                                 ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.PlcPortPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0"
                           Height="28">
@@ -234,15 +234,15 @@
                 </Grid.ColumnDefinitions>
                 <Button Width="120"
                         IsEnabled="{Binding IsImportLegacyConfigurationEnabled}"
-                    Click="OnImportLegacyConfigurationClicked"
-                    Content="{loc:Loc ClientAppInfoControl.ImportLegacyConfigurationButton}" />
+                        Click="OnImportLegacyConfigurationClicked"
+                        Content="{loc:Loc ClientAppInfoControl.ImportLegacyConfigurationButton}" />
                 <Button Grid.Column="1"
                         Width="80"
                         Margin="8 0 0 0"
                         IsEnabled="{Binding IsSaveClientAppInfoEnabled}"
                         Click="OnSaveClicked"
-                    Style="{StaticResource ButtonPrimary}"
-                    Content="{loc:Loc ClientAppInfoControl.SaveButton}" />
+                        Style="{StaticResource ButtonPrimary}"
+                        Content="{loc:Loc ClientAppInfoControl.SaveButton}" />
                 <Grid Grid.Column="2"
                       Margin="16 0 0 0"
                       VerticalAlignment="Center">
