@@ -21,6 +21,8 @@ namespace WearPartsControl.Views
         private bool _isExitRequested;
         private bool _isInTray;
         private bool _hasShownFirstTrayBalloonTip;
+        private WindowState _windowStateBeforeTray = WindowState.Normal;
+        private Rect _windowBoundsBeforeTray = Rect.Empty;
 
         public MainWindow(MainWindowViewModel viewModel, IServiceProvider serviceProvider, IAutoLogoutInteractionService autoLogoutInteractionService)
         {
@@ -148,6 +150,7 @@ namespace WearPartsControl.Views
 
         private void SendToTray(bool hideFromTaskbar, bool showFirstBalloonTip)
         {
+            CaptureWindowPlacementForTray();
             _isInTray = true;
             TrayNotifyIcon.Visibility = Visibility.Visible;
 
@@ -181,7 +184,7 @@ namespace WearPartsControl.Views
                 Show();
             }
 
-            WindowState = WindowState.Normal;
+            RestoreWindowPlacementFromTray();
             Activate();
             Topmost = true;
             Topmost = false;
@@ -264,6 +267,43 @@ namespace WearPartsControl.Views
                 LocalizedText.Get("MainWindowTrayContent.FirstMinimizeBalloonTitle"),
                 LocalizedText.Get("MainWindowTrayContent.FirstMinimizeBalloonMessage"),
                 HandyControl.Data.NotifyIconInfoType.Info);
+        }
+
+        private void CaptureWindowPlacementForTray()
+        {
+            var windowState = WindowState == WindowState.Minimized
+                ? _windowStateBeforeTray
+                : WindowState;
+
+            _windowStateBeforeTray = windowState == WindowState.Maximized
+                ? WindowState.Maximized
+                : WindowState.Normal;
+
+            var bounds = RestoreBounds;
+            if (bounds.Width > 0 && bounds.Height > 0)
+            {
+                _windowBoundsBeforeTray = bounds;
+                return;
+            }
+
+            _windowBoundsBeforeTray = new Rect(Left, Top, Width, Height);
+        }
+
+        private void RestoreWindowPlacementFromTray()
+        {
+            WindowState = WindowState.Normal;
+
+            if (_windowBoundsBeforeTray.Width > 0 && _windowBoundsBeforeTray.Height > 0)
+            {
+                Left = _windowBoundsBeforeTray.Left;
+                Top = _windowBoundsBeforeTray.Top;
+                Width = _windowBoundsBeforeTray.Width;
+                Height = _windowBoundsBeforeTray.Height;
+            }
+
+            WindowState = _windowStateBeforeTray == WindowState.Maximized
+                ? WindowState.Maximized
+                : WindowState.Normal;
         }
 
         private async Task RequestApplicationShutdownAsync(App app, string reason)

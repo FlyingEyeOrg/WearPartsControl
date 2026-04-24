@@ -167,6 +167,75 @@ public sealed class MainWindowTests
     }
 
     [Fact]
+    public void RestoreFromTray_ShouldRestoreNormalWindowBounds()
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+
+        WpfTestHost.Run(() =>
+        {
+            var autoLogoutInteractionService = new RecordingAutoLogoutInteractionService();
+            var window = CreateWindow(autoLogoutInteractionService);
+
+            try
+            {
+                window.Left = 120;
+                window.Top = 140;
+                window.Width = 980;
+                window.Height = 620;
+                window.Show();
+                WpfTestHost.DrainDispatcher();
+
+                InvokePrivate(window, "SendToTray", true, false);
+                InvokePrivate(window, "RestoreFromTray");
+                WpfTestHost.DrainDispatcher();
+
+                Assert.Equal(WindowState.Normal, window.WindowState);
+                Assert.Equal(120, window.Left, 1);
+                Assert.Equal(140, window.Top, 1);
+                Assert.Equal(980, window.Width, 1);
+                Assert.Equal(620, window.Height, 1);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }, ensureApplicationResources: true);
+    }
+
+    [Fact]
+    public void RestoreFromTray_ShouldRestoreMaximizedWindowState()
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+
+        WpfTestHost.Run(() =>
+        {
+            var autoLogoutInteractionService = new RecordingAutoLogoutInteractionService();
+            var window = CreateWindow(autoLogoutInteractionService);
+
+            try
+            {
+                window.Left = 160;
+                window.Top = 180;
+                window.Width = 900;
+                window.Height = 600;
+                window.Show();
+                window.WindowState = WindowState.Maximized;
+                WpfTestHost.DrainDispatcher();
+
+                InvokePrivate(window, "SendToTray", true, false);
+                InvokePrivate(window, "RestoreFromTray");
+                WpfTestHost.DrainDispatcher();
+
+                Assert.Equal(WindowState.Maximized, window.WindowState);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }, ensureApplicationResources: true);
+    }
+
+    [Fact]
     public void EnsureUserCanExit_WhenNotLoggedIn_ShouldReturnFalseAndShowWarning()
     {
         using var cultureScope = new TestCultureScope("en-US");
