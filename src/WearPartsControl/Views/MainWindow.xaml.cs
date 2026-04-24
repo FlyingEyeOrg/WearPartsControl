@@ -87,11 +87,6 @@ namespace WearPartsControl.Views
 
             e.Cancel = true;
 
-            if (!EnsureUserCanExit())
-            {
-                return;
-            }
-
             var result = ShowClosePrompt();
 
             if (result == MessageBoxResult.Cancel)
@@ -102,6 +97,11 @@ namespace WearPartsControl.Views
             if (result == MessageBoxResult.Yes)
             {
                 SendToTray(hideFromTaskbar: true, showFirstBalloonTip: true);
+                return;
+            }
+
+            if (!EnsureUserCanExit())
+            {
                 return;
             }
 
@@ -117,7 +117,11 @@ namespace WearPartsControl.Views
 
             if (WindowState == WindowState.Minimized)
             {
-                SendToTray(hideFromTaskbar: false, showFirstBalloonTip: true);
+                if (!_isInTray)
+                {
+                    HideTrayIcon();
+                }
+
                 return;
             }
 

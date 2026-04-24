@@ -71,7 +71,7 @@ public sealed class MainWindowTests
     }
 
     [Fact]
-    public void MinimizeToTray_ShouldKeepTaskbarButtonVisible_AndShowTrayIconOnce()
+    public void MinimizeWindow_ShouldNotAutomaticallySwitchToTray()
     {
         using var cultureScope = new TestCultureScope("en-US");
 
@@ -87,16 +87,46 @@ public sealed class MainWindowTests
                 WpfTestHost.DrainDispatcher();
 
                 var trayIcon = Assert.IsType<NotifyIcon>(window.FindName("TrayNotifyIcon"));
-                Assert.Equal(System.Windows.Visibility.Visible, trayIcon.Visibility);
+                Assert.Equal(System.Windows.Visibility.Collapsed, trayIcon.Visibility);
                 Assert.True(window.ShowInTaskbar);
-                Assert.True(GetPrivateField<bool>(window, "_isInTray"));
-                Assert.True(GetPrivateField<bool>(window, "_hasShownFirstTrayBalloonTip"));
+                Assert.False(GetPrivateField<bool>(window, "_isInTray"));
+                Assert.False(GetPrivateField<bool>(window, "_hasShownFirstTrayBalloonTip"));
 
                 window.WindowState = WindowState.Normal;
                 WpfTestHost.DrainDispatcher();
 
                 Assert.Equal(System.Windows.Visibility.Collapsed, trayIcon.Visibility);
                 Assert.False(GetPrivateField<bool>(window, "_isInTray"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        }, ensureApplicationResources: true);
+    }
+
+    [Fact]
+    public void SendToTray_FromCloseAction_ShouldShowTrayIconAndFirstBalloonFlag()
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+
+        WpfTestHost.Run(() =>
+        {
+            var autoLogoutInteractionService = new RecordingAutoLogoutInteractionService();
+            var window = CreateWindow(autoLogoutInteractionService);
+
+            try
+            {
+                window.Show();
+                InvokePrivate(window, "SendToTray", true, true);
+                WpfTestHost.DrainDispatcher();
+
+                var trayIcon = Assert.IsType<NotifyIcon>(window.FindName("TrayNotifyIcon"));
+                Assert.Equal(System.Windows.Visibility.Visible, trayIcon.Visibility);
+                Assert.False(window.ShowInTaskbar);
+                Assert.False(window.IsVisible);
+                Assert.True(GetPrivateField<bool>(window, "_isInTray"));
+                Assert.True(GetPrivateField<bool>(window, "_hasShownFirstTrayBalloonTip"));
             }
             finally
             {
