@@ -98,6 +98,7 @@
                                       Style="{StaticResource TabItemButtonStyle}">
                             <Border Padding="12,10">
                                 <TextBlock FontSize="16"
+                                           TextTrimming="CharacterEllipsis"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
                                            Text="{Binding .}" />
