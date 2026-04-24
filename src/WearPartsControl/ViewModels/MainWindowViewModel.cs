@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
+using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -22,6 +23,7 @@ namespace WearPartsControl.ViewModels
         private static readonly object PlaceholderContent = new();
 
         private string? _selectedTabHeader;
+        private readonly ILocalizationService _localizationService;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILoginService _loginService;
         private readonly IAppSettingsService _appSettingsService;
@@ -31,7 +33,9 @@ namespace WearPartsControl.ViewModels
         private readonly ILoginSessionStateMachine _loginSessionStateMachine;
         private readonly IUiDispatcher _uiDispatcher;
         private readonly IAppStartupCoordinator _appStartupCoordinator;
-        private readonly IReadOnlyList<string> _allTabs;
+        private string[] _allTabs;
+        private string _title = string.Empty;
+        private string _softwareVersionText = string.Empty;
         private bool _isStartupBusy;
         private string _startupLoadingText = string.Empty;
         private string _currentUserWorkIdText = LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserWorkIdEmpty");
@@ -56,7 +60,7 @@ namespace WearPartsControl.ViewModels
             IUiDispatcher uiDispatcher,
             IAppStartupCoordinator appStartupCoordinator)
         {
-            Title = localizationService["MainWindow.Title"];
+            _localizationService = localizationService;
             TabChangedCommand = new RelayCommand<int>(OnTabChanged);
             OpenLoginCommand = new RelayCommand(OnOpenLoginRequested);
             LogoutCommand = new AsyncRelayCommand(LogoutAsync, CanLogout);
@@ -70,19 +74,27 @@ namespace WearPartsControl.ViewModels
             _appStartupCoordinator = appStartupCoordinator;
             _selectedContent = PlaceholderContent;
             _appSettingsService = appSettingsService;
-            _allTabs = localizationService.Catalog.MainWindow.Tabs.ToArray();
+            _allTabs = Array.Empty<string>();
 
-            SoftwareVersionText = LocalizedText.Format("ViewModels.MainWindowVm.SoftwareVersion", ResolveVersion());
+            RefreshLocalizedShellState(refreshSelectedContent: false);
             _loginSessionStateMachine.StateChanged += OnLoginSessionStateChanged;
             _appSettingsService.SettingsSaved += OnAppSettingsSaved;
             _uiBusyService.PropertyChanged += OnUiBusyServicePropertyChanged;
+            WeakEventManager<LocalizationBindingSource, EventArgs>.AddHandler(
+                LocalizationBindingSource.Instance,
+                nameof(LocalizationBindingSource.Refreshed),
+                OnLocalizationRefreshed);
             ApplyLoginState(_loginSessionStateMachine.Current);
             ApplyClientAppInfoState(false);
         }
 
         public event EventHandler? LoginRequested;
 
-        public string Title { get; set; }
+        public string Title
+        {
+            get => _title;
+            private set => SetProperty(ref _title, value);
+        }
 
         public string CurrentUserWorkIdText
         {
@@ -96,7 +108,11 @@ namespace WearPartsControl.ViewModels
             private set => SetProperty(ref _currentUserAccessLevelText, value);
         }
 
-        public string SoftwareVersionText { get; }
+        public string SoftwareVersionText
+        {
+            get => _softwareVersionText;
+            private set => SetProperty(ref _softwareVersionText, value);
+        }
 
         public bool IsBusy => _isStartupBusy || _uiBusyService.IsBusy;
 
@@ -336,6 +352,11 @@ namespace WearPartsControl.ViewModels
             }
         }
 
+        private void OnLocalizationRefreshed(object? sender, EventArgs e)
+        {
+            _uiDispatcher.Run(() => RefreshLocalizedShellState(refreshSelectedContent: true));
+        }
+
         private void ApplyLoginState(LoginSessionState state)
         {
             var wasLoggedIn = IsLoggedIn;
@@ -358,6 +379,24 @@ namespace WearPartsControl.ViewModels
                 currentUser.AccessLevel,
                 remaining.ToString("mm\\:ss"));
             RefreshSelectedContentForCurrentStateIfNeeded(wasLoggedIn, IsLoggedIn);
+        }
+
+        private void RefreshLocalizedShellState(bool refreshSelectedContent)
+        {
+            Title = _localizationService["MainWindow.Title"];
+            SoftwareVersionText = LocalizedText.Format("ViewModels.MainWindowVm.SoftwareVersion", ResolveVersion());
+            _allTabs = _localizationService.Catalog.MainWindow.Tabs.ToArray();
+
+            var visibleTabs = GetVisibleTabs().ToArray();
+            Tabs = visibleTabs;
+            EnsureSelectedTabIndexIsValid(visibleTabs);
+
+            if (_isClientAppInfoConfigured && refreshSelectedContent && Volatile.Read(ref _initializeStarted) == 1)
+            {
+                SelectedContent = ResolveTabContent(_selectedTabIndex);
+            }
+
+            ApplyLoginState(_loginSessionStateMachine.Current);
         }
 
         private void ApplyClientAppInfoState(bool isConfigured, bool refreshSelectedContent = true)
@@ -475,7 +514,7 @@ namespace WearPartsControl.ViewModels
         {
             if (!_isClientAppInfoConfigured)
             {
-                return _allTabs.Count > 1
+                return _allTabs.Length > 1
                     ? new[] { _allTabs[1] }
                     : _allTabs.ToArray();
             }

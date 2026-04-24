@@ -514,6 +514,32 @@ public sealed class MainWindowViewModelTests : IDisposable
         Assert.Equal(1, appSettingsService.GetAsyncCallCount);
     }
 
+    [Fact]
+    public async Task LocalizationRefresh_ShouldUpdateShellTextsAndTabs()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+        var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
+
+        await viewModel.InitializeAsync();
+        var chineseTitle = viewModel.Title;
+        var chineseFirstTab = viewModel.Tabs.First();
+
+        using var _ = new TestCultureScope("en-US");
+        LocalizationBindingSource.Instance.Refresh();
+
+        Assert.NotEqual(chineseTitle, viewModel.Title);
+        Assert.NotEqual(chineseFirstTab, viewModel.Tabs.First());
+        Assert.Equal(LocalizedText.Get("MainWindow.Title"), viewModel.Title);
+        Assert.Equal(LocalizedText.Format("ViewModels.MainWindowVm.SoftwareVersion", ResolveVersionText()), viewModel.SoftwareVersionText);
+    }
+
     public void Dispose()
     {
         _cultureScope.Dispose();
@@ -611,6 +637,19 @@ public sealed class MainWindowViewModelTests : IDisposable
         Assert.True(predicate());
     }
 
+    private static string ResolveVersionText()
+    {
+        var version = typeof(MainWindowViewModel).Assembly.GetName().Version;
+        if (version is null)
+        {
+            return "--";
+        }
+
+        return version.Build >= 0
+            ? version.ToString(3)
+            : version.ToString();
+    }
+
     private static MainWindowViewModel CreateViewModel(
         CurrentUserAccessor accessor,
         StubLoginService loginService,
@@ -684,9 +723,9 @@ public sealed class MainWindowViewModelTests : IDisposable
 
     private sealed class StubLocalizationService : ILocalizationService
     {
-        public string this[string name] => name;
+        public string this[string name] => LocalizedText.Get(name);
 
-        public LocalizationCatalog Catalog { get; } = new(static key => key);
+        public LocalizationCatalog Catalog { get; } = new(LocalizedText.Get);
 
         public ValueTask InitializeAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
 

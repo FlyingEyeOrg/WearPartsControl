@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ViewModels;
 using Xunit;
 
@@ -28,5 +30,29 @@ public sealed class NeedLoginViewModelTests
         Assert.Equal("Login Required", viewModel.Title);
         Assert.Equal("You need to log in before viewing or operating on this page.", viewModel.Description);
         Assert.Equal("Use the login entry in the top-right corner, then return to the current page.", viewModel.Hint);
+    }
+
+    [Fact]
+    public void Refresh_WhenCultureChanges_ShouldRaisePropertyChangedForLocalizedTexts()
+    {
+        using var _ = new TestCultureScope("zh-CN");
+        var viewModel = new NeedLoginViewModel();
+        var changedProperties = new List<string>();
+
+        viewModel.PropertyChanged += (_, args) =>
+        {
+            if (!string.IsNullOrWhiteSpace(args.PropertyName))
+            {
+                changedProperties.Add(args.PropertyName!);
+            }
+        };
+
+        using var __ = new TestCultureScope("en-US");
+        LocalizationBindingSource.Instance.Refresh();
+
+        Assert.Contains(nameof(NeedLoginViewModel.Title), changedProperties);
+        Assert.Contains(nameof(NeedLoginViewModel.Description), changedProperties);
+        Assert.Contains(nameof(NeedLoginViewModel.Hint), changedProperties);
+        Assert.Equal("Login Required", viewModel.Title);
     }
 }

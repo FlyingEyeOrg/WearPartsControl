@@ -49,5 +49,6 @@ dotnet run --project tools/LocalizationResourceGenerator/LocalizationResourceGen
 - PLC 相关用户可见异常、状态文案和日志模板现已分别放在 `PlcService.Errors`、`Services.PlcStartupConnection`、`Services.PlcConfigurationMonitor`、`Services.PlcPipeline` 节下；新增资源时避免再次创建同名节。
 - `App.xaml.cs` 中的用户可见文本也应放入本地化资源，当前已使用 `FriendlyErrorTitle`、`UnexpectedError` 和 `App.LegacyImportCompletedTitle`。
 - 语言首选项当前以 `user-config.json` 中的 `Language` 字段为主保存与恢复；启动时仍兼容读取旧的 `localization-options.json`，并会自动迁移后删除旧文件。
+- 已显示界面如果绑定的是 ViewModel 缓存属性而不是 `loc:Loc`，切换语言后还需要监听 `LocalizationBindingSource.Refreshed` 并主动触发 `PropertyChanged`，否则 UI 会停留在旧语言。
 
 如需我把这段内容合并回根 README.md，我可以替你把这部分追加进去并提交。
