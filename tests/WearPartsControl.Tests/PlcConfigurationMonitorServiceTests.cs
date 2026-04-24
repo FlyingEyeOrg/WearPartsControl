@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PlcService;
 using Xunit;
 
@@ -101,6 +102,7 @@ public sealed class PlcConfigurationMonitorServiceTests
 
         plcService.ThrowOnConnect = new InvalidOperationException("network down");
         clientAppInfoService.Current = CreateClientAppInfoModel(ipAddress: "192.168.0.11");
+        var expectedMessage = LocalizedText.Format("Services.PlcStartupConnection.ReconfiguredFailedKeepCurrent", "network down");
 
         await appSettingsService.SaveAsync(new AppSettings
         {
@@ -108,10 +110,11 @@ public sealed class PlcConfigurationMonitorServiceTests
             ResourceNumber = clientAppInfoService.Current.ResourceNumber
         });
 
-        await WaitForAsync(() => connectionStatusService.Current.Message.Contains("保留当前连接", StringComparison.Ordinal));
+        await WaitForAsync(() => string.Equals(connectionStatusService.Current.Message, expectedMessage, StringComparison.Ordinal));
 
         Assert.Equal(2, plcService.ConnectCalls.Count);
         Assert.Equal(PlcStartupConnectionStatus.Connected, connectionStatusService.Current.Status);
+        Assert.Equal(expectedMessage, connectionStatusService.Current.Message);
         Assert.True(plcService.IsConnected);
     }
 

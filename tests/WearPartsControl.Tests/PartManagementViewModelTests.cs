@@ -30,7 +30,9 @@ public sealed class PartManagementViewModelTests
 
         Assert.Equal("E:\\legacy\\Data.db", legacyImportService.LastPath);
         Assert.Equal(2, result.ImportedWearPartDefinitions);
-        Assert.Contains("新增 2 条", viewModel.StatusMessage);
+        Assert.Equal(
+            LocalizedText.Format("ViewModels.PartManagementVm.ImportedLegacyDefinitions", 2, 1, 0),
+            viewModel.StatusMessage);
         Assert.True(uiDispatcher.RenderCount >= 2);
     }
 

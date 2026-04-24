@@ -136,7 +136,7 @@ public sealed class PartUpdateRecordViewModelTests
         viewModel.ExportCommand.Execute(null);
 
         Assert.NotNull(raised);
-        Assert.Contains("名称,更换原因,当前编码,新编码", raised!.Content);
+        Assert.Contains(LocalizedText.Get("ViewModels.PartUpdateRecordVm.ExportCsvHeader"), raised!.Content);
         Assert.Contains("刀具A", raised.Content);
         Assert.Contains("NB-1", raised.Content);
         Assert.Contains("过程损坏", raised.Content);

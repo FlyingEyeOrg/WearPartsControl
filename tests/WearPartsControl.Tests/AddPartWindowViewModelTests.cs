@@ -22,7 +22,9 @@ public sealed class AddPartWindowViewModelTests
         Assert.Equal("FLOAT", viewModel.WarningValueDataType);
         Assert.Equal("FLOAT", viewModel.ShutdownValueDataType);
         Assert.Equal("Count", viewModel.LifetimeType);
-        Assert.Equal("计次", Assert.Single(viewModel.LifetimeTypes, option => option.Code == "Count").DisplayName);
+        Assert.Equal(
+            LocalizedText.Get("ViewModels.WearPartEditorVm.LifetimeTypeCount"),
+            Assert.Single(viewModel.LifetimeTypes, option => option.Code == "Count").DisplayName);
         Assert.Equal("0", viewModel.CodeMinLength);
         Assert.Equal("0", viewModel.CodeMaxLength);
         Assert.False(viewModel.IsShutdown);
