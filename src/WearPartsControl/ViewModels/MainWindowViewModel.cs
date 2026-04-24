@@ -14,6 +14,7 @@ using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.ApplicationServices.Startup;
+using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.UserControls;
 
 namespace WearPartsControl.ViewModels
@@ -27,6 +28,7 @@ namespace WearPartsControl.ViewModels
         private readonly IServiceProvider _serviceProvider;
         private readonly ILoginService _loginService;
         private readonly IAppSettingsService _appSettingsService;
+        private readonly IUserConfigService _userConfigService;
         private readonly IClientAppInfoService _clientAppInfoService;
         private readonly IUiBusyService _uiBusyService;
         private readonly IPlcStartupConnectionService _plcStartupConnectionService;
@@ -47,6 +49,7 @@ namespace WearPartsControl.ViewModels
         private int _selectedTabIndex;
         private int _initializeStarted;
         private bool _defaultContentPending;
+        private bool _isSynchronizingLocalizationCulture;
         private string _procedureCode = string.Empty;
 
         public MainWindowViewModel(
@@ -54,6 +57,7 @@ namespace WearPartsControl.ViewModels
             IServiceProvider serviceProvider,
             ILoginService loginService,
             IAppSettingsService appSettingsService,
+            IUserConfigService userConfigService,
             IClientAppInfoService clientAppInfoService,
             IUiBusyService uiBusyService,
             IPlcStartupConnectionService plcStartupConnectionService,
@@ -68,6 +72,7 @@ namespace WearPartsControl.ViewModels
             _serviceProvider = serviceProvider;
             _loginService = loginService;
             _uiBusyService = uiBusyService;
+            _userConfigService = userConfigService;
             _clientAppInfoService = clientAppInfoService;
             _plcStartupConnectionService = plcStartupConnectionService;
             _loginSessionStateMachine = loginSessionStateMachine;
@@ -390,6 +395,8 @@ namespace WearPartsControl.ViewModels
 
         private void RefreshLocalizedShellState(bool refreshSelectedContent)
         {
+            EnsureLocalizationCultureMatchesUserConfig();
+
             Title = _localizationService["MainWindow.Title"];
             BrandTitle = _localizationService["MainWindowView.BrandTitle"];
             SoftwareVersionText = LocalizedText.Format("ViewModels.MainWindowVm.SoftwareVersion", ResolveVersion());
@@ -405,6 +412,31 @@ namespace WearPartsControl.ViewModels
             }
 
             ApplyLoginState(_loginSessionStateMachine.Current);
+        }
+
+        private void EnsureLocalizationCultureMatchesUserConfig()
+        {
+            if (_isSynchronizingLocalizationCulture)
+            {
+                return;
+            }
+
+            var configuredLanguage = _userConfigService.GetAsync().GetAwaiter().GetResult().Language;
+            if (string.IsNullOrWhiteSpace(configuredLanguage)
+                || string.Equals(_localizationService.CurrentCulture.Name, configuredLanguage, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            _isSynchronizingLocalizationCulture = true;
+            try
+            {
+                _localizationService.SetCultureAsync(configuredLanguage).GetAwaiter().GetResult();
+            }
+            finally
+            {
+                _isSynchronizingLocalizationCulture = false;
+            }
         }
 
         private void ApplyClientAppInfoState(bool isConfigured, bool refreshSelectedContent = true)

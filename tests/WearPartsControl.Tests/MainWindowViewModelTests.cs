@@ -12,6 +12,7 @@ using WearPartsControl.ApplicationServices.Localization.Generated;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.ApplicationServices.Startup;
+using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.UserControls;
 using WearPartsControl.ViewModels;
 using Xunit;
@@ -544,6 +545,40 @@ public sealed class MainWindowViewModelTests : IDisposable
     }
 
     [Fact]
+    public void Constructor_ShouldSynchronizeLocalizationCultureFromUserConfigBeforeRefreshingShellState()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+        var localizationService = new MutableLocalizationService("zh-CN");
+        var userConfigService = new StubUserConfigService
+        {
+            Current = new UserConfig
+            {
+                Language = "en-US"
+            }
+        };
+
+        var viewModel = CreateViewModel(
+            new CurrentUserAccessor(),
+            new StubLoginService(),
+            appSettingsService,
+            new UiBusyService(),
+            new StubPlcStartupConnectionService(),
+            localizationService: localizationService,
+            userConfigService: userConfigService);
+
+        Assert.Equal("en-US", localizationService.CurrentCulture.Name);
+        Assert.Equal("en-US", localizationService.LastSetCultureName);
+        Assert.Equal(LocalizedText.Get("MainWindow.Title"), viewModel.Title);
+    }
+
+    [Fact]
     public async Task LocalizationRefresh_WhenUserConfigTabSelected_ShouldNotRecreateSelectedContent()
     {
         var appSettingsService = new StubAppSettingsService
@@ -697,14 +732,17 @@ public sealed class MainWindowViewModelTests : IDisposable
         Func<TimeSpan, CancellationToken, Task>? delayAsync = null,
         StubServiceProvider? serviceProvider = null,
         StubAppStartupCoordinator? appStartupCoordinator = null,
-        StubClientAppInfoService? clientAppInfoService = null)
+        StubClientAppInfoService? clientAppInfoService = null,
+        ILocalizationService? localizationService = null,
+        StubUserConfigService? userConfigService = null)
     {
         var stateMachine = new LoginSessionStateMachine(accessor, loginService, delayAsync);
         return new MainWindowViewModel(
-            new StubLocalizationService(),
+            localizationService ?? new StubLocalizationService(),
             serviceProvider ?? new StubServiceProvider(),
             loginService,
             appSettingsService,
+            userConfigService ?? new StubUserConfigService(),
             clientAppInfoService ?? new StubClientAppInfoService(),
             uiBusyService,
             startupConnectionService,
@@ -770,6 +808,61 @@ public sealed class MainWindowViewModelTests : IDisposable
         public ValueTask SetCultureAsync(string cultureName, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
 
         public CultureInfo CurrentCulture { get; } = CultureInfo.InvariantCulture;
+    }
+
+    private sealed class MutableLocalizationService : ILocalizationService
+    {
+        public MutableLocalizationService(string cultureName)
+        {
+            CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
+            ApplyCulture(CurrentCulture);
+        }
+
+        public string this[string name] => LocalizedText.Get(name);
+
+        public LocalizationCatalog Catalog => new(LocalizedText.Get);
+
+        public CultureInfo CurrentCulture { get; private set; }
+
+        public string? LastSetCultureName { get; private set; }
+
+        public ValueTask InitializeAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+
+        public ValueTask SetCultureAsync(string cultureName, CancellationToken cancellationToken = default)
+        {
+            LastSetCultureName = cultureName;
+            CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
+            ApplyCulture(CurrentCulture);
+            LocalizationBindingSource.Instance.Refresh();
+            return ValueTask.CompletedTask;
+        }
+
+        private static void ApplyCulture(CultureInfo culture)
+        {
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentUICulture = culture;
+        }
+    }
+
+    private sealed class StubUserConfigService : IUserConfigService
+    {
+        public UserConfig Current { get; set; } = new();
+
+        public ValueTask<UserConfig> GetAsync(CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(new UserConfig
+            {
+                Language = Current.Language
+            });
+        }
+
+        public ValueTask SaveAsync(UserConfig config, CancellationToken cancellationToken = default)
+        {
+            Current = config;
+            return ValueTask.CompletedTask;
+        }
     }
 
     private sealed class StubServiceProvider : IServiceProvider
