@@ -33,9 +33,8 @@
                            Text="{loc:Loc UserConfigControl.LanguageLabel}" />
                 <ComboBox Grid.Column="1"
                           Style="{StaticResource ComboBoxExtend}"
-                          ItemsSource="{Binding LanguageOptions}"
-                          SelectedValue="{Binding SelectedLanguage, UpdateSourceTrigger=PropertyChanged}"
-                          SelectedValuePath="Code"
+                          ItemsSource="{Binding LanguageOptions, Mode=OneWay}"
+                          SelectedItem="{Binding SelectedLanguageOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           DisplayMemberPath="DisplayName"
                           hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.LanguagePlaceholder}" />
             </Grid>

@@ -19,6 +19,8 @@ public sealed class UserConfigViewModel : ObservableObject
     private readonly IUiDispatcher _uiDispatcher;
     private readonly IUiBusyService _uiBusyService;
     private UserConfigSnapshot _originalSnapshot = UserConfigSnapshot.Empty;
+    private ObservableCollection<LanguageOption> _languageOptions = new();
+    private LanguageOption? _selectedLanguageOption;
     private bool _isBusy;
     private bool _isDirty;
     private bool _isInitialized;
@@ -56,11 +58,15 @@ public sealed class UserConfigViewModel : ObservableObject
         _uiBusyService = uiBusyService;
         SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
         TestComNotificationCommand = new AsyncRelayCommand(TestComNotificationAsync, CanTestComNotification);
-        RefreshLanguageOptions();
         _selectedLanguage = _localizationService.CurrentCulture.Name;
+        RefreshLanguageOptions();
     }
 
-    public ObservableCollection<LanguageOption> LanguageOptions { get; } = new();
+    public ObservableCollection<LanguageOption> LanguageOptions
+    {
+        get => _languageOptions;
+        private set => SetProperty(ref _languageOptions, value);
+    }
 
     public IAsyncRelayCommand SaveCommand { get; }
 
@@ -106,6 +112,36 @@ public sealed class UserConfigViewModel : ObservableObject
         set
         {
             if (SetProperty(ref _selectedLanguage, value))
+            {
+                SyncSelectedLanguageOption();
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public LanguageOption? SelectedLanguageOption
+    {
+        get => _selectedLanguageOption;
+        set
+        {
+            if (!SetProperty(ref _selectedLanguageOption, value))
+            {
+                return;
+            }
+
+            if (_isUpdatingState)
+            {
+                return;
+            }
+
+            if (value is null)
+            {
+                RestoreSelectedLanguageOption();
+                return;
+            }
+
+            var nextLanguage = value?.Code ?? string.Empty;
+            if (SetProperty(ref _selectedLanguage, nextLanguage, nameof(SelectedLanguage)))
             {
                 UpdateDirtyState();
             }
@@ -417,9 +453,47 @@ public sealed class UserConfigViewModel : ObservableObject
 
     private void RefreshLanguageOptions()
     {
-        LanguageOptions.Clear();
-        LanguageOptions.Add(new LanguageOption("zh-CN", LocalizedText.Get("ViewModels.UserConfigVm.LanguageZhCn")));
-        LanguageOptions.Add(new LanguageOption("en-US", LocalizedText.Get("ViewModels.UserConfigVm.LanguageEnUs")));
+        LanguageOptions = new ObservableCollection<LanguageOption>
+        {
+            new("zh-CN", LocalizedText.Get("ViewModels.UserConfigVm.LanguageZhCn")),
+            new("en-US", LocalizedText.Get("ViewModels.UserConfigVm.LanguageEnUs"))
+        };
+
+        SyncSelectedLanguageOption();
+    }
+
+    private void SyncSelectedLanguageOption()
+    {
+        var selectedOption = LanguageOptions.FirstOrDefault(option => string.Equals(option.Code, _selectedLanguage, StringComparison.Ordinal));
+
+        _isUpdatingState = true;
+        try
+        {
+            SelectedLanguageOption = selectedOption;
+        }
+        finally
+        {
+            _isUpdatingState = false;
+        }
+    }
+
+    private void RestoreSelectedLanguageOption()
+    {
+        var selectedOption = LanguageOptions.FirstOrDefault(option => string.Equals(option.Code, _selectedLanguage, StringComparison.Ordinal));
+        if (selectedOption is null)
+        {
+            return;
+        }
+
+        _isUpdatingState = true;
+        try
+        {
+            SelectedLanguageOption = selectedOption;
+        }
+        finally
+        {
+            _isUpdatingState = false;
+        }
     }
 
     private UserConfig BuildConfig()
