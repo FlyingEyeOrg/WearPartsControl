@@ -23,14 +23,14 @@ public sealed class UserConfigUserControlTests
     [Fact]
     public void UserConfigUserControl_ShouldLoadAndKeepLanguageSelectionAfterSave()
     {
+        using var cultureScope = new TestCultureScope("zh-CN");
+
         WpfTestHost.Run(() =>
         {
             using var host = UserConfigUserControlHost.Create(CreateViewModel());
 
             Assert.NotNull(host.Control);
             Assert.Equal(2, host.LanguageComboBox.Items.Count);
-            Assert.Equal("语言配置", host.GetSectionHeaders()[0]);
-            Assert.Equal("通知配置", host.GetSectionHeaders()[1]);
 
             host.ViewModel.SelectedLanguage = "en-US";
             host.ViewModel.SaveCommand.ExecuteAsync(null).GetAwaiter().GetResult();
@@ -42,6 +42,8 @@ public sealed class UserConfigUserControlTests
             Assert.Equal("en-US", ((UserConfigViewModel.LanguageOption)host.LanguageComboBox.SelectedItem!).Code);
             Assert.Equal(new[] { "zh-CN", "en-US" }, host.ViewModel.LanguageOptions.Select(static option => option.Code).ToArray());
             Assert.Equal(new[] { "Simplified Chinese", "English" }, host.ViewModel.LanguageOptions.Select(static option => option.DisplayName).ToArray());
+            Assert.Equal("Language Settings", host.GetSectionHeaders()[0]);
+            Assert.Equal("Notification Settings", host.GetSectionHeaders()[1]);
         }, ensureApplicationResources: true);
     }
 
@@ -161,6 +163,7 @@ public sealed class UserConfigUserControlTests
         {
             CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
             ApplyCulture(CurrentCulture);
+            LocalizationBindingSource.Instance.Refresh();
             return ValueTask.CompletedTask;
         }
 

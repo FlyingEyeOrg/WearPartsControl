@@ -294,7 +294,7 @@ namespace WearPartsControl.ViewModels
         {
             _selectedTabIndex = index;
             SelectedTabHeader = GetVisibleTabs().ElementAtOrDefault(index);
-            SelectedContent = ResolveTabContent(index);
+            UpdateSelectedContent(index);
         }
 
         private void OnOpenLoginRequested()
@@ -393,7 +393,7 @@ namespace WearPartsControl.ViewModels
 
             if (_isClientAppInfoConfigured && refreshSelectedContent && Volatile.Read(ref _initializeStarted) == 1)
             {
-                SelectedContent = ResolveTabContent(_selectedTabIndex);
+                UpdateSelectedContent(_selectedTabIndex);
             }
 
             ApplyLoginState(_loginSessionStateMachine.Current);
@@ -407,11 +407,20 @@ namespace WearPartsControl.ViewModels
             if (isConfigured)
             {
                 Tabs = visibleTabs;
-                _defaultContentPending = true;
                 EnsureSelectedTabIndexIsValid(visibleTabs);
-                if (refreshSelectedContent && Volatile.Read(ref _initializeStarted) == 1)
+
+                if (ReferenceEquals(SelectedContent, PlaceholderContent))
                 {
+                    _defaultContentPending = true;
                     EnsureDefaultContentLoaded();
+                }
+                else
+                {
+                    _defaultContentPending = false;
+                    if (refreshSelectedContent && Volatile.Read(ref _initializeStarted) == 1)
+                    {
+                        UpdateSelectedContent(_selectedTabIndex);
+                    }
                 }
 
                 return;
@@ -421,7 +430,7 @@ namespace WearPartsControl.ViewModels
             Tabs = visibleTabs;
             _selectedTabIndex = 0;
             SelectedTabHeader = visibleTabs.ElementAtOrDefault(0);
-            SelectedContent = _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
+            UpdateSelectedContent(typeof(ClientAppInfoUserControl));
         }
 
         private void EnsureDefaultContentLoaded()
@@ -432,7 +441,7 @@ namespace WearPartsControl.ViewModels
             }
 
             EnsureSelectedTabIndexIsValid(GetVisibleTabs().ToArray());
-            SelectedContent = ResolveTabContent(_selectedTabIndex);
+            UpdateSelectedContent(_selectedTabIndex);
             _defaultContentPending = false;
         }
 
@@ -453,20 +462,35 @@ namespace WearPartsControl.ViewModels
                 return;
             }
 
-            SelectedContent = ResolveTabContent(_selectedTabIndex);
+            UpdateSelectedContent(_selectedTabIndex);
         }
 
-        private object ResolveTabContent(int index)
+        private void UpdateSelectedContent(int index)
+        {
+            UpdateSelectedContent(ResolveTabContentType(index));
+        }
+
+        private void UpdateSelectedContent(Type contentType)
+        {
+            if (contentType.IsInstanceOfType(SelectedContent))
+            {
+                return;
+            }
+
+            SelectedContent = _serviceProvider.GetRequiredService(contentType);
+        }
+
+        private Type ResolveTabContentType(int index)
         {
             if (!_isClientAppInfoConfigured)
             {
-                return _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
+                return typeof(ClientAppInfoUserControl);
             }
 
             var visibleTabs = GetVisibleTabs().ToArray();
             if (visibleTabs.Length == 0)
             {
-                return _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
+                return typeof(ClientAppInfoUserControl);
             }
 
             if (index < 0 || index >= visibleTabs.Length)
@@ -479,35 +503,35 @@ namespace WearPartsControl.ViewModels
 
             if (!IsLoggedIn && index != 1)
             {
-                return _serviceProvider.GetRequiredService<NeedLoginUserControl>();
+                return typeof(NeedLoginUserControl);
             }
 
             if (string.Equals(tabHeader, _allTabs[1], StringComparison.Ordinal))
             {
-                return _serviceProvider.GetRequiredService<ClientAppInfoUserControl>();
+                return typeof(ClientAppInfoUserControl);
             }
 
             if (string.Equals(tabHeader, _allTabs[2], StringComparison.Ordinal))
             {
-                return _serviceProvider.GetRequiredService<PartManagementUserControl>();
+                return typeof(PartManagementUserControl);
             }
 
             if (string.Equals(tabHeader, _allTabs[3], StringComparison.Ordinal))
             {
-                return _serviceProvider.GetRequiredService<ToolChangeManagementUserControl>();
+                return typeof(ToolChangeManagementUserControl);
             }
 
             if (string.Equals(tabHeader, _allTabs[4], StringComparison.Ordinal))
             {
-                return _serviceProvider.GetRequiredService<PartUpdateRecordUserControl>();
+                return typeof(PartUpdateRecordUserControl);
             }
 
             if (string.Equals(tabHeader, _allTabs[5], StringComparison.Ordinal))
             {
-                return _serviceProvider.GetRequiredService<UserConfigUserControl>();
+                return typeof(UserConfigUserControl);
             }
 
-            return _serviceProvider.GetRequiredService<ReplacePartUserControl>();
+            return typeof(ReplacePartUserControl);
         }
 
         private IEnumerable<string> GetVisibleTabs()

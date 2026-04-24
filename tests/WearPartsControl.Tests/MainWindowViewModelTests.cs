@@ -540,6 +540,41 @@ public sealed class MainWindowViewModelTests : IDisposable
         Assert.Equal(LocalizedText.Format("ViewModels.MainWindowVm.SoftwareVersion", ResolveVersionText()), viewModel.SoftwareVersionText);
     }
 
+    [Fact]
+    public async Task LocalizationRefresh_WhenUserConfigTabSelected_ShouldNotRecreateSelectedContent()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+        var accessor = new CurrentUserAccessor();
+        var serviceProvider = new StubServiceProvider();
+        var viewModel = CreateViewModel(accessor, new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService(), serviceProvider: serviceProvider);
+
+        await viewModel.InitializeAsync();
+        accessor.SetCurrentUser(new MhrUser
+        {
+            CardId = "CARD-01",
+            WorkId = "WORK-02",
+            AccessLevel = 3
+        });
+
+        viewModel.TabChangedCommand.Execute(5);
+        var selectedContent = viewModel.SelectedContent;
+        var resolveCount = serviceProvider.GetResolveCount<UserConfigUserControl>();
+
+        using var _ = new TestCultureScope("en-US");
+        LocalizationBindingSource.Instance.Refresh();
+
+        Assert.Same(selectedContent, viewModel.SelectedContent);
+        Assert.Equal(resolveCount, serviceProvider.GetResolveCount<UserConfigUserControl>());
+        Assert.Equal(LocalizedText.Get("MainWindow.Title"), viewModel.Title);
+    }
+
     public void Dispose()
     {
         _cultureScope.Dispose();

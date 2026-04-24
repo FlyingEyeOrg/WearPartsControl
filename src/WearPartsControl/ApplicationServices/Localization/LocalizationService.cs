@@ -4,6 +4,7 @@ using System.Linq;
 using System.Resources;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using WearPartsControl.ApplicationServices.Localization.Generated;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.UserConfig;
@@ -61,11 +62,9 @@ public sealed class LocalizationService : ILocalizationService
         cultureName = NormalizeCultureName(cultureName);
 
         var culture = CultureInfo.GetCultureInfo(cultureName);
-        CultureInfo.CurrentCulture = culture;
-        CultureInfo.CurrentUICulture = culture;
         CultureInfo.DefaultThreadCurrentCulture = culture;
         CultureInfo.DefaultThreadCurrentUICulture = culture;
-        LocalizationBindingSource.Instance.Refresh();
+        ApplyCultureOnUiThread(culture);
 
         var userConfig = await _saveInfoStore.ReadAsync<UserConfigModel>(cancellationToken).ConfigureAwait(false);
         if (!string.Equals(userConfig.Language, culture.Name, StringComparison.Ordinal))
@@ -90,5 +89,32 @@ public sealed class LocalizationService : ILocalizationService
     private static string GetString(string name)
     {
         return ResourceManager.GetString(name, CultureInfo.CurrentUICulture) ?? name;
+    }
+
+    private static void ApplyCultureOnUiThread(CultureInfo culture)
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null)
+        {
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
+            LocalizationBindingSource.Instance.Refresh();
+            return;
+        }
+
+        if (dispatcher.CheckAccess())
+        {
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
+            LocalizationBindingSource.Instance.Refresh();
+            return;
+        }
+
+        dispatcher.Invoke(() =>
+        {
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
+            LocalizationBindingSource.Instance.Refresh();
+        });
     }
 }
