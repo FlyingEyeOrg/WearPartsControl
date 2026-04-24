@@ -1,10 +1,8 @@
 ﻿using System.Windows;
 using System.ComponentModel;
 using System.Windows.Input;
-using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using WearPartsControl.ApplicationServices.LoginService;
-using WearPartsControl.ApplicationServices.Startup;
 using WearPartsControl.ViewModels;
 
 namespace WearPartsControl.Views
@@ -17,7 +15,6 @@ namespace WearPartsControl.Views
         private readonly MainWindowViewModel _viewModel;
         private readonly IServiceProvider _serviceProvider;
         private readonly IAutoLogoutInteractionService _autoLogoutInteractionService;
-        private CancellationTokenSource? _startupCancellationTokenSource;
         private bool _isClosingIntercepted;
 
         public MainWindow(MainWindowViewModel viewModel, IServiceProvider serviceProvider, IAutoLogoutInteractionService autoLogoutInteractionService)
@@ -28,7 +25,6 @@ namespace WearPartsControl.Views
             DataContext = viewModel;
             InitializeComponent();
 
-            Loaded += OnMainWindowLoaded;
             Closing += OnMainWindowClosing;
             PreviewMouseDown += OnUserInteraction;
             PreviewKeyDown += OnUserKeyInteraction;
@@ -37,22 +33,9 @@ namespace WearPartsControl.Views
             Closed += OnMainWindowClosed;
         }
 
-        private async void OnMainWindowLoaded(object sender, RoutedEventArgs e)
+        public Task InitializeAsync(CancellationToken cancellationToken = default)
         {
-            Loaded -= OnMainWindowLoaded;
-            _startupCancellationTokenSource = new CancellationTokenSource();
-            StartupPerformanceTracker.Mark("主窗口 Loaded 事件触发");
-
-            try
-            {
-                await Dispatcher.Yield(DispatcherPriority.Background);
-                StartupPerformanceTracker.Mark("主窗口让出首帧渲染后继续初始化");
-                await _viewModel.InitializeAsync(_startupCancellationTokenSource.Token).ConfigureAwait(true);
-                StartupPerformanceTracker.Mark("主窗口视图模型初始化完成");
-            }
-            catch (OperationCanceledException)
-            {
-            }
+            return _viewModel.InitializeAsync(cancellationToken);
         }
 
         private void OnLoginRequested(object? sender, EventArgs e)
@@ -100,10 +83,6 @@ namespace WearPartsControl.Views
 
         private void OnMainWindowClosed(object? sender, EventArgs e)
         {
-            _startupCancellationTokenSource?.Cancel();
-            _startupCancellationTokenSource?.Dispose();
-            _startupCancellationTokenSource = null;
-            Loaded -= OnMainWindowLoaded;
             Closing -= OnMainWindowClosing;
             PreviewMouseDown -= OnUserInteraction;
             PreviewKeyDown -= OnUserKeyInteraction;

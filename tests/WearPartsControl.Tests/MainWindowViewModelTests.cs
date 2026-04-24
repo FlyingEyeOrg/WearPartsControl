@@ -529,14 +529,17 @@ public sealed class MainWindowViewModelTests : IDisposable
 
         await viewModel.InitializeAsync();
         var chineseTitle = viewModel.Title;
+        var chineseBrandTitle = viewModel.BrandTitle;
         var chineseFirstTab = viewModel.Tabs.First();
 
         using var _ = new TestCultureScope("en-US");
         LocalizationBindingSource.Instance.Refresh();
 
         Assert.NotEqual(chineseTitle, viewModel.Title);
+        Assert.NotEqual(chineseBrandTitle, viewModel.BrandTitle);
         Assert.NotEqual(chineseFirstTab, viewModel.Tabs.First());
         Assert.Equal(LocalizedText.Get("MainWindow.Title"), viewModel.Title);
+        Assert.Equal(LocalizedText.Get("MainWindowView.BrandTitle"), viewModel.BrandTitle);
         Assert.Equal(LocalizedText.Format("ViewModels.MainWindowVm.SoftwareVersion", ResolveVersionText()), viewModel.SoftwareVersionText);
     }
 

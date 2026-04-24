@@ -98,11 +98,13 @@ public partial class App : Application
 
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             StartupPerformanceTracker.Mark("主窗口解析完成");
+            _startupCancellationTokenSource = new CancellationTokenSource();
+            await mainWindow.InitializeAsync(_startupCancellationTokenSource.Token).ConfigureAwait(true);
+            StartupPerformanceTracker.Mark("主窗口视图模型初始化完成");
             MainWindow = mainWindow;
             mainWindow.Show();
             StartupPerformanceTracker.Mark("主窗口已显示（首屏）");
 
-            _startupCancellationTokenSource = new CancellationTokenSource();
             _hostStartTask = StartHostAsync(_host, _startupCancellationTokenSource.Token);
         }
         catch (Exception ex)

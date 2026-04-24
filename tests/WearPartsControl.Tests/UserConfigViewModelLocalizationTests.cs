@@ -42,6 +42,7 @@ public sealed class UserConfigViewModelLocalizationTests
         var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubComNotificationService(), localizationService, new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
 
         viewModel.SelectedLanguage = "en-US";
+        var selectedOption = viewModel.SelectedLanguageOption;
 
         await viewModel.SaveCommand.ExecuteAsync(null);
 
@@ -61,6 +62,7 @@ public sealed class UserConfigViewModelLocalizationTests
         Assert.Equal("en-US", viewModel.SelectedLanguage);
         Assert.NotNull(viewModel.SelectedLanguageOption);
         Assert.Equal("en-US", viewModel.SelectedLanguageOption!.Code);
+        Assert.Same(selectedOption, viewModel.SelectedLanguageOption);
     }
 
     [Fact]

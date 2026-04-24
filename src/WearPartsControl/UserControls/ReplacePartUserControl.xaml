@@ -10,8 +10,22 @@
              d:DesignHeight="450"
              d:DesignWidth="800"
              d:DataContext="{d:DesignInstance Type=vm:ReplacePartViewModel}">
+            <UserControl.Resources>
+            <Style x:Key="FormLabelTextBlockStyle"
+                   TargetType="TextBlock">
+                <Setter Property="VerticalAlignment"
+                    Value="Center" />
+                <Setter Property="Margin"
+                    Value="0 0 8 0" />
+                <Setter Property="TextWrapping"
+                    Value="Wrap" />
+                <Setter Property="MaxWidth"
+                    Value="140" />
+            </Style>
+            </UserControl.Resources>
     <ScrollViewer>
-        <Grid IsEnabled="{Binding IsTabContentEnabled}">
+            <Grid IsEnabled="{Binding IsTabContentEnabled}"
+                  Grid.IsSharedSizeScope="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -73,11 +87,11 @@
                     <StackPanel>
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="ReplacePartLabelColumn1" />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                        Text="{loc:Loc ReplacePartControl.MonitoringStatusLabel}" />
                             <TextBox IsReadOnly="True"
                                      Grid.Column="1"
@@ -87,11 +101,11 @@
                         </Grid>
                         <Grid Margin="0 8 0 0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="ReplacePartLabelColumn1" />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                        Text="{loc:Loc ReplacePartControl.CurrentPartLabel}" />
                             <ComboBox Grid.Column="1"
                                       ItemsSource="{Binding Definitions}"
@@ -106,11 +120,11 @@
                                 Margin="8 0">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="ReplacePartLabelColumn2" />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                        Text="{loc:Loc ReplacePartControl.CurrentValueLabel}" />
                             <TextBox IsReadOnly="True"
                                      Text="{Binding CurrentValue, Mode=OneWay, TargetNullValue=''}"
@@ -118,11 +132,11 @@
                         </Grid>
                         <Grid Margin="0 8 0 0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="ReplacePartLabelColumn2" />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                        Text="{loc:Loc ReplacePartControl.WarningValueLabel}" />
                             <TextBox IsReadOnly="True"
                                      Text="{Binding WarningValue, Mode=OneWay, TargetNullValue=''}"
@@ -130,11 +144,11 @@
                         </Grid>
                         <Grid Margin="0 8 0 0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="ReplacePartLabelColumn2" />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                        Text="{loc:Loc ReplacePartControl.ShutdownValueLabel}" />
                             <TextBox IsReadOnly="True"
                                      Text="{Binding ShutdownValue, Mode=OneWay, TargetNullValue=''}"
@@ -144,11 +158,11 @@
                     <StackPanel Grid.Column="2">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="ReplacePartLabelColumn3" />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                        Text="{loc:Loc ReplacePartControl.InputModeLabel}" />
                             <TextBox Grid.Column="1"
                                      IsReadOnly="True"
@@ -156,11 +170,11 @@
                         </Grid>
                         <Grid Margin="0 8 0 0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="ReplacePartLabelColumn3" />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                        Text="{loc:Loc ReplacePartControl.CodeMinLengthLabel}" />
                             <TextBox Grid.Column="1"
                                      IsReadOnly="True"
@@ -168,11 +182,11 @@
                         </Grid>
                         <Grid Margin="0 8 0 0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="ReplacePartLabelColumn3" />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <TextBlock HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                        Text="{loc:Loc ReplacePartControl.CodeMaxLengthLabel}" />
                             <TextBox Grid.Column="1"
                                      IsReadOnly="True"
@@ -187,11 +201,11 @@
                     </Grid.ColumnDefinitions>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ReplacePartLabelColumn4" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ReplacePartControl.CurrentBarcodeLabel}" />
                         <TextBox IsReadOnly="True"
                                  Text="{Binding LastBarcode, Mode=OneWay}"
@@ -200,11 +214,11 @@
                     <Grid Grid.Column="1"
                           Margin="8 0 0 0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ReplacePartLabelColumn5" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ReplacePartControl.ReplacementReasonLabel}" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding ReplacementReasons}"
@@ -217,11 +231,11 @@
                 <Grid Margin="8 8 8 0"
                       Visibility="{Binding IsToolValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="Auto"
+                                          SharedSizeGroup="ReplacePartWideLabelColumn" />
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
-                    <TextBlock HorizontalAlignment="Left"
-                               VerticalAlignment="Center"
+                    <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                Text="{loc:Loc ReplacePartControl.ToolCodeLabel}" />
                     <ComboBox Grid.Column="1"
                               ItemsSource="{Binding ToolCodeOptions}"
@@ -234,11 +248,11 @@
                 <Grid Margin="8 8 8 0"
                       Visibility="{Binding IsCoatingValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="Auto"
+                                          SharedSizeGroup="ReplacePartWideLabelColumn" />
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
-                    <TextBlock HorizontalAlignment="Left"
-                               VerticalAlignment="Center"
+                    <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                Text="{loc:Loc ReplacePartControl.AbSideLabel}" />
                     <ComboBox Grid.Column="1"
                               ItemsSource="{Binding AbSideOptions}"
@@ -253,11 +267,11 @@
                     </Grid.ColumnDefinitions>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ReplacePartLabelColumn6" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ReplacePartControl.NewBarcodeLabel}" />
                         <TextBox Style="{StaticResource TextBoxExtend}"
                                  Text="{Binding NewBarcode, UpdateSourceTrigger=PropertyChanged}"
@@ -267,11 +281,11 @@
                     <Grid Grid.Column="1"
                           Margin="8 0 0 0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ReplacePartLabelColumn7" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ReplacePartControl.RemarkLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding ReplacementMessage, UpdateSourceTrigger=PropertyChanged}"

@@ -33,12 +33,14 @@ public sealed class UserConfigUserControlTests
             Assert.Equal(2, host.LanguageComboBox.Items.Count);
 
             host.ViewModel.SelectedLanguage = "en-US";
+            var selectedItemBeforeSave = host.LanguageComboBox.SelectedItem;
             host.ViewModel.SaveCommand.ExecuteAsync(null).GetAwaiter().GetResult();
             host.DrainDispatcher();
 
             Assert.Equal("en-US", host.ViewModel.SelectedLanguage);
             Assert.Equal(2, host.LanguageComboBox.Items.Count);
             Assert.NotNull(host.LanguageComboBox.SelectedItem);
+            Assert.Same(selectedItemBeforeSave, host.LanguageComboBox.SelectedItem);
             Assert.Equal("en-US", ((UserConfigViewModel.LanguageOption)host.LanguageComboBox.SelectedItem!).Code);
             Assert.Equal(new[] { "zh-CN", "en-US" }, host.ViewModel.LanguageOptions.Select(static option => option.Code).ToArray());
             Assert.Equal(new[] { "Simplified Chinese", "English" }, host.ViewModel.LanguageOptions.Select(static option => option.DisplayName).ToArray());

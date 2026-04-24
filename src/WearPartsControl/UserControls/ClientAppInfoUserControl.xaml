@@ -10,7 +10,20 @@
              d:DesignHeight="450"
              d:DesignWidth="800"
              d:DataContext="{d:DesignInstance Type=vm:ClientAppInfoViewModel}">
-    <Grid>
+    <UserControl.Resources>
+        <Style x:Key="FormLabelTextBlockStyle"
+               TargetType="TextBlock">
+            <Setter Property="VerticalAlignment"
+                    Value="Center" />
+            <Setter Property="Margin"
+                    Value="0 0 8 0" />
+            <Setter Property="TextWrapping"
+                    Value="Wrap" />
+            <Setter Property="MaxWidth"
+                    Value="140" />
+        </Style>
+    </UserControl.Resources>
+    <Grid Grid.IsSharedSizeScope="True">
         <StackPanel IsEnabled="{Binding IsNotBusy}">
             <Border Background="#FF365082"
                     Padding="0 8">
@@ -29,27 +42,27 @@
                 <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ClientAppInfoLabelColumn1" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.SiteLabel}" />
-                        <ComboBox Style="{StaticResource ComboBoxExtend}"
+                        <ComboBox Grid.Column="1"
+                                  Style="{StaticResource ComboBoxExtend}"
                                   ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.SitePlaceholder}"
                                   DisplayMemberPath="DisplayName"
-                                  Grid.Column="1"
                                   ItemsSource="{Binding SiteOptions}"
                                   SelectedValue="{Binding SiteCode, UpdateSourceTrigger=PropertyChanged}"
                                   SelectedValuePath="Code" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ClientAppInfoLabelColumn1" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.ProcedureLabel}" />
                         <ComboBox Grid.Column="1"
                                   Style="{StaticResource ComboBoxExtend}"
@@ -59,30 +72,30 @@
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ClientAppInfoLabelColumn1" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.PlcProtocolTypeLabel}" />
-                        <ComboBox Style="{StaticResource ComboBoxExtend}"
+                        <ComboBox Grid.Column="1"
+                                  Style="{StaticResource ComboBoxExtend}"
                                   IsEnabled="{Binding IsPlcParametersEditable}"
-                                  Grid.Column="1"
                                   ItemsSource="{Binding PlcProtocolTypes}"
                                   SelectedItem="{Binding PlcProtocolType, UpdateSourceTrigger=PropertyChanged}"
                                   ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.PlcProtocolTypePlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ClientAppInfoLabelColumn1" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.ShutdownPointAddressLabel}" />
-                        <TextBox Style="{StaticResource TextBoxExtend}"
+                        <TextBox Grid.Column="1"
+                                 Style="{StaticResource TextBoxExtend}"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
-                                 Grid.Column="1"
                                  Text="{Binding ShutdownPointAddress, UpdateSourceTrigger=PropertyChanged}"
                                  ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.ShutdownPointAddressPlaceholder}" />
                     </Grid>
@@ -91,72 +104,72 @@
                             Margin="8 0">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ClientAppInfoLabelColumn2" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.FactoryLabel}" />
-                        <ComboBox Style="{StaticResource ComboBoxExtend}"
-                                  Grid.Column="1"
+                        <ComboBox Grid.Column="1"
+                                  Style="{StaticResource ComboBoxExtend}"
                                   ItemsSource="{Binding FactoryOptions}"
                                   SelectedItem="{Binding FactoryCode, UpdateSourceTrigger=PropertyChanged}"
                                   ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.FactoryPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ClientAppInfoLabelColumn2" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.ResourceNumberLabel}" />
-                        <TextBox Style="{StaticResource TextBoxExtend}"
-                                 Grid.Column="1"
+                        <TextBox Grid.Column="1"
+                                 Style="{StaticResource TextBoxExtend}"
                                  Text="{Binding ResourceNumber, UpdateSourceTrigger=PropertyChanged}"
                                  ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.ResourceNumberPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ClientAppInfoLabelColumn2" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.PlcIpAddressLabel}" />
-                        <TextBox Style="{StaticResource TextBoxExtend}"
+                        <TextBox Grid.Column="1"
+                                 Style="{StaticResource TextBoxExtend}"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
-                                 Grid.Column="1"
                                  Text="{Binding PlcIpAddress, UpdateSourceTrigger=PropertyChanged}"
                                  ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.PlcIpAddressPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0"
                           Visibility="{Binding IsSiemensRackVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ClientAppInfoLabelColumn2" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.SiemensRackLabel}" />
-                        <TextBox Style="{StaticResource TextBoxExtend}"
+                        <TextBox Grid.Column="1"
+                                 Style="{StaticResource TextBoxExtend}"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
-                                 Grid.Column="1"
                                  Text="{Binding SiemensRack, UpdateSourceTrigger=PropertyChanged}"
                                  ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.SiemensRackPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 8 0 0"
                           Visibility="{Binding IsSiemensSlotVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ClientAppInfoLabelColumn2" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.SiemensSlotLabel}" />
-                        <TextBox Style="{StaticResource TextBoxExtend}"
+                        <TextBox Grid.Column="1"
+                                 Style="{StaticResource TextBoxExtend}"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
-                                 Grid.Column="1"
                                  Text="{Binding SiemensSlot, UpdateSourceTrigger=PropertyChanged}"
                                  ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.SiemensSlotPlaceholder}" />
                     </Grid>
@@ -164,11 +177,11 @@
                 <StackPanel Grid.Column="2">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ClientAppInfoLabelColumn3" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.AreaLabel}" />
                         <ComboBox Grid.Column="1"
                                   Style="{StaticResource ComboBoxExtend}"
@@ -178,11 +191,11 @@
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ClientAppInfoLabelColumn3" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.EquipmentCodeLabel}" />
                         <TextBox Grid.Column="1"
                                  Style="{StaticResource TextBoxExtend}"
@@ -191,11 +204,11 @@
                     </Grid>
                     <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ClientAppInfoLabelColumn3" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.PlcPortLabel}" />
                         <TextBox Grid.Column="1"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
@@ -203,14 +216,13 @@
                                  Text="{Binding PlcPort, UpdateSourceTrigger=PropertyChanged}"
                                  ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.PlcPortPlaceholder}" />
                     </Grid>
-                    <Grid Margin="0 8 0 0"
-                          Height="28">
+                    <Grid Margin="0 8 0 0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="ClientAppInfoLabelColumn3" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Visibility="{Binding IsStringReverseVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                    Text="{loc:Loc ClientAppInfoControl.IsStringReverseLabel}" />
                         <CheckBox Grid.Column="1"
@@ -245,16 +257,16 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock VerticalAlignment="Center"
                                Text="{loc:Loc ClientAppInfoControl.WearPartMonitoringStatusLabel}" />
-                    <TextBox Margin="8 0 0 0"
-                             Grid.Column="1"
+                    <TextBox Grid.Column="1"
+                             Margin="8 0 0 0"
                              IsReadOnly="True"
-                             Background="{Binding WearPartMonitoringStatusBackground}"
+                             Background="{Binding WearPartMonitoringStatusBackground, Mode=OneWay}"
                              Foreground="White"
                              Text="{Binding WearPartMonitoringStatusText, Mode=OneWay}" />
                 </Grid>
-                <StackPanel  Margin="8 8 0 0"
-                             Orientation="Horizontal"
-                             HorizontalAlignment="Right">
+                <StackPanel Margin="8 8 0 0"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right">
                     <Button MinWidth="120"
                             Style="{StaticResource ButtonDanger}"
                             Visibility="{Binding IsWearPartMonitoringEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"

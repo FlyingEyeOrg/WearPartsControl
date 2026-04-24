@@ -34,12 +34,13 @@ namespace WearPartsControl.ViewModels
         private readonly IUiDispatcher _uiDispatcher;
         private readonly IAppStartupCoordinator _appStartupCoordinator;
         private string[] _allTabs;
+        private string _brandTitle = string.Empty;
         private string _title = string.Empty;
         private string _softwareVersionText = string.Empty;
         private bool _isStartupBusy;
         private string _startupLoadingText = string.Empty;
-        private string _currentUserWorkIdText = LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserWorkIdEmpty");
-        private string _currentUserAccessLevelText = LocalizedText.Get("ViewModels.MainWindowVm.CurrentUserAccessLevelEmpty");
+        private string _currentUserWorkIdText = string.Empty;
+        private string _currentUserAccessLevelText = string.Empty;
         private IEnumerable<string> _tabs = Array.Empty<string>();
         private bool _isLoggedIn;
         private bool _isClientAppInfoConfigured;
@@ -94,6 +95,12 @@ namespace WearPartsControl.ViewModels
         {
             get => _title;
             private set => SetProperty(ref _title, value);
+        }
+
+        public string BrandTitle
+        {
+            get => _brandTitle;
+            private set => SetProperty(ref _brandTitle, value);
         }
 
         public string CurrentUserWorkIdText
@@ -384,6 +391,7 @@ namespace WearPartsControl.ViewModels
         private void RefreshLocalizedShellState(bool refreshSelectedContent)
         {
             Title = _localizationService["MainWindow.Title"];
+            BrandTitle = _localizationService["MainWindowView.BrandTitle"];
             SoftwareVersionText = LocalizedText.Format("ViewModels.MainWindowVm.SoftwareVersion", ResolveVersion());
             _allTabs = _localizationService.Catalog.MainWindow.Tabs.ToArray();
 

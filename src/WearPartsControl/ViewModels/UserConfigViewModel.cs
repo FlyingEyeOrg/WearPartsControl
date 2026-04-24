@@ -12,6 +12,8 @@ namespace WearPartsControl.ViewModels;
 
 public sealed class UserConfigViewModel : LocalizedViewModelBase
 {
+    private static readonly string[] SupportedLanguageCodes = ["zh-CN", "en-US"];
+
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly IUserConfigService _userConfigService;
     private readonly IComNotificationService _comNotificationService;
@@ -455,13 +457,37 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
 
     private void RefreshLanguageOptions()
     {
-        LanguageOptions = new ObservableCollection<LanguageOption>
-        {
-            new("zh-CN", LocalizedText.Get("ViewModels.UserConfigVm.LanguageZhCn")),
-            new("en-US", LocalizedText.Get("ViewModels.UserConfigVm.LanguageEnUs"))
-        };
+        UpdateLanguageOptionDisplayName("zh-CN", LocalizedText.Get("ViewModels.UserConfigVm.LanguageZhCn"));
+        UpdateLanguageOptionDisplayName("en-US", LocalizedText.Get("ViewModels.UserConfigVm.LanguageEnUs"));
+        RemoveUnsupportedLanguageOptions();
 
         SyncSelectedLanguageOption();
+    }
+
+    private void UpdateLanguageOptionDisplayName(string code, string displayName)
+    {
+        var option = LanguageOptions.FirstOrDefault(existing => string.Equals(existing.Code, code, StringComparison.Ordinal));
+
+        if (option is null)
+        {
+            LanguageOptions.Add(new LanguageOption(code, displayName));
+            return;
+        }
+
+        option.DisplayName = displayName;
+    }
+
+    private void RemoveUnsupportedLanguageOptions()
+    {
+        for (var index = LanguageOptions.Count - 1; index >= 0; index--)
+        {
+            if (SupportedLanguageCodes.Contains(LanguageOptions[index].Code, StringComparer.Ordinal))
+            {
+                continue;
+            }
+
+            LanguageOptions.RemoveAt(index);
+        }
     }
 
     private void SyncSelectedLanguageOption()
@@ -651,7 +677,24 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         StatusMessage = message;
     }
 
-    public sealed record LanguageOption(string Code, string DisplayName);
+    public sealed class LanguageOption : ObservableObject
+    {
+        private string _displayName;
+
+        public LanguageOption(string code, string displayName)
+        {
+            Code = code;
+            _displayName = displayName;
+        }
+
+        public string Code { get; }
+
+        public string DisplayName
+        {
+            get => _displayName;
+            set => SetProperty(ref _displayName, value);
+        }
+    }
 
     private sealed record UserConfigSnapshot(
         string MeResponsibleWorkId,
