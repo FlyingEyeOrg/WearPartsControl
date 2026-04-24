@@ -52,6 +52,7 @@ dotnet run --project tools/LocalizationResourceGenerator/LocalizationResourceGen
 - `LocalizationOptionsSaveInfo` 现在仅保留为旧版 `localization-options.json` 的迁移模型，不再作为运行期语言设置的写回目标。
 - 已显示界面如果绑定的是 ViewModel 缓存属性而不是 `loc:Loc`，切换语言后还需要监听 `LocalizationBindingSource.Refreshed` 并主动触发 `PropertyChanged`，否则 UI 会停留在旧语言。
 - 运行期切换语言时，应在 UI 线程应用 `CurrentCulture` / `CurrentUICulture` 并触发 `LocalizationBindingSource.Refresh()`；不要依赖重建当前 Tab 的 `UserControl` 来“刷新语言”，否则容易带来页面整页重载与状态丢失。
+- `ILocalizationService` 需要维护稳定的服务级 `CurrentCulture`，不能把调用线程的 `CultureInfo.CurrentUICulture` 直接当作服务状态；否则后台线程或跨线程回调里即使用户语言已切到英文，也可能重新取到中文文案。
 - 主窗口首屏如果依赖持久化语言决定默认 Tab、标题或缓存文案，应在 `Show()` 前完成首屏初始化，避免先以默认语言渲染再切换造成闪烁。
 - `MainWindowViewModel.RefreshLocalizedShellState(...)` 这类壳层缓存文本刷新入口，在生成标题、品牌名、Tab 文案前必须先确认 `ILocalizationService.CurrentCulture` 与 `user-config.json` 中的 `Language` 一致；否则即使启动链路已初始化，壳层仍可能沿用旧文化生成首屏文本。
 - 多语言表单行不要再使用固定 `80` / `160` 标签宽度；优先使用 `Grid.IsSharedSizeScope="True"` + `SharedSizeGroup` + `TextBlock.TextWrapping="Wrap"` 的布局，让标签列在同一分组内对齐且可换行。

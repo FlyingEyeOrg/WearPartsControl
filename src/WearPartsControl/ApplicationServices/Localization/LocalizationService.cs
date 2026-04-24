@@ -20,11 +20,13 @@ public sealed class LocalizationService : ILocalizationService
     private readonly ISaveInfoStore _saveInfoStore;
     private readonly IUserConfigService _userConfigService;
     private readonly LocalizationCatalog _catalog;
+    private CultureInfo _currentCulture;
 
     public LocalizationService(ISaveInfoStore saveInfoStore, IUserConfigService userConfigService)
     {
         _saveInfoStore = saveInfoStore;
         _userConfigService = userConfigService;
+        _currentCulture = CultureInfo.GetCultureInfo(NormalizeCultureName(CultureInfo.CurrentUICulture.Name));
         _catalog = new LocalizationCatalog(GetString);
     }
 
@@ -32,7 +34,7 @@ public sealed class LocalizationService : ILocalizationService
 
     public LocalizationCatalog Catalog => _catalog;
 
-    public CultureInfo CurrentCulture => CultureInfo.CurrentUICulture;
+    public CultureInfo CurrentCulture => Volatile.Read(ref _currentCulture);
 
     public async ValueTask InitializeAsync(CancellationToken cancellationToken = default)
     {
@@ -45,6 +47,7 @@ public sealed class LocalizationService : ILocalizationService
         cultureName = NormalizeCultureName(cultureName);
 
         var culture = CultureInfo.GetCultureInfo(cultureName);
+        Volatile.Write(ref _currentCulture, culture);
         CultureInfo.DefaultThreadCurrentCulture = culture;
         CultureInfo.DefaultThreadCurrentUICulture = culture;
         ApplyCultureOnUiThread(culture);
@@ -69,9 +72,9 @@ public sealed class LocalizationService : ILocalizationService
                 : UserConfigModel.DefaultLanguage;
     }
 
-    private static string GetString(string name)
+    private string GetString(string name)
     {
-        return ResourceManager.GetString(name, CultureInfo.CurrentUICulture) ?? name;
+        return ResourceManager.GetString(name, CurrentCulture) ?? name;
     }
 
     private static void ApplyCultureOnUiThread(CultureInfo culture)
