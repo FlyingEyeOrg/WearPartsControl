@@ -227,7 +227,6 @@
                                    Text="{loc:Loc ClientAppInfoControl.IsStringReverseLabel}" />
                         <CheckBox Grid.Column="1"
                                   Style="{StaticResource ToggleButtonSwitch}"
-                                  Width="80"
                                   IsEnabled="{Binding IsPlcParametersEditable}"
                                   IsChecked="{Binding IsStringReverse, UpdateSourceTrigger=PropertyChanged}"
                                   Visibility="{Binding IsStringReverseVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
@@ -244,7 +243,7 @@
                         Click="OnImportLegacyConfigurationClicked"
                         Content="{loc:Loc ClientAppInfoControl.ImportLegacyConfigurationButton}" />
                 <Button Margin="8 8 0 0"
-                        MinWidth="80"
+                    MinWidth="96"
                         IsEnabled="{Binding IsSaveClientAppInfoEnabled}"
                         Click="OnSaveClicked"
                         Style="{StaticResource ButtonPrimary}"
@@ -256,6 +255,8 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock VerticalAlignment="Center"
+                               Margin="0 0 8 0"
+                               TextWrapping="Wrap"
                                Text="{loc:Loc ClientAppInfoControl.WearPartMonitoringStatusLabel}" />
                     <TextBox Grid.Column="1"
                              Margin="8 0 0 0"
@@ -268,6 +269,7 @@
                             Orientation="Horizontal"
                             HorizontalAlignment="Right">
                     <Button MinWidth="120"
+                            Padding="12 6"
                             Style="{StaticResource ButtonDanger}"
                             Visibility="{Binding IsWearPartMonitoringEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"
                             IsEnabled="{Binding IsToggleWearPartMonitoringEnabled}"
@@ -275,6 +277,7 @@
                         <TextBlock Text="{Binding WearPartMonitoringButtonText, Mode=OneWay}" />
                     </Button>
                     <Button MinWidth="120"
+                            Padding="12 6"
                             IsEnabled="{Binding IsToggleWearPartMonitoringEnabled}"
                             Click="OnToggleWearPartMonitoringClicked">
                         <Button.Style>
@@ -295,6 +298,7 @@
                     </Button>
                     <Button MinWidth="120"
                             Margin="8 0 0 0"
+                            Padding="12 6"
                             IsEnabled="{Binding IsTestPlcConnectionEnabled}"
                             Click="OnTestPlcConnectionClicked"
                             Content="{loc:Loc ClientAppInfoControl.TestPlcConnectionButton}" />

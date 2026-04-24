@@ -71,7 +71,7 @@
                                 </TextBlock.Text>
                             </TextBlock>
                             <Button Margin="16 0 0 0"
-                                    Width="80"
+                                    MinWidth="96"
                                     Command="{Binding RefreshCommand}"
                                     Style="{StaticResource ButtonPrimary}"
                                     Content="{loc:Loc ReplacePartControl.RefreshButton}" />
@@ -300,7 +300,7 @@
                     </Grid.ColumnDefinitions>
                     <Button Margin="8 0 0 0"
                             Grid.Column="1"
-                            Width="80"
+                            MinWidth="120"
                             IsEnabled="{Binding IsReplaceEnabled}"
                             Click="OnReplaceClicked"
                             Style="{StaticResource ButtonPrimary}"

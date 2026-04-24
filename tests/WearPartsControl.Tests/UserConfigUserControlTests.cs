@@ -175,6 +175,7 @@ public sealed class UserConfigUserControlTests
             CultureInfo.CurrentUICulture = culture;
             CultureInfo.DefaultThreadCurrentCulture = culture;
             CultureInfo.DefaultThreadCurrentUICulture = culture;
+            LocalizedText.SetCulture(culture);
         }
     }
 

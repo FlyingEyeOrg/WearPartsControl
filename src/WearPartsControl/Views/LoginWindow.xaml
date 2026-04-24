@@ -62,7 +62,7 @@
                         <Button Grid.Column="1"
                                 Margin="8 0 0 0"
                                 Style="{StaticResource ButtonPrimary}"
-                                Width="80"
+                            MinWidth="96"
                             Command="{Binding LoginCommand}"
                             Content="{loc:Loc LoginWindowView.LoginButton}" />
                     </Grid>

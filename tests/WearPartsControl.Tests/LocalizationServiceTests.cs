@@ -141,12 +141,33 @@ public sealed class LocalizationServiceTests : IDisposable
         Assert.Equal("WearPartsControl", title);
     }
 
+    [Fact]
+    public async Task LocalizedText_ShouldReturnEnglish_WhenCalledFromNonUiThreadWithChineseThreadCulture()
+    {
+        var store = new FakeSaveInfoStore();
+        var service = CreateService(store);
+
+        await service.SetCultureAsync("en-US");
+
+        var title = await Task.Run(() =>
+        {
+            var chineseCulture = CultureInfo.GetCultureInfo("zh-CN");
+            CultureInfo.CurrentCulture = chineseCulture;
+            CultureInfo.CurrentUICulture = chineseCulture;
+            return LocalizedText.Get("MainWindow.Title");
+        });
+
+        Assert.Equal("en-US", LocalizedText.CurrentCulture.Name);
+        Assert.Equal("WearPartsControl", title);
+    }
+
     public void Dispose()
     {
         CultureInfo.CurrentCulture = _originalCurrentCulture;
         CultureInfo.CurrentUICulture = _originalCurrentUiCulture;
         CultureInfo.DefaultThreadCurrentCulture = _originalDefaultThreadCurrentCulture;
         CultureInfo.DefaultThreadCurrentUICulture = _originalDefaultThreadCurrentUiCulture;
+        LocalizedText.SetCulture(_originalCurrentUiCulture);
     }
 
     private static LocalizationService CreateService(FakeSaveInfoStore store)

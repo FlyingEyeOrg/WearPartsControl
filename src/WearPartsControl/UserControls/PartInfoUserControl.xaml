@@ -10,6 +10,19 @@
              d:DesignHeight="450"
              d:DesignWidth="800"
              d:DataContext="{d:DesignInstance Type=vm:AddPartWindowViewModel}">
+            <UserControl.Resources>
+            <Style x:Key="FormLabelTextBlockStyle"
+                   TargetType="TextBlock">
+                <Setter Property="VerticalAlignment"
+                    Value="Center" />
+                <Setter Property="Margin"
+                    Value="0 0 8 0" />
+                <Setter Property="TextWrapping"
+                    Value="Wrap" />
+                <Setter Property="MaxWidth"
+                    Value="160" />
+            </Style>
+            </UserControl.Resources>
     <ScrollViewer DataContext="{Binding Editor, RelativeSource={RelativeSource AncestorType=UserControl}}"
                   VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled"
@@ -27,7 +40,8 @@
                            Text="{Binding StatusMessage, Mode=OneWay}" />
             </Border>
 
-            <Grid Margin="0 12 0 0">
+            <Grid Margin="0 12 0 0"
+                  Grid.IsSharedSizeScope="True">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition />
@@ -37,10 +51,11 @@
                             Margin="0 0 8 0">
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc PartInfoControl.ResourceNumberLabel}" />
                         <TextBox Grid.Column="1"
                                  IsReadOnly="True"
@@ -49,58 +64,63 @@
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                                                <TextBlock VerticalAlignment="Center"
-                                                                     Text="{loc:Loc PartInfoControl.PartNameLabel}" />
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                   Text="{loc:Loc PartInfoControl.PartNameLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding PartName, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.PartNamePlaceholder}" />
+                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.PartNamePlaceholder}" />
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                                                <TextBlock VerticalAlignment="Center"
-                                                                     Text="{loc:Loc PartInfoControl.CurrentValueAddressLabel}" />
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                   Text="{loc:Loc PartInfoControl.CurrentValueAddressLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding CurrentValueAddress, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.CurrentValueAddressPlaceholder}" />
+                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.CurrentValueAddressPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                                                <TextBlock VerticalAlignment="Center"
-                                                                     Text="{loc:Loc PartInfoControl.WarningValueAddressLabel}" />
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                   Text="{loc:Loc PartInfoControl.WarningValueAddressLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding WarningValueAddress, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.WarningValueAddressPlaceholder}" />
+                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.WarningValueAddressPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                                                <TextBlock VerticalAlignment="Center"
-                                                                     Text="{loc:Loc PartInfoControl.ShutdownValueAddressLabel}" />
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                   Text="{loc:Loc PartInfoControl.ShutdownValueAddressLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding ShutdownValueAddress, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.ShutdownValueAddressPlaceholder}" />
+                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.ShutdownValueAddressPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc PartInfoControl.LifetimeTypeLabel}" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding LifetimeTypes}"
@@ -112,10 +132,11 @@
                     <Grid Margin="0 0 0 8"
                           Height="28">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc PartInfoControl.IsShutdownLabel}" />
                         <CheckBox Grid.Column="1"
                                   IsChecked="{Binding IsShutdown}"
@@ -123,15 +144,16 @@
                     </Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                                                <TextBlock VerticalAlignment="Center"
-                                                                     Text="{loc:Loc PartInfoControl.PlcZeroClearAddressLabel}" />
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                   Text="{loc:Loc PartInfoControl.PlcZeroClearAddressLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding PlcZeroClearAddress, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.PlcZeroClearAddressPlaceholder}" />
+                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.PlcZeroClearAddressPlaceholder}" />
                     </Grid>
                 </StackPanel>
 
@@ -139,10 +161,11 @@
                             Margin="8 0 0 0">
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc PartInfoControl.CurrentValueDataTypeLabel}" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding DataTypes}"
@@ -153,10 +176,11 @@
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc PartInfoControl.WarningValueDataTypeLabel}" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding DataTypes}"
@@ -167,10 +191,11 @@
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc PartInfoControl.ShutdownValueDataTypeLabel}" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding DataTypes}"
@@ -181,10 +206,11 @@
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc PartInfoControl.InputModeLabel}" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding InputModes}"
@@ -195,34 +221,37 @@
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                                                <TextBlock VerticalAlignment="Center"
-                                                                     Text="{loc:Loc PartInfoControl.CodeMinLengthLabel}" />
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                   Text="{loc:Loc PartInfoControl.CodeMinLengthLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding CodeMinLength, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.CodeMinLengthPlaceholder}" />
+                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.CodeMinLengthPlaceholder}" />
                     </Grid>
                     <Grid Margin="0 0 0 8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                                                <TextBlock VerticalAlignment="Center"
-                                                                     Text="{loc:Loc PartInfoControl.CodeMaxLengthLabel}" />
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                   Text="{loc:Loc PartInfoControl.CodeMaxLengthLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding CodeMaxLength, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource TextBoxExtend}"
-                                                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.CodeMaxLengthPlaceholder}" />
+                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.CodeMaxLengthPlaceholder}" />
                     </Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center"
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc PartInfoControl.BarcodeWriteAddressLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding BarcodeWriteAddress, UpdateSourceTrigger=PropertyChanged}"

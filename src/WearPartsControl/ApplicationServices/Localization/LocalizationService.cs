@@ -26,7 +26,7 @@ public sealed class LocalizationService : ILocalizationService
     {
         _saveInfoStore = saveInfoStore;
         _userConfigService = userConfigService;
-        _currentCulture = CultureInfo.GetCultureInfo(NormalizeCultureName(CultureInfo.CurrentUICulture.Name));
+        _currentCulture = LocalizationCultureState.CurrentCulture;
         _catalog = new LocalizationCatalog(GetString);
     }
 
@@ -48,6 +48,7 @@ public sealed class LocalizationService : ILocalizationService
 
         var culture = CultureInfo.GetCultureInfo(cultureName);
         Volatile.Write(ref _currentCulture, culture);
+        LocalizedText.SetCulture(culture);
         CultureInfo.DefaultThreadCurrentCulture = culture;
         CultureInfo.DefaultThreadCurrentUICulture = culture;
         ApplyCultureOnUiThread(culture);

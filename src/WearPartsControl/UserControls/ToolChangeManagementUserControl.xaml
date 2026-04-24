@@ -8,7 +8,7 @@
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="1000">
-    <Grid>
+    <Grid Grid.IsSharedSizeScope="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -45,10 +45,13 @@
                                Margin="0 8 0 0">
                         <Grid Margin="0 8 8 0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="ToolChangeLabelColumn" />
                                 <ColumnDefinition Width="180" />
                             </Grid.ColumnDefinitions>
                             <TextBlock VerticalAlignment="Center"
+                                       Margin="0 0 8 0"
+                                       TextWrapping="Wrap"
                                        Text="{loc:Loc ToolChangeManagementControl.NameLabel}" />
                             <TextBox Grid.Column="1"
                                      Text="{Binding ToolName, UpdateSourceTrigger=PropertyChanged}"
@@ -58,10 +61,13 @@
 
                         <Grid Margin="0 8 8 0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="ToolChangeLabelColumn" />
                                 <ColumnDefinition Width="180" />
                             </Grid.ColumnDefinitions>
                             <TextBlock VerticalAlignment="Center"
+                                       Margin="0 0 8 0"
+                                       TextWrapping="Wrap"
                                        Text="{loc:Loc ToolChangeManagementControl.CodeLabel}" />
                             <TextBox Grid.Column="1"
                                      Text="{Binding ToolCode, UpdateSourceTrigger=PropertyChanged}"
@@ -71,10 +77,13 @@
 
                         <Grid Margin="0 8 8 0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="ToolChangeLabelColumn" />
                                 <ColumnDefinition Width="180" />
                             </Grid.ColumnDefinitions>
                             <TextBlock VerticalAlignment="Center"
+                                       Margin="0 0 8 0"
+                                       TextWrapping="Wrap"
                                        Text="{loc:Loc ToolChangeManagementControl.KeywordLabel}" />
                             <TextBox Grid.Column="1"
                                      Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"
@@ -83,27 +92,27 @@
                         </Grid>
 
                         <Button Margin="0 8 8 0"
-                                Width="80"
+                            MinWidth="96"
                                 Command="{Binding SearchCommand}"
                                 Style="{StaticResource ButtonPrimary}"
                                 Content="{loc:Loc ToolChangeManagementControl.SearchButton}" />
                         <Button Margin="0 8 8 0"
-                                Width="80"
+                            MinWidth="96"
                                 Command="{Binding RefreshCommand}"
                                 Style="{StaticResource ButtonPrimary}"
                                 Content="{loc:Loc ToolChangeManagementControl.RefreshButton}" />
                         <Button Margin="0 8 8 0"
-                                Width="80"
+                            MinWidth="96"
                                 Command="{Binding NewCommand}"
                                 Style="{StaticResource ButtonPrimary}"
                                 Content="{loc:Loc ToolChangeManagementControl.NewButton}" />
                         <Button Margin="0 8 8 0"
-                                Width="80"
+                            MinWidth="96"
                                 Command="{Binding EditCommand}"
                                 Style="{StaticResource ButtonPrimary}"
                                 Content="{loc:Loc ToolChangeManagementControl.EditButton}" />
                         <Button Margin="0 8 8 0"
-                                Width="80"
+                            MinWidth="96"
                                 Command="{Binding DeleteCommand}"
                                 Style="{StaticResource ButtonPrimary}"
                                 Content="{loc:Loc ToolChangeManagementControl.DeleteButton}" />
@@ -128,22 +137,22 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="{loc:Loc ToolChangeManagementControl.NameHeader}"
                                         Binding="{Binding Name}"
-                                        Width="180" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc ToolChangeManagementControl.CodeHeader}"
                                         Binding="{Binding Code}"
-                                        Width="140" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc ToolChangeManagementControl.CreatedAtHeader}"
                                         Binding="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
-                                        Width="160" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc ToolChangeManagementControl.CreatedByHeader}"
                                         Binding="{Binding CreatedBy}"
-                                        Width="120" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc ToolChangeManagementControl.UpdatedAtHeader}"
                                         Binding="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
-                                        Width="160" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc ToolChangeManagementControl.UpdatedByHeader}"
                                         Binding="{Binding UpdatedBy}"
-                                        Width="120" />
+                                        Width="SizeToHeader" />
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

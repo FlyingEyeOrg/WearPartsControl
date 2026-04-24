@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.LoginService;
+using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.UserControls;
 using WearPartsControl.ViewModels;
 using Xunit;
@@ -68,6 +69,32 @@ public sealed class UserControlXamlLoadTests
         }, ensureApplicationResources: true);
     }
 
+    [Fact]
+    public void ToolChangeManagementUserControl_ShouldLoadWithoutXamlParseException()
+    {
+        WpfTestHost.Run(() =>
+        {
+            var control = new ToolChangeManagementUserControl(
+                new ToolChangeManagementViewModel(
+                    new StubToolChangeManagementService(),
+                    new StubUiDispatcher(),
+                    new UiBusyService(TimeSpan.Zero)));
+
+            Assert.NotNull(control);
+        }, ensureApplicationResources: true);
+    }
+
+    [Fact]
+    public void PartInfoUserControl_ShouldLoadWithoutXamlParseException()
+    {
+        WpfTestHost.Run(() =>
+        {
+            var control = new PartInfoUserControl();
+
+            Assert.NotNull(control);
+        }, ensureApplicationResources: true);
+    }
+
     private static T CreateUninitialized<T>() where T : class
     {
         return (T)RuntimeHelpers.GetUninitializedObject(typeof(T));
@@ -125,6 +152,42 @@ public sealed class UserControlXamlLoadTests
         {
             SettingsSaved?.Invoke(this, settings);
             return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class StubUiDispatcher : IUiDispatcher
+    {
+        public void Run(Action action) => action();
+
+        public Task RunAsync(Action action, System.Windows.Threading.DispatcherPriority priority = System.Windows.Threading.DispatcherPriority.Normal)
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        public Task RenderAsync() => Task.CompletedTask;
+    }
+
+    private sealed class StubToolChangeManagementService : IToolChangeManagementService
+    {
+        public Task<IReadOnlyList<ToolChangeDefinition>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<ToolChangeDefinition>>(Array.Empty<ToolChangeDefinition>());
+        }
+
+        public Task<ToolChangeDefinition> CreateAsync(ToolChangeDefinition definition, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<ToolChangeDefinition> UpdateAsync(ToolChangeDefinition definition, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
         }
     }
 }

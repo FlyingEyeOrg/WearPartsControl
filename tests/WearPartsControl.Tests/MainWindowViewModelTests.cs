@@ -843,6 +843,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             CultureInfo.CurrentUICulture = culture;
             CultureInfo.DefaultThreadCurrentCulture = culture;
             CultureInfo.DefaultThreadCurrentUICulture = culture;
+            LocalizedText.SetCulture(culture);
         }
     }
 

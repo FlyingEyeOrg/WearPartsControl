@@ -322,11 +322,11 @@
             </Grid>
 
             <Grid Margin="8 16 8 8">
-                <Button Width="80"
+                <Button MinWidth="96"
                         Style="{StaticResource ButtonPrimary}"
                         Command="{Binding SaveCommand}"
                         Content="{loc:Loc UserConfigControl.SaveButton}" />
-                <Button Width="120"
+                <Button MinWidth="160"
                         HorizontalAlignment="Right"
                         Command="{Binding TestComNotificationCommand}"
                         Content="{loc:Loc UserConfigControl.TestComNotificationButton}" />

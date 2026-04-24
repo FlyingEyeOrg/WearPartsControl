@@ -74,7 +74,7 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <ScrollViewer Width="200"
+        <ScrollViewer Width="240"
                       VerticalScrollBarVisibility="Auto">
             <!--
                                 说明：
@@ -98,9 +98,10 @@
                                       Style="{StaticResource TabItemButtonStyle}">
                             <Border Padding="12,10">
                                 <TextBlock FontSize="16"
-                                           TextTrimming="CharacterEllipsis"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
+                                           TextAlignment="Center"
+                                           TextWrapping="Wrap"
                                            Text="{Binding .}" />
                             </Border>
                         </ToggleButton>

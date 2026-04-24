@@ -91,6 +91,7 @@ public sealed class UserConfigViewModelLocalizationTests
         public MutableLocalizationService(string cultureName)
         {
             CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(cultureName);
+            LocalizedText.SetCulture(CurrentCulture);
         }
 
         public event EventHandler? CultureChanged;
@@ -111,6 +112,8 @@ public sealed class UserConfigViewModelLocalizationTests
             System.Globalization.CultureInfo.CurrentUICulture = culture;
             System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
             System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
+            LocalizedText.SetCulture(culture);
+            LocalizationBindingSource.Instance.Refresh();
             CultureChanged?.Invoke(this, EventArgs.Empty);
             return ValueTask.CompletedTask;
         }

@@ -7,9 +7,16 @@ public static class LocalizedText
 {
     private static readonly ResourceManager ResourceManager = new("WearPartsControl.Resources.LocalizationResource", typeof(LocalizedText).Assembly);
 
+    internal static CultureInfo CurrentCulture => LocalizationCultureState.CurrentCulture;
+
+    internal static void SetCulture(CultureInfo culture)
+    {
+        LocalizationCultureState.SetCurrentCulture(culture);
+    }
+
     public static string Get(string key)
     {
-        var culture = ResolveCulture();
+        var culture = CurrentCulture;
         return ResourceManager.GetString(key, culture)
             ?? ResourceManager.GetString(key, CultureInfo.GetCultureInfo("zh-CN"))
             ?? key;
@@ -17,14 +24,6 @@ public static class LocalizedText
 
     public static string Format(string key, params object[] args)
     {
-        return string.Format(ResolveCulture(), Get(key), args);
-    }
-
-    private static CultureInfo ResolveCulture()
-    {
-        var culture = CultureInfo.CurrentUICulture;
-        return culture.Name is "zh-CN" or "en-US"
-            ? culture
-            : CultureInfo.GetCultureInfo("zh-CN");
+        return string.Format(CurrentCulture, Get(key), args);
     }
 }

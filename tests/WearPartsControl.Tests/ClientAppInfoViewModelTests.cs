@@ -628,6 +628,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             System.Globalization.CultureInfo.CurrentUICulture = culture;
             System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
             System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
+            LocalizedText.SetCulture(culture);
         }
     }
 

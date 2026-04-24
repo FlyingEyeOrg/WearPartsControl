@@ -51,13 +51,13 @@
                         Command="{Binding OpenLoginCommand}"
                     Content="{loc:Loc LoginBoxControl.LoginButton}"
                         Visibility="{Binding ShowLoginButton, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        MinWidth="60" />
+                        MinWidth="88" />
                 <Button x:Name="LogoutButton"
                         Margin="0 8 0 0"
                         Command="{Binding LogoutCommand}"
                     Content="{loc:Loc LoginBoxControl.LogoutButton}"
                         Visibility="{Binding ShowLogoutButton, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        MinWidth="60" />
+                        MinWidth="88" />
             </StackPanel>
         </Grid>
     </Border>

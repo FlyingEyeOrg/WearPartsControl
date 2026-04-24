@@ -8,7 +8,7 @@
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="1000">
-    <Grid>
+    <Grid Grid.IsSharedSizeScope="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -60,10 +60,13 @@
                                VerticalAlignment="Center">
                         <Grid Margin="0 8 8 0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto"
+                                      SharedSizeGroup="PartManagementFilterLabelColumn" />
                                 <ColumnDefinition Width="180" />
                             </Grid.ColumnDefinitions>
                             <TextBlock VerticalAlignment="Center"
+                                   Margin="0 0 8 0"
+                                   TextWrapping="Wrap"
                                        Text="{loc:Loc PartManagementControl.PartNameLabel}" />
                             <TextBox Grid.Column="1"
                                      Text="{Binding PartNameFilter, UpdateSourceTrigger=PropertyChanged}"
@@ -71,30 +74,30 @@
                                      hc:InfoElement.Placeholder="{loc:Loc PartManagementControl.PartNamePlaceholder}" />
                         </Grid>
                         <Button Margin="0 8 8 0"
-                                Width="80"
+                            MinWidth="96"
                                 Command="{Binding SearchCommand}"
                                 Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource SearchGeometry}"
                                 Content="{loc:Loc PartManagementControl.SearchButton}" />
                         <Button Margin="0 8 8 0"
-                                Width="80"
+                            MinWidth="96"
                                 Command="{Binding RefreshCommand}"
                                 Style="{StaticResource ButtonPrimary}"
                                 Content="{loc:Loc PartManagementControl.RefreshButton}" />
                         <Button Margin="0 8 8 0"
-                                Width="80"
+                            MinWidth="96"
                                 Command="{Binding AddCommand}"
                                 Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource AddGeometry}"
                                 Content="{loc:Loc PartManagementControl.AddButton}" />
                         <Button Margin="0 8 8 0"
-                                Width="80"
+                            MinWidth="96"
                                 Command="{Binding EditCommand}"
                                 Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource DropperGeometry}"
                                 Content="{loc:Loc PartManagementControl.EditButton}" />
                         <Button Margin="0 8 8 0"
-                                Width="80"
+                            MinWidth="96"
                                 Command="{Binding DeleteCommand}"
                                 Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource DeleteGeometry}"
@@ -130,61 +133,61 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.ResourceNumberHeader}"
                                         Binding="{Binding ResourceNumber}"
-                                        Width="120" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.NameHeader}"
                                         Binding="{Binding PartName}"
-                                        Width="140" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.LifetimeTypeHeader}"
                                         Binding="{Binding LifetimeType}"
-                                        Width="90" />
+                                        Width="SizeToHeader" />
                     <DataGridCheckBoxColumn Header="{loc:Loc PartManagementControl.IsShutdownHeader}"
                                             Binding="{Binding IsShutdown}"
-                                            Width="80" />
+                                            Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.CurrentValueAddressHeader}"
                                         Binding="{Binding CurrentValueAddress}"
-                                        Width="120" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.CurrentValueDataTypeHeader}"
                                         Binding="{Binding CurrentValueDataType}"
-                                        Width="120" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.WarningValueAddressHeader}"
                                         Binding="{Binding WarningValueAddress}"
-                                        Width="120" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.WarningValueDataTypeHeader}"
                                         Binding="{Binding WarningValueDataType}"
-                                        Width="120" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.ShutdownValueAddressHeader}"
                                         Binding="{Binding ShutdownValueAddress}"
-                                        Width="120" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.ShutdownValueDataTypeHeader}"
                                         Binding="{Binding ShutdownValueDataType}"
-                                        Width="120" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.InputModeHeader}"
                                         Binding="{Binding InputMode}"
-                                        Width="90" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.CodeMinLengthHeader}"
                                         Binding="{Binding CodeMinLength}"
-                                        Width="90" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.CodeMaxLengthHeader}"
                                         Binding="{Binding CodeMaxLength}"
-                                        Width="90" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.PlcZeroClearAddressHeader}"
                                         Binding="{Binding PlcZeroClearAddress}"
-                                        Width="120" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.BarcodeWriteAddressHeader}"
                                         Binding="{Binding BarcodeWriteAddress}"
-                                        Width="120" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.CreatedAtHeader}"
                                         Binding="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
-                                        Width="150" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.CreatedByHeader}"
                                         Binding="{Binding CreatedBy}"
-                                        Width="100" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.UpdatedAtHeader}"
                                         Binding="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
-                                        Width="150" />
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.UpdatedByHeader}"
                                         Binding="{Binding UpdatedBy}"
-                                        Width="100" />
+                                        Width="SizeToHeader" />
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

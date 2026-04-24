@@ -1,4 +1,5 @@
 using System.Globalization;
+using WearPartsControl.ApplicationServices.Localization;
 using Xunit;
 
 namespace WearPartsControl.Tests;
@@ -28,6 +29,7 @@ internal sealed class TestCultureScope : IDisposable
         CultureInfo.CurrentUICulture = culture;
         CultureInfo.DefaultThreadCurrentCulture = culture;
         CultureInfo.DefaultThreadCurrentUICulture = culture;
+        LocalizedText.SetCulture(culture);
     }
 
     public void Dispose()
@@ -36,5 +38,6 @@ internal sealed class TestCultureScope : IDisposable
         CultureInfo.CurrentUICulture = _originalCurrentUiCulture;
         CultureInfo.DefaultThreadCurrentCulture = _originalDefaultThreadCurrentCulture;
         CultureInfo.DefaultThreadCurrentUICulture = _originalDefaultThreadCurrentUiCulture;
+        LocalizedText.SetCulture(_originalCurrentUiCulture);
     }
 }
