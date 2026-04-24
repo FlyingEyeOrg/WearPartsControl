@@ -283,6 +283,39 @@ public sealed class MainWindowTests
         }, ensureApplicationResources: true);
     }
 
+    [Fact]
+    public void OnMainWindowActivated_WhenStillInTray_ShouldKeepTrayIconVisible()
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+
+        WpfTestHost.Run(() =>
+        {
+            var autoLogoutInteractionService = new RecordingAutoLogoutInteractionService(MessageBoxResult.OK);
+            var window = CreateWindow(autoLogoutInteractionService);
+
+            try
+            {
+                window.Show();
+                InvokePrivate(window, "SendToTray", true, false);
+                WpfTestHost.DrainDispatcher();
+
+                var trayIcon = Assert.IsType<NotifyIcon>(window.FindName("TrayNotifyIcon"));
+                Assert.Equal(System.Windows.Visibility.Visible, trayIcon.Visibility);
+                Assert.True(GetPrivateField<bool>(window, "_isInTray"));
+
+                _ = InvokePrivate<bool>(window, "EnsureUserCanExit");
+                InvokePrivate(window, "OnMainWindowActivated", null, EventArgs.Empty);
+
+                Assert.Equal(System.Windows.Visibility.Visible, trayIcon.Visibility);
+                Assert.True(GetPrivateField<bool>(window, "_isInTray"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        }, ensureApplicationResources: true);
+    }
+
     private static MainWindow CreateWindow(RecordingAutoLogoutInteractionService autoLogoutInteractionService, bool isLoggedIn = false)
     {
         var currentUserAccessor = new CurrentUserAccessor();

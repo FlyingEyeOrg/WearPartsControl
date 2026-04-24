@@ -136,11 +136,12 @@ namespace WearPartsControl.Views
 
         private void OnMainWindowActivated(object? sender, EventArgs e)
         {
-            if (WindowState != WindowState.Minimized)
+            if (_isInTray || !IsVisible || WindowState == WindowState.Minimized)
             {
-                _isInTray = false;
-                HideTrayIcon();
+                return;
             }
+
+            HideTrayIcon();
         }
 
         private void OnTrayNotifyIconMouseDoubleClick(object sender, RoutedEventArgs e)
