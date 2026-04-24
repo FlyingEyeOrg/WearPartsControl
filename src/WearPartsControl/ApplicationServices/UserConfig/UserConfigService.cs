@@ -1,5 +1,6 @@
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.ComNotification;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SpacerManagement;
 
 namespace WearPartsControl.ApplicationServices.UserConfig;
@@ -42,6 +43,18 @@ public sealed class UserConfigService : IUserConfigService
             await fileStore.DeleteAsync<SpacerValidationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
         }
 
+        if (_saveInfoStore is TypeJsonSaveInfoStore localizationStore && localizationStore.Exists<LocalizationOptionsSaveInfo>())
+        {
+            var legacyLocalization = await _saveInfoStore.ReadAsync<LocalizationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
+            if (ShouldMigrateLegacyLocalization(normalized, legacyLocalization))
+            {
+                normalized = ApplyLegacyLocalization(normalized, legacyLocalization);
+                await _saveInfoStore.WriteAsync(normalized, cancellationToken).ConfigureAwait(false);
+            }
+
+            await localizationStore.DeleteAsync<LocalizationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
+        }
+
         return normalized;
     }
 
@@ -70,6 +83,7 @@ public sealed class UserConfigService : IUserConfigService
             PrdResponsibleWorkId = config.PrdResponsibleWorkId?.Trim() ?? string.Empty,
             PrdResponsibleName = config.PrdResponsibleName?.Trim() ?? string.Empty,
             ReplacementOperatorName = config.ReplacementOperatorName?.Trim() ?? string.Empty,
+            Language = NormalizeLanguage(config.Language),
             ComAccessToken = config.ComAccessToken?.Trim() ?? string.Empty,
             ComSecret = config.ComSecret?.Trim() ?? string.Empty,
             ComNotificationEnabled = config.ComNotificationEnabled,
@@ -132,6 +146,12 @@ public sealed class UserConfigService : IUserConfigService
             && config.ComTimeoutMilliseconds == UserConfig.DefaultComTimeoutMilliseconds;
     }
 
+    private static bool ShouldMigrateLegacyLocalization(UserConfig config, LocalizationOptionsSaveInfo legacyConfig)
+    {
+        return string.IsNullOrWhiteSpace(config.Language)
+            && !string.IsNullOrWhiteSpace(legacyConfig.CultureName);
+    }
+
     private static UserConfig ApplyLegacyComNotification(UserConfig config, ComNotificationOptionsSaveInfo legacyConfig)
     {
         ArgumentNullException.ThrowIfNull(legacyConfig);
@@ -145,6 +165,7 @@ public sealed class UserConfigService : IUserConfigService
             PrdResponsibleWorkId = config.PrdResponsibleWorkId,
             PrdResponsibleName = config.PrdResponsibleName,
             ReplacementOperatorName = config.ReplacementOperatorName,
+            Language = config.Language,
             ComAccessToken = string.IsNullOrWhiteSpace(config.ComAccessToken)
                 ? legacyConfig.AccessToken
                 : config.ComAccessToken,
@@ -179,6 +200,7 @@ public sealed class UserConfigService : IUserConfigService
             PrdResponsibleWorkId = config.PrdResponsibleWorkId,
             PrdResponsibleName = config.PrdResponsibleName,
             ReplacementOperatorName = config.ReplacementOperatorName,
+            Language = config.Language,
             ComAccessToken = config.ComAccessToken,
             ComSecret = config.ComSecret,
             ComNotificationEnabled = config.ComNotificationEnabled,
@@ -196,5 +218,44 @@ public sealed class UserConfigService : IUserConfigService
             SpacerValidationCodeSeparator = legacyConfig.CodeSeparator,
             SpacerValidationExpectedSegmentCount = legacyConfig.ExpectedSegmentCount
         });
+    }
+
+    private static UserConfig ApplyLegacyLocalization(UserConfig config, LocalizationOptionsSaveInfo legacyConfig)
+    {
+        ArgumentNullException.ThrowIfNull(legacyConfig);
+
+        return Normalize(new UserConfig
+        {
+            MeResponsibleWorkId = config.MeResponsibleWorkId,
+            MeResponsibleName = config.MeResponsibleName,
+            PrdResponsibleWorkId = config.PrdResponsibleWorkId,
+            PrdResponsibleName = config.PrdResponsibleName,
+            ReplacementOperatorName = config.ReplacementOperatorName,
+            Language = legacyConfig.CultureName,
+            ComAccessToken = config.ComAccessToken,
+            ComSecret = config.ComSecret,
+            ComNotificationEnabled = config.ComNotificationEnabled,
+            ComPushUrl = config.ComPushUrl,
+            ComDeIpaasKeyAuth = config.ComDeIpaasKeyAuth,
+            ComAgentId = config.ComAgentId,
+            ComGroupTemplateId = config.ComGroupTemplateId,
+            ComWorkTemplateId = config.ComWorkTemplateId,
+            ComUserType = config.ComUserType,
+            ComTimeoutMilliseconds = config.ComTimeoutMilliseconds,
+            SpacerValidationEnabled = config.SpacerValidationEnabled,
+            SpacerValidationUrl = config.SpacerValidationUrl,
+            SpacerValidationTimeoutMilliseconds = config.SpacerValidationTimeoutMilliseconds,
+            SpacerValidationIgnoreServerCertificateErrors = config.SpacerValidationIgnoreServerCertificateErrors,
+            SpacerValidationCodeSeparator = config.SpacerValidationCodeSeparator,
+            SpacerValidationExpectedSegmentCount = config.SpacerValidationExpectedSegmentCount
+        });
+    }
+
+    private static string NormalizeLanguage(string? language)
+    {
+        var normalized = language?.Trim();
+        return normalized is "zh-CN" or "en-US"
+            ? normalized
+            : string.Empty;
     }
 }

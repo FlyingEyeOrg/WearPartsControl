@@ -31,6 +31,8 @@ public sealed class UserConfigUserControlTests
 
             Assert.NotNull(host.Control);
             Assert.Equal(2, host.LanguageComboBox.Items.Count);
+            Assert.Equal("语言配置", host.GetSectionHeaders()[0]);
+            Assert.Equal("通知配置", host.GetSectionHeaders()[1]);
 
             host.ViewModel.SelectedLanguage = "en-US";
             host.ViewModel.SaveCommand.ExecuteAsync(null).GetAwaiter().GetResult();
@@ -173,6 +175,14 @@ public sealed class UserConfigUserControlTests
 
         public ComboBox LanguageComboBox { get; }
 
+        public IReadOnlyList<string> GetSectionHeaders()
+        {
+            return FindDescendants<TextBlock>(Control)
+                .Where(static textBlock => textBlock.FontWeight == FontWeights.SemiBold)
+                .Select(static textBlock => textBlock.Text)
+                .ToArray();
+        }
+
         public static UserConfigUserControlHost Create(UserConfigViewModel viewModel)
         {
             var control = new UserConfigUserControl(viewModel);
@@ -255,7 +265,7 @@ public sealed class UserConfigUserControlTests
     {
         public ValueTask<UserConfig> GetAsync(CancellationToken cancellationToken = default)
         {
-            return ValueTask.FromResult(new UserConfig());
+            return ValueTask.FromResult(new UserConfig { Language = "zh-CN" });
         }
 
         public ValueTask SaveAsync(UserConfig config, CancellationToken cancellationToken = default)
@@ -288,5 +298,26 @@ public sealed class UserConfigUserControlTests
         }
 
         public Task RenderAsync() => Task.CompletedTask;
+    }
+
+    private static IReadOnlyList<T> FindDescendants<T>(DependencyObject root) where T : DependencyObject
+    {
+        var results = new List<T>();
+        CollectDescendants(root, results);
+        return results;
+    }
+
+    private static void CollectDescendants<T>(DependencyObject root, ICollection<T> results) where T : DependencyObject
+    {
+        if (root is T match)
+        {
+            results.Add(match);
+        }
+
+        var childCount = VisualTreeHelper.GetChildrenCount(root);
+        for (var index = 0; index < childCount; index++)
+        {
+            CollectDescendants(VisualTreeHelper.GetChild(root, index), results);
+        }
     }
 }

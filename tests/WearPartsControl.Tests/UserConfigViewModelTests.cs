@@ -25,6 +25,7 @@ public sealed class UserConfigViewModelTests
                 ComAccessToken = "token",
                 ComSecret = "secret",
                 ComNotificationEnabled = true,
+                Language = "en-US",
                 ComPushUrl = "https://example.com/push",
                 ComDeIpaasKeyAuth = "auth-key",
                 ComAgentId = 1642112457,
@@ -65,7 +66,7 @@ public sealed class UserConfigViewModelTests
         Assert.False(viewModel.SpacerValidationIgnoreServerCertificateErrors);
         Assert.Equal("-", viewModel.SpacerValidationCodeSeparator);
         Assert.Equal("9", viewModel.SpacerValidationExpectedSegmentCount);
-        Assert.Equal("zh-CN", viewModel.SelectedLanguage);
+    Assert.Equal("en-US", viewModel.SelectedLanguage);
         Assert.False(viewModel.IsDirty);
         Assert.Equal(LocalizedText.Get("ViewModels.UserConfigVm.Loaded"), viewModel.StatusMessage);
         Assert.False(viewModel.IsBusy);
@@ -109,6 +110,7 @@ public sealed class UserConfigViewModelTests
         Assert.Equal("PRD002", service.LastSaved.PrdResponsibleWorkId);
         Assert.Equal("孙七", service.LastSaved.PrdResponsibleName);
         Assert.Equal("周八", service.LastSaved.ReplacementOperatorName);
+        Assert.Equal("en-US", service.LastSaved.Language);
         Assert.False(service.LastSaved.ComNotificationEnabled);
         Assert.False(service.LastSaved.SpacerValidationEnabled);
         Assert.Equal("https://spacer/save", service.LastSaved.SpacerValidationUrl);
@@ -232,6 +234,7 @@ public sealed class UserConfigViewModelTests
                 PrdResponsibleWorkId = Current.PrdResponsibleWorkId,
                 PrdResponsibleName = Current.PrdResponsibleName,
                 ReplacementOperatorName = Current.ReplacementOperatorName,
+                Language = Current.Language,
                 ComAccessToken = Current.ComAccessToken,
                 ComSecret = Current.ComSecret,
                 ComNotificationEnabled = Current.ComNotificationEnabled,
@@ -260,6 +263,7 @@ public sealed class UserConfigViewModelTests
                 PrdResponsibleWorkId = config.PrdResponsibleWorkId,
                 PrdResponsibleName = config.PrdResponsibleName,
                 ReplacementOperatorName = config.ReplacementOperatorName,
+                Language = config.Language,
                 ComAccessToken = config.ComAccessToken,
                 ComSecret = config.ComSecret,
                 ComNotificationEnabled = config.ComNotificationEnabled,

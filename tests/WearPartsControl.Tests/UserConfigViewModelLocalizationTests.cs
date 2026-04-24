@@ -57,6 +57,10 @@ public sealed class UserConfigViewModelLocalizationTests
                 Assert.Equal("en-US", option.Code);
                 Assert.Equal("English", option.DisplayName);
             });
+
+        Assert.Equal("en-US", viewModel.SelectedLanguage);
+        Assert.NotNull(viewModel.SelectedLanguageOption);
+        Assert.Equal("en-US", viewModel.SelectedLanguageOption!.Code);
     }
 
     private static UserConfigViewModel CreateViewModel(string cultureName)

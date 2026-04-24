@@ -517,6 +517,7 @@ public sealed class UserConfigViewModel : ObservableObject
             PrdResponsibleWorkId = PrdResponsibleWorkId,
             PrdResponsibleName = PrdResponsibleName,
             ReplacementOperatorName = ReplacementOperatorName,
+            Language = SelectedLanguage,
             ComAccessToken = ComAccessToken,
             ComSecret = ComSecret,
             ComNotificationEnabled = ComNotificationEnabled,
@@ -561,7 +562,9 @@ public sealed class UserConfigViewModel : ObservableObject
             SpacerValidationIgnoreServerCertificateErrors = config.SpacerValidationIgnoreServerCertificateErrors;
             SpacerValidationCodeSeparator = config.SpacerValidationCodeSeparator;
             SpacerValidationExpectedSegmentCount = config.SpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture);
-            SelectedLanguage = _localizationService.CurrentCulture.Name;
+            SelectedLanguage = string.IsNullOrWhiteSpace(config.Language)
+                ? _localizationService.CurrentCulture.Name
+                : config.Language;
         }
         finally
         {

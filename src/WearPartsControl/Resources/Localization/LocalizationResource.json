@@ -44,6 +44,7 @@
   },
   "UserConfigControl": {
     "Title": "User Settings",
+    "LanguageSection": "Language Settings",
     "NotificationSection": "Notification Settings",
     "LanguageLabel": "Language:",
     "LanguagePlaceholder": "Select language",

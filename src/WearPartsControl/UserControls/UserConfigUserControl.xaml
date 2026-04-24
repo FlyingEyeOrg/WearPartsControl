@@ -21,7 +21,7 @@
             <TextBlock Margin="8 16 8 0"
                        FontWeight="SemiBold"
                        Foreground="#FF365082"
-                       Text="{loc:Loc UserConfigControl.NotificationSection}" />
+                       Text="{loc:Loc UserConfigControl.LanguageSection}" />
 
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>
@@ -38,6 +38,11 @@
                           DisplayMemberPath="DisplayName"
                           hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.LanguagePlaceholder}" />
             </Grid>
+
+            <TextBlock Margin="8 16 8 0"
+                       FontWeight="SemiBold"
+                       Foreground="#FF365082"
+                       Text="{loc:Loc UserConfigControl.NotificationSection}" />
 
             <Grid Margin="8 8 8 0">
                 <Grid.ColumnDefinitions>

@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using WearPartsControl.ApplicationServices.Localization.Generated;
 using WearPartsControl.ApplicationServices.SaveInfoService;
+using WearPartsControl.ApplicationServices.UserConfig;
+using UserConfigModel = WearPartsControl.ApplicationServices.UserConfig.UserConfig;
 
 namespace WearPartsControl.ApplicationServices.Localization;
 
@@ -31,16 +33,32 @@ public sealed class LocalizationService : ILocalizationService
 
     public async ValueTask InitializeAsync(CancellationToken cancellationToken = default)
     {
-        var config = await _saveInfoStore.ReadAsync<LocalizationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
-        await SetCultureAsync(config.CultureName, cancellationToken).ConfigureAwait(false);
+        var userConfig = await _saveInfoStore.ReadAsync<UserConfigModel>(cancellationToken).ConfigureAwait(false);
+        var storedCultureName = NormalizeCultureName(userConfig.Language);
+
+        if (string.IsNullOrWhiteSpace(storedCultureName))
+        {
+            var legacyConfig = await _saveInfoStore.ReadAsync<LocalizationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
+            storedCultureName = NormalizeCultureName(legacyConfig.CultureName);
+
+            if (!string.IsNullOrWhiteSpace(storedCultureName))
+            {
+                userConfig.Language = storedCultureName;
+                await _saveInfoStore.WriteAsync(userConfig, cancellationToken).ConfigureAwait(false);
+
+                if (_saveInfoStore is TypeJsonSaveInfoStore fileStore && fileStore.Exists<LocalizationOptionsSaveInfo>())
+                {
+                    await fileStore.DeleteAsync<LocalizationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
+                }
+            }
+        }
+
+        await SetCultureAsync(storedCultureName, cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask SetCultureAsync(string cultureName, CancellationToken cancellationToken = default)
     {
-        if (!SupportedCultures.Contains(cultureName, StringComparer.OrdinalIgnoreCase))
-        {
-            cultureName = "zh-CN";
-        }
+        cultureName = NormalizeCultureName(cultureName);
 
         var culture = CultureInfo.GetCultureInfo(cultureName);
         CultureInfo.CurrentCulture = culture;
@@ -51,6 +69,20 @@ public sealed class LocalizationService : ILocalizationService
 
         var config = new LocalizationOptionsSaveInfo { CultureName = culture.Name };
         await _saveInfoStore.WriteAsync(config, cancellationToken).ConfigureAwait(false);
+
+        var userConfig = await _saveInfoStore.ReadAsync<UserConfigModel>(cancellationToken).ConfigureAwait(false);
+        if (!string.Equals(userConfig.Language, culture.Name, StringComparison.Ordinal))
+        {
+            userConfig.Language = culture.Name;
+            await _saveInfoStore.WriteAsync(userConfig, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static string NormalizeCultureName(string? cultureName)
+    {
+        return SupportedCultures.Contains(cultureName ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+            ? CultureInfo.GetCultureInfo(cultureName!).Name
+                : UserConfigModel.DefaultLanguage;
     }
 
     private static string GetString(string name)

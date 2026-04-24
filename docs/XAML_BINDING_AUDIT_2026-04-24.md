@@ -74,7 +74,7 @@ These bindings target editable controls and resolve to source properties with wr
 
 ### UserConfig
 
-- [src/WearPartsControl/UserControls/UserConfigUserControl.xaml](../src/WearPartsControl/UserControls/UserConfigUserControl.xaml#L37) `SelectedValue -> SelectedLanguage`
+- [src/WearPartsControl/UserControls/UserConfigUserControl.xaml](../src/WearPartsControl/UserControls/UserConfigUserControl.xaml#L37) `SelectedItem -> SelectedLanguageOption`
 - `LanguageOptions` 刷新时使用整体替换集合而不是对现有集合执行 `Clear/Add`，避免保存并切换语言后 HandyControl `ComboBox` 出现选项显示被清空的问题。
 - [src/WearPartsControl/UserControls/UserConfigUserControl.xaml](../src/WearPartsControl/UserControls/UserConfigUserControl.xaml#L53) `Text -> MeResponsibleWorkId`
 - [src/WearPartsControl/UserControls/UserConfigUserControl.xaml](../src/WearPartsControl/UserControls/UserConfigUserControl.xaml#L66) `Text -> MeResponsibleName`

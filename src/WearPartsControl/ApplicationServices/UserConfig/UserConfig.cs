@@ -5,6 +5,8 @@ namespace WearPartsControl.ApplicationServices.UserConfig;
 [SaveInfoFile("user-config")]
 public sealed class UserConfig
 {
+    public const string DefaultLanguage = "zh-CN";
+
     public const bool DefaultComNotificationEnabled = true;
 
     public const string DefaultComPushUrl = "https://ipaas.catl.com/gateway/office/ipaas/MSG/office_MSG_push";
@@ -36,6 +38,8 @@ public sealed class UserConfig
     public string PrdResponsibleName { get; set; } = string.Empty;
 
     public string ReplacementOperatorName { get; set; } = string.Empty;
+
+    public string Language { get; set; } = string.Empty;
 
     public string ComAccessToken { get; set; } = string.Empty;
 

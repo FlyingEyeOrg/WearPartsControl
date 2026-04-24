@@ -44,6 +44,7 @@
   },
   "UserConfigControl": {
     "Title": "用户配置",
+    "LanguageSection": "语言配置",
     "NotificationSection": "通知配置",
     "LanguageLabel": "语言：",
     "LanguagePlaceholder": "请选择语言",

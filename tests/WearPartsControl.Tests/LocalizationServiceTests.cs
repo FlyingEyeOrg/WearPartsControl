@@ -1,6 +1,7 @@
 using System.Globalization;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
+using WearPartsControl.ApplicationServices.UserConfig;
 using Xunit;
 
 namespace WearPartsControl.Tests;
@@ -64,6 +65,33 @@ public sealed class LocalizationServiceTests : IDisposable
 
         Assert.Equal("zh-CN", service.CurrentCulture.Name);
         Assert.Equal("提示", service["FriendlyErrorTitle"]);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_ShouldPreferUserConfigLanguage()
+    {
+        var store = new FakeSaveInfoStore();
+        await store.WriteAsync(new UserConfig { Language = "en-US" });
+        await store.WriteAsync(new LocalizationOptionsSaveInfo { CultureName = "zh-CN" });
+
+        var service = new LocalizationService(store);
+        await service.InitializeAsync();
+
+        Assert.Equal("en-US", service.CurrentCulture.Name);
+        var persistedUserConfig = await store.ReadAsync<UserConfig>();
+        Assert.Equal("en-US", persistedUserConfig.Language);
+    }
+
+    [Fact]
+    public async Task SetCultureAsync_ShouldUpdateUserConfigLanguage()
+    {
+        var store = new FakeSaveInfoStore();
+        var service = new LocalizationService(store);
+
+        await service.SetCultureAsync("en-US");
+
+        var persistedUserConfig = await store.ReadAsync<UserConfig>();
+        Assert.Equal("en-US", persistedUserConfig.Language);
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using WearPartsControl.ApplicationServices.ComNotification;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.SpacerManagement;
 using WearPartsControl.ApplicationServices.UserConfig;
@@ -27,6 +28,7 @@ public sealed class UserConfigServiceTests
                 PrdResponsibleWorkId = " PRD001 ",
                 PrdResponsibleName = " 李四 ",
                 ReplacementOperatorName = " 王五 ",
+                Language = " en-US ",
                 ComAccessToken = " token ",
                 ComSecret = " secret ",
                 SpacerValidationEnabled = false,
@@ -46,6 +48,7 @@ public sealed class UserConfigServiceTests
             Assert.Equal("PRD001", config.PrdResponsibleWorkId);
             Assert.Equal("李四", config.PrdResponsibleName);
             Assert.Equal("王五", config.ReplacementOperatorName);
+            Assert.Equal("en-US", config.Language);
             Assert.Equal("token", config.ComAccessToken);
             Assert.Equal("secret", config.ComSecret);
             Assert.True(config.ComNotificationEnabled);
@@ -65,6 +68,7 @@ public sealed class UserConfigServiceTests
             Assert.NotNull(persisted);
             Assert.Equal("ME001", persisted!.MeResponsibleWorkId);
             Assert.Equal("张三", persisted.MeResponsibleName);
+            Assert.Equal("en-US", persisted.Language);
         }
         finally
         {
@@ -193,6 +197,38 @@ public sealed class UserConfigServiceTests
             var config = await service.GetAsync();
 
             Assert.False(config.ComNotificationEnabled);
+        }
+        finally
+        {
+            if (Directory.Exists(settingsDirectory))
+            {
+                Directory.Delete(settingsDirectory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task GetAsync_WhenLegacyLocalizationExists_ShouldMigrateLanguageIntoUserConfig()
+    {
+        var settingsDirectory = Path.Combine(Path.GetTempPath(), $"WearPartsControl.UserConfig.{Guid.NewGuid():N}");
+        Directory.CreateDirectory(settingsDirectory);
+
+        try
+        {
+            var store = new TypeJsonSaveInfoStore(settingsDirectory);
+            await store.WriteAsync(new LocalizationOptionsSaveInfo { CultureName = "en-US" });
+
+            var service = new UserConfigService(store);
+
+            var config = await service.GetAsync();
+
+            Assert.Equal("en-US", config.Language);
+            Assert.False(store.Exists<LocalizationOptionsSaveInfo>());
+
+            var persistedJson = await File.ReadAllTextAsync(Path.Combine(settingsDirectory, "user-config.json"));
+            var persisted = JsonSerializer.Deserialize<UserConfig>(persistedJson);
+            Assert.NotNull(persisted);
+            Assert.Equal("en-US", persisted!.Language);
         }
         finally
         {
