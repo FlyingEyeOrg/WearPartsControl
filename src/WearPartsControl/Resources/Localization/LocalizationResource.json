@@ -10,6 +10,7 @@
   },
   "MainWindow": {
     "Title": "WearPartsControl",
+    "TrayIconText": "Wear Parts Mistake-Proofing Control System",
     "Tabs": [
       "Wear Part Replacement",
       "Equipment Information",
@@ -21,6 +22,18 @@
   },
   "MainWindowView": {
     "BrandTitle": "Wear Parts Mistake-Proofing Control System"
+  },
+  "MainWindowTrayContent": {
+    "Title": "The app is running in the tray",
+    "Subtitle": "Double-click the tray icon to restore the main window",
+    "CurrentUserLabel": "Current user",
+    "AccessLevelLabel": "Current access",
+    "VersionLabel": "Software version",
+    "MinimizeHint": "When the window is minimized or closed, the system can continue running from the tray.",
+    "RestoreButton": "Restore Window",
+    "ExitButton": "Exit",
+    "ClosePromptTitle": "Close Main Window",
+    "ClosePromptMessage": "Minimize the application to the system tray and keep it running?\nChoose Yes to minimize to tray, No to exit the program, or Cancel to return to the main window."
   },
   "AddPartWindowView": {
     "Title": "Add Wear Part",

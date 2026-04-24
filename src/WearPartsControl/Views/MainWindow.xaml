@@ -1,11 +1,12 @@
 ﻿<Window x:Class="WearPartsControl.Views.MainWindow"
+    x:Name="RootWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WearPartsControl.Views"
         xmlns:uc="clr-namespace:WearPartsControl.UserControls"
         xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
         xmlns:vm="clr-namespace:WearPartsControl.ViewModels"
         mc:Ignorable="d"
         Title="{Binding Title}"
@@ -85,5 +86,15 @@
                            Visibility="{Binding HasLoadingText, Converter={StaticResource BooleanToVisibilityConverter}}" />
             </StackPanel>
         </Border>
+        <hc:NotifyIcon x:Name="TrayNotifyIcon"
+                       Text="{loc:Loc MainWindow.TrayIconText}"
+                       IsBlink="False"
+                       Visibility="Collapsed"
+                       MouseDoubleClick="OnTrayNotifyIconMouseDoubleClick"
+                       Icon="pack://application:,,,/WearPartsControl;component/Assets/app.ico">
+            <hc:NotifyIcon.ContextContent>
+                <uc:MainWindowTrayContentControl x:Name="TrayContextContentControl" />
+            </hc:NotifyIcon.ContextContent>
+        </hc:NotifyIcon>
     </Grid>
 </Window>

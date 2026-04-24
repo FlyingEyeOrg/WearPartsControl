@@ -95,6 +95,17 @@ public sealed class UserControlXamlLoadTests
         }, ensureApplicationResources: true);
     }
 
+    [Fact]
+    public void MainWindowTrayContentControl_ShouldLoadWithoutXamlParseException()
+    {
+        WpfTestHost.Run(() =>
+        {
+            var control = new MainWindowTrayContentControl();
+
+            Assert.NotNull(control);
+        }, ensureApplicationResources: true);
+    }
+
     private static T CreateUninitialized<T>() where T : class
     {
         return (T)RuntimeHelpers.GetUninitializedObject(typeof(T));

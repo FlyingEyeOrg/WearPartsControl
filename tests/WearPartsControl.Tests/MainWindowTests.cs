@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
+using HandyControl.Controls;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
@@ -51,6 +52,13 @@ public sealed class MainWindowTests
                 Assert.Same(viewModel, window.DataContext);
                 Assert.Equal(LocalizedText.Get("MainWindow.Title"), viewModel.Title);
                 Assert.Equal(LocalizedText.Get("MainWindowView.BrandTitle"), viewModel.BrandTitle);
+
+                var trayIcon = window.FindName("TrayNotifyIcon") as NotifyIcon;
+                Assert.NotNull(trayIcon);
+                Assert.Equal(System.Windows.Visibility.Collapsed, trayIcon!.Visibility);
+
+                var trayContent = window.FindName("TrayContextContentControl") as MainWindowTrayContentControl;
+                Assert.NotNull(trayContent);
             }
             finally
             {
