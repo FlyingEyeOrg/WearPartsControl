@@ -225,26 +225,19 @@
             <TextBlock Style="{StaticResource TextBlockDefaultWarning}"
                        Margin="8 16 0 0"
                        Text="{Binding StatusMessage, Mode=OneWay}" />
-            <Grid Margin="8 16 8 8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Button MinWidth="120"
+            <WrapPanel Margin="8 8 8 8">
+                <Button Margin="0 8 0 0"
+                        MinWidth="120"
                         IsEnabled="{Binding IsImportLegacyConfigurationEnabled}"
                         Click="OnImportLegacyConfigurationClicked"
                         Content="{loc:Loc ClientAppInfoControl.ImportLegacyConfigurationButton}" />
-                <Button Grid.Column="1"
+                <Button Margin="8 8 0 0"
                         MinWidth="80"
-                        Margin="8 0 0 0"
                         IsEnabled="{Binding IsSaveClientAppInfoEnabled}"
                         Click="OnSaveClicked"
                         Style="{StaticResource ButtonPrimary}"
                         Content="{loc:Loc ClientAppInfoControl.SaveButton}" />
-                <Grid Grid.Column="2"
-                      Margin="16 0 0 0"
+                <Grid Margin="16 8 0 0"
                       VerticalAlignment="Center">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -259,9 +252,9 @@
                              Foreground="White"
                              Text="{Binding WearPartMonitoringStatusText, Mode=OneWay}" />
                 </Grid>
-                <StackPanel Grid.Column="3"
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Right">
+                <StackPanel  Margin="8 8 0 0"
+                             Orientation="Horizontal"
+                             HorizontalAlignment="Right">
                     <Button MinWidth="120"
                             Style="{StaticResource ButtonDanger}"
                             Visibility="{Binding IsWearPartMonitoringEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -294,7 +287,7 @@
                             Click="OnTestPlcConnectionClicked"
                             Content="{loc:Loc ClientAppInfoControl.TestPlcConnectionButton}" />
                 </StackPanel>
-            </Grid>
+            </WrapPanel>
         </StackPanel>
     </Grid>
 </UserControl>
