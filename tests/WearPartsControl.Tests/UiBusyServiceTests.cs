@@ -85,7 +85,9 @@ public sealed class UiBusyServiceTests
         Assert.Equal("内层任务", service.BusyMessage);
 
         allowDelayCompletion.SetResult();
-        await WaitUntilAsync(() => service.BusyMessage == "内层任务");
+        await WaitUntilAsync(() => service.IsBusy);
+
+        Assert.Equal("内层任务", service.BusyMessage);
 
         inner.Dispose();
         await WaitUntilAsync(() => !service.IsBusy);

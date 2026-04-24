@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Threading;
 using WearPartsControl.UserControls;
 using Xunit;
 
@@ -19,7 +16,7 @@ public sealed class UserTabControlTests
     [Fact]
     public void HeadersChange_ShouldReselectCurrentTab_UsingUpdatedItems()
     {
-        RunWpfTest(() =>
+        WpfTestHost.Run(() =>
         {
             var command = new RecordingCommand();
             using var host = UserTabControlHost.Create(new[] { "A", "B", "C" }, 1, command);
@@ -42,7 +39,7 @@ public sealed class UserTabControlTests
     [Fact]
     public void ClickingDuplicateHeaders_ShouldExecuteCommandWithActualIndex()
     {
-        RunWpfTest(() =>
+        WpfTestHost.Run(() =>
         {
             var command = new RecordingCommand();
             using var host = UserTabControlHost.Create(new[] { "Same", "Same", "Other" }, 0, command);
@@ -56,36 +53,6 @@ public sealed class UserTabControlTests
             Assert.True(host.GetButton(1).IsChecked);
             Assert.Equal("Same", host.GetButtonText(1));
         });
-    }
-
-    private static void RunWpfTest(Action action)
-    {
-        Exception? exception = null;
-
-        var thread = new Thread(() =>
-        {
-            try
-            {
-                action();
-            }
-            catch (Exception ex)
-            {
-                exception = ex;
-            }
-            finally
-            {
-                Dispatcher.CurrentDispatcher.InvokeShutdown();
-            }
-        });
-
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        thread.Join();
-
-        if (exception != null)
-        {
-            ExceptionDispatchInfo.Capture(exception).Throw();
-        }
     }
 
     private sealed class RecordingCommand : ICommand
@@ -141,9 +108,9 @@ public sealed class UserTabControlTests
             };
 
             window.Show();
-            DrainDispatcherCore();
+            WpfTestHost.DrainDispatcher();
             window.UpdateLayout();
-            DrainDispatcherCore();
+            WpfTestHost.DrainDispatcher();
 
             var itemsControl = (ItemsControl)control.FindName("TabItemsControl")!;
             return new UserTabControlHost(window, control, itemsControl);
@@ -164,24 +131,13 @@ public sealed class UserTabControlTests
 
         public void DrainDispatcher()
         {
-            DrainDispatcherCore();
+            WpfTestHost.DrainDispatcher();
         }
 
         public void Dispose()
         {
             _window.Close();
-            DrainDispatcherCore();
-        }
-
-        private static void DrainDispatcherCore()
-        {
-            var frame = new DispatcherFrame();
-            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, new DispatcherOperationCallback(_ =>
-            {
-                frame.Continue = false;
-                return null;
-            }), null);
-            Dispatcher.PushFrame(frame);
+            WpfTestHost.DrainDispatcher();
         }
     }
 }

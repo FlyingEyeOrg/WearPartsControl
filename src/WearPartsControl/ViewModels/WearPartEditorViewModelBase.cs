@@ -10,7 +10,7 @@ using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ViewModels;
 
-public abstract class WearPartEditorViewModelBase : ObservableObject
+public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
 {
     private static readonly IReadOnlyDictionary<string, string> LifetimeTypeAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
@@ -49,6 +49,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
     private string _plcZeroClearAddress = string.Empty;
     private string _barcodeWriteAddress = string.Empty;
     private string _statusMessage = string.Empty;
+    private Func<string>? _statusMessageFactory;
 
     protected WearPartEditorViewModelBase(
         IWearPartManagementService wearPartManagementService,
@@ -230,9 +231,9 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         LifetimeType = DefaultCreateLifetimeType;
         PlcZeroClearAddress = string.Empty;
         BarcodeWriteAddress = string.Empty;
-        StatusMessage = string.IsNullOrWhiteSpace(ResourceNumber)
+        SetLocalizedStatusMessage(() => string.IsNullOrWhiteSpace(ResourceNumber)
             ? LocalizedText.Get("ViewModels.WearPartEditorVm.ResourceNumberMissing")
-            : LocalizedText.Format("ViewModels.WearPartEditorVm.CurrentResourceNumber", ResourceNumber);
+            : LocalizedText.Format("ViewModels.WearPartEditorVm.CurrentResourceNumber", ResourceNumber));
         SaveCommand.NotifyCanExecuteChanged();
     }
 
@@ -257,7 +258,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         LifetimeType = NormalizeLifetimeType(definition.LifetimeType);
         PlcZeroClearAddress = definition.PlcZeroClearAddress;
         BarcodeWriteAddress = definition.BarcodeWriteAddress;
-        StatusMessage = LocalizedText.Format("ViewModels.WearPartEditorVm.Editing", ResourceNumber);
+        SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.WearPartEditorVm.Editing", ResourceNumber));
         SaveCommand.NotifyCanExecuteChanged();
     }
 
@@ -287,7 +288,7 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
     {
         var enteredAt = DateTimeOffset.UtcNow;
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.WearPartEditorVm.Saving");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.WearPartEditorVm.Saving"));
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.WearPartEditorVm.Saving"));
 
         try
@@ -296,13 +297,13 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
             var definition = BuildDefinition();
             await PersistAsync(definition, CancellationToken.None).ConfigureAwait(true);
             await EnsureMinimumBusyDurationAsync(enteredAt).ConfigureAwait(true);
-            StatusMessage = LocalizedText.Get("ViewModels.WearPartEditorVm.Saved");
+            SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.WearPartEditorVm.Saved"));
             RequestClose?.Invoke(this, true);
         }
         catch (Exception ex)
         {
             await EnsureMinimumBusyDurationAsync(enteredAt).ConfigureAwait(true);
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
         }
         finally
         {
@@ -387,5 +388,25 @@ public abstract class WearPartEditorViewModelBase : ObservableObject
         return LifetimeTypeAliases.TryGetValue(normalized, out var alias)
             ? alias
             : normalized;
+    }
+
+    protected override void OnLocalizationRefreshed()
+    {
+        if (_statusMessageFactory is not null)
+        {
+            StatusMessage = _statusMessageFactory();
+        }
+    }
+
+    private void SetLocalizedStatusMessage(Func<string> factory)
+    {
+        _statusMessageFactory = factory;
+        StatusMessage = factory();
+    }
+
+    private void SetRawStatusMessage(string message)
+    {
+        _statusMessageFactory = null;
+        StatusMessage = message;
     }
 }

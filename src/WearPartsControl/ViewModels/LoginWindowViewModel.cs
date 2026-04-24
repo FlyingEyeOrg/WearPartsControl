@@ -11,7 +11,7 @@ using WearPartsControl.Domain.Repositories;
 
 namespace WearPartsControl.ViewModels
 {
-    public class LoginWindowViewModel : ObservableObject
+    public class LoginWindowViewModel : LocalizedViewModelBase
     {
         private readonly ILoginService _loginService;
         private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
@@ -25,6 +25,7 @@ namespace WearPartsControl.ViewModels
         private int _loginInputMaxIntervalMilliseconds = 80;
         private bool _useWorkNumberLogin;
         private bool _isBusy;
+        private Func<string>? _statusMessageFactory;
 
         public LoginWindowViewModel(
             ILoginService loginService,
@@ -41,6 +42,7 @@ namespace WearPartsControl.ViewModels
             _delayAsync = delayAsync ?? Task.Delay;
             MinimumBusyDuration = minimumBusyDuration ?? TimeSpan.FromMilliseconds(500);
             LoginCommand = new AsyncRelayCommand(LoginAsync, CanLogin);
+            SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.LoginWindowVm.PromptSwipeCard"));
         }
 
         public event EventHandler<bool?>? RequestClose;
@@ -130,7 +132,7 @@ namespace WearPartsControl.ViewModels
             if (string.IsNullOrWhiteSpace(ResourceNumber))
             {
                 SiteCode = string.Empty;
-                StatusMessage = LocalizedText.Get("ViewModels.LoginWindowVm.ResourceNumberMissing");
+                SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.LoginWindowVm.ResourceNumberMissing"));
                 return;
             }
 
@@ -138,19 +140,19 @@ namespace WearPartsControl.ViewModels
             if (clientAppConfiguration is null)
             {
                 SiteCode = string.Empty;
-                StatusMessage = LocalizedText.Format("ViewModels.LoginWindowVm.ClientConfigurationNotFound", ResourceNumber);
+                SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.LoginWindowVm.ClientConfigurationNotFound", ResourceNumber));
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(clientAppConfiguration.SiteCode))
             {
                 SiteCode = string.Empty;
-                StatusMessage = LocalizedText.Format("ViewModels.LoginWindowVm.ClientConfigurationSiteMissing", ResourceNumber);
+                SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.LoginWindowVm.ClientConfigurationSiteMissing", ResourceNumber));
                 return;
             }
 
             SiteCode = clientAppConfiguration.SiteCode.Trim();
-            StatusMessage = LoginPrompt;
+            SetLocalizedStatusMessage(() => LoginPrompt);
         }
 
         public void RejectManualInput()
@@ -161,7 +163,7 @@ namespace WearPartsControl.ViewModels
             }
 
             AuthId = string.Empty;
-            StatusMessage = LocalizedText.Format("ViewModels.LoginWindowVm.ManualInputRejected", LoginInputMaxIntervalMilliseconds);
+            SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.LoginWindowVm.ManualInputRejected", LoginInputMaxIntervalMilliseconds));
         }
 
         public void ClearInput()
@@ -188,9 +190,9 @@ namespace WearPartsControl.ViewModels
             var authId = AuthId.Trim();
             if (string.IsNullOrWhiteSpace(authId))
             {
-                await _uiDispatcher.RunAsync(() => StatusMessage = LocalizedText.Get(UseWorkNumberLogin
+                await _uiDispatcher.RunAsync(() => SetLocalizedStatusMessage(() => LocalizedText.Get(UseWorkNumberLogin
                     ? "ViewModels.LoginWindowVm.AuthIdMissingWorkNumber"
-                    : "ViewModels.LoginWindowVm.AuthIdMissing"));
+                    : "ViewModels.LoginWindowVm.AuthIdMissing")));
                 return;
             }
 
@@ -199,7 +201,7 @@ namespace WearPartsControl.ViewModels
             await _uiDispatcher.RunAsync(() =>
             {
                 IsBusy = true;
-                StatusMessage = LocalizedText.Get("ViewModels.LoginWindowVm.LoggingIn");
+                SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.LoginWindowVm.LoggingIn"));
             });
 
             await _uiDispatcher.RenderAsync();
@@ -214,7 +216,7 @@ namespace WearPartsControl.ViewModels
                     await _uiDispatcher.RunAsync(() =>
                     {
                         AuthId = string.Empty;
-                        StatusMessage = LocalizedText.Get("ViewModels.LoginWindowVm.UserNotFound");
+                        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.LoginWindowVm.UserNotFound"));
                         RequestClearInput?.Invoke(this, EventArgs.Empty);
                     });
                     return;
@@ -222,7 +224,7 @@ namespace WearPartsControl.ViewModels
 
                 await _uiDispatcher.RunAsync(() =>
                 {
-                    StatusMessage = LocalizedText.Format("ViewModels.LoginWindowVm.LoginSucceeded", user.WorkId);
+                    SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.LoginWindowVm.LoginSucceeded", user.WorkId));
                     RequestClose?.Invoke(this, true);
                 });
             }
@@ -232,7 +234,7 @@ namespace WearPartsControl.ViewModels
                 await _uiDispatcher.RunAsync(() =>
                 {
                     AuthId = string.Empty;
-                    StatusMessage = ex.Message;
+                    SetRawStatusMessage(ex.Message);
                     RequestClearInput?.Invoke(this, EventArgs.Empty);
                 });
             }
@@ -257,6 +259,28 @@ namespace WearPartsControl.ViewModels
         private void NotifyLoginCommandCanExecuteChanged()
         {
             _ = _uiDispatcher.RunAsync(LoginCommand.NotifyCanExecuteChanged);
+        }
+
+        protected override void OnLocalizationRefreshed()
+        {
+            OnPropertyChanged(nameof(LoginPrompt));
+
+            if (_statusMessageFactory is not null)
+            {
+                StatusMessage = _statusMessageFactory();
+            }
+        }
+
+        private void SetLocalizedStatusMessage(Func<string> factory)
+        {
+            _statusMessageFactory = factory;
+            StatusMessage = factory();
+        }
+
+        private void SetRawStatusMessage(string message)
+        {
+            _statusMessageFactory = null;
+            StatusMessage = message;
         }
     }
 }

@@ -1,12 +1,14 @@
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.LegacyImport;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ViewModels;
 using Xunit;
 
 namespace WearPartsControl.Tests;
 
+[Collection(LocalizationSensitiveTestCollection.Name)]
 public sealed class PartManagementViewModelTests
 {
     [Fact]
@@ -46,6 +48,23 @@ public sealed class PartManagementViewModelTests
         viewModel.ImportLegacyDefinitionsCommand.Execute(null);
 
         Assert.True(raised);
+    }
+
+    [Fact]
+    public void LocalizationRefresh_ShouldUpdateDefaultStatusMessage()
+    {
+        using var cultureScope = new TestCultureScope("zh-CN");
+        var viewModel = new PartManagementViewModel(
+            new StubClientAppInfoService(),
+            new StubLegacyDatabaseImportService(),
+            new StubWearPartManagementService(),
+            new StubUiDispatcher(),
+            new UiBusyService(TimeSpan.Zero));
+
+        using var _ = new TestCultureScope("en-US");
+        LocalizationBindingSource.Instance.Refresh();
+
+        Assert.Equal(LocalizedText.Get("ViewModels.PartManagementVm.PromptLoadCurrent"), viewModel.StatusMessage);
     }
 
     private sealed class StubClientAppInfoService : IClientAppInfoService

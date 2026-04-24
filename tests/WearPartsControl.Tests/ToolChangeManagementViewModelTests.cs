@@ -6,6 +6,7 @@ using Xunit;
 
 namespace WearPartsControl.Tests;
 
+[Collection(LocalizationSensitiveTestCollection.Name)]
 public sealed class ToolChangeManagementViewModelTests
 {
     [Fact]
@@ -56,6 +57,27 @@ public sealed class ToolChangeManagementViewModelTests
         Assert.Equal("TL-02", viewModel.SelectedDefinition?.Code);
         Assert.Equal(LocalizedText.Format("ViewModels.ToolChangeManagementVm.UpdatedWithName", "标准刀-改"), viewModel.StatusMessage);
         Assert.True(uiDispatcher.RenderCount >= 2);
+    }
+
+    [Fact]
+    public async Task LocalizationRefresh_ShouldUpdateEditingStatus()
+    {
+        using var cultureScope = new TestCultureScope("zh-CN");
+        var existing = new ToolChangeDefinition
+        {
+            Id = Guid.NewGuid(),
+            Name = "标准刀",
+            Code = "TL-01"
+        };
+        var viewModel = new ToolChangeManagementViewModel(new StubToolChangeManagementService(existing), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+        viewModel.SelectedDefinition = viewModel.Definitions.Single();
+
+        using var _ = new TestCultureScope("en-US");
+        LocalizationBindingSource.Instance.Refresh();
+
+        Assert.Equal(LocalizedText.Format("ViewModels.ToolChangeManagementVm.Editing", "标准刀"), viewModel.StatusMessage);
     }
 
     private sealed class StubToolChangeManagementService : IToolChangeManagementService

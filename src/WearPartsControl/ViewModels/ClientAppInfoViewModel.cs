@@ -14,7 +14,7 @@ using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ViewModels;
 
-public sealed class ClientAppInfoViewModel : ObservableObject
+public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
 {
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly IClientAppInfoSelectionOptionsProvider _selectionOptionsProvider;
@@ -46,6 +46,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     private string _statusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.PromptComplete");
     private bool _isStringReverse = true;
     private bool _isWearPartMonitoringEnabled;
+    private Func<string>? _statusMessageFactory;
 
     public ClientAppInfoViewModel(
         IClientAppInfoService clientAppInfoService,
@@ -75,6 +76,8 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         {
             PlcProtocolTypes.Add(plcProtocolType);
         }
+
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ClientAppInfoVm.PromptComplete"));
     }
 
     public ObservableCollection<SiteOption> SiteOptions { get; } = new();
@@ -361,9 +364,9 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             var model = await _clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(true);
             Apply(model);
             _isInitialized = true;
-            StatusMessage = string.IsNullOrWhiteSpace(model.ResourceNumber)
+            SetLocalizedStatusMessage(() => string.IsNullOrWhiteSpace(model.ResourceNumber)
                 ? LocalizedText.Get("ViewModels.ClientAppInfoVm.PromptComplete")
-                : LocalizedText.Get("ViewModels.ClientAppInfoVm.Loaded");
+                : LocalizedText.Get("ViewModels.ClientAppInfoVm.Loaded"));
         }
         finally
         {
@@ -394,7 +397,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     private async Task SaveAsync()
     {
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.Saving");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ClientAppInfoVm.Saving"));
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.ClientAppInfoVm.Saving"));
         await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
@@ -403,11 +406,11 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             var request = BuildSaveRequest();
             var saved = await _clientAppInfoService.SaveAsync(request).ConfigureAwait(true);
             Apply(saved);
-            StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.Saved");
+            SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ClientAppInfoVm.Saved"));
         }
         catch (Exception ex)
         {
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
         }
         finally
         {
@@ -418,7 +421,7 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     public async Task<LegacyConfigurationImportResult> ImportLegacyConfigurationAsync(string legacyDatabasePath, CancellationToken cancellationToken = default)
     {
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.ImportingLegacyConfiguration");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ClientAppInfoVm.ImportingLegacyConfiguration"));
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.ClientAppInfoVm.ImportingLegacyConfiguration"));
         await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
@@ -426,12 +429,12 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         {
             var result = await _legacyConfigurationImportService.ImportAsync(legacyDatabasePath, cancellationToken).ConfigureAwait(true);
             Apply(result.ClientAppInfo);
-            StatusMessage = LocalizedText.Format("ViewModels.ClientAppInfoVm.ImportedLegacyConfiguration", result.ResourceNumber);
+            SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.ClientAppInfoVm.ImportedLegacyConfiguration", result.ResourceNumber));
             return result;
         }
         catch (Exception ex)
         {
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
             throw;
         }
         finally
@@ -442,24 +445,24 @@ public sealed class ClientAppInfoViewModel : ObservableObject
 
     public void NotifyLegacyConfigurationImportCanceled()
     {
-        StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.ImportCanceled");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ClientAppInfoVm.ImportCanceled"));
     }
 
     private async Task TestPlcConnectionAsync()
     {
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.TestingPlcConnection");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ClientAppInfoVm.TestingPlcConnection"));
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.ClientAppInfoVm.TestingPlcConnection"));
         await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {
             var result = await _plcConnectionTestService.TestAsync(BuildCurrentModel()).ConfigureAwait(true);
-            StatusMessage = result.Message;
+            SetRawStatusMessage(result.Message);
         }
         catch (Exception ex)
         {
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
         }
         finally
         {
@@ -470,9 +473,9 @@ public sealed class ClientAppInfoViewModel : ObservableObject
     private async Task ToggleWearPartMonitoringAsync()
     {
         IsBusy = true;
-        StatusMessage = IsWearPartMonitoringEnabled
+        SetLocalizedStatusMessage(() => IsWearPartMonitoringEnabled
             ? LocalizedText.Get("ViewModels.ClientAppInfoVm.StoppingWearPartMonitoring")
-            : LocalizedText.Get("ViewModels.ClientAppInfoVm.StartingWearPartMonitoring");
+            : LocalizedText.Get("ViewModels.ClientAppInfoVm.StartingWearPartMonitoring"));
         using var _ = _uiBusyService.Enter(StatusMessage);
         await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
@@ -482,18 +485,18 @@ public sealed class ClientAppInfoViewModel : ObservableObject
             {
                 await _wearPartMonitoringControlService.DisableAsync().ConfigureAwait(true);
                 IsWearPartMonitoringEnabled = false;
-                StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringStopped");
+                SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringStopped"));
             }
             else
             {
                 await _wearPartMonitoringControlService.EnableAsync().ConfigureAwait(true);
                 IsWearPartMonitoringEnabled = true;
-                StatusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringStarted");
+                SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringStarted"));
             }
         }
         catch (Exception ex)
         {
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
         }
         finally
         {
@@ -836,6 +839,69 @@ public sealed class ClientAppInfoViewModel : ObservableObject
         }
 
         return FactoryOptions.FirstOrDefault() ?? string.Empty;
+    }
+
+    protected override void OnLocalizationRefreshed()
+    {
+        OnPropertyChanged(nameof(WearPartMonitoringButtonText));
+        OnPropertyChanged(nameof(WearPartMonitoringStatusText));
+
+        if (_statusMessageFactory is not null)
+        {
+            StatusMessage = _statusMessageFactory();
+        }
+
+        if (_isInitialized)
+        {
+            _ = RefreshLocalizedSelectionOptionsAsync();
+        }
+    }
+
+    private async Task RefreshLocalizedSelectionOptionsAsync()
+    {
+        var selectedAreaCode = AreaCode;
+        var selectedProcedureCode = ProcedureCode;
+        var options = await _selectionOptionsProvider.GetAsync().ConfigureAwait(false);
+
+        await _uiDispatcher.RunAsync(() =>
+        {
+            _isUpdatingState = true;
+            try
+            {
+                AreaOptions.Clear();
+                foreach (var area in options.AreaOptions)
+                {
+                    AreaOptions.Add(area);
+                }
+
+                ProcedureOptions.Clear();
+                foreach (var procedure in options.ProcedureOptions)
+                {
+                    ProcedureOptions.Add(procedure);
+                }
+
+                EnsureOption(AreaOptions, selectedAreaCode);
+                EnsureOption(ProcedureOptions, selectedProcedureCode);
+                AreaCode = ResolveAreaCode(selectedAreaCode);
+                ProcedureCode = ResolveProcedureCode(selectedProcedureCode);
+            }
+            finally
+            {
+                _isUpdatingState = false;
+            }
+        }).ConfigureAwait(false);
+    }
+
+    private void SetLocalizedStatusMessage(Func<string> factory)
+    {
+        _statusMessageFactory = factory;
+        StatusMessage = factory();
+    }
+
+    private void SetRawStatusMessage(string message)
+    {
+        _statusMessageFactory = null;
+        StatusMessage = message;
     }
 
     private sealed record ClientAppInfoSnapshot(

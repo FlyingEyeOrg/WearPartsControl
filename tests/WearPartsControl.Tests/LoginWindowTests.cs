@@ -1,6 +1,4 @@
 using System;
-using System.Runtime.ExceptionServices;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -22,7 +20,7 @@ public sealed class LoginWindowTests
     [Fact]
     public void Show_ShouldLoadWithoutXamlParseException_WhenViewModelHasReadOnlyDisplayProperties()
     {
-        RunWpfTest(() =>
+        WpfTestHost.Run(() =>
         {
             var viewModel = new LoginWindowViewModel(
                 new StubLoginService(),
@@ -36,9 +34,9 @@ public sealed class LoginWindowTests
             try
             {
                 window.Show();
-                DrainDispatcher();
+                WpfTestHost.DrainDispatcher();
                 window.UpdateLayout();
-                DrainDispatcher();
+                WpfTestHost.DrainDispatcher();
 
                 Assert.Same(viewModel, window.DataContext);
                 Assert.Equal("RES-001", viewModel.ResourceNumber);
@@ -47,86 +45,9 @@ public sealed class LoginWindowTests
             finally
             {
                 window.Close();
-                DrainDispatcher();
+                WpfTestHost.DrainDispatcher();
             }
-        });
-    }
-
-    private static void RunWpfTest(Action action)
-    {
-        Exception? exception = null;
-
-        var thread = new Thread(() =>
-        {
-            var ownsApplication = false;
-
-            try
-            {
-                ownsApplication = EnsureApplicationResources();
-                action();
-            }
-            catch (Exception ex)
-            {
-                exception = ex;
-            }
-            finally
-            {
-                if (ownsApplication && Application.Current is not null)
-                {
-                    Application.Current.Shutdown();
-                }
-
-                Dispatcher.CurrentDispatcher.InvokeShutdown();
-            }
-        });
-
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        thread.Join();
-
-        if (exception is not null)
-        {
-            ExceptionDispatchInfo.Capture(exception).Throw();
-        }
-    }
-
-    private static bool EnsureApplicationResources()
-    {
-        var ownsApplication = false;
-
-        if (Application.Current is null)
-        {
-            _ = new Application();
-            ownsApplication = true;
-        }
-
-        var resources = Application.Current!.Resources;
-        if (resources.Contains("ButtonPrimary"))
-        {
-            return ownsApplication;
-        }
-
-        resources.MergedDictionaries.Add(new ResourceDictionary
-        {
-            Source = new Uri("pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml", UriKind.Absolute)
-        });
-        resources.MergedDictionaries.Add(new ResourceDictionary
-        {
-            Source = new Uri("pack://application:,,,/HandyControl;component/Themes/Theme.xaml", UriKind.Absolute)
-        });
-        resources["BooleanToVisibilityConverter"] = new BooleanToVisibilityConverter();
-        return ownsApplication;
-    }
-
-    private static void DrainDispatcher()
-    {
-        var frame = new DispatcherFrame();
-        Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, new DispatcherOperationCallback(_ =>
-        {
-            frame.Continue = false;
-            return null;
-        }), null);
-        Dispatcher.PushFrame(frame);
+        }, ensureApplicationResources: true);
     }
 
     private sealed class StubLoginService : ILoginService

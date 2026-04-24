@@ -10,6 +10,7 @@ using Xunit;
 
 namespace WearPartsControl.Tests;
 
+[Collection(LocalizationSensitiveTestCollection.Name)]
 public sealed class ClientAppInfoViewModelTests : IDisposable
 {
     private readonly string _settingsDirectory;
@@ -407,6 +408,61 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         Assert.True(uiDispatcher.RenderCount >= 3);
     }
 
+    [Fact]
+    public async Task LocalizationRefresh_ShouldReloadLocalizedSelectionOptionsAndStatusTexts()
+    {
+        using var cultureScope = new TestCultureScope("zh-CN");
+        var englishSelectionOptionsPath = Path.Combine(PortableDataPaths.SettingsDirectory, "client-app-info.en-US.json");
+        var originalEnglishSelectionOptionsJson = File.Exists(englishSelectionOptionsPath) ? File.ReadAllText(englishSelectionOptionsPath) : null;
+        File.WriteAllText(englishSelectionOptionsPath, """
+{
+    "AreaOptions": ["Anode", "Cathode"],
+    "ProcedureOptions": ["Gravure", "Hot Press/Cold Press", "X-ray"]
+}
+""");
+
+        try
+        {
+            var localizationService = new MutableLocalizationService("zh-CN");
+            var uiDispatcher = new TrackingUiDispatcher();
+            var viewModel = new ClientAppInfoViewModel(
+                new StubClientAppInfoService(),
+                new JsonClientAppInfoSelectionOptionsProvider(localizationService),
+                new StubLegacyConfigurationImportService(),
+                new StubPlcConnectionTestService(),
+                new PlcConnectionStatusService(),
+                new StubWearPartMonitoringControlService { IsEnabled = false },
+                uiDispatcher,
+                new UiBusyService());
+
+            await viewModel.InitializeAsync();
+            Assert.Contains("阳极", viewModel.AreaOptions);
+
+            await localizationService.SetCultureAsync("en-US");
+            LocalizationBindingSource.Instance.Refresh();
+
+            await WaitUntilAsync(() => viewModel.AreaOptions.Contains("Anode") && viewModel.ProcedureOptions.Contains("Gravure"));
+
+            Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.StartWearPartMonitoring"), viewModel.WearPartMonitoringButtonText);
+            Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.Loaded"), viewModel.StatusMessage);
+            Assert.True(uiDispatcher.RenderCount >= 1 || viewModel.AreaOptions.Contains("Anode"));
+        }
+        finally
+        {
+            if (originalEnglishSelectionOptionsJson is null)
+            {
+                if (File.Exists(englishSelectionOptionsPath))
+                {
+                    File.Delete(englishSelectionOptionsPath);
+                }
+            }
+            else
+            {
+                File.WriteAllText(englishSelectionOptionsPath, originalEnglishSelectionOptionsJson);
+            }
+        }
+    }
+
     public void Dispose()
     {
         if (_originalSiteFactoryJson is null)
@@ -440,6 +496,21 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         }
 
         File.WriteAllText(_selectionOptionsPath, _originalSelectionOptionsJson);
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> predicate)
+    {
+        for (var index = 0; index < 30; index++)
+        {
+            if (predicate())
+            {
+                return;
+            }
+
+            await Task.Delay(10);
+        }
+
+        Assert.True(predicate());
     }
 
     private sealed class StubClientAppInfoService : IClientAppInfoService
@@ -503,6 +574,38 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
         public ValueTask SetCultureAsync(string cultureName, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
 
         public System.Globalization.CultureInfo CurrentCulture { get; } = System.Globalization.CultureInfo.GetCultureInfo("zh-CN");
+    }
+
+    private sealed class MutableLocalizationService : ILocalizationService
+    {
+        public MutableLocalizationService(string cultureName)
+        {
+            CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(cultureName);
+            ApplyCulture(CurrentCulture);
+        }
+
+        public string this[string name] => LocalizedText.Get(name);
+
+        public ApplicationServices.Localization.Generated.LocalizationCatalog Catalog { get; } = new(LocalizedText.Get);
+
+        public System.Globalization.CultureInfo CurrentCulture { get; private set; }
+
+        public ValueTask InitializeAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+
+        public ValueTask SetCultureAsync(string cultureName, CancellationToken cancellationToken = default)
+        {
+            CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(cultureName);
+            ApplyCulture(CurrentCulture);
+            return ValueTask.CompletedTask;
+        }
+
+        private static void ApplyCulture(System.Globalization.CultureInfo culture)
+        {
+            System.Globalization.CultureInfo.CurrentCulture = culture;
+            System.Globalization.CultureInfo.CurrentUICulture = culture;
+            System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
+            System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
+        }
     }
 
     private sealed class StubLegacyConfigurationImportService : ILegacyConfigurationImportService

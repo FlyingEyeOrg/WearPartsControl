@@ -11,6 +11,7 @@ using Xunit;
 
 namespace WearPartsControl.Tests;
 
+[Collection(LocalizationSensitiveTestCollection.Name)]
 public sealed class LoginWindowViewModelTests
 {
     [Fact]
@@ -188,6 +189,25 @@ public sealed class LoginWindowViewModelTests
         Assert.True(clearRaised);
         Assert.Equal(string.Empty, viewModel.AuthId);
         Assert.Equal("登录失败", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task LocalizationRefresh_ShouldUpdatePromptAndLocalizedStatus()
+    {
+        using var cultureScope = new TestCultureScope("zh-CN");
+        var viewModel = new LoginWindowViewModel(
+            new StubLoginService(),
+            new StubClientAppConfigurationRepository(),
+            new StubAppSettingsService { UseWorkNumberLogin = true },
+            new StubUiDispatcher());
+
+        await viewModel.InitializeAsync();
+
+        using var _ = new TestCultureScope("en-US");
+        LocalizationBindingSource.Instance.Refresh();
+
+        Assert.Equal(LocalizedText.Get("ViewModels.LoginWindowVm.PromptEnterWorkNumber"), viewModel.LoginPrompt);
+        Assert.Equal(LocalizedText.Get("ViewModels.LoginWindowVm.PromptEnterWorkNumber"), viewModel.StatusMessage);
     }
 
     private sealed class StubLoginService : ILoginService

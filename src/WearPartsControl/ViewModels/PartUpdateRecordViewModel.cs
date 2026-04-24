@@ -9,7 +9,7 @@ using WearPartsControl.ApplicationServices.PartServices;
 
 namespace WearPartsControl.ViewModels;
 
-public sealed class PartUpdateRecordViewModel : ObservableObject
+public sealed class PartUpdateRecordViewModel : LocalizedViewModelBase
 {
     private const int DefaultPageSize = 20;
     private static readonly int[] SupportedPageSizes = [10, 20, 50, 100];
@@ -32,6 +32,7 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
     private int _selectedPageSize = DefaultPageSize;
     private string _requestedPageNumber = "1";
     private string _statusMessage = LocalizedText.Get("ViewModels.PartUpdateRecordVm.PromptLoadCurrent");
+    private Func<string>? _statusMessageFactory;
 
     public PartUpdateRecordViewModel(
         IClientAppInfoService clientAppInfoService,
@@ -57,6 +58,8 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
         {
             PageSizeOptions.Add(pageSize);
         }
+
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.PartUpdateRecordVm.PromptLoadCurrent"));
     }
 
     public event EventHandler<PartUpdateRecordExportRequestedEventArgs>? ExportRequested;
@@ -174,7 +177,7 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
         }
 
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.PartUpdateRecordVm.Loading");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.PartUpdateRecordVm.Loading"));
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.PartUpdateRecordVm.Loading"));
         await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
@@ -197,7 +200,7 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
             if (_clientAppConfigurationId == Guid.Empty || string.IsNullOrWhiteSpace(ResourceNumber))
             {
                 SelectedDefinition = null;
-                StatusMessage = LocalizedText.Get("ViewModels.PartUpdateRecordVm.ResourceNumberMissing");
+                SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.PartUpdateRecordVm.ResourceNumberMissing"));
                 return;
             }
 
@@ -222,7 +225,7 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
         }
         finally
         {
@@ -232,17 +235,17 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
 
     public void NotifyExportSucceeded(string filePath)
     {
-        StatusMessage = LocalizedText.Format("ViewModels.PartUpdateRecordVm.ExportSucceeded", filePath);
+        SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.PartUpdateRecordVm.ExportSucceeded", filePath));
     }
 
     public void NotifyExportCanceled()
     {
-        StatusMessage = LocalizedText.Get("ViewModels.PartUpdateRecordVm.ExportCanceled");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.PartUpdateRecordVm.ExportCanceled"));
     }
 
     public void NotifyExportFailed(string message)
     {
-        StatusMessage = LocalizedText.Get("ViewModels.PartUpdateRecordVm.ExportFailedPrefix") + message;
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.PartUpdateRecordVm.ExportFailedPrefix") + message);
     }
 
     private bool CanQuery() => !IsBusy;
@@ -303,7 +306,7 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
     {
         if (!IsRequestedPageNumberValid() || !int.TryParse(RequestedPageNumber?.Trim(), out var pageNumber))
         {
-            StatusMessage = LocalizedText.Get("ViewModels.PartUpdateRecordVm.InvalidPageNumber");
+            SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.PartUpdateRecordVm.InvalidPageNumber"));
             return;
         }
 
@@ -347,17 +350,17 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
 
         if (_allRecords.Count == 0)
         {
-            StatusMessage = LocalizedText.Format("ViewModels.PartUpdateRecordVm.RecordsEmpty", ResourceNumber);
+            SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.PartUpdateRecordVm.RecordsEmpty", ResourceNumber));
             return;
         }
 
         if (SelectedDefinition is null)
         {
-            StatusMessage = LocalizedText.Format("ViewModels.PartUpdateRecordVm.RecordsLoaded", ResourceNumber, _allRecords.Count);
+            SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.PartUpdateRecordVm.RecordsLoaded", ResourceNumber, _allRecords.Count));
             return;
         }
 
-        StatusMessage = LocalizedText.Format("ViewModels.PartUpdateRecordVm.RecordsFiltered", _filteredRecords.Count);
+        SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.PartUpdateRecordVm.RecordsFiltered", _filteredRecords.Count));
     }
 
     private void RequestExport()
@@ -400,6 +403,33 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
         }
 
         return value;
+    }
+
+    protected override void OnLocalizationRefreshed()
+    {
+        foreach (var record in _allRecords)
+        {
+            record.ReasonDisplayName = string.Empty;
+        }
+
+        LoadCurrentPage();
+
+        if (_statusMessageFactory is not null)
+        {
+            StatusMessage = _statusMessageFactory();
+        }
+    }
+
+    private void SetLocalizedStatusMessage(Func<string> factory)
+    {
+        _statusMessageFactory = factory;
+        StatusMessage = factory();
+    }
+
+    private void SetRawStatusMessage(string message)
+    {
+        _statusMessageFactory = null;
+        StatusMessage = message;
     }
 }
 

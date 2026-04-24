@@ -10,7 +10,7 @@ using WearPartsControl.ApplicationServices.UserConfig;
 
 namespace WearPartsControl.ViewModels;
 
-public sealed class UserConfigViewModel : ObservableObject
+public sealed class UserConfigViewModel : LocalizedViewModelBase
 {
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly IUserConfigService _userConfigService;
@@ -47,6 +47,7 @@ public sealed class UserConfigViewModel : ObservableObject
     private string _spacerValidationExpectedSegmentCount = UserConfig.DefaultSpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture);
     private string _selectedLanguage = "zh-CN";
     private string _statusMessage = LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain");
+    private Func<string>? _statusMessageFactory;
 
     public UserConfigViewModel(IClientAppInfoService clientAppInfoService, IUserConfigService userConfigService, IComNotificationService comNotificationService, ILocalizationService localizationService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService)
     {
@@ -60,6 +61,7 @@ public sealed class UserConfigViewModel : ObservableObject
         TestComNotificationCommand = new AsyncRelayCommand(TestComNotificationAsync, CanTestComNotification);
         _selectedLanguage = _localizationService.CurrentCulture.Name;
         RefreshLanguageOptions();
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain"));
     }
 
     public ObservableCollection<LanguageOption> LanguageOptions
@@ -368,7 +370,7 @@ public sealed class UserConfigViewModel : ObservableObject
                 _originalSnapshot = CaptureSnapshot();
                 IsDirty = false;
                 _isInitialized = true;
-                StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.Loaded");
+                SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.UserConfigVm.Loaded"));
             }).ConfigureAwait(false);
         }, LocalizedText.Get("ViewModels.UserConfigVm.LoadFailedPrefix"), LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain"), cancellationToken).ConfigureAwait(false);
     }
@@ -389,7 +391,7 @@ public sealed class UserConfigViewModel : ObservableObject
                 RefreshLanguageOptions();
                 _originalSnapshot = CaptureSnapshot();
                 IsDirty = false;
-                StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.Saved");
+                SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.UserConfigVm.Saved"));
                 _isInitialized = true;
             }).ConfigureAwait(false);
         }, LocalizedText.Get("ViewModels.UserConfigVm.SaveFailedPrefix"), LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain")).ConfigureAwait(false);
@@ -434,7 +436,7 @@ public sealed class UserConfigViewModel : ObservableObject
                 message.Markdown,
                 recipients).ConfigureAwait(false);
 
-            await _uiDispatcher.RunAsync(() => StatusMessage = LocalizedText.Get("ViewModels.UserConfigVm.TestSucceeded")).ConfigureAwait(false);
+            await _uiDispatcher.RunAsync(() => SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.UserConfigVm.TestSucceeded"))).ConfigureAwait(false);
         }, LocalizedText.Get("ViewModels.UserConfigVm.TestFailedPrefix"), LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain")).ConfigureAwait(false);
     }
 
@@ -619,12 +621,34 @@ public sealed class UserConfigViewModel : ObservableObject
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
-            await _uiDispatcher.RunAsync(() => StatusMessage = errorPrefix + ex.Message).ConfigureAwait(false);
+            await _uiDispatcher.RunAsync(() => SetRawStatusMessage(errorPrefix + ex.Message)).ConfigureAwait(false);
         }
         finally
         {
             await _uiDispatcher.RunAsync(() => IsBusy = false).ConfigureAwait(false);
         }
+    }
+
+    protected override void OnLocalizationRefreshed()
+    {
+        RefreshLanguageOptions();
+
+        if (_statusMessageFactory is not null)
+        {
+            StatusMessage = _statusMessageFactory();
+        }
+    }
+
+    private void SetLocalizedStatusMessage(Func<string> factory)
+    {
+        _statusMessageFactory = factory;
+        StatusMessage = factory();
+    }
+
+    private void SetRawStatusMessage(string message)
+    {
+        _statusMessageFactory = null;
+        StatusMessage = message;
     }
 
     public sealed record LanguageOption(string Code, string DisplayName);

@@ -13,6 +13,7 @@ using Xunit;
 
 namespace WearPartsControl.Tests;
 
+[Collection(LocalizationSensitiveTestCollection.Name)]
 public sealed class ReplacePartViewModelTests
 {
     [Fact]
@@ -279,6 +280,30 @@ public sealed class ReplacePartViewModelTests
         viewModel.SelectedReplacementReason = WearPartReplacementReason.ProcessDamage;
 
         Assert.False(viewModel.ReplaceCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task LocalizationRefresh_ShouldUpdateStatusAndPlaceholderTexts()
+    {
+        using var cultureScope = new TestCultureScope("zh-CN");
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                ResourceNumber = "RES-01",
+                IsWearPartMonitoringEnabled = false
+            }
+        };
+        var viewModel = CreateViewModel(appSettingsService);
+
+        await viewModel.InitializeAsync();
+
+        using var _ = new TestCultureScope("en-US");
+        LocalizationBindingSource.Instance.Refresh();
+
+        Assert.Equal(LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked"), viewModel.StatusMessage);
+        Assert.Equal(LocalizedText.Get("ViewModels.ClientAppInfoVm.WearPartMonitoringDisabledStatus"), viewModel.WearPartMonitoringStatusText);
+        Assert.Equal(LocalizedText.Get("ViewModels.ReplacePartVm.LastBarcodeEmpty"), viewModel.LastBarcode);
     }
 
     [Fact]

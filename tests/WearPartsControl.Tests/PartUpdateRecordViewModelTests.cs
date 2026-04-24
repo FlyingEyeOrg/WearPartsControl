@@ -7,6 +7,7 @@ using Xunit;
 
 namespace WearPartsControl.Tests;
 
+[Collection(LocalizationSensitiveTestCollection.Name)]
 public sealed class PartUpdateRecordViewModelTests
 {
     [Fact]
@@ -214,6 +215,30 @@ public sealed class PartUpdateRecordViewModelTests
         Assert.Equal(2, viewModel.Records.Count);
         Assert.Equal("NB-2", viewModel.Records[0].NewBarcode);
         Assert.True(uiDispatcher.RenderCount >= 2);
+    }
+
+    [Fact]
+    public async Task LocalizationRefresh_ShouldUpdateStatusAndReasonDisplayName()
+    {
+        using var cultureScope = new TestCultureScope("zh-CN");
+        var definition = new WearPartDefinition { Id = Guid.NewGuid(), PartName = "刀具A" };
+        var record = new WearPartReplacementRecord
+        {
+            WearPartDefinitionId = definition.Id,
+            PartName = definition.PartName,
+            NewBarcode = "NB-1",
+            ReasonCode = WearPartReplacementReason.ProcessDamage,
+            ReasonDisplayName = WearPartReplacementReason.GetDisplayName(WearPartReplacementReason.ProcessDamage)
+        };
+        var viewModel = CreateViewModel([definition], [record]);
+
+        await viewModel.InitializeAsync();
+
+        using var _ = new TestCultureScope("en-US");
+        LocalizationBindingSource.Instance.Refresh();
+
+        Assert.Equal(LocalizedText.Format("ViewModels.PartUpdateRecordVm.RecordsLoaded", "RES-01", 1), viewModel.StatusMessage);
+        Assert.Equal(WearPartReplacementReason.GetDisplayName(WearPartReplacementReason.ProcessDamage), viewModel.Records[0].ReasonDisplayName);
     }
 
     private static PartUpdateRecordViewModel CreateViewModel(

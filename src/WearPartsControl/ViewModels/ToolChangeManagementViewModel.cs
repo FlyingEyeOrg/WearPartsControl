@@ -8,7 +8,7 @@ using WearPartsControl.ApplicationServices.PartServices;
 
 namespace WearPartsControl.ViewModels;
 
-public sealed class ToolChangeManagementViewModel : ObservableObject
+public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
 {
     private readonly IToolChangeManagementService _toolChangeManagementService;
     private readonly IUiDispatcher _uiDispatcher;
@@ -21,6 +21,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
     private string _statusMessage = LocalizedText.Get("ViewModels.ToolChangeManagementVm.PromptLoadCurrent");
     private bool _isBusy;
     private bool _isInitialized;
+    private Func<string>? _statusMessageFactory;
 
     public ToolChangeManagementViewModel(IToolChangeManagementService toolChangeManagementService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService)
     {
@@ -33,6 +34,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         NewCommand = new AsyncRelayCommand(() => CreateAsync(CancellationToken.None), CanCreate);
         EditCommand = new AsyncRelayCommand(() => EditAsync(CancellationToken.None), CanEdit);
         DeleteCommand = new AsyncRelayCommand(() => DeleteAsync(CancellationToken.None), CanDelete);
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ToolChangeManagementVm.PromptLoadCurrent"));
     }
 
     public ObservableCollection<ToolChangeDefinition> Definitions { get; } = new();
@@ -63,7 +65,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
                 {
                     ToolName = value.Name;
                     ToolCode = value.Code;
-                    StatusMessage = LocalizedText.Format("ViewModels.ToolChangeManagementVm.Editing", value.Name);
+                    SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.ToolChangeManagementVm.Editing", value.Name));
                 }
 
                 NewCommand.NotifyCanExecuteChanged();
@@ -145,7 +147,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         }
 
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.ToolChangeManagementVm.Loading");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ToolChangeManagementVm.Loading"));
         using var _ = _uiBusyService.Enter(StatusMessage);
         await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
@@ -153,13 +155,13 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         {
             await ReloadDefinitionsAsync(cancellationToken, preserveSelection: true).ConfigureAwait(true);
 
-            StatusMessage = _allDefinitions.Count == 0
+            SetLocalizedStatusMessage(() => _allDefinitions.Count == 0
                 ? LocalizedText.Get("ViewModels.ToolChangeManagementVm.Empty")
-                : LocalizedText.Format("ViewModels.ToolChangeManagementVm.Loaded", _allDefinitions.Count);
+                : LocalizedText.Format("ViewModels.ToolChangeManagementVm.Loaded", _allDefinitions.Count));
         }
         catch (Exception ex)
         {
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
         }
         finally
         {
@@ -175,7 +177,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         }
 
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.ToolChangeManagementVm.CreatingOperation");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ToolChangeManagementVm.CreatingOperation"));
         using var _ = _uiBusyService.Enter(StatusMessage);
         await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
@@ -196,11 +198,11 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
 
             await ReloadDefinitionsAsync(cancellationToken, saved.Id).ConfigureAwait(true);
             SelectedDefinition = Definitions.FirstOrDefault(x => x.Id == saved.Id);
-            StatusMessage = LocalizedText.Format("ViewModels.ToolChangeManagementVm.CreatedWithName", saved.Name);
+            SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.ToolChangeManagementVm.CreatedWithName", saved.Name));
         }
         catch (Exception ex)
         {
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
         }
         finally
         {
@@ -216,7 +218,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         }
 
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.ToolChangeManagementVm.Updating");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ToolChangeManagementVm.Updating"));
         using var _ = _uiBusyService.Enter(StatusMessage);
         await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
@@ -232,11 +234,11 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
             var saved = await _toolChangeManagementService.UpdateAsync(model, cancellationToken).ConfigureAwait(true);
             await ReloadDefinitionsAsync(cancellationToken, saved.Id).ConfigureAwait(true);
             SelectedDefinition = Definitions.FirstOrDefault(x => x.Id == saved.Id);
-            StatusMessage = LocalizedText.Format("ViewModels.ToolChangeManagementVm.UpdatedWithName", saved.Name);
+            SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.ToolChangeManagementVm.UpdatedWithName", saved.Name));
         }
         catch (Exception ex)
         {
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
         }
         finally
         {
@@ -264,7 +266,7 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
         }
 
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.ToolChangeManagementVm.Deleting");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ToolChangeManagementVm.Deleting"));
         using var _ = _uiBusyService.Enter(StatusMessage);
         await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
@@ -273,11 +275,11 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
             await _toolChangeManagementService.DeleteAsync(selected.Id, cancellationToken).ConfigureAwait(true);
             await ReloadDefinitionsAsync(cancellationToken, selectedId: null).ConfigureAwait(true);
             ClearEditor();
-            StatusMessage = LocalizedText.Format("ViewModels.ToolChangeManagementVm.Deleted", selected.Name);
+            SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.ToolChangeManagementVm.Deleted", selected.Name));
         }
         catch (Exception ex)
         {
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
         }
         finally
         {
@@ -342,5 +344,25 @@ public sealed class ToolChangeManagementViewModel : ObservableObject
     private bool CanDelete()
     {
         return !IsBusy && SelectedDefinition is not null;
+    }
+
+    protected override void OnLocalizationRefreshed()
+    {
+        if (_statusMessageFactory is not null)
+        {
+            StatusMessage = _statusMessageFactory();
+        }
+    }
+
+    private void SetLocalizedStatusMessage(Func<string> factory)
+    {
+        _statusMessageFactory = factory;
+        StatusMessage = factory();
+    }
+
+    private void SetRawStatusMessage(string message)
+    {
+        _statusMessageFactory = null;
+        StatusMessage = message;
     }
 }

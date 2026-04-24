@@ -11,7 +11,7 @@ using WearPartsControl.ApplicationServices.PartServices;
 
 namespace WearPartsControl.ViewModels;
 
-public sealed class ReplacePartViewModel : ObservableObject
+public sealed class ReplacePartViewModel : LocalizedViewModelBase
 {
     private readonly IAppSettingsService _appSettingsService;
     private readonly IClientAppInfoService _clientAppInfoService;
@@ -48,6 +48,8 @@ public sealed class ReplacePartViewModel : ObservableObject
     private bool _isInitialized;
     private bool _isApplyingToolCode;
     private int _selectionLoadVersion;
+    private Func<string>? _statusMessageFactory;
+    private bool _isLastBarcodePlaceholder = true;
 
     public ReplacePartViewModel(
         IAppSettingsService appSettingsService,
@@ -82,6 +84,8 @@ public sealed class ReplacePartViewModel : ObservableObject
         }
 
         SelectedReplacementReason = ReplacementReasons.FirstOrDefault()?.Code ?? string.Empty;
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ReplacePartVm.PromptSelectAndLoadPreview"));
+        SetLastBarcodePlaceholder();
     }
 
     public ObservableCollection<WearPartDefinition> Definitions { get; } = new();
@@ -294,7 +298,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             ApplyWearPartMonitoringStatus(settings.IsWearPartMonitoringEnabled);
             if (!settings.IsWearPartMonitoringEnabled)
             {
-                StatusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked");
+                SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked"));
             }
         });
     }
@@ -323,7 +327,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         }
 
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.Loading");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ReplacePartVm.Loading"));
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.ReplacePartVm.Loading"));
         await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
@@ -349,7 +353,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             {
                 SelectedDefinition = null;
                 SetSelectedToolCode(string.Empty);
-                StatusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked");
+                SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked"));
                 return;
             }
 
@@ -357,7 +361,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             {
                 SelectedDefinition = null;
                 SetSelectedToolCode(string.Empty);
-                StatusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.ResourceNumberMissing");
+                SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ReplacePartVm.ResourceNumberMissing"));
                 return;
             }
 
@@ -372,7 +376,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             {
                 SelectedDefinition = null;
                 SetSelectedToolCode(string.Empty);
-                StatusMessage = LocalizedText.Format("ViewModels.ReplacePartVm.DefinitionsEmpty", ResourceNumber);
+                SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.ReplacePartVm.DefinitionsEmpty", ResourceNumber));
                 return;
             }
 
@@ -389,14 +393,14 @@ public sealed class ReplacePartViewModel : ObservableObject
                 ApplySelectedDefinition(selectedDefinition);
             }
 
-            StatusMessage = IsWearPartMonitoringEnabled
+            SetLocalizedStatusMessage(() => IsWearPartMonitoringEnabled
                 ? LocalizedText.Format("ViewModels.ReplacePartVm.DefinitionsLoaded", ResourceNumber, Definitions.Count)
-                : LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked");
+                : LocalizedText.Get("ViewModels.ReplacePartVm.MonitoringDisabledOperationBlocked"));
             await LoadSelectedDefinitionDetailsAsync(selectedDefinition, cancellationToken, Interlocked.Increment(ref _selectionLoadVersion)).ConfigureAwait(true);
         }
         catch (Exception ex)
         {
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
         }
         finally
         {
@@ -414,12 +418,12 @@ public sealed class ReplacePartViewModel : ObservableObject
         var lifetimeValidationError = GetLifetimeValidationError();
         if (!string.IsNullOrWhiteSpace(lifetimeValidationError))
         {
-            StatusMessage = lifetimeValidationError;
+            SetRawStatusMessage(lifetimeValidationError);
             return;
         }
 
         IsBusy = true;
-        StatusMessage = LocalizedText.Format("ViewModels.ReplacePartVm.Replacing", SelectedDefinition.PartName);
+        SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.ReplacePartVm.Replacing", SelectedDefinition.PartName));
         using var _ = _uiBusyService.Enter(LocalizedText.Format("ViewModels.ReplacePartVm.Replacing", SelectedDefinition.PartName));
         await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
@@ -439,11 +443,11 @@ public sealed class ReplacePartViewModel : ObservableObject
             NewBarcode = string.Empty;
             ReplacementMessage = string.Empty;
             await LoadSelectedDefinitionDetailsAsync(SelectedDefinition, CancellationToken.None, Interlocked.Increment(ref _selectionLoadVersion)).ConfigureAwait(true);
-            StatusMessage = LocalizedText.Format("ViewModels.ReplacePartVm.ReplaceSucceeded", record.PartName, record.NewBarcode);
+            SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.ReplacePartVm.ReplaceSucceeded", record.PartName, record.NewBarcode));
         }
         catch (Exception ex)
         {
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
         }
         finally
         {
@@ -520,7 +524,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             _currentValueText = string.Empty;
             _warningValueText = string.Empty;
             _shutdownValueText = string.Empty;
-            LastBarcode = LocalizedText.Get("ViewModels.ReplacePartVm.LastBarcodeEmpty");
+            SetLastBarcodePlaceholder();
             ToolCodeOptions.Clear();
             SetSelectedToolCode(string.Empty);
             NotifyReplaceStateChanged();
@@ -561,7 +565,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             var lifetimeValidationError = GetLifetimeValidationError(preview.CurrentValue, preview.WarningValue, preview.ShutdownValue);
             if (!string.IsNullOrWhiteSpace(lifetimeValidationError))
             {
-                StatusMessage = lifetimeValidationError;
+                SetRawStatusMessage(lifetimeValidationError);
             }
 
             var history = await _wearPartReplacementService.GetReplacementHistoryAsync(preview.ClientAppConfigurationId, cancellationToken).ConfigureAwait(true);
@@ -580,6 +584,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             LastBarcode = string.IsNullOrWhiteSpace(preview.LastBarcode)
                 ? LocalizedText.Get("ViewModels.ReplacePartVm.LastBarcodeEmpty")
                 : preview.LastBarcode.Trim();
+            _isLastBarcodePlaceholder = string.IsNullOrWhiteSpace(preview.LastBarcode);
         }
         catch (Exception ex)
         {
@@ -590,7 +595,7 @@ public sealed class ReplacePartViewModel : ObservableObject
             _warningValueText = string.Empty;
             _shutdownValueText = string.Empty;
             NotifyReplaceStateChanged();
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
         }
     }
 
@@ -682,6 +687,7 @@ public sealed class ReplacePartViewModel : ObservableObject
         LastBarcode = string.IsNullOrWhiteSpace(record.NewBarcode)
             ? LocalizedText.Get("ViewModels.ReplacePartVm.LastBarcodeEmpty")
             : record.NewBarcode.Trim();
+        _isLastBarcodePlaceholder = string.IsNullOrWhiteSpace(record.NewBarcode);
     }
 
     private static double? ParsePreviewValue(string rawValue, string dataType, string address)
@@ -704,6 +710,73 @@ public sealed class ReplacePartViewModel : ObservableObject
         {
             return null;
         }
+    }
+
+    protected override void OnLocalizationRefreshed()
+    {
+        if (_statusMessageFactory is not null)
+        {
+            StatusMessage = _statusMessageFactory();
+        }
+
+        ApplyWearPartMonitoringStatus(IsWearPartMonitoringEnabled);
+        RefreshReplacementReasons();
+        RefreshReplacementHistoryLocalizedDisplayNames();
+
+        if (_isLastBarcodePlaceholder)
+        {
+            SetLastBarcodePlaceholder();
+        }
+    }
+
+    private void RefreshReplacementReasons()
+    {
+        var selectedReason = SelectedReplacementReason;
+        ReplacementReasons.Clear();
+        foreach (var reason in WearPartReplacementReason.All)
+        {
+            ReplacementReasons.Add(reason);
+        }
+
+        SelectedReplacementReason = selectedReason;
+    }
+
+    private void RefreshReplacementHistoryLocalizedDisplayNames()
+    {
+        if (ReplacementHistory.Count == 0)
+        {
+            return;
+        }
+
+        var history = ReplacementHistory.ToArray();
+        foreach (var record in history)
+        {
+            record.ReasonDisplayName = string.Empty;
+        }
+
+        ReplacementHistory.Clear();
+        foreach (var record in history)
+        {
+            ReplacementHistory.Add(record);
+        }
+    }
+
+    private void SetLastBarcodePlaceholder()
+    {
+        LastBarcode = LocalizedText.Get("ViewModels.ReplacePartVm.LastBarcodeEmpty");
+        _isLastBarcodePlaceholder = true;
+    }
+
+    private void SetLocalizedStatusMessage(Func<string> factory)
+    {
+        _statusMessageFactory = factory;
+        StatusMessage = factory();
+    }
+
+    private void SetRawStatusMessage(string message)
+    {
+        _statusMessageFactory = null;
+        StatusMessage = message;
     }
 
     public sealed record ReplacePartConfirmationContext(

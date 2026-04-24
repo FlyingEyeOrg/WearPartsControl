@@ -1,10 +1,12 @@
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ViewModels;
 using Xunit;
 
 namespace WearPartsControl.Tests;
 
+[Collection(LocalizationSensitiveTestCollection.Name)]
 public sealed class AddPartWindowViewModelTests
 {
     [Fact]
@@ -106,6 +108,20 @@ public sealed class AddPartWindowViewModelTests
         await viewModel.SaveCommand.ExecuteAsync(null);
 
         Assert.Null(service.LastCreatedDefinition?.ToolChangeId);
+    }
+
+    [Fact]
+    public void LocalizationRefresh_ShouldUpdateEditorStatusMessage()
+    {
+        using var cultureScope = new TestCultureScope("zh-CN");
+        var viewModel = new AddPartWindowViewModel(new StubWearPartManagementService(), new UiBusyService());
+
+        viewModel.InitializeForCreate(Guid.NewGuid(), "RES-001");
+
+        using var _ = new TestCultureScope("en-US");
+        LocalizationBindingSource.Instance.Refresh();
+
+        Assert.Equal(LocalizedText.Format("ViewModels.WearPartEditorVm.CurrentResourceNumber", "RES-001"), viewModel.StatusMessage);
     }
 
     private sealed class StubWearPartManagementService : IWearPartManagementService

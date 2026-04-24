@@ -67,14 +67,16 @@ public sealed class LocalizationService : ILocalizationService
         CultureInfo.DefaultThreadCurrentUICulture = culture;
         LocalizationBindingSource.Instance.Refresh();
 
-        var config = new LocalizationOptionsSaveInfo { CultureName = culture.Name };
-        await _saveInfoStore.WriteAsync(config, cancellationToken).ConfigureAwait(false);
-
         var userConfig = await _saveInfoStore.ReadAsync<UserConfigModel>(cancellationToken).ConfigureAwait(false);
         if (!string.Equals(userConfig.Language, culture.Name, StringComparison.Ordinal))
         {
             userConfig.Language = culture.Name;
             await _saveInfoStore.WriteAsync(userConfig, cancellationToken).ConfigureAwait(false);
+        }
+
+        if (_saveInfoStore is TypeJsonSaveInfoStore fileStore && fileStore.Exists<LocalizationOptionsSaveInfo>())
+        {
+            await fileStore.DeleteAsync<LocalizationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
         }
     }
 

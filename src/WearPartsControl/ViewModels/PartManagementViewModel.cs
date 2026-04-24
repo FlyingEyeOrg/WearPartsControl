@@ -10,7 +10,7 @@ using WearPartsControl.ApplicationServices.PartServices;
 
 namespace WearPartsControl.ViewModels;
 
-public sealed class PartManagementViewModel : ObservableObject
+public sealed class PartManagementViewModel : LocalizedViewModelBase
 {
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly ILegacyDatabaseImportService _legacyDatabaseImportService;
@@ -25,6 +25,7 @@ public sealed class PartManagementViewModel : ObservableObject
     private bool _isBusy;
     private bool _isInitialized;
     private string _statusMessage = LocalizedText.Get("ViewModels.PartManagementVm.PromptLoadCurrent");
+    private Func<string>? _statusMessageFactory;
 
     public PartManagementViewModel(
         IClientAppInfoService clientAppInfoService,
@@ -45,6 +46,7 @@ public sealed class PartManagementViewModel : ObservableObject
         AddCommand = new RelayCommand(OpenAddDialog, CanAdd);
         EditCommand = new RelayCommand(OpenEditDialog, CanEdit);
         DeleteCommand = new AsyncRelayCommand(DeleteAsync, CanDelete);
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.PartManagementVm.PromptLoadCurrent"));
     }
 
     public event EventHandler? AddRequested;
@@ -144,7 +146,7 @@ public sealed class PartManagementViewModel : ObservableObject
     {
         var enteredAt = DateTimeOffset.UtcNow;
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.PartManagementVm.Loading");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.PartManagementVm.Loading"));
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.PartManagementVm.Loading"));
         await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
@@ -160,7 +162,7 @@ public sealed class PartManagementViewModel : ObservableObject
 
             if (_clientAppConfigurationId == Guid.Empty || string.IsNullOrWhiteSpace(ResourceNumber))
             {
-                StatusMessage = LocalizedText.Get("ViewModels.PartManagementVm.ResourceNumberMissing");
+                SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.PartManagementVm.ResourceNumberMissing"));
                 return;
             }
 
@@ -171,14 +173,14 @@ public sealed class PartManagementViewModel : ObservableObject
             _allDefinitions.AddRange(definitions.OrderBy(x => x.PartName, StringComparer.OrdinalIgnoreCase));
             ApplyFilter();
             await EnsureMinimumBusyDurationAsync(enteredAt, cancellationToken).ConfigureAwait(true);
-            StatusMessage = _allDefinitions.Count == 0
+            SetLocalizedStatusMessage(() => _allDefinitions.Count == 0
                 ? LocalizedText.Format("ViewModels.PartManagementVm.DefinitionsEmpty", ResourceNumber)
-                : LocalizedText.Format("ViewModels.PartManagementVm.DefinitionsLoaded", ResourceNumber, _allDefinitions.Count);
+                : LocalizedText.Format("ViewModels.PartManagementVm.DefinitionsLoaded", ResourceNumber, _allDefinitions.Count));
         }
         catch (Exception ex)
         {
             await EnsureMinimumBusyDurationAsync(enteredAt, cancellationToken).ConfigureAwait(true);
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
         }
         finally
         {
@@ -252,7 +254,7 @@ public sealed class PartManagementViewModel : ObservableObject
 
         var enteredAt = DateTimeOffset.UtcNow;
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.PartManagementVm.Deleting");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.PartManagementVm.Deleting"));
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.PartManagementVm.Deleting"));
         await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
@@ -261,12 +263,12 @@ public sealed class PartManagementViewModel : ObservableObject
             await _wearPartManagementService.DeleteDefinitionAsync(definition.Id).ConfigureAwait(true);
             await RefreshAsync(CancellationToken.None).ConfigureAwait(true);
             await EnsureMinimumBusyDurationAsync(enteredAt, CancellationToken.None).ConfigureAwait(true);
-            StatusMessage = LocalizedText.Format("ViewModels.PartManagementVm.Deleted", definition.PartName);
+            SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.PartManagementVm.Deleted", definition.PartName));
         }
         catch (Exception ex)
         {
             await EnsureMinimumBusyDurationAsync(enteredAt, CancellationToken.None).ConfigureAwait(true);
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
         }
         finally
         {
@@ -278,7 +280,7 @@ public sealed class PartManagementViewModel : ObservableObject
     {
         var enteredAt = DateTimeOffset.UtcNow;
         IsBusy = true;
-        StatusMessage = LocalizedText.Get("ViewModels.PartManagementVm.ImportingLegacyDefinitions");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.PartManagementVm.ImportingLegacyDefinitions"));
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.PartManagementVm.ImportingLegacyDefinitions"));
         await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
@@ -290,17 +292,17 @@ public sealed class PartManagementViewModel : ObservableObject
 
             await RefreshAsync(cancellationToken).ConfigureAwait(true);
             await EnsureMinimumBusyDurationAsync(enteredAt, cancellationToken).ConfigureAwait(true);
-            StatusMessage = LocalizedText.Format(
+            SetLocalizedStatusMessage(() => LocalizedText.Format(
                 "ViewModels.PartManagementVm.ImportedLegacyDefinitions",
                 result.ImportedWearPartDefinitions,
                 result.UpdatedWearPartDefinitions,
-                result.SkippedRows);
+                result.SkippedRows));
             return result;
         }
         catch (Exception ex)
         {
             await EnsureMinimumBusyDurationAsync(enteredAt, cancellationToken).ConfigureAwait(true);
-            StatusMessage = ex.Message;
+            SetRawStatusMessage(ex.Message);
             throw;
         }
         finally
@@ -311,7 +313,7 @@ public sealed class PartManagementViewModel : ObservableObject
 
     public void NotifyLegacyImportCanceled()
     {
-        StatusMessage = LocalizedText.Get("ViewModels.PartManagementVm.ImportCanceled");
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.PartManagementVm.ImportCanceled"));
     }
 
     private void ApplyFilter()
@@ -334,9 +336,9 @@ public sealed class PartManagementViewModel : ObservableObject
 
         if (!string.IsNullOrWhiteSpace(ResourceNumber))
         {
-            StatusMessage = Definitions.Count == 0
+            SetLocalizedStatusMessage(() => Definitions.Count == 0
                 ? LocalizedText.Format("ViewModels.PartManagementVm.NoMatchedDefinitions", ResourceNumber, keyword ?? string.Empty)
-                : LocalizedText.Format("ViewModels.PartManagementVm.FilteredDefinitionsCount", Definitions.Count);
+                : LocalizedText.Format("ViewModels.PartManagementVm.FilteredDefinitionsCount", Definitions.Count));
         }
     }
 
@@ -350,5 +352,25 @@ public sealed class PartManagementViewModel : ObservableObject
         }
 
         await Task.Delay(remaining, cancellationToken).ConfigureAwait(true);
+    }
+
+    protected override void OnLocalizationRefreshed()
+    {
+        if (_statusMessageFactory is not null)
+        {
+            StatusMessage = _statusMessageFactory();
+        }
+    }
+
+    private void SetLocalizedStatusMessage(Func<string> factory)
+    {
+        _statusMessageFactory = factory;
+        StatusMessage = factory();
+    }
+
+    private void SetRawStatusMessage(string message)
+    {
+        _statusMessageFactory = null;
+        StatusMessage = message;
     }
 }

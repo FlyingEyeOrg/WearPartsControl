@@ -63,6 +63,22 @@ public sealed class UserConfigViewModelLocalizationTests
         Assert.Equal("en-US", viewModel.SelectedLanguageOption!.Code);
     }
 
+    [Fact]
+    public void LocalizationRefresh_ShouldUpdateLanguageOptionsWithoutSaving()
+    {
+        using var cultureScope = new TestCultureScope("zh-CN");
+
+        var viewModel = CreateViewModel("zh-CN");
+
+        using var _ = new TestCultureScope("en-US");
+        LocalizationBindingSource.Instance.Refresh();
+
+        Assert.Collection(
+            viewModel.LanguageOptions,
+            option => Assert.Equal("Simplified Chinese", option.DisplayName),
+            option => Assert.Equal("English", option.DisplayName));
+    }
+
     private static UserConfigViewModel CreateViewModel(string cultureName)
     {
         return new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubComNotificationService(), new MutableLocalizationService(cultureName), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));

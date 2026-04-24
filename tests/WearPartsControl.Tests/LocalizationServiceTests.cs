@@ -92,6 +92,7 @@ public sealed class LocalizationServiceTests : IDisposable
 
         var persistedUserConfig = await store.ReadAsync<UserConfig>();
         Assert.Equal("en-US", persistedUserConfig.Language);
+        Assert.False(store.HasStored<LocalizationOptionsSaveInfo>());
     }
 
     [Fact]
@@ -116,6 +117,8 @@ public sealed class LocalizationServiceTests : IDisposable
     private sealed class FakeSaveInfoStore : ISaveInfoStore
     {
         private readonly Dictionary<Type, object> _storage = new();
+
+        public bool HasStored<T>() where T : class, new() => _storage.ContainsKey(typeof(T));
 
         public ValueTask<T> ReadAsync<T>(CancellationToken cancellationToken = default) where T : class, new()
         {
