@@ -39,13 +39,13 @@
                                HorizontalAlignment="Center"
                                Foreground="Gray">
                         <Run Text="{loc:Loc LoginWindowView.ResourceNumberLabel}" />
-                        <Run Text="{Binding ResourceNumber}" />
+                        <Run Text="{Binding ResourceNumber, Mode=OneWay}" />
                     </TextBlock>
                     <TextBlock Margin="0 8 0 0"
                                HorizontalAlignment="Center"
                                Foreground="Gray">
                         <Run Text="{loc:Loc LoginWindowView.SiteLabel}" />
-                        <Run Text="{Binding SiteCode}" />
+                        <Run Text="{Binding SiteCode, Mode=OneWay}" />
                     </TextBlock>
                     <Grid Margin="0 16 0 0">
                         <Grid.ColumnDefinitions>
