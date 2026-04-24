@@ -1,1 +1,20 @@
-{"MeResponsibleWorkId":"","PrdResponsibleWorkId":"","ComAccessToken":"","ComSecret":"","ComNotificationEnabled":true,"ComPushUrl":"https://ipaas.catl.com/gateway/office/ipaas/MSG/office_MSG_push","ComDeIpaasKeyAuth":"659JOPEldYL55Mi3sqb38H9Txd1q9EYw","ComAgentId":1642112457,"ComGroupTemplateId":303686603505665,"ComWorkTemplateId":303717003821057,"ComUserType":"ding","SpacerValidationEnabled":true,"SpacerValidationUrl":"https://172.18.65.139:65530/vulnerable-parts-service/api/v1.0/spacer-validation-data/verify","SpacerValidationUrlRelease":"https://172.18.65.139:65530/vulnerable-parts-service/api/v1.0/spacer-validation-data/verify","SpacerValidationTimeoutMilliseconds":5000,"SpacerValidationIgnoreServerCertificateErrors":true,"SpacerValidationCodeSeparator":"/","SpacerValidationExpectedSegmentCount":8}
+{
+    "MeResponsibleWorkId": "",
+    "PrdResponsibleWorkId": "",
+    "ComAccessToken": "",
+    "ComSecret": "",
+    "ComNotificationEnabled": true,
+    "ComPushUrl": "https://ipaas.catl.com/gateway/office/ipaas/MSG/office_MSG_push",
+    "ComDeIpaasKeyAuth": "659JOPEldYL55Mi3sqb38H9Txd1q9EYw",
+    "ComAgentId": 1642112457,
+    "ComGroupTemplateId": 303686603505665,
+    "ComWorkTemplateId": 303717003821057,
+    "ComUserType": "ding",
+    "SpacerValidationEnabled": true,
+    "SpacerValidationUrl": "https://172.18.65.139:65530/vulnerable-parts-service/api/v1.0/spacer-validation-data/verify",
+    "SpacerValidationUrlRelease": "https://172.18.65.139:65530/vulnerable-parts-service/api/v1.0/spacer-validation-data/verify",
+    "SpacerValidationTimeoutMilliseconds": 5000,
+    "SpacerValidationIgnoreServerCertificateErrors": true,
+    "SpacerValidationCodeSeparator": "/",
+    "SpacerValidationExpectedSegmentCount": 8
+}
