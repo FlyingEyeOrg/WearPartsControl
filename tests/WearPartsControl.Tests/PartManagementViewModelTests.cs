@@ -14,6 +14,7 @@ public sealed class PartManagementViewModelTests
     [Fact]
     public async Task ImportLegacyDefinitionsAsync_ShouldCallLegacyImportServiceAndUpdateStatus()
     {
+        using var cultureScope = new TestCultureScope("zh-CN");
         var legacyImportService = new StubLegacyDatabaseImportService();
         var uiDispatcher = new StubUiDispatcher();
         var viewModel = new PartManagementViewModel(

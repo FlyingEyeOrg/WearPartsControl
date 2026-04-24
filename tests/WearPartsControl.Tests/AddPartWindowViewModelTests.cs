@@ -12,6 +12,7 @@ public sealed class AddPartWindowViewModelTests
     [Fact]
     public void InitializeForCreate_ShouldUseLegacyAlignedDefaults()
     {
+        using var cultureScope = new TestCultureScope("zh-CN");
         var viewModel = new AddPartWindowViewModel(new StubWearPartManagementService(), new UiBusyService());
 
         viewModel.InitializeForCreate(Guid.NewGuid(), "RES-001");

@@ -124,6 +124,7 @@ public sealed class PartUpdateRecordViewModelTests
     [Fact]
     public async Task ExportCommand_ShouldRaiseExportRequestedWithCsvContent()
     {
+        using var cultureScope = new TestCultureScope("zh-CN");
         var definition = new WearPartDefinition { Id = Guid.NewGuid(), PartName = "刀具A" };
         var viewModel = CreateViewModel(
             [definition],

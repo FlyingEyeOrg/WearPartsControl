@@ -76,6 +76,7 @@ public sealed class PlcConfigurationMonitorServiceTests
     [Fact]
     public async Task SettingsSaved_WhenReconnectFailsButCurrentConnectionExists_ShouldKeepConnectedStatus()
     {
+        using var cultureScope = new TestCultureScope("zh-CN");
         var appSettingsService = new StubAppSettingsService();
         var clientAppInfoService = new StubClientAppInfoService
         {
