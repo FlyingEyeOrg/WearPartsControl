@@ -20,6 +20,7 @@ namespace WearPartsControl.Views
         private bool _isClosingIntercepted;
         private bool _isExitRequested;
         private bool _isInTray;
+        private bool _hasShownFirstTrayBalloonTip;
 
         public MainWindow(MainWindowViewModel viewModel, IServiceProvider serviceProvider, IAutoLogoutInteractionService autoLogoutInteractionService)
         {
@@ -86,13 +87,12 @@ namespace WearPartsControl.Views
 
             e.Cancel = true;
 
-            var result = _autoLogoutInteractionService.RunModal(() => System.Windows.MessageBox.Show(
-                this,
-                LocalizedText.Get("MainWindowTrayContent.ClosePromptMessage"),
-                LocalizedText.Get("MainWindowTrayContent.ClosePromptTitle"),
-                MessageBoxButton.YesNoCancel,
-                MessageBoxImage.Question,
-                MessageBoxResult.Yes));
+            if (!EnsureUserCanExit())
+            {
+                return;
+            }
+
+            var result = ShowClosePrompt();
 
             if (result == MessageBoxResult.Cancel)
             {
@@ -101,19 +101,11 @@ namespace WearPartsControl.Views
 
             if (result == MessageBoxResult.Yes)
             {
-                SendToTray();
+                SendToTray(hideFromTaskbar: true, showFirstBalloonTip: true);
                 return;
             }
 
-            _isClosingIntercepted = true;
-            try
-            {
-                await app.RequestShutdownAsync("用户关闭主窗口并退出程序").ConfigureAwait(true);
-            }
-            finally
-            {
-                _isClosingIntercepted = false;
-            }
+            await RequestApplicationShutdownAsync(app, "用户关闭主窗口并退出程序").ConfigureAwait(true);
         }
 
         private void OnMainWindowStateChanged(object? sender, EventArgs e)
@@ -125,20 +117,22 @@ namespace WearPartsControl.Views
 
             if (WindowState == WindowState.Minimized)
             {
-                SendToTray();
+                SendToTray(hideFromTaskbar: false, showFirstBalloonTip: true);
                 return;
             }
 
-            if (!_isInTray)
+            if (_isInTray && IsVisible)
             {
+                _isInTray = false;
                 HideTrayIcon();
             }
         }
 
         private void OnMainWindowActivated(object? sender, EventArgs e)
         {
-            if (!_isInTray)
+            if (WindowState != WindowState.Minimized)
             {
+                _isInTray = false;
                 HideTrayIcon();
             }
         }
@@ -148,17 +142,29 @@ namespace WearPartsControl.Views
             RestoreFromTray();
         }
 
-        private void SendToTray()
+        private void SendToTray(bool hideFromTaskbar, bool showFirstBalloonTip)
         {
-            if (_isInTray)
-            {
-                return;
-            }
-
             _isInTray = true;
             TrayNotifyIcon.Visibility = Visibility.Visible;
-            ShowInTaskbar = false;
-            Hide();
+
+            if (hideFromTaskbar)
+            {
+                ShowInTaskbar = false;
+                if (IsVisible)
+                {
+                    Hide();
+                }
+            }
+            else
+            {
+                ShowInTaskbar = true;
+                if (!IsVisible)
+                {
+                    Show();
+                }
+            }
+
+            ShowFirstTrayBalloonTipIfNeeded(showFirstBalloonTip);
         }
 
         private void RestoreFromTray()
@@ -166,18 +172,31 @@ namespace WearPartsControl.Views
             _isInTray = false;
             ShowInTaskbar = true;
 
-            if (WindowState == WindowState.Minimized)
+            if (!IsVisible)
             {
-                WindowState = WindowState.Normal;
+                Show();
             }
 
-            Show();
+            WindowState = WindowState.Normal;
             Activate();
+            Topmost = true;
+            Topmost = false;
+            Focus();
             HideTrayIcon();
         }
 
         private async Task ExitFromTrayAsync()
         {
+            if (!EnsureUserCanExit())
+            {
+                return;
+            }
+
+            if (!ConfirmTrayExit())
+            {
+                return;
+            }
+
             if (Application.Current is not App app)
             {
                 _isExitRequested = true;
@@ -185,8 +204,78 @@ namespace WearPartsControl.Views
                 return;
             }
 
+            await RequestApplicationShutdownAsync(app, "用户从托盘退出程序").ConfigureAwait(true);
+        }
+
+        private bool EnsureUserCanExit()
+        {
+            if (_viewModel.IsLoggedIn)
+            {
+                return true;
+            }
+
+            _autoLogoutInteractionService.RunModal(() => System.Windows.MessageBox.Show(
+                this,
+                LocalizedText.Get("MainWindowTrayContent.LoginRequiredToExitMessage"),
+                LocalizedText.Get("MainWindowTrayContent.LoginRequiredToExitTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning,
+                MessageBoxResult.OK));
+            return false;
+        }
+
+        private MessageBoxResult ShowClosePrompt()
+        {
+            return _autoLogoutInteractionService.RunModal(() => System.Windows.MessageBox.Show(
+                this,
+                LocalizedText.Get("MainWindowTrayContent.ClosePromptMessage"),
+                LocalizedText.Get("MainWindowTrayContent.ClosePromptTitle"),
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Question,
+                MessageBoxResult.Yes));
+        }
+
+        private bool ConfirmTrayExit()
+        {
+            var result = _autoLogoutInteractionService.RunModal(() => System.Windows.MessageBox.Show(
+                this,
+                LocalizedText.Get("MainWindowTrayContent.ExitConfirmMessage"),
+                LocalizedText.Get("MainWindowTrayContent.ExitConfirmTitle"),
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question,
+                MessageBoxResult.No));
+
+            return result == MessageBoxResult.Yes;
+        }
+
+        private void ShowFirstTrayBalloonTipIfNeeded(bool showFirstBalloonTip)
+        {
+            if (!showFirstBalloonTip || _hasShownFirstTrayBalloonTip)
+            {
+                return;
+            }
+
+            _hasShownFirstTrayBalloonTip = true;
+            TrayNotifyIcon.ShowBalloonTip(
+                LocalizedText.Get("MainWindowTrayContent.FirstMinimizeBalloonTitle"),
+                LocalizedText.Get("MainWindowTrayContent.FirstMinimizeBalloonMessage"),
+                HandyControl.Data.NotifyIconInfoType.Info);
+        }
+
+        private async Task RequestApplicationShutdownAsync(App app, string reason)
+        {
+            _isClosingIntercepted = true;
             _isExitRequested = true;
-            await app.RequestShutdownAsync("用户从托盘退出程序").ConfigureAwait(true);
+
+            try
+            {
+                await app.RequestShutdownAsync(reason).ConfigureAwait(true);
+            }
+            finally
+            {
+                _isExitRequested = app.IsShutdownRequested;
+                _isClosingIntercepted = false;
+            }
         }
 
         private void HideTrayIcon()

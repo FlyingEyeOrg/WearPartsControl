@@ -111,6 +111,8 @@
 - 登录窗口通过刷卡器模拟键盘输入完成登录，窗口打开后会自动聚焦到密码输入框。
 - 登录窗口支持回车提交；仅在刷卡模式下，当相邻输入间隔超过 `LoginInputMaxIntervalMilliseconds` 时，才会判定为手工输入并拒绝登录。
 - 自动注销相关的 UI 交互统一收敛到一个交互保活工具：登录窗口、添加/编辑易损件弹窗、导出文件选择框等模态交互期间会暂停倒计时；弹窗关闭后会从完整倒计时重新开始。主窗口中的键盘输入、鼠标点击和焦点进入也会重置倒计时，避免正常操作过程中被自动登出并把当前 tab 切回登录提示页。
+- 主窗口托盘当前采用双通道行为：点击最小化时会显示托盘图标但保留任务栏按钮；若关闭窗口时选择“最小化到托盘”，则主窗口会从任务栏隐藏，仅保留托盘入口。首次进入托盘时会显示一次气泡提示；双击托盘图标或点击托盘面板里的“恢复窗口”都会强制恢复主窗口并隐藏托盘图标。
+- 所有用户主动退出主程序的入口当前统一要求“已登录”后才允许继续；未登录时会阻止退出并给出提示。托盘面板中的“退出程序”会先弹出二次确认，再触发应用关停。
 - 应用配置统一使用 `src/WearPartsControl/PrivateData/Settings/app-settings.json`。
 - PLC 管线慢调用阈值也放在该文件中，保存应用设置后会刷新到运行中的 PLC 管线，无需重启。
 - 当前默认配置示例：`{"ResourceNumber":"","LoginInputMaxIntervalMilliseconds":80,"UseWorkNumberLogin":false,"IsWearPartMonitoringEnabled":true,"PlcPipeline":{"SlowQueueWaitThresholdMilliseconds":100,"SlowExecutionThresholdMilliseconds":500}}`

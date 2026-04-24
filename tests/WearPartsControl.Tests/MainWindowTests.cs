@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Threading;
 using HandyControl.Controls;
 using WearPartsControl.ApplicationServices;
@@ -45,7 +48,7 @@ public sealed class MainWindowTests
                 new StubUiDispatcher(),
                 new StubAppStartupCoordinator());
 
-            var window = new MainWindow(viewModel, new StubServiceProvider(), new StubAutoLogoutInteractionService());
+            var window = new MainWindow(viewModel, new StubServiceProvider(), new RecordingAutoLogoutInteractionService());
 
             try
             {
@@ -67,6 +70,172 @@ public sealed class MainWindowTests
         }, ensureApplicationResources: true);
     }
 
+    [Fact]
+    public void MinimizeToTray_ShouldKeepTaskbarButtonVisible_AndShowTrayIconOnce()
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+
+        WpfTestHost.Run(() =>
+        {
+            var autoLogoutInteractionService = new RecordingAutoLogoutInteractionService();
+            var window = CreateWindow(autoLogoutInteractionService);
+
+            try
+            {
+                window.Show();
+                window.WindowState = WindowState.Minimized;
+                WpfTestHost.DrainDispatcher();
+
+                var trayIcon = Assert.IsType<NotifyIcon>(window.FindName("TrayNotifyIcon"));
+                Assert.Equal(System.Windows.Visibility.Visible, trayIcon.Visibility);
+                Assert.True(window.ShowInTaskbar);
+                Assert.True(GetPrivateField<bool>(window, "_isInTray"));
+                Assert.True(GetPrivateField<bool>(window, "_hasShownFirstTrayBalloonTip"));
+
+                window.WindowState = WindowState.Normal;
+                WpfTestHost.DrainDispatcher();
+
+                Assert.Equal(System.Windows.Visibility.Collapsed, trayIcon.Visibility);
+                Assert.False(GetPrivateField<bool>(window, "_isInTray"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        }, ensureApplicationResources: true);
+    }
+
+    [Fact]
+    public void RestoreFromTray_ShouldShowWindowAndHideTrayIcon()
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+
+        WpfTestHost.Run(() =>
+        {
+            var autoLogoutInteractionService = new RecordingAutoLogoutInteractionService();
+            var window = CreateWindow(autoLogoutInteractionService);
+
+            try
+            {
+                window.Show();
+                InvokePrivate(window, "SendToTray", true, false);
+                InvokePrivate(window, "RestoreFromTray");
+                WpfTestHost.DrainDispatcher();
+
+                var trayIcon = Assert.IsType<NotifyIcon>(window.FindName("TrayNotifyIcon"));
+                Assert.True(window.IsVisible);
+                Assert.True(window.ShowInTaskbar);
+                Assert.Equal(WindowState.Normal, window.WindowState);
+                Assert.Equal(System.Windows.Visibility.Collapsed, trayIcon.Visibility);
+                Assert.False(GetPrivateField<bool>(window, "_isInTray"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        }, ensureApplicationResources: true);
+    }
+
+    [Fact]
+    public void EnsureUserCanExit_WhenNotLoggedIn_ShouldReturnFalseAndShowWarning()
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+
+        WpfTestHost.Run(() =>
+        {
+            var autoLogoutInteractionService = new RecordingAutoLogoutInteractionService(MessageBoxResult.OK);
+            var window = CreateWindow(autoLogoutInteractionService);
+
+            try
+            {
+                var canExit = InvokePrivate<bool>(window, "EnsureUserCanExit");
+
+                Assert.False(canExit);
+                Assert.Equal(1, autoLogoutInteractionService.RunModalCallCount);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }, ensureApplicationResources: true);
+    }
+
+    [Fact]
+    public void ConfirmTrayExit_WhenUserCancels_ShouldReturnFalse()
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+
+        WpfTestHost.Run(() =>
+        {
+            var autoLogoutInteractionService = new RecordingAutoLogoutInteractionService(MessageBoxResult.No);
+            var window = CreateWindow(autoLogoutInteractionService, isLoggedIn: true);
+
+            try
+            {
+                var confirmed = InvokePrivate<bool>(window, "ConfirmTrayExit");
+
+                Assert.False(confirmed);
+                Assert.Equal(1, autoLogoutInteractionService.RunModalCallCount);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }, ensureApplicationResources: true);
+    }
+
+    private static MainWindow CreateWindow(RecordingAutoLogoutInteractionService autoLogoutInteractionService, bool isLoggedIn = false)
+    {
+        var currentUserAccessor = new CurrentUserAccessor();
+        var loginService = new StubLoginService();
+
+        if (isLoggedIn)
+        {
+            var user = new MhrUser
+            {
+                WorkId = "E10001",
+                AccessLevel = 2
+            };
+            currentUserAccessor.SetCurrentUser(user);
+            loginService.SetCurrentUser(user);
+        }
+
+        var viewModel = new MainWindowViewModel(
+            new StubLocalizationService(),
+            new StubServiceProvider(),
+            loginService,
+            new StubAppSettingsService(),
+            new StubUserConfigService(),
+            new StubClientAppInfoService(),
+            new UiBusyService(TimeSpan.Zero),
+            new StubPlcStartupConnectionService(),
+            new LoginSessionStateMachine(currentUserAccessor, loginService),
+            new StubUiDispatcher(),
+            new StubAppStartupCoordinator());
+
+        return new MainWindow(viewModel, new StubServiceProvider(), autoLogoutInteractionService);
+    }
+
+    private static void InvokePrivate(object target, string methodName, params object?[] args)
+    {
+        _ = InvokePrivate<object?>(target, methodName, args);
+    }
+
+    private static T InvokePrivate<T>(object target, string methodName, params object?[] args)
+    {
+        var method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+        var result = method!.Invoke(target, args);
+        return result is null ? default! : (T)result;
+    }
+
+    private static T GetPrivateField<T>(object target, string fieldName)
+    {
+        var field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(field);
+        return (T)field!.GetValue(target)!;
+    }
+
     private sealed class StubLocalizationService : ILocalizationService
     {
         public string this[string name] => LocalizedText.Get(name);
@@ -82,12 +251,19 @@ public sealed class MainWindowTests
 
     private sealed class StubLoginService : ILoginService
     {
+        private MhrUser? _currentUser;
+
         public Task<MhrUser?> LoginAsync(string authId, string factory, string resourceId, bool isIdCard, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
         }
 
-        public MhrUser? GetCurrentUser() => null;
+        public MhrUser? GetCurrentUser() => _currentUser;
+
+        public void SetCurrentUser(MhrUser? user)
+        {
+            _currentUser = user;
+        }
 
         public ValueTask LogoutAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
     }
@@ -177,19 +353,12 @@ public sealed class MainWindowTests
     {
         public object? GetService(Type serviceType)
         {
-            if (serviceType == typeof(ClientAppInfoUserControl))
+            if (typeof(FrameworkElement).IsAssignableFrom(serviceType))
             {
-                return new ClientAppInfoUserControl(
-                    (ClientAppInfoViewModel)RuntimeHelpers.GetUninitializedObject(typeof(ClientAppInfoViewModel)),
-                    this,
-                    new StubAutoLogoutInteractionService(),
-                    new StubCurrentUserAccessor(),
-                    new StubAppSettingsService());
+                return new Border();
             }
 
-            return serviceType == typeof(NeedLoginUserControl)
-                ? RuntimeHelpers.GetUninitializedObject(serviceType)
-                : null;
+            return null;
         }
     }
 
@@ -212,14 +381,30 @@ public sealed class MainWindowTests
         }
     }
 
-    private sealed class StubAutoLogoutInteractionService : IAutoLogoutInteractionService
+    private sealed class RecordingAutoLogoutInteractionService : IAutoLogoutInteractionService
     {
+        private readonly Queue<object?> _results;
+
+        public RecordingAutoLogoutInteractionService(params object?[] results)
+        {
+            _results = new Queue<object?>(results);
+        }
+
+        public int RunModalCallCount { get; private set; }
+
         public void NotifyActivity()
         {
         }
 
         public TResult RunModal<TResult>(Func<TResult> interaction)
         {
+            RunModalCallCount++;
+
+            if (_results.Count > 0)
+            {
+                return (TResult)_results.Dequeue()!;
+            }
+
             return interaction();
         }
     }
