@@ -76,6 +76,51 @@ public sealed class PartUpdateRecordViewModelTests
     }
 
     [Fact]
+    public async Task GoToPageCommand_WhenRequestedPageIsInvalid_ShouldBeDisabledAndKeepCurrentPage()
+    {
+        var definition = new WearPartDefinition { Id = Guid.NewGuid(), PartName = "刀具A" };
+        var records = Enumerable.Range(1, 25)
+            .Select(index => new WearPartReplacementRecord
+            {
+                WearPartDefinitionId = definition.Id,
+                PartName = definition.PartName,
+                NewBarcode = $"NB-{index}"
+            })
+            .ToArray();
+        var viewModel = CreateViewModel([definition], records);
+
+        await viewModel.InitializeAsync();
+        viewModel.RequestedPageNumber = "0";
+
+        Assert.False(viewModel.GoToPageCommand.CanExecute(null));
+        Assert.Equal(1, viewModel.CurrentPage);
+    }
+
+    [Fact]
+    public async Task GoToPageCommand_WhenRequestedPageExceedsTotalPages_ShouldClampToLastPage()
+    {
+        var definition = new WearPartDefinition { Id = Guid.NewGuid(), PartName = "刀具A" };
+        var records = Enumerable.Range(1, 25)
+            .Select(index => new WearPartReplacementRecord
+            {
+                WearPartDefinitionId = definition.Id,
+                PartName = definition.PartName,
+                NewBarcode = $"NB-{index}"
+            })
+            .ToArray();
+        var viewModel = CreateViewModel([definition], records);
+
+        await viewModel.InitializeAsync();
+        viewModel.RequestedPageNumber = "999";
+
+        viewModel.GoToPageCommand.Execute(null);
+
+        Assert.Equal(viewModel.TotalPages, viewModel.CurrentPage);
+        Assert.Equal(5, viewModel.Records.Count);
+        Assert.Equal(viewModel.TotalPages.ToString(), viewModel.RequestedPageNumber);
+    }
+
+    [Fact]
     public async Task ExportCommand_ShouldRaiseExportRequestedWithCsvContent()
     {
         var definition = new WearPartDefinition { Id = Guid.NewGuid(), PartName = "刀具A" };

@@ -163,7 +163,7 @@
             <TextBox Margin="8 0 0 0"
                      HorizontalContentAlignment="Center"
                      Width="40"
-                     Text="{Binding RequestedPageNumber, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                     Text="{Binding RequestedPageNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
             <TextBlock Margin="8 0 0 0"
                        VerticalAlignment="Center"
                        Text="{loc:Loc PartUpdateRecordControl.GoToPageSuffix}" />

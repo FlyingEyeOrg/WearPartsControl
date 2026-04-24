@@ -253,9 +253,14 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
 
     private bool CanMoveToNextPage() => !IsBusy && CurrentPage < TotalPages;
 
-    private bool CanMoveToRequestedPage() => !IsBusy;
+    private bool CanMoveToRequestedPage() => !IsBusy && IsRequestedPageNumberValid();
 
     private bool CanRefresh() => !IsBusy;
+
+    private bool IsRequestedPageNumberValid()
+    {
+        return int.TryParse(RequestedPageNumber?.Trim(), out var pageNumber) && pageNumber > 0;
+    }
 
     private void ApplyFilter()
     {
@@ -296,7 +301,7 @@ public sealed class PartUpdateRecordViewModel : ObservableObject
 
     private void MoveToRequestedPage()
     {
-        if (!int.TryParse(RequestedPageNumber?.Trim(), out var pageNumber) || pageNumber <= 0)
+        if (!IsRequestedPageNumberValid() || !int.TryParse(RequestedPageNumber?.Trim(), out var pageNumber))
         {
             StatusMessage = LocalizedText.Get("ViewModels.PartUpdateRecordVm.InvalidPageNumber");
             return;

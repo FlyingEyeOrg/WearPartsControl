@@ -10,9 +10,9 @@
 
 | Category | Count | Notes |
 | --- | ---: | --- |
-| Confirmed safe | 46 | Input bindings backed by writable source properties |
-| Recommend explicit OneWay | 8 | Display-oriented bindings backed by computed or privately set properties |
-| Manual review | 2 | Writable properties in more complex navigation or paging flows |
+| Confirmed safe | 48 | Input bindings backed by writable source properties or intentionally one-way display flows |
+| Recommend explicit OneWay | 0 | All identified display-only candidates were tightened |
+| Manual review | 0 | The two former review items were resolved |
 | High risk | 0 | No additional read-only source bound to a potentially two-way target was found |
 
 ## Applied Fixes
@@ -28,6 +28,12 @@ The following display bindings were updated to explicit `Mode=OneWay` to remove 
 - [src/WearPartsControl/UserControls/ToolChangeManagementUserControl.xaml](../src/WearPartsControl/UserControls/ToolChangeManagementUserControl.xaml#L41) `StatusMessage`
 - [src/WearPartsControl/UserControls/PartUpdateRecordUserControl.xaml](../src/WearPartsControl/UserControls/PartUpdateRecordUserControl.xaml#L41) `StatusMessage`
 - [src/WearPartsControl/UserControls/PartInfoUserControl.xaml](../src/WearPartsControl/UserControls/PartInfoUserControl.xaml#L27) `StatusMessage`
+- [src/WearPartsControl/Views/MainWindow.xaml](../src/WearPartsControl/Views/MainWindow.xaml#L69) `SelectedContent`
+
+The following input binding was made explicit and paired with stricter command validation:
+
+- [src/WearPartsControl/UserControls/PartUpdateRecordUserControl.xaml](../src/WearPartsControl/UserControls/PartUpdateRecordUserControl.xaml#L166) `RequestedPageNumber` changed to explicit `Mode=TwoWay`
+- [src/WearPartsControl/ViewModels/PartUpdateRecordViewModel.cs](../src/WearPartsControl/ViewModels/PartUpdateRecordViewModel.cs) `GoToPageCommand` now requires a positive integer page number
 
 ## Confirmed Safe
 
@@ -97,10 +103,7 @@ These bindings target editable controls and resolve to source properties with wr
 
 ## Manual Review
 
-- [src/WearPartsControl/Views/MainWindow.xaml](../src/WearPartsControl/Views/MainWindow.xaml#L69) `SelectedContent -> SelectedContent`
-  - Writable source property, but it participates in custom tab content navigation and is better reviewed together with `UserTabControl` semantics.
-- [src/WearPartsControl/UserControls/PartUpdateRecordUserControl.xaml](../src/WearPartsControl/UserControls/PartUpdateRecordUserControl.xaml#L166) `Text -> RequestedPageNumber`
-  - Writable source property, but invalid user input and paging validation behavior should be checked end-to-end.
+No remaining manual-review items are open after the follow-up tightening pass.
 
 ## Notes
 
