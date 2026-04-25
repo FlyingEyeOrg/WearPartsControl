@@ -34,155 +34,133 @@
         </ResourceDictionary>
     </Window.Resources>
     <Grid Background="{StaticResource LoginWindowBackgroundBrush}">
-        <Border Margin="10"
-                Background="#FCFEFF"
-                BorderBrush="#D8E5F0"
-                BorderThickness="1"
-            CornerRadius="0">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.2*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Border CornerRadius="0"
-                        Background="{StaticResource LoginWindowHeroImageBrush}">
-                    <Grid>
-                        <Rectangle Fill="{StaticResource LoginWindowHeroOverlayBrush}" />
-                        <Grid Margin="28">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Image Source="pack://application:,,,/WearPartsControl;component/Assets/catl-logo-white.png"
-                                   Width="180"
-                                   VerticalAlignment="Top"
-                                   HorizontalAlignment="Left" />
-                            <StackPanel Grid.Row="1"
-                                        VerticalAlignment="Center"
-                                        Margin="0 28 0 0">
-                                <TextBlock FontSize="30"
-                                           FontWeight="Bold"
-                                           Foreground="White"
-                                           Text="{loc:Loc LoginWindowView.HeroTitle}" />
-                                <TextBlock Margin="0 12 0 0"
-                                           FontSize="15"
-                                           Foreground="#E4F0FA"
-                                           TextWrapping="Wrap"
-                                           Text="{loc:Loc LoginWindowView.HeroSubtitle}" />
+        <Grid>
+            <Rectangle Fill="{StaticResource LoginWindowHeroImageBrush}"
+                       Opacity="0.1" />
+            <Rectangle Fill="{StaticResource LoginWindowHeroOverlayBrush}"
+                       Opacity="0.08" />
+            <Border Width="520"
+                    Margin="20"
+                    Padding="28"
+                    Background="#FCFEFF"
+                    BorderBrush="#D8E5F0"
+                    BorderThickness="1"
+                    CornerRadius="24"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel>
+                           <Image Source="pack://application:,,,/WearPartsControl;component/Assets/catl.ico"
+                               Width="72"
+                               HorizontalAlignment="Center"
+                               Opacity="0.9" />
+                        <TextBlock Margin="0 18 0 0"
+                                   FontSize="30"
+                                   FontWeight="Bold"
+                                   Foreground="#1E3550"
+                                   TextAlignment="Center"
+                                   Text="{Binding LoginPrompt}" />
+                        <TextBlock Margin="0 10 0 0"
+                                   FontSize="14"
+                                   Foreground="#64788C"
+                                   TextAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   Text="{loc:Loc LoginWindowView.HeroHint}" />
+                    </StackPanel>
+
+                    <Border Grid.Row="1"
+                            Margin="0 22 0 0"
+                            Style="{StaticResource ShellStatusCardBorderStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Foreground="#6A7E91"
+                                           Text="{loc:Loc LoginWindowView.ResourceNumberLabel}" />
+                                <TextBlock Margin="0 4 0 0"
+                                           FontSize="18"
+                                           FontWeight="SemiBold"
+                                           Foreground="#20405F"
+                                           Text="{Binding ResourceNumber, Mode=OneWay}" />
                             </StackPanel>
-                            <Border Grid.Row="2"
-                                    Padding="18"
-                                    Background="#1FF8FBFF"
-                                    BorderBrush="#36FFFFFF"
-                                    BorderThickness="1"
-                                    CornerRadius="18">
-                                <TextBlock Foreground="#F6FBFF"
-                                           FontSize="14"
-                                           LineHeight="22"
-                                           TextWrapping="Wrap"
-                                           Text="{loc:Loc LoginWindowView.HeroHint}" />
-                            </Border>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Foreground="#6A7E91"
+                                           Text="{loc:Loc LoginWindowView.SiteLabel}" />
+                                <TextBlock Margin="0 4 0 0"
+                                           FontSize="18"
+                                           FontWeight="SemiBold"
+                                           Foreground="#20405F"
+                                           Text="{Binding SiteCode, Mode=OneWay}" />
+                            </StackPanel>
                         </Grid>
-                    </Grid>
-                </Border>
-                <Grid Grid.Column="1">
-                    <Border Margin="18"
-                        Padding="20"
-                            Background="White"
-                            BorderBrush="#E4EDF5"
-                            BorderThickness="1"
-                        CornerRadius="18">
+                    </Border>
+
+                    <Border Grid.Row="2"
+                            Margin="0 18 0 0"
+                            Style="{StaticResource ShellActionCardBorderStyle}">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <TextBlock FontSize="26"
-                                       FontWeight="Bold"
-                                       Foreground="#1E3550"
-                                       TextAlignment="Center"
-                                       Text="{Binding LoginPrompt}" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <PasswordBox x:Name="PasswordInputBox"
+                                             Height="42"
+                                             Padding="12 0"
+                                             VerticalContentAlignment="Center"
+                                             PasswordChanged="PasswordInputBox_OnPasswordChanged"
+                                             PreviewKeyDown="PasswordInputBox_OnPreviewKeyDown"
+                                             PreviewTextInput="PasswordInputBox_OnPreviewTextInput"
+                                             DataObject.Pasting="PasswordInputBox_OnPasting" />
+                                <Button Grid.Column="1"
+                                        Margin="12 0 0 0"
+                                        MinWidth="128"
+                                        Height="42"
+                                        Padding="20 0"
+                                        Style="{StaticResource ButtonPrimary}"
+                                        Command="{Binding LoginCommand}"
+                                        Content="{loc:Loc LoginWindowView.LoginButton}" />
+                            </Grid>
                             <TextBlock Grid.Row="1"
-                                       Margin="0 8 0 0"
+                                       Margin="0 12 0 0"
+                                       MinHeight="32"
+                                       TextWrapping="Wrap"
                                        TextAlignment="Center"
-                                       Foreground="#6A7E91"
-                                       Text="{loc:Loc LoginWindowView.HeroSubtitle}" />
-                            <Border Grid.Row="2"
-                                    Margin="0 16 0 0"
-                                    Padding="14 12"
-                                    Background="#F4F8FB"
-                                    CornerRadius="14">
-                                <StackPanel>
-                                    <TextBlock HorizontalAlignment="Center"
-                                               Foreground="#5D7388">
-                                        <Run Text="{loc:Loc LoginWindowView.ResourceNumberLabel}" />
-                                        <Run Text="{Binding ResourceNumber, Mode=OneWay}" />
-                                    </TextBlock>
-                                    <TextBlock Margin="0 4 0 0"
-                                               HorizontalAlignment="Center"
-                                               Foreground="#5D7388">
-                                        <Run Text="{loc:Loc LoginWindowView.SiteLabel}" />
-                                        <Run Text="{Binding SiteCode, Mode=OneWay}" />
-                                    </TextBlock>
-                                </StackPanel>
-                            </Border>
-                            <Border Grid.Row="3"
-                                    Margin="0 16 0 0"
-                                    Style="{StaticResource ShellActionCardBorderStyle}">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <PasswordBox x:Name="PasswordInputBox"
-                                                     Height="40"
-                                                     Padding="10 0"
-                                                     VerticalContentAlignment="Center"
-                                                     PasswordChanged="PasswordInputBox_OnPasswordChanged"
-                                                     PreviewKeyDown="PasswordInputBox_OnPreviewKeyDown"
-                                                     PreviewTextInput="PasswordInputBox_OnPreviewTextInput"
-                                                     DataObject.Pasting="PasswordInputBox_OnPasting" />
-                                        <Button Grid.Column="1"
-                                                Margin="12 0 0 0"
-                                                MinWidth="112"
-                                                Height="40"
-                                                Padding="18 0"
-                                                Style="{StaticResource ButtonPrimary}"
-                                                Command="{Binding LoginCommand}"
-                                                Content="{loc:Loc LoginWindowView.LoginButton}" />
-                                    </Grid>
-                                    <TextBlock Grid.Row="1"
-                                               Margin="0 12 0 0"
-                                               MinHeight="32"
-                                               TextWrapping="Wrap"
-                                               TextAlignment="Center"
-                                               VerticalAlignment="Top"
-                                               Foreground="#2F4E68"
-                                               Text="{Binding StatusMessage}" />
-                                </Grid>
-                            </Border>
+                                       VerticalAlignment="Top"
+                                       Foreground="#2F4E68"
+                                       Text="{Binding StatusMessage}" />
                         </Grid>
                     </Border>
-                    <Border Background="#40FFFFFF"
-                            Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <hc:LoadingCircle Width="60"
-                                          Height="60"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          IsRunning="{Binding IsBusy}" />
-                    </Border>
+
+                    <TextBlock Grid.Row="3"
+                               Margin="0 16 0 0"
+                               Foreground="#6A7E91"
+                               TextAlignment="Center"
+                               TextWrapping="Wrap"
+                               Text="{loc:Loc LoginWindowView.HeroSubtitle}" />
                 </Grid>
-            </Grid>
-        </Border>
+            </Border>
+            <Border Background="#40FFFFFF"
+                    Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <hc:LoadingCircle Width="60"
+                                  Height="60"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  IsRunning="{Binding IsBusy}" />
+            </Border>
+        </Grid>
     </Grid>
 </views:AppDialogWindow>

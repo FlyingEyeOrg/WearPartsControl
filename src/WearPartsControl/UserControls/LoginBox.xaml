@@ -14,13 +14,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <Style x:Key="LoginBoxActionButtonStyle"
-                   TargetType="Button">
-                <Setter Property="MinWidth"
-                        Value="92" />
-                <Setter Property="Padding"
-                        Value="14 6" />
-            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
         <Border Style="{StaticResource ShellCardBorderStyle}"
@@ -81,7 +74,7 @@
                         Padding="14 6"
                         Content="{loc:Loc LoginBoxControl.LogoutButton}"
                         Visibility="{Binding ShowLogoutButton, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        Style="{StaticResource LoginBoxActionButtonStyle}" />
+                        MinWidth="92" />
             </StackPanel>
         </Grid>
     </Border>
