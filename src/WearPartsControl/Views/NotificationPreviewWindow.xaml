@@ -41,31 +41,23 @@
                 <TabItem Header="{loc:Loc UserConfigControl.WarningNotificationPreviewTab}">
                     <Border Padding="12"
                             Background="White">
-                        <TextBox x:Name="WarningPreviewTextBox"
-                                 IsReadOnly="True"
-                                 TextWrapping="Wrap"
-                                 VerticalScrollBarVisibility="Auto"
-                                 HorizontalScrollBarVisibility="Disabled"
-                                 AcceptsReturn="True"
-                                 BorderThickness="0"
-                                 Background="Transparent"
-                                 Foreground="#1F3348"
-                                 FontSize="14" />
+                        <FlowDocumentScrollViewer x:Name="WarningPreviewViewer"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  IsToolBarVisible="False"
+                                                  BorderThickness="0"
+                                                  Background="Transparent"
+                                                  Foreground="#1F3348" />
                     </Border>
                 </TabItem>
                 <TabItem Header="{loc:Loc UserConfigControl.ShutdownNotificationPreviewTab}">
                     <Border Padding="12"
                             Background="White">
-                        <TextBox x:Name="ShutdownPreviewTextBox"
-                                 IsReadOnly="True"
-                                 TextWrapping="Wrap"
-                                 VerticalScrollBarVisibility="Auto"
-                                 HorizontalScrollBarVisibility="Disabled"
-                                 AcceptsReturn="True"
-                                 BorderThickness="0"
-                                 Background="Transparent"
-                                 Foreground="#1F3348"
-                                 FontSize="14" />
+                        <FlowDocumentScrollViewer x:Name="ShutdownPreviewViewer"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  IsToolBarVisible="False"
+                                                  BorderThickness="0"
+                                                  Background="Transparent"
+                                                  Foreground="#1F3348" />
                     </Border>
                 </TabItem>
             </TabControl>
