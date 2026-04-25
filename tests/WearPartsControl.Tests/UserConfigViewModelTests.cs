@@ -176,7 +176,7 @@ public sealed class UserConfigViewModelTests
         Assert.NotNull(notificationService.LastGroupText);
         Assert.NotNull(notificationService.LastWorkText);
         Assert.Contains("# ", notificationService.LastGroupText!);
-        Assert.Contains(LocalizedText.Get("ViewModels.ComNotificationTemplate.TestHeading"), notificationService.LastGroupText!);
+        Assert.Contains(LocalizedText.Get("ViewModels.ComNotificationTemplate.WarningHeading"), notificationService.LastGroupText!);
         Assert.Contains("###", notificationService.LastGroupText!);
         Assert.Contains("张工(ME003)", notificationService.LastGroupText!);
         Assert.Contains("李工(PRD003)", notificationService.LastGroupText!);
@@ -186,6 +186,42 @@ public sealed class UserConfigViewModelTests
         Assert.Equal(notificationService.LastGroupText, notificationService.LastWorkText);
         Assert.Equal(LocalizedText.Get("ViewModels.UserConfigVm.TestSucceeded"), viewModel.StatusMessage);
         Assert.False(viewModel.IsDirty);
+    }
+
+    [Fact]
+    public async Task BuildComNotificationPreviewAsync_ShouldReturnWarningAndShutdownMarkdown()
+    {
+        var clientAppInfoService = new StubClientAppInfoService
+        {
+            Current = new ClientAppInfoModel
+            {
+                SiteCode = "S01",
+                FactoryCode = "F01",
+                AreaCode = "A01",
+                ProcedureCode = "P01",
+                EquipmentCode = "EQ01",
+                ResourceNumber = "RES-TEST"
+            }
+        };
+        var viewModel = new UserConfigViewModel(clientAppInfoService, new StubUserConfigService(), new StubComNotificationService(), new StubLocalizationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        await viewModel.InitializeAsync();
+
+        viewModel.MeResponsibleWorkId = "ME003";
+        viewModel.MeResponsibleName = "张工";
+        viewModel.PrdResponsibleWorkId = "PRD003";
+        viewModel.PrdResponsibleName = "李工";
+        viewModel.ReplacementOperatorName = "王工";
+
+        var preview = await viewModel.BuildComNotificationPreviewAsync();
+
+        Assert.Contains(LocalizedText.Get("ViewModels.ComNotificationTemplate.WarningHeading"), preview.Warning.Markdown);
+        Assert.Contains(LocalizedText.Get("ViewModels.ComNotificationTemplate.ShutdownHeading"), preview.Shutdown.Markdown);
+        Assert.Contains("**时间**：", preview.Warning.Markdown);
+        Assert.Contains("- **易损件名称**：###", preview.Warning.Markdown);
+        Assert.Contains("## 通知信息", preview.Warning.Markdown);
+        Assert.Contains("张工(ME003)", preview.Warning.Markdown);
+        Assert.Contains("李工(PRD003)", preview.Warning.Markdown);
+        Assert.Contains("王工(###)", preview.Warning.Markdown);
     }
 
     private sealed class StubClientAppInfoService : IClientAppInfoService

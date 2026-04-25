@@ -53,6 +53,9 @@
   },
   "LoginWindowView": {
     "Title": "登录",
+    "HeroTitle": "设备身份校验",
+    "HeroSubtitle": "通过刷卡或工号登录，确保当前设备的换件、预警与停机处理都有明确责任归属。",
+    "HeroHint": "登录后可继续进行易损件更换、预警确认与设备配置维护。请使用当前工位授权账号完成身份校验。",
     "ResourceNumberLabel": "当前资源号：",
     "SiteLabel": "基地：",
     "LoginButton": "登录"
@@ -100,6 +103,12 @@
     "SpacerValidationExpectedSegmentCountLabel": "条码段数：",
     "SpacerValidationExpectedSegmentCountPlaceholder": "请输入条码段数，默认 8",
     "SaveButton": "保存信息",
+    "PreviewComNotificationButton": "预览测试通知",
+    "NotificationPreviewWindowTitle": "易损件通知预览",
+    "NotificationPreviewHint": "以下内容用于预览预警通知与停机通知的最终发送格式，确认无误后可继续执行测试发送。",
+    "WarningNotificationPreviewTab": "预警通知",
+    "ShutdownNotificationPreviewTab": "停机通知",
+    "NotificationPreviewCloseButton": "关闭",
     "TestComNotificationButton": "测试 COM 通知"
   },
   "PartInfoControl": {
@@ -470,7 +479,6 @@
       "TestFailedPrefix": "COM 通知测试失败："
     },
     "ComNotificationTemplate": {
-      "TestHeading": "COME 通知测试",
       "WarningHeading": "易损件预警通知",
       "ShutdownHeading": "易损件停机通知",
       "TimeLabel": "时间",
@@ -482,7 +490,6 @@
       "ResourceNumberLabel": "设备资源号",
       "NotificationInfoHeading": "通知信息",
       "WearPartInfoHeading": "易损件信息",
-      "DescriptionLabel": "说明",
       "PartNameLabel": "易损件名称",
       "BarcodeLabel": "易损件条码",
       "LifetimeTypeLabel": "寿命类型",

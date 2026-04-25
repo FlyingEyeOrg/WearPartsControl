@@ -48,6 +48,24 @@ public sealed class PartEditorWindowXamlLoadTests
         }, ensureApplicationResources: true);
     }
 
+    [Fact]
+    public void NotificationPreviewWindow_ShouldLoadWithoutXamlParseException()
+    {
+        WpfTestHost.Run(() =>
+        {
+            var window = new NotificationPreviewWindow("# warning", "# shutdown");
+
+            try
+            {
+                Assert.NotNull(window);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }, ensureApplicationResources: true);
+    }
+
     private sealed class StubWearPartManagementService : IWearPartManagementService
     {
         public Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)

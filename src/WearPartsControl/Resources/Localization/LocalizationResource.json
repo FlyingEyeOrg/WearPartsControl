@@ -53,6 +53,9 @@
   },
   "LoginWindowView": {
     "Title": "Login",
+    "HeroTitle": "Equipment Identity Check",
+    "HeroSubtitle": "Sign in with a badge or work ID so wear part replacement, warnings, and shutdown actions remain attributable on the current device.",
+    "HeroHint": "After login you can continue with wear part replacement, warning confirmation, and device configuration maintenance. Use an account authorized for this workstation.",
     "ResourceNumberLabel": "Current resource number: ",
     "SiteLabel": "Site: ",
     "LoginButton": "Login"
@@ -100,6 +103,12 @@
     "SpacerValidationExpectedSegmentCountLabel": "Barcode segment count:",
     "SpacerValidationExpectedSegmentCountPlaceholder": "Enter segment count, default 8",
     "SaveButton": "Save",
+    "PreviewComNotificationButton": "Preview Test Notification",
+    "NotificationPreviewWindowTitle": "Wear Part Notification Preview",
+    "NotificationPreviewHint": "Use this dialog to review the final warning and shutdown notification format before sending a test message.",
+    "WarningNotificationPreviewTab": "Warning Notification",
+    "ShutdownNotificationPreviewTab": "Shutdown Notification",
+    "NotificationPreviewCloseButton": "Close",
     "TestComNotificationButton": "Test COM Notification"
   },
   "PartInfoControl": {
@@ -470,7 +479,6 @@
       "TestFailedPrefix": "COM notification test failed: "
     },
     "ComNotificationTemplate": {
-      "TestHeading": "COME notification test",
       "WarningHeading": "Wear part warning notification",
       "ShutdownHeading": "Wear part shutdown notification",
       "TimeLabel": "Time",
@@ -482,7 +490,6 @@
       "ResourceNumberLabel": "Resource number",
       "NotificationInfoHeading": "Notification details",
       "WearPartInfoHeading": "Wear part details",
-      "DescriptionLabel": "Description",
       "PartNameLabel": "Wear part name",
       "BarcodeLabel": "Wear part barcode",
       "LifetimeTypeLabel": "Lifetime type",

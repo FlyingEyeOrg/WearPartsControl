@@ -1,5 +1,7 @@
 ﻿using System.Windows.Controls;
+using System.Windows;
 using WearPartsControl.ViewModels;
+using WearPartsControl.Views;
 
 namespace WearPartsControl.UserControls
 {
@@ -28,6 +30,19 @@ namespace WearPartsControl.UserControls
 
             _isInitialized = true;
             await _viewModel.InitializeAsync().ConfigureAwait(true);
+        }
+
+        private async void OnPreviewComNotificationClicked(object sender, RoutedEventArgs e)
+        {
+            var preview = await _viewModel.BuildComNotificationPreviewAsync().ConfigureAwait(true);
+            var dialog = new NotificationPreviewWindow(preview.Warning.Markdown, preview.Shutdown.Markdown);
+            var owner = Window.GetWindow(this);
+            if (owner is not null && owner.IsVisible)
+            {
+                dialog.Owner = owner;
+            }
+
+            dialog.ShowDialog();
         }
     }
 }

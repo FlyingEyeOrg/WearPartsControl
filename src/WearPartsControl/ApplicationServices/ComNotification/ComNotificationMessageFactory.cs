@@ -7,6 +7,7 @@ using WearPartsControl.Domain.Entities;
 namespace WearPartsControl.ApplicationServices.ComNotification;
 
 public sealed record ComNotificationMessage(string Title, string Markdown);
+public sealed record ComNotificationPreview(ComNotificationMessage Warning, ComNotificationMessage Shutdown);
 
 public static class ComNotificationMessageFactory
 {
@@ -30,9 +31,41 @@ public static class ComNotificationMessageFactory
         string? prdResponsibleWorkId,
         string? replacementOperatorName)
     {
+        return CreateTestNotificationMessage(
+            clientAppInfo,
+            meResponsibleName,
+            meResponsibleWorkId,
+            prdResponsibleName,
+            prdResponsibleWorkId,
+            replacementOperatorName,
+            isShutdown: false);
+    }
+
+    public static ComNotificationPreview CreateTestPreview(
+        ClientAppInfoModel? clientAppInfo,
+        string? meResponsibleName,
+        string? meResponsibleWorkId,
+        string? prdResponsibleName,
+        string? prdResponsibleWorkId,
+        string? replacementOperatorName)
+    {
+        return new ComNotificationPreview(
+            CreateTestNotificationMessage(clientAppInfo, meResponsibleName, meResponsibleWorkId, prdResponsibleName, prdResponsibleWorkId, replacementOperatorName, isShutdown: false),
+            CreateTestNotificationMessage(clientAppInfo, meResponsibleName, meResponsibleWorkId, prdResponsibleName, prdResponsibleWorkId, replacementOperatorName, isShutdown: true));
+    }
+
+    private static ComNotificationMessage CreateTestNotificationMessage(
+        ClientAppInfoModel? clientAppInfo,
+        string? meResponsibleName,
+        string? meResponsibleWorkId,
+        string? prdResponsibleName,
+        string? prdResponsibleWorkId,
+        string? replacementOperatorName,
+        bool isShutdown)
+    {
         var title = LocalizedText.Get("ViewModels.UserConfigVm.TestNotificationTitle");
         var markdown = BuildMarkdown(
-            Template("TestHeading"),
+            Template(isShutdown ? "ShutdownHeading" : "WarningHeading"),
             CreateEnvironment(clientAppInfo, usePlaceholder: true),
             CreatePeople(
                 meResponsibleName,
@@ -51,9 +84,7 @@ public static class ComNotificationMessageFactory
                 new NotificationItem(Template("ShutdownValueLabel"), PlaceholderValue)
             ],
             Template("NotificationInfoHeading"),
-            [
-                new NotificationItem(Template("DescriptionLabel"), PlaceholderValue)
-            ],
+            Template(isShutdown ? "ShutdownActionMessage" : "WarningActionMessage"),
             DateTime.Now);
 
         return new ComNotificationMessage(title, markdown);
@@ -102,13 +133,9 @@ public static class ComNotificationMessageFactory
                 new NotificationItem(Template("ShutdownValueLabel"), FormatNumber(shutdownValue))
             ],
             Template("NotificationInfoHeading"),
-            [
-                new NotificationItem(
-                    Template("DescriptionLabel"),
-                    Template(isShutdown
-                        ? "ShutdownActionMessage"
-                        : "WarningActionMessage"))
-            ],
+            Template(isShutdown
+                ? "ShutdownActionMessage"
+                : "WarningActionMessage"),
             occurredAt.ToLocalTime());
 
         return new ComNotificationMessage(title, markdown);
@@ -121,7 +148,7 @@ public static class ComNotificationMessageFactory
         string wearPartHeading,
         IReadOnlyList<NotificationItem> wearPartItems,
         string notificationHeading,
-        IReadOnlyList<NotificationItem> notificationItems,
+        string notificationBody,
         DateTime occurredAt)
     {
         var builder = new StringBuilder();
@@ -140,7 +167,7 @@ public static class ComNotificationMessageFactory
         builder.AppendLine();
         AppendSection(builder, wearPartHeading, wearPartItems);
         builder.AppendLine();
-        AppendSection(builder, notificationHeading, notificationItems);
+        AppendNotificationSection(builder, notificationHeading, notificationBody);
         builder.AppendLine();
         builder.AppendLine("---");
         builder.Append(Template("Footer"));
@@ -158,8 +185,15 @@ public static class ComNotificationMessageFactory
         builder.AppendLine();
         foreach (var item in items)
         {
-            builder.AppendLine($"- **{item.Label}**: {item.Value}");
+            builder.AppendLine($"- **{item.Label}**：{item.Value}");
         }
+    }
+
+    private static void AppendNotificationSection(StringBuilder builder, string heading, string body)
+    {
+        builder.AppendLine($"## {heading}");
+        builder.AppendLine();
+        builder.AppendLine(body);
     }
 
     private static NotificationEnvironment CreateEnvironment(ClientAppInfoModel? clientAppInfo, bool usePlaceholder = false)

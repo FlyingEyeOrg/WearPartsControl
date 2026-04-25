@@ -22,9 +22,10 @@
         <ImageBrush x:Key="LoginWindowHeroImageBrush"
                     ImageSource="pack://application:,,,/WearPartsControl;component/Assets/loginwindow-background.png"
                     Stretch="UniformToFill" />
-        <LinearGradientBrush x:Key="LoginWindowHeroOverlayBrush" StartPoint="0,0" EndPoint="0,1">
-            <GradientStop Color="#B3123A63" Offset="0" />
-            <GradientStop Color="#E81B5A8A" Offset="1" />
+        <LinearGradientBrush x:Key="LoginWindowHeroOverlayBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#CC0F2D4D" Offset="0" />
+            <GradientStop Color="#B3174B74" Offset="0.52" />
+            <GradientStop Color="#D8216AA1" Offset="1" />
         </LinearGradientBrush>
     </Window.Resources>
     <Grid Background="{StaticResource LoginWindowBackgroundBrush}">
@@ -42,16 +43,42 @@
                         Background="{StaticResource LoginWindowHeroImageBrush}">
                     <Grid>
                         <Rectangle Fill="{StaticResource LoginWindowHeroOverlayBrush}" />
-                        <Image Source="pack://application:,,,/WearPartsControl;component/Assets/catl-logo-white.png"
-                               Width="180"
-                               Margin="24 24 24 0"
-                               VerticalAlignment="Top"
-                               HorizontalAlignment="Left" />
-                        <Image Source="pack://application:,,,/WearPartsControl;component/Assets/card.png"
-                               Margin="18"
-                               VerticalAlignment="Bottom"
-                               HorizontalAlignment="Center"
-                               Stretch="Uniform" />
+                        <Grid Margin="28">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Image Source="pack://application:,,,/WearPartsControl;component/Assets/catl-logo-white.png"
+                                   Width="180"
+                                   VerticalAlignment="Top"
+                                   HorizontalAlignment="Left" />
+                            <StackPanel Grid.Row="1"
+                                        VerticalAlignment="Center"
+                                        Margin="0 28 0 0">
+                                <TextBlock FontSize="30"
+                                           FontWeight="Bold"
+                                           Foreground="White"
+                                           Text="{loc:Loc LoginWindowView.HeroTitle}" />
+                                <TextBlock Margin="0 12 0 0"
+                                           FontSize="15"
+                                           Foreground="#E4F0FA"
+                                           TextWrapping="Wrap"
+                                           Text="{loc:Loc LoginWindowView.HeroSubtitle}" />
+                            </StackPanel>
+                            <Border Grid.Row="2"
+                                    Padding="18"
+                                    Background="#1FF8FBFF"
+                                    BorderBrush="#36FFFFFF"
+                                    BorderThickness="1"
+                                    CornerRadius="18">
+                                <TextBlock Foreground="#F6FBFF"
+                                           FontSize="14"
+                                           LineHeight="22"
+                                           TextWrapping="Wrap"
+                                           Text="{loc:Loc LoginWindowView.HeroHint}" />
+                            </Border>
+                        </Grid>
                     </Grid>
                 </Border>
                 <Grid Grid.Column="1">

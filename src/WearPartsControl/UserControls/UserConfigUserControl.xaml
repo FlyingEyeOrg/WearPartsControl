@@ -45,7 +45,7 @@
         <StackPanel Grid.IsSharedSizeScope="True"
                     Margin="0">
 
-            <Border
+            <Border Margin="0 12 0 0"
                     Style="{StaticResource ShellStatusCardBorderStyle}">
                 <TextBlock FontWeight="SemiBold"
                            Foreground="{StaticResource InfoBrush}"
@@ -262,6 +262,18 @@
                          Text="{Binding ComSecret, UpdateSourceTrigger=PropertyChanged}"
                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.ComSecretPlaceholder}" />
             </Grid>
+                    <Grid Margin="0 16 0 0">
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Right">
+                            <Button MinWidth="160"
+                                    Margin="0 0 10 0"
+                                    Click="OnPreviewComNotificationClicked"
+                                    Content="{loc:Loc UserConfigControl.PreviewComNotificationButton}" />
+                            <Button MinWidth="160"
+                                    Command="{Binding TestComNotificationCommand}"
+                                    Content="{loc:Loc UserConfigControl.TestComNotificationButton}" />
+                        </StackPanel>
+                    </Grid>
                 </StackPanel>
             </Border>
 
@@ -353,10 +365,6 @@
                         Style="{StaticResource ButtonPrimary}"
                         Command="{Binding SaveCommand}"
                         Content="{loc:Loc UserConfigControl.SaveButton}" />
-                <Button MinWidth="160"
-                        HorizontalAlignment="Right"
-                        Command="{Binding TestComNotificationCommand}"
-                        Content="{loc:Loc UserConfigControl.TestComNotificationButton}" />
             </Grid>
             </StackPanel>
             </Border>

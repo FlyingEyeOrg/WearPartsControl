@@ -77,6 +77,18 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
 
     public IAsyncRelayCommand TestComNotificationCommand { get; }
 
+    public async Task<ComNotificationPreview> BuildComNotificationPreviewAsync(CancellationToken cancellationToken = default)
+    {
+        var clientAppInfo = await _clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(false);
+        return ComNotificationMessageFactory.CreateTestPreview(
+            clientAppInfo,
+            MeResponsibleName,
+            MeResponsibleWorkId,
+            PrdResponsibleName,
+            PrdResponsibleWorkId,
+            ReplacementOperatorName);
+    }
+
     public bool IsBusy
     {
         get => _isBusy;
