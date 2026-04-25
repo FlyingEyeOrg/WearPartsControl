@@ -36,41 +36,53 @@
                            FontWeight="SemiBold" />
             </Border>
 
-            <TabControl Grid.Row="1"
-                        Margin="0 12 0 0">
-                <TabItem Header="{loc:Loc UserConfigControl.WarningNotificationPreviewTab}">
-                    <Border Padding="12"
-                            Background="White">
-                        <FlowDocumentScrollViewer x:Name="WarningPreviewViewer"
-                                                  VerticalScrollBarVisibility="Auto"
-                                                  IsToolBarVisible="False"
-                                                  BorderThickness="0"
-                                                  Background="Transparent"
-                                                  Foreground="#1F3348" />
-                    </Border>
-                </TabItem>
-                <TabItem Header="{loc:Loc UserConfigControl.ShutdownNotificationPreviewTab}">
-                    <Border Padding="12"
-                            Background="White">
-                        <FlowDocumentScrollViewer x:Name="ShutdownPreviewViewer"
-                                                  VerticalScrollBarVisibility="Auto"
-                                                  IsToolBarVisible="False"
-                                                  BorderThickness="0"
-                                                  Background="Transparent"
-                                                  Foreground="#1F3348" />
-                    </Border>
-                </TabItem>
-            </TabControl>
+            <Border Grid.Row="1"
+                    Margin="0 12 0 0"
+                    Style="{StaticResource ShellCardBorderStyle}">
+                <TabControl Background="Transparent"
+                            BorderThickness="0">
+                    <TabItem Header="{loc:Loc UserConfigControl.WarningNotificationPreviewTab}">
+                        <Border Padding="14"
+                                Background="White"
+                                BorderBrush="#E4EDF5"
+                                BorderThickness="1"
+                                CornerRadius="14">
+                            <FlowDocumentScrollViewer x:Name="WarningPreviewViewer"
+                                                      VerticalScrollBarVisibility="Auto"
+                                                      IsToolBarVisible="False"
+                                                      BorderThickness="0"
+                                                      Background="Transparent"
+                                                      Foreground="#1F3348" />
+                        </Border>
+                    </TabItem>
+                    <TabItem Header="{loc:Loc UserConfigControl.ShutdownNotificationPreviewTab}">
+                        <Border Padding="14"
+                                Background="White"
+                                BorderBrush="#E4EDF5"
+                                BorderThickness="1"
+                                CornerRadius="14">
+                            <FlowDocumentScrollViewer x:Name="ShutdownPreviewViewer"
+                                                      VerticalScrollBarVisibility="Auto"
+                                                      IsToolBarVisible="False"
+                                                      BorderThickness="0"
+                                                      Background="Transparent"
+                                                      Foreground="#1F3348" />
+                        </Border>
+                    </TabItem>
+                </TabControl>
+            </Border>
 
-            <StackPanel Grid.Row="2"
-                        Margin="0 12 0 0"
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Right">
-                <Button MinWidth="120"
-                        Style="{StaticResource ButtonPrimary}"
-                        Content="{loc:Loc UserConfigControl.NotificationPreviewCloseButton}"
-                        Click="OnCloseClicked" />
-            </StackPanel>
+            <Border Grid.Row="2"
+                    Margin="0 12 0 0"
+                    Style="{StaticResource ShellActionCardBorderStyle}">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <Button MinWidth="120"
+                            Style="{StaticResource ButtonPrimary}"
+                            Content="{loc:Loc UserConfigControl.NotificationPreviewCloseButton}"
+                            Click="OnCloseClicked" />
+                </StackPanel>
+            </Border>
         </Grid>
     </Border>
 </views:AppDialogWindow>

@@ -35,20 +35,21 @@
                     Editor="{Binding}" />
         </Border>
 
-        <Grid Grid.Row="1"
-              Margin="0 16 0 0">
+        <Border Grid.Row="1"
+            Margin="0 16 0 0"
+            Style="{StaticResource ShellActionCardBorderStyle}">
             <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Right">
-                <Button MinWidth="96"
-                        Margin="0 0 10 0"
-                    Command="{Binding CancelCommand}"
-                    Content="{loc:Loc EditPartWindowView.CancelButton}" />
-                <Button MinWidth="128"
-                        Style="{StaticResource ButtonPrimary}"
-                    Command="{Binding SaveCommand}"
-                    Content="{loc:Loc EditPartWindowView.SaveButton}" />
+                HorizontalAlignment="Right">
+            <Button MinWidth="96"
+                Margin="0 0 10 0"
+                Command="{Binding CancelCommand}"
+                Content="{loc:Loc EditPartWindowView.CancelButton}" />
+            <Button MinWidth="128"
+                Style="{StaticResource ButtonPrimary}"
+                Command="{Binding SaveCommand}"
+                Content="{loc:Loc EditPartWindowView.SaveButton}" />
             </StackPanel>
-        </Grid>
+        </Border>
 
         <Border Background="#40FFFFFF"
                 Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
