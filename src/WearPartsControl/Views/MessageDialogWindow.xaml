@@ -23,7 +23,7 @@
             BorderBrush="{StaticResource ShellCardBorderBrush}"
             BorderThickness="1"
             CornerRadius="0">
-        <Grid MinHeight="244">
+        <Grid MinHeight="220">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
@@ -33,23 +33,17 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Border x:Name="AccentBar"
-                        Width="72"
-                        Height="6"
-                        HorizontalAlignment="Left"
-                        Background="#3C6C97"
-                        CornerRadius="0" />
-                <TextBlock Grid.Row="1"
-                           Margin="0 16 0 0"
+                <TextBlock Grid.Row="0"
                            FontSize="22"
                            FontWeight="Bold"
                            Foreground="#1E3550"
                            TextWrapping="Wrap"
                            Text="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=Title}" />
-                <ScrollViewer Grid.Row="2"
-                              Margin="0 12 0 0"
+                <ScrollViewer Grid.Row="1"
+                              Margin="0 14 0 0"
+                              MaxHeight="320"
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">
                     <TextBlock x:Name="MessageTextBlock"
@@ -61,7 +55,7 @@
             </Grid>
 
             <Border Grid.Row="1"
-                    Padding="24 18 24 22"
+                    Padding="24 16 24 20"
                     Background="#F6FAFD"
                     BorderBrush="#E1EAF2"
                     BorderThickness="0,1,0,0"

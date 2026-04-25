@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 
 namespace WearPartsControl.Views;
 
@@ -28,7 +27,6 @@ public partial class MessageDialogWindow : AppDialogWindow
         Title = title;
         MessageTextBlock.Text = message;
 
-        ConfigureVisual(image);
         ConfigureButtons(buttons);
         Closing += OnDialogClosing;
     }
@@ -60,20 +58,6 @@ public partial class MessageDialogWindow : AppDialogWindow
 
         dialog.Owner = null;
         dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-    }
-
-    private void ConfigureVisual(MessageBoxImage image)
-    {
-        var brush = image switch
-        {
-            MessageBoxImage.Error => CreateBrush("#D64C4C"),
-            MessageBoxImage.Warning => CreateBrush("#D88B22"),
-            MessageBoxImage.Question => CreateBrush("#3C6C97"),
-            MessageBoxImage.Information => CreateBrush("#2D8F78"),
-            _ => CreateBrush("#3C6C97")
-        };
-
-        AccentBar.Background = brush;
     }
 
     private void ConfigureButtons(MessageBoxButton buttons)
@@ -169,10 +153,5 @@ public partial class MessageDialogWindow : AppDialogWindow
         return isChinese
             ? ("确定", "取消", "是", "否")
             : ("OK", "Cancel", "Yes", "No");
-    }
-
-    private static Brush CreateBrush(string hex)
-    {
-        return (Brush)new BrushConverter().ConvertFromString(hex)!;
     }
 }
