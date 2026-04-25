@@ -67,14 +67,12 @@
                 <Button x:Name="LoginButton"
                         Style="{StaticResource ButtonPrimary}"
                         Command="{Binding OpenLoginCommand}"
-                        Padding="14 6"
                         Content="{loc:Loc LoginBoxControl.LoginButton}"
                         Visibility="{Binding ShowLoginButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                         MinWidth="92" />
                 <Button x:Name="LogoutButton"
                         Margin="0 6 0 0"
                         Command="{Binding LogoutCommand}"
-                        Padding="14 6"
                         Content="{loc:Loc LoginBoxControl.LogoutButton}"
                         Visibility="{Binding ShowLogoutButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                         MinWidth="92" />

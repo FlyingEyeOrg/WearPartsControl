@@ -8,8 +8,8 @@
                        xmlns:views="clr-namespace:WearPartsControl.Views"
                        mc:Ignorable="d"
                        Title="{loc:Loc LoginWindowView.Title}"
-                       Width="430"
-                       MinWidth="410"
+                       Width="408"
+                       MinWidth="392"
                        SizeToContent="Height"
                        ResizeMode="NoResize"
                        WindowStartupLocation="CenterOwner">
@@ -21,13 +21,13 @@
         </ResourceDictionary>
     </Window.Resources>
     <Grid Background="White">
-        <Grid Margin="18">
-            <Border Width="336"
+        <Grid Margin="14">
+            <Border Width="320"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Padding="20"
+                    Padding="18"
                     Background="White"
-                    BorderBrush="#D9E5EF"
+                    BorderBrush="#E1E6EB"
                     BorderThickness="1"
                     CornerRadius="0">
                 <Grid>
@@ -41,22 +41,22 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <Image Width="106"
+                          <Image Width="84"
                            HorizontalAlignment="Center"
                            Source="pack://application:,,,/WearPartsControl;component/Assets/catl.ico"
                            Stretch="Uniform" />
 
                     <TextBlock Grid.Row="1"
-                               Margin="0 14 0 0"
-                               FontSize="21"
-                               FontWeight="Bold"
+                               Margin="0 12 0 0"
+                               FontSize="19"
+                               FontWeight="SemiBold"
                                Foreground="#1E3550"
                                TextAlignment="Center"
                                TextWrapping="Wrap"
                                Text="{Binding LoginPrompt}" />
 
                     <TextBlock Grid.Row="2"
-                               Margin="0 10 0 0"
+                               Margin="0 8 0 0"
                                Foreground="#61758A"
                                FontSize="12"
                                LineHeight="18"
@@ -65,10 +65,10 @@
                                Text="{loc:Loc LoginWindowView.HeroHint}" />
 
                     <Grid Grid.Row="3"
-                                                    Margin="0 16 0 0">
+                                                    Margin="0 14 0 0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="12" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <StackPanel>
@@ -93,9 +93,9 @@
 
                     <PasswordBox x:Name="PasswordInputBox"
                                  Grid.Row="4"
-                                 Height="38"
-                                 Margin="0 16 0 0"
-                                 Padding="12 0"
+                                 Height="36"
+                                 Margin="0 14 0 0"
+                                 Padding="10 0"
                                  VerticalContentAlignment="Center"
                                  PasswordChanged="PasswordInputBox_OnPasswordChanged"
                                  PreviewKeyDown="PasswordInputBox_OnPreviewKeyDown"
@@ -103,7 +103,7 @@
                                  DataObject.Pasting="PasswordInputBox_OnPasting" />
 
                     <TextBlock Grid.Row="5"
-                               Margin="0 12 0 0"
+                               Margin="0 10 0 0"
                                MinHeight="34"
                                Foreground="#61758A"
                                FontSize="12"
@@ -113,9 +113,9 @@
                                Text="{Binding StatusMessage}" />
 
                     <StackPanel Grid.Row="6"
-                                Margin="0 12 0 0">
-                        <Button MinWidth="136"
-                                Height="36"
+                Margin="0 10 0 0">
+            <Button MinWidth="120"
+                Height="34"
                                 HorizontalAlignment="Center"
                                 Style="{StaticResource ButtonPrimary}"
                                 Command="{Binding LoginCommand}"

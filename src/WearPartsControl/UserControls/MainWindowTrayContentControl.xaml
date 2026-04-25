@@ -64,13 +64,11 @@
                        HorizontalAlignment="Right">
                 <Button Margin="0 0 10 0"
                         MinWidth="120"
-                        Padding="14 6"
                         Style="{StaticResource ButtonPrimary}"
                         Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:MainWindowTrayContentControl}}, Path=RestoreCommand}"
                         Content="{loc:Loc MainWindowTrayContent.RestoreButton}" />
                 <Button
                         MinWidth="120"
-                        Padding="14 6"
                         Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:MainWindowTrayContentControl}}, Path=ExitCommand}"
                         Content="{loc:Loc MainWindowTrayContent.ExitButton}" />
             </WrapPanel>
