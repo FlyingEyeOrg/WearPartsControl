@@ -21,108 +21,99 @@
         </ResourceDictionary>
     </Window.Resources>
     <Grid Background="White">
-        <Grid Margin="14">
-            <Border Width="320"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Padding="18"
-                    Background="White"
-                    BorderBrush="#E1E6EB"
-                    BorderThickness="1"
-                    CornerRadius="0">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+        <Grid Margin="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-                          <Image Width="84"
-                           HorizontalAlignment="Center"
-                           Source="pack://application:,,,/WearPartsControl;component/Assets/catl.ico"
-                           Stretch="Uniform" />
+                <Image Width="84"
+                       HorizontalAlignment="Center"
+                       Source="pack://application:,,,/WearPartsControl;component/Assets/catl.ico"
+                       Stretch="Uniform" />
 
-                    <TextBlock Grid.Row="1"
-                               Margin="0 12 0 0"
-                               FontSize="19"
-                               FontWeight="SemiBold"
-                               Foreground="#1E3550"
-                               TextAlignment="Center"
-                               TextWrapping="Wrap"
-                               Text="{Binding LoginPrompt}" />
+                <TextBlock Grid.Row="1"
+                           Margin="0 12 0 0"
+                           FontSize="19"
+                           FontWeight="SemiBold"
+                           Foreground="#1E3550"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           Text="{Binding LoginPrompt}" />
 
-                    <TextBlock Grid.Row="2"
-                               Margin="0 8 0 0"
-                               Foreground="#61758A"
-                               FontSize="12"
-                               LineHeight="18"
-                               TextAlignment="Center"
-                               TextWrapping="Wrap"
-                               Text="{loc:Loc LoginWindowView.HeroHint}" />
+                <TextBlock Grid.Row="2"
+                           Margin="0 8 0 0"
+                           Foreground="#61758A"
+                           FontSize="12"
+                           LineHeight="18"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           Text="{loc:Loc LoginWindowView.HeroHint}" />
 
-                    <Grid Grid.Row="3"
-                                                    Margin="0 14 0 0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                                                        <ColumnDefinition Width="12" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel>
-                            <TextBlock Margin="0"
-                                       Style="{StaticResource ShellMetaLabelTextStyle}"
-                                       FontSize="11"
-                                       Text="{loc:Loc LoginWindowView.ResourceNumberLabel}" />
-                            <TextBlock Style="{StaticResource ShellMetaValueTextStyle}"
-                                       FontSize="14"
-                                       Text="{Binding ResourceNumber, Mode=OneWay}" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Margin="0"
-                                       Style="{StaticResource ShellMetaLabelTextStyle}"
-                                       FontSize="11"
-                                       Text="{loc:Loc LoginWindowView.SiteLabel}" />
-                            <TextBlock Style="{StaticResource ShellMetaValueTextStyle}"
-                                       FontSize="14"
-                                       Text="{Binding SiteCode, Mode=OneWay}" />
-                        </StackPanel>
-                    </Grid>
-
-                    <PasswordBox x:Name="PasswordInputBox"
-                                 Grid.Row="4"
-                                 Height="36"
-                                 Margin="0 14 0 0"
-                                 Padding="10 0"
-                                 VerticalContentAlignment="Center"
-                                 PasswordChanged="PasswordInputBox_OnPasswordChanged"
-                                 PreviewKeyDown="PasswordInputBox_OnPreviewKeyDown"
-                                 PreviewTextInput="PasswordInputBox_OnPreviewTextInput"
-                                 DataObject.Pasting="PasswordInputBox_OnPasting" />
-
-                    <TextBlock Grid.Row="5"
-                               Margin="0 10 0 0"
-                               MinHeight="34"
-                               Foreground="#61758A"
-                               FontSize="12"
-                               LineHeight="18"
-                               TextAlignment="Center"
-                               TextWrapping="Wrap"
-                               Text="{Binding StatusMessage}" />
-
-                    <StackPanel Grid.Row="6"
-                Margin="0 10 0 0">
-            <Button MinWidth="120"
-                Height="34"
-                                HorizontalAlignment="Center"
-                                Style="{StaticResource ButtonPrimary}"
-                                Command="{Binding LoginCommand}"
-                                Content="{loc:Loc LoginWindowView.LoginButton}" />
+                <Grid Grid.Row="3"
+                      Margin="0 14 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Margin="0"
+                                   Style="{StaticResource ShellMetaLabelTextStyle}"
+                                   FontSize="11"
+                                   Text="{loc:Loc LoginWindowView.ResourceNumberLabel}" />
+                        <TextBlock Style="{StaticResource ShellMetaValueTextStyle}"
+                                   FontSize="14"
+                                   Text="{Binding ResourceNumber, Mode=OneWay}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Margin="0"
+                                   Style="{StaticResource ShellMetaLabelTextStyle}"
+                                   FontSize="11"
+                                   Text="{loc:Loc LoginWindowView.SiteLabel}" />
+                        <TextBlock Style="{StaticResource ShellMetaValueTextStyle}"
+                                   FontSize="14"
+                                   Text="{Binding SiteCode, Mode=OneWay}" />
                     </StackPanel>
                 </Grid>
-            </Border>
+
+                <PasswordBox x:Name="PasswordInputBox"
+                             Grid.Row="4"
+                             Height="36"
+                             Margin="0 14 0 0"
+                             Padding="10 0"
+                             VerticalContentAlignment="Center"
+                             PasswordChanged="PasswordInputBox_OnPasswordChanged"
+                             PreviewKeyDown="PasswordInputBox_OnPreviewKeyDown"
+                             PreviewTextInput="PasswordInputBox_OnPreviewTextInput"
+                             DataObject.Pasting="PasswordInputBox_OnPasting" />
+
+                <TextBlock Grid.Row="5"
+                           Margin="0 10 0 0"
+                           MinHeight="34"
+                           Foreground="#61758A"
+                           FontSize="12"
+                           LineHeight="18"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           Text="{Binding StatusMessage}" />
+
+                <StackPanel Grid.Row="6"
+                            Margin="0 10 0 0">
+                    <Button MinWidth="120"
+                            Height="34"
+                            HorizontalAlignment="Center"
+                            Style="{StaticResource ButtonPrimary}"
+                            Command="{Binding LoginCommand}"
+                            Content="{loc:Loc LoginWindowView.LoginButton}" />
+                </StackPanel>
+            </Grid>
             <Border Background="Transparent"
                     Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <hc:LoadingCircle Width="60"
