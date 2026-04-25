@@ -13,8 +13,8 @@ using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PlcService;
+using WearPartsControl.ApplicationServices.Shell;
 using WearPartsControl.ApplicationServices.Startup;
-using WearPartsControl.UserControls;
 
 namespace WearPartsControl.ViewModels
 {
@@ -24,7 +24,8 @@ namespace WearPartsControl.ViewModels
 
         private string? _selectedTabHeader;
         private readonly ILocalizationService _localizationService;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IMainWindowNavigationService _navigationService;
+        private readonly IMainWindowContentFactory _contentFactory;
         private readonly ILoginService _loginService;
         private readonly IAppSettingsService _appSettingsService;
         private readonly IClientAppInfoService _clientAppInfoService;
@@ -33,7 +34,7 @@ namespace WearPartsControl.ViewModels
         private readonly ILoginSessionStateMachine _loginSessionStateMachine;
         private readonly IUiDispatcher _uiDispatcher;
         private readonly IAppStartupCoordinator _appStartupCoordinator;
-        private string[] _allTabs;
+        private IReadOnlyList<MainWindowTabItem> _visibleTabs;
         private string _brandTitle = string.Empty;
         private string _title = string.Empty;
         private string _softwareVersionText = string.Empty;
@@ -51,7 +52,8 @@ namespace WearPartsControl.ViewModels
 
         public MainWindowViewModel(
             ILocalizationService localizationService,
-            IServiceProvider serviceProvider,
+            IMainWindowNavigationService navigationService,
+            IMainWindowContentFactory contentFactory,
             ILoginService loginService,
             IAppSettingsService appSettingsService,
             IClientAppInfoService clientAppInfoService,
@@ -62,10 +64,11 @@ namespace WearPartsControl.ViewModels
             IAppStartupCoordinator appStartupCoordinator)
         {
             _localizationService = localizationService;
+            _navigationService = navigationService;
+            _contentFactory = contentFactory;
             TabChangedCommand = new RelayCommand<int>(OnTabChanged);
             OpenLoginCommand = new RelayCommand(OnOpenLoginRequested);
             LogoutCommand = new AsyncRelayCommand(LogoutAsync, CanLogout);
-            _serviceProvider = serviceProvider;
             _loginService = loginService;
             _uiBusyService = uiBusyService;
             _clientAppInfoService = clientAppInfoService;
@@ -75,7 +78,7 @@ namespace WearPartsControl.ViewModels
             _appStartupCoordinator = appStartupCoordinator;
             _selectedContent = PlaceholderContent;
             _appSettingsService = appSettingsService;
-            _allTabs = Array.Empty<string>();
+            _visibleTabs = Array.Empty<MainWindowTabItem>();
 
             RefreshLocalizedShellState(refreshSelectedContent: false);
             _loginSessionStateMachine.StateChanged += OnLoginSessionStateChanged;
@@ -300,7 +303,7 @@ namespace WearPartsControl.ViewModels
         private void OnTabChanged(int index)
         {
             _selectedTabIndex = index;
-            SelectedTabHeader = GetVisibleTabs().ElementAtOrDefault(index);
+            SelectedTabHeader = GetTabAt(index)?.Header;
             UpdateSelectedContent(index);
         }
 
@@ -393,10 +396,7 @@ namespace WearPartsControl.ViewModels
             Title = _localizationService["MainWindow.Title"];
             BrandTitle = _localizationService["MainWindowView.BrandTitle"];
             SoftwareVersionText = LocalizedText.Format("ViewModels.MainWindowVm.SoftwareVersion", ResolveVersion());
-            _allTabs = _localizationService.Catalog.MainWindow.Tabs.ToArray();
-
-            var visibleTabs = GetVisibleTabs().ToArray();
-            Tabs = visibleTabs;
+            var visibleTabs = BuildVisibleTabs();
             EnsureSelectedTabIndexIsValid(visibleTabs);
 
             if (_isClientAppInfoConfigured && refreshSelectedContent && Volatile.Read(ref _initializeStarted) == 1)
@@ -410,7 +410,7 @@ namespace WearPartsControl.ViewModels
         private void ApplyClientAppInfoState(bool isConfigured, bool refreshSelectedContent = true)
         {
             IsClientAppInfoConfigured = isConfigured;
-            var visibleTabs = GetVisibleTabs().ToArray();
+            var visibleTabs = BuildVisibleTabs();
 
             if (isConfigured)
             {
@@ -438,7 +438,7 @@ namespace WearPartsControl.ViewModels
             Tabs = visibleTabs;
             _selectedTabIndex = 0;
             SelectedTabHeader = visibleTabs.ElementAtOrDefault(0);
-            UpdateSelectedContent(typeof(ClientAppInfoUserControl));
+            UpdateSelectedContent(_navigationService.ResolveContentType(_visibleTabs, 0, IsClientAppInfoConfigured, IsLoggedIn));
         }
 
         private void EnsureDefaultContentLoaded()
@@ -448,7 +448,7 @@ namespace WearPartsControl.ViewModels
                 return;
             }
 
-            EnsureSelectedTabIndexIsValid(GetVisibleTabs().ToArray());
+            EnsureSelectedTabIndexIsValid(BuildVisibleTabs());
             UpdateSelectedContent(_selectedTabIndex);
             _defaultContentPending = false;
         }
@@ -465,7 +465,7 @@ namespace WearPartsControl.ViewModels
                 return;
             }
 
-            if (_selectedTabIndex == 1)
+            if (GetTabAt(_selectedTabIndex)?.Key == MainWindowTabKey.ClientAppInfo)
             {
                 return;
             }
@@ -485,75 +485,14 @@ namespace WearPartsControl.ViewModels
                 return;
             }
 
-            SelectedContent = _serviceProvider.GetRequiredService(contentType);
+            SelectedContent = _contentFactory.Create(contentType);
         }
 
         private Type ResolveTabContentType(int index)
         {
-            if (!_isClientAppInfoConfigured)
-            {
-                return typeof(ClientAppInfoUserControl);
-            }
-
-            var visibleTabs = GetVisibleTabs().ToArray();
-            if (visibleTabs.Length == 0)
-            {
-                return typeof(ClientAppInfoUserControl);
-            }
-
-            if (index < 0 || index >= visibleTabs.Length)
-            {
-                index = 0;
-            }
-
-            var tabHeader = visibleTabs[index];
-            SelectedTabHeader = tabHeader;
-
-            if (!IsLoggedIn && index != 1)
-            {
-                return typeof(NeedLoginUserControl);
-            }
-
-            if (string.Equals(tabHeader, _allTabs[1], StringComparison.Ordinal))
-            {
-                return typeof(ClientAppInfoUserControl);
-            }
-
-            if (string.Equals(tabHeader, _allTabs[2], StringComparison.Ordinal))
-            {
-                return typeof(PartManagementUserControl);
-            }
-
-            if (string.Equals(tabHeader, _allTabs[3], StringComparison.Ordinal))
-            {
-                return typeof(ToolChangeManagementUserControl);
-            }
-
-            if (string.Equals(tabHeader, _allTabs[4], StringComparison.Ordinal))
-            {
-                return typeof(PartUpdateRecordUserControl);
-            }
-
-            if (string.Equals(tabHeader, _allTabs[5], StringComparison.Ordinal))
-            {
-                return typeof(UserConfigUserControl);
-            }
-
-            return typeof(ReplacePartUserControl);
-        }
-
-        private IEnumerable<string> GetVisibleTabs()
-        {
-            if (!_isClientAppInfoConfigured)
-            {
-                return _allTabs.Length > 1
-                    ? new[] { _allTabs[1] }
-                    : _allTabs.ToArray();
-            }
-
-            return string.Equals(_procedureCode, "模切分条", StringComparison.Ordinal)
-                ? _allTabs.ToArray()
-                : _allTabs.Where((_, index) => index != 3).ToArray();
+            var selectedTab = GetTabAt(index) ?? _visibleTabs.ElementAtOrDefault(0);
+            SelectedTabHeader = selectedTab?.Header;
+            return _navigationService.ResolveContentType(_visibleTabs, index, IsClientAppInfoConfigured, IsLoggedIn);
         }
 
         private void EnsureSelectedTabIndexIsValid(IReadOnlyList<string> visibleTabs)
@@ -571,6 +510,27 @@ namespace WearPartsControl.ViewModels
             }
 
             SelectedTabHeader = visibleTabs[_selectedTabIndex];
+        }
+
+        private IReadOnlyList<string> BuildVisibleTabs()
+        {
+            _visibleTabs = _navigationService.BuildVisibleTabs(
+                _localizationService.Catalog.MainWindow.Tabs.ToArray(),
+                IsClientAppInfoConfigured,
+                _procedureCode);
+            var headers = _visibleTabs.Select(tab => tab.Header).ToArray();
+            Tabs = headers;
+            return headers;
+        }
+
+        private MainWindowTabItem? GetTabAt(int index)
+        {
+            if (index < 0 || index >= _visibleTabs.Count)
+            {
+                return null;
+            }
+
+            return _visibleTabs[index];
         }
 
         private static string ResolveVersion()

@@ -13,6 +13,7 @@ using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.ApplicationServices.SpacerManagement;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.SaveInfoService;
+using WearPartsControl.ApplicationServices.Shell;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.Startup;
 using WearPartsControl.ApplicationServices.UserConfig;
@@ -40,6 +41,8 @@ public static class ServiceRegistration
 
     private static void RegisterShell(ContainerBuilder builder)
     {
+        builder.RegisterType<MainWindowNavigationService>().As<IMainWindowNavigationService>().SingleInstance();
+        builder.RegisterType<MainWindowContentFactory>().As<IMainWindowContentFactory>().SingleInstance();
         builder.RegisterType<MainWindowViewModel>().AsSelf().SingleInstance();
         builder.RegisterType<MainWindow>().AsSelf().SingleInstance();
         builder.RegisterType<LoginWindowViewModel>().AsSelf().InstancePerDependency();

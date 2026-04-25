@@ -14,6 +14,7 @@ using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.Localization.Generated;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PlcService;
+using WearPartsControl.ApplicationServices.Shell;
 using WearPartsControl.ApplicationServices.Startup;
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Domain.Repositories;
@@ -39,7 +40,8 @@ public sealed class MainWindowTests
             var loginService = new StubLoginService();
             var viewModel = new MainWindowViewModel(
                 new StubLocalizationService(),
-                new StubServiceProvider(),
+                new MainWindowNavigationService(),
+                new StubMainWindowContentFactory(),
                 loginService,
                 new StubAppSettingsService(),
                 new StubClientAppInfoService(),
@@ -469,7 +471,8 @@ public sealed class MainWindowTests
 
         var viewModel = new MainWindowViewModel(
             new StubLocalizationService(),
-            new StubServiceProvider(),
+            new MainWindowNavigationService(),
+            new StubMainWindowContentFactory(),
             loginService,
             new StubAppSettingsService(),
             new StubClientAppInfoService(),
@@ -522,6 +525,14 @@ public sealed class MainWindowTests
         public ValueTask InitializeAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
 
         public ValueTask SetCultureAsync(string cultureName, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+    }
+
+    private sealed class StubMainWindowContentFactory : IMainWindowContentFactory
+    {
+        public object Create(Type contentType)
+        {
+            return new ContentControl();
+        }
     }
 
     private sealed class StubLoginService : ILoginService

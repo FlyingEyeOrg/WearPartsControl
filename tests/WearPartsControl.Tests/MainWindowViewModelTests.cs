@@ -11,6 +11,7 @@ using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.Localization.Generated;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PlcService;
+using WearPartsControl.ApplicationServices.Shell;
 using WearPartsControl.ApplicationServices.Startup;
 using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.UserControls;
@@ -126,7 +127,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             }
         };
         var accessor = new CurrentUserAccessor();
-        var serviceProvider = new StubServiceProvider();
+        var serviceProvider = new StubMainWindowContentFactory();
         var clientAppInfoService = new StubClientAppInfoService
         {
             Model = new ClientAppInfoModel
@@ -166,7 +167,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             }
         };
         var accessor = new CurrentUserAccessor();
-        var serviceProvider = new StubServiceProvider();
+        var serviceProvider = new StubMainWindowContentFactory();
         var clientAppInfoService = new StubClientAppInfoService
         {
             Model = new ClientAppInfoModel
@@ -245,7 +246,7 @@ public sealed class MainWindowViewModelTests : IDisposable
                 AutoLogoutCountdownSeconds = 360
             }
         };
-        var serviceProvider = new StubServiceProvider();
+        var serviceProvider = new StubMainWindowContentFactory();
         var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService(), serviceProvider: serviceProvider);
 
         await viewModel.InitializeAsync();
@@ -277,7 +278,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             }
         };
         var accessor = new CurrentUserAccessor();
-        var serviceProvider = new StubServiceProvider();
+        var serviceProvider = new StubMainWindowContentFactory();
         var viewModel = CreateViewModel(accessor, new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService(), serviceProvider: serviceProvider);
 
         await viewModel.InitializeAsync();
@@ -388,7 +389,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         var accessor = new CurrentUserAccessor();
         var delaySignals = new Queue<TaskCompletionSource<bool>>();
         var loginService = new StubLoginService(accessor);
-        var serviceProvider = new StubServiceProvider();
+        var serviceProvider = new StubMainWindowContentFactory();
         var viewModel = CreateViewModel(
             accessor,
             loginService,
@@ -583,7 +584,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             }
         };
         var accessor = new CurrentUserAccessor();
-        var serviceProvider = new StubServiceProvider();
+        var serviceProvider = new StubMainWindowContentFactory();
         var viewModel = CreateViewModel(accessor, new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService(), serviceProvider: serviceProvider);
 
         await viewModel.InitializeAsync();
@@ -723,7 +724,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         IUiBusyService uiBusyService,
         IPlcStartupConnectionService startupConnectionService,
         Func<TimeSpan, CancellationToken, Task>? delayAsync = null,
-        StubServiceProvider? serviceProvider = null,
+        StubMainWindowContentFactory? serviceProvider = null,
         StubAppStartupCoordinator? appStartupCoordinator = null,
         StubClientAppInfoService? clientAppInfoService = null,
         ILocalizationService? localizationService = null)
@@ -731,15 +732,16 @@ public sealed class MainWindowViewModelTests : IDisposable
         var stateMachine = new LoginSessionStateMachine(accessor, loginService, delayAsync);
         return new MainWindowViewModel(
             localizationService ?? new StubLocalizationService(),
-            serviceProvider ?? new StubServiceProvider(),
+            new MainWindowNavigationService(),
+            serviceProvider ?? new StubMainWindowContentFactory(),
             loginService,
             appSettingsService,
             clientAppInfoService ?? new StubClientAppInfoService(),
             uiBusyService,
             startupConnectionService,
             stateMachine,
-                new StubUiDispatcher(),
-                appStartupCoordinator ?? new StubAppStartupCoordinator());
+            new StubUiDispatcher(),
+            appStartupCoordinator ?? new StubAppStartupCoordinator());
     }
 
     private sealed class StubAppStartupCoordinator : IAppStartupCoordinator
@@ -838,7 +840,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         }
     }
 
-    private sealed class StubServiceProvider : IServiceProvider
+    private sealed class StubMainWindowContentFactory : IMainWindowContentFactory
     {
         private readonly Dictionary<Type, int> _resolveCounts = new();
         private readonly HashSet<Type> _supportedTypes =
@@ -852,15 +854,15 @@ public sealed class MainWindowViewModelTests : IDisposable
             typeof(UserConfigUserControl)
         ];
 
-        public object? GetService(Type serviceType)
+        public object Create(Type contentType)
         {
-            if (!_supportedTypes.Contains(serviceType))
+            if (!_supportedTypes.Contains(contentType))
             {
-                return null;
+                throw new InvalidOperationException($"Unsupported main window content type: {contentType.Name}");
             }
 
-            _resolveCounts[serviceType] = GetResolveCount(serviceType) + 1;
-            return RuntimeHelpers.GetUninitializedObject(serviceType);
+            _resolveCounts[contentType] = GetResolveCount(contentType) + 1;
+            return RuntimeHelpers.GetUninitializedObject(contentType);
         }
 
         public int GetResolveCount<T>() where T : class
