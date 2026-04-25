@@ -13,14 +13,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <Style x:Key="ToolbarPrimaryButtonStyle"
-                   TargetType="Button"
-                   BasedOn="{StaticResource ButtonPrimary}">
-                <Setter Property="Margin"
-                        Value="0 10 12 0" />
-                <Setter Property="MinWidth"
-                        Value="96" />
-            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
         <Grid Grid.IsSharedSizeScope="True"
@@ -82,26 +74,26 @@
                                      Style="{StaticResource TextBoxExtend}"
                                      hc:InfoElement.Placeholder="{loc:Loc PartManagementControl.PartNamePlaceholder}" />
                         </Grid>
-                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
                                 Command="{Binding SearchCommand}"
                                 hc:IconElement.Geometry="{StaticResource SearchGeometry}"
                                 Content="{loc:Loc PartManagementControl.SearchButton}" />
-                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
                                 Command="{Binding RefreshCommand}"
                                 Content="{loc:Loc PartManagementControl.RefreshButton}" />
-                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
                                 Command="{Binding AddCommand}"
                                 hc:IconElement.Geometry="{StaticResource AddGeometry}"
                                 Content="{loc:Loc PartManagementControl.AddButton}" />
-                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
                                 Command="{Binding EditCommand}"
                                 hc:IconElement.Geometry="{StaticResource DropperGeometry}"
                                 Content="{loc:Loc PartManagementControl.EditButton}" />
-                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
                                 Command="{Binding DeleteCommand}"
                                 hc:IconElement.Geometry="{StaticResource DeleteGeometry}"
                                 Content="{loc:Loc PartManagementControl.DeleteButton}" />
-                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
                                 Command="{Binding ImportLegacyDefinitionsCommand}"
                                 hc:IconElement.Geometry="{StaticResource AddGeometry}"
                                 Content="{loc:Loc PartManagementControl.ImportLegacyDefinitionsButton}" />

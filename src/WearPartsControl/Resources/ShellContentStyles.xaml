@@ -40,6 +40,14 @@
         <Setter Property="Margin"
                 Value="0 10 12 0" />
     </Style>
+    <Style x:Key="ShellToolbarPrimaryButtonStyle"
+           TargetType="Button"
+           BasedOn="{StaticResource ButtonPrimary}">
+        <Setter Property="Margin"
+                Value="0 10 12 0" />
+        <Setter Property="MinWidth"
+                Value="96" />
+    </Style>
     <Style x:Key="ShellSectionHeaderBorderStyle"
            TargetType="Border">
         <Setter Property="Background"
@@ -114,6 +122,22 @@
         <Setter Property="Margin"
                 Value="0 0 0 10" />
     </Style>
+    <Style x:Key="ShellFormLabelTextStyle"
+           TargetType="TextBlock">
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+        <Setter Property="Margin"
+                Value="0 0 8 0" />
+        <Setter Property="TextWrapping"
+                Value="Wrap" />
+        <Setter Property="MaxWidth"
+                Value="140" />
+    </Style>
+    <Style x:Key="ShellFormRowGridStyle"
+           TargetType="Grid">
+        <Setter Property="Margin"
+                Value="0 10 0 0" />
+    </Style>
     <Style x:Key="ShellFormSectionTitleTextStyle"
            TargetType="TextBlock"
            BasedOn="{StaticResource ShellSectionLabelTextStyle}">
@@ -121,5 +145,21 @@
                 Value="15" />
         <Setter Property="Margin"
                 Value="0 0 0 12" />
+    </Style>
+    <Style x:Key="ShellMetaLabelTextStyle"
+           TargetType="TextBlock">
+        <Setter Property="Foreground"
+                Value="#61758A" />
+        <Setter Property="Margin"
+                Value="0 12 0 0" />
+    </Style>
+    <Style x:Key="ShellMetaValueTextStyle"
+           TargetType="TextBlock">
+        <Setter Property="Margin"
+                Value="0 2 0 0" />
+        <Setter Property="Foreground"
+                Value="#1E3550" />
+        <Setter Property="FontWeight"
+                Value="SemiBold" />
     </Style>
 </ResourceDictionary>

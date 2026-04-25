@@ -15,17 +15,6 @@
                     <ResourceDictionary.MergedDictionaries>
                         <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
                     </ResourceDictionary.MergedDictionaries>
-                    <Style x:Key="FormLabelTextBlockStyle"
-                           TargetType="TextBlock">
-                        <Setter Property="VerticalAlignment"
-                                Value="Center" />
-                        <Setter Property="Margin"
-                                Value="0 0 8 0" />
-                        <Setter Property="TextWrapping"
-                                Value="Wrap" />
-                        <Setter Property="MaxWidth"
-                                Value="140" />
-                    </Style>
                           <Style x:Key="ReplacePartOverviewRowStyle"
                                     TargetType="Grid">
                                 <Setter Property="Margin"
@@ -159,7 +148,7 @@
                                                               SharedSizeGroup="ReplacePartOverviewLabelColumn" />
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                                    Text="{loc:Loc ReplacePartControl.MonitoringStatusLabel}" />
                                         <TextBox Grid.Column="1"
                                                  Height="38"
@@ -175,7 +164,7 @@
                                                               SharedSizeGroup="ReplacePartOverviewLabelColumn" />
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                                    Text="{loc:Loc ReplacePartControl.CurrentPartLabel}" />
                                         <ComboBox Grid.Column="1"
                                                   Height="38"
@@ -191,7 +180,7 @@
                                                               SharedSizeGroup="ReplacePartOverviewLabelColumn" />
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                                    Text="{loc:Loc ReplacePartControl.CurrentBarcodeLabel}" />
                                         <TextBox Grid.Column="1"
                                                  Height="38"
@@ -307,7 +296,7 @@
                                                       SharedSizeGroup="ReplacePartOperationLabelColumn" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                            Text="{loc:Loc ReplacePartControl.ReplacementReasonLabel}" />
                                 <ComboBox Grid.Column="1"
                                                                                     Height="38"
@@ -317,7 +306,7 @@
                                           SelectedValue="{Binding SelectedReplacementReason, Mode=TwoWay}"
                                           Style="{StaticResource ComboBoxExtend}" />
                                 <TextBlock Grid.Row="1"
-                                                                                     Style="{StaticResource FormLabelTextBlockStyle}"
+                                                                                     Style="{StaticResource ShellFormLabelTextStyle}"
                                                                                      Margin="0 12 0 0"
                                                                                      Text="{loc:Loc ReplacePartControl.ToolCodeLabel}"
                                                                                      Visibility="{Binding IsToolValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
@@ -333,7 +322,7 @@
                                                                                     Visibility="{Binding IsToolValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                                                     hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.ToolCodePlaceholder}" />
                                                                 <TextBlock Grid.Row="2"
-                                           Style="{StaticResource FormLabelTextBlockStyle}"
+                                           Style="{StaticResource ShellFormLabelTextStyle}"
                                                                                      Margin="0 12 0 0"
                                                                                      Text="{loc:Loc ReplacePartControl.AbSideLabel}"
                                                                                      Visibility="{Binding IsCoatingValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
@@ -348,7 +337,7 @@
                                           hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.AbSidePlaceholder}" />
                                                                 <TextBlock Grid.Row="3"
                                                                                      Margin="0 12 0 0"
-                                           Style="{StaticResource FormLabelTextBlockStyle}"
+                                           Style="{StaticResource ShellFormLabelTextStyle}"
                                            Text="{loc:Loc ReplacePartControl.NewBarcodeLabel}" />
                                 <TextBox Grid.Row="3"
                                          Grid.Column="1"
@@ -359,7 +348,7 @@
                                          hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.NewBarcodePlaceholder}" />
                                                                 <TextBlock Grid.Row="4"
                                                                                      Margin="0 12 0 0"
-                                           Style="{StaticResource FormLabelTextBlockStyle}"
+                                                                           Style="{StaticResource ShellFormLabelTextStyle}"
                                            Text="{loc:Loc ReplacePartControl.RemarkLabel}" />
                                 <TextBox Grid.Row="4"
                                          Grid.Column="1"

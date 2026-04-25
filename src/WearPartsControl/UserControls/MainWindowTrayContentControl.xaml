@@ -13,22 +13,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <Style x:Key="TrayMetaLabelStyle"
-                   TargetType="TextBlock">
-                <Setter Property="Foreground"
-                        Value="#61758A" />
-                <Setter Property="Margin"
-                        Value="0 12 0 0" />
-            </Style>
-            <Style x:Key="TrayMetaValueStyle"
-                   TargetType="TextBlock">
-                <Setter Property="Margin"
-                        Value="0 2 0 0" />
-                <Setter Property="Foreground"
-                        Value="#1E3550" />
-                <Setter Property="FontWeight"
-                        Value="SemiBold" />
-            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Border MinWidth="300"
@@ -53,17 +37,17 @@
                     <TextBlock Foreground="{StaticResource InfoBrush}"
                                FontWeight="SemiBold"
                                Text="{loc:Loc MainWindowTrayContent.CurrentUserLabel}" />
-                    <TextBlock Style="{StaticResource TrayMetaValueStyle}"
+                    <TextBlock Style="{StaticResource ShellMetaValueTextStyle}"
                                Text="{Binding CurrentUserWorkIdText, Mode=OneWay}" />
 
-                    <TextBlock Style="{StaticResource TrayMetaLabelStyle}"
+                    <TextBlock Style="{StaticResource ShellMetaLabelTextStyle}"
                                Text="{loc:Loc MainWindowTrayContent.AccessLevelLabel}" />
-                    <TextBlock Style="{StaticResource TrayMetaValueStyle}"
+                    <TextBlock Style="{StaticResource ShellMetaValueTextStyle}"
                                Text="{Binding CurrentUserAccessLevelText, Mode=OneWay}" />
 
-                    <TextBlock Style="{StaticResource TrayMetaLabelStyle}"
+                    <TextBlock Style="{StaticResource ShellMetaLabelTextStyle}"
                                Text="{loc:Loc MainWindowTrayContent.VersionLabel}" />
-                    <TextBlock Style="{StaticResource TrayMetaValueStyle}"
+                    <TextBlock Style="{StaticResource ShellMetaValueTextStyle}"
                                Text="{Binding SoftwareVersionText, Mode=OneWay}" />
                 </StackPanel>
             </Border>

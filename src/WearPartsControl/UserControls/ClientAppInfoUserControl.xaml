@@ -15,22 +15,6 @@
             <ResourceDictionary.MergedDictionaries>
             <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <Style x:Key="FormLabelTextBlockStyle"
-               TargetType="TextBlock">
-            <Setter Property="VerticalAlignment"
-                Value="Center" />
-            <Setter Property="Margin"
-                Value="0 0 8 0" />
-            <Setter Property="TextWrapping"
-                Value="Wrap" />
-            <Setter Property="MaxWidth"
-                Value="140" />
-            </Style>
-            <Style x:Key="FormRowGridStyle"
-                   TargetType="Grid">
-                <Setter Property="Margin"
-                        Value="0 10 0 0" />
-            </Style>
             <Style x:Key="ActionSecondaryButtonStyle"
                    TargetType="Button">
                 <Setter Property="Margin"
@@ -56,7 +40,7 @@
               Margin="0">
         <StackPanel IsEnabled="{Binding IsNotBusy}"
                 Style="{StaticResource ShellPageContentStackPanelStyle}">
-            <Border Margin="0 12 0 0"
+                <Border Margin="0"
                     Style="{StaticResource ShellCardBorderStyle}">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -71,7 +55,7 @@
                                               SharedSizeGroup="ClientAppInfoLabelColumn1" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.SiteLabel}" />
                         <ComboBox Grid.Column="1"
                                   Style="{StaticResource ComboBoxExtend}"
@@ -87,7 +71,7 @@
                                               SharedSizeGroup="ClientAppInfoLabelColumn1" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.ProcedureLabel}" />
                         <ComboBox Grid.Column="1"
                                   Style="{StaticResource ComboBoxExtend}"
@@ -101,7 +85,7 @@
                                               SharedSizeGroup="ClientAppInfoLabelColumn1" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.PlcProtocolTypeLabel}" />
                         <ComboBox Grid.Column="1"
                                   Style="{StaticResource ComboBoxExtend}"
@@ -116,7 +100,7 @@
                                               SharedSizeGroup="ClientAppInfoLabelColumn1" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.ShutdownPointAddressLabel}" />
                         <TextBox Grid.Column="1"
                                  Style="{StaticResource TextBoxExtend}"
@@ -133,7 +117,7 @@
                                               SharedSizeGroup="ClientAppInfoLabelColumn2" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.FactoryLabel}" />
                         <ComboBox Grid.Column="1"
                                   Style="{StaticResource ComboBoxExtend}"
@@ -147,7 +131,7 @@
                                               SharedSizeGroup="ClientAppInfoLabelColumn2" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.ResourceNumberLabel}" />
                         <TextBox Grid.Column="1"
                                  Style="{StaticResource TextBoxExtend}"
@@ -160,7 +144,7 @@
                                               SharedSizeGroup="ClientAppInfoLabelColumn2" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.PlcIpAddressLabel}" />
                         <TextBox Grid.Column="1"
                                  Style="{StaticResource TextBoxExtend}"
@@ -175,7 +159,7 @@
                                               SharedSizeGroup="ClientAppInfoLabelColumn2" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.SiemensRackLabel}" />
                         <TextBox Grid.Column="1"
                                  Style="{StaticResource TextBoxExtend}"
@@ -190,7 +174,7 @@
                                               SharedSizeGroup="ClientAppInfoLabelColumn2" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.SiemensSlotLabel}" />
                         <TextBox Grid.Column="1"
                                  Style="{StaticResource TextBoxExtend}"
@@ -206,7 +190,7 @@
                                               SharedSizeGroup="ClientAppInfoLabelColumn3" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.AreaLabel}" />
                         <ComboBox Grid.Column="1"
                                   Style="{StaticResource ComboBoxExtend}"
@@ -220,7 +204,7 @@
                                               SharedSizeGroup="ClientAppInfoLabelColumn3" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.EquipmentCodeLabel}" />
                         <TextBox Grid.Column="1"
                                  Style="{StaticResource TextBoxExtend}"
@@ -233,7 +217,7 @@
                                               SharedSizeGroup="ClientAppInfoLabelColumn3" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                    Text="{loc:Loc ClientAppInfoControl.PlcPortLabel}" />
                         <TextBox Grid.Column="1"
                                  IsEnabled="{Binding IsPlcParametersEditable}"
@@ -247,7 +231,7 @@
                                               SharedSizeGroup="ClientAppInfoLabelColumn3" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                    Visibility="{Binding IsStringReverseVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                    Text="{loc:Loc ClientAppInfoControl.IsStringReverseLabel}" />
                         <CheckBox Grid.Column="1"

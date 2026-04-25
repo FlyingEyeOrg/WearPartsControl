@@ -13,14 +13,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <Style x:Key="ToolbarPrimaryButtonStyle"
-                   TargetType="Button"
-                   BasedOn="{StaticResource ButtonPrimary}">
-                <Setter Property="Margin"
-                        Value="0 10 12 0" />
-                <Setter Property="MinWidth"
-                        Value="96" />
-            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Grid.IsSharedSizeScope="True"
@@ -101,19 +93,19 @@
                                      hc:InfoElement.Placeholder="{loc:Loc ToolChangeManagementControl.KeywordPlaceholder}" />
                         </Grid>
 
-                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
                                 Command="{Binding SearchCommand}"
                                 Content="{loc:Loc ToolChangeManagementControl.SearchButton}" />
-                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
                                 Command="{Binding RefreshCommand}"
                                 Content="{loc:Loc ToolChangeManagementControl.RefreshButton}" />
-                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
                                 Command="{Binding NewCommand}"
                                 Content="{loc:Loc ToolChangeManagementControl.NewButton}" />
-                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
                                 Command="{Binding EditCommand}"
                                 Content="{loc:Loc ToolChangeManagementControl.EditButton}" />
-                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
                                 Command="{Binding DeleteCommand}"
                                 Content="{loc:Loc ToolChangeManagementControl.DeleteButton}" />
                     </WrapPanel>
