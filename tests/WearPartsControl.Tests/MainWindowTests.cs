@@ -26,7 +26,7 @@ using Xunit;
 
 namespace WearPartsControl.Tests;
 
-[Collection(UserTabControlTestCollection.Name)]
+[Collection(NavigationTabControlTestCollection.Name)]
 public sealed class MainWindowTests
 {
     [Fact]

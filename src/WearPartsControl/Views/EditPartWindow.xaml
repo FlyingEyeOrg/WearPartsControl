@@ -40,11 +40,11 @@
             Style="{StaticResource ShellActionCardBorderStyle}">
             <StackPanel Orientation="Horizontal"
                 HorizontalAlignment="Right">
-            <Button MinWidth="120"
+            <Button MinWidth="80"
                 Margin="0 0 10 0"
                 Command="{Binding CancelCommand}"
                 Content="{loc:Loc EditPartWindowView.CancelButton}" />
-            <Button MinWidth="120"
+            <Button MinWidth="80"
                 Style="{StaticResource ButtonPrimary}"
                 Command="{Binding SaveCommand}"
                 Content="{loc:Loc EditPartWindowView.SaveButton}" />

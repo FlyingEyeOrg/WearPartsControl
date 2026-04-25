@@ -80,13 +80,13 @@
                                        TextWrapping="Wrap"
                                        Text="{Binding Title, Mode=OneWay}" />
                         </StackPanel>
-                        <uc:LoginBox x:Name="LoginBoxControl"
+                        <uc:LoginBoxUserControl x:Name="LoginBoxControl"
                                      Grid.Column="4"
                                      Width="328"
                                      IsEnabled="{Binding IsClientAppInfoConfigured}" />
                     </Grid>
                 </Border>
-                <uc:UserTabControl Grid.Row="1"
+                <uc:NavigationTabControl Grid.Row="1"
                                    Headers="{Binding Tabs}"
                                    TabIndex="0"
                                    SelectedContent="{Binding SelectedContent, Mode=OneWay}"

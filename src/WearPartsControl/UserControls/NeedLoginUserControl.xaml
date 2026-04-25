@@ -57,7 +57,7 @@
                         Height="1"
                         Background="#E1EBF4" />
                 <Button Margin="0 18 0 0"
-                        MinWidth="120"
+                    MinWidth="80"
                         HorizontalAlignment="Center"
                         Style="{StaticResource ButtonPrimary}"
                         Command="{Binding DataContext.OpenLoginCommand, RelativeSource={RelativeSource AncestorType=Window}}"

@@ -11,7 +11,7 @@ using Xunit;
 
 namespace WearPartsControl.Tests;
 
-[Collection(UserTabControlTestCollection.Name)]
+[Collection(NavigationTabControlTestCollection.Name)]
 public sealed class UserControlXamlLoadTests
 {
     [Fact]
@@ -113,7 +113,7 @@ public sealed class UserControlXamlLoadTests
     {
         RunWithEnglishCulture(() =>
         {
-            var control = new LoginBox();
+            var control = new LoginBoxUserControl();
 
             Assert.NotNull(control);
         });
@@ -135,7 +135,7 @@ public sealed class UserControlXamlLoadTests
     {
         RunWithEnglishCulture(() =>
         {
-            var control = new UserTabControl();
+            var control = new NavigationTabControl();
 
             Assert.NotNull(control);
         });

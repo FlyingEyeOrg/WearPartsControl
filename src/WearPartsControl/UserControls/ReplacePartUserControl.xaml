@@ -67,7 +67,7 @@
                    TargetType="Button"
                    BasedOn="{StaticResource ButtonPrimary}">
                 <Setter Property="MinWidth"
-                        Value="168" />
+                    Value="80" />
                 <Setter Property="Height"
                         Value="42" />
                 <Setter Property="Padding"
@@ -120,7 +120,7 @@
                                 </TextBlock.Text>
                             </TextBlock>
                             <Button Margin="16 0 0 0"
-                                    MinWidth="120"
+                                    MinWidth="80"
                                     Command="{Binding RefreshCommand}"
                                     Style="{StaticResource ButtonPrimary}"
                                     Content="{loc:Loc ReplacePartControl.RefreshButton}" />

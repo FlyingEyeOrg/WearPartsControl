@@ -245,12 +245,12 @@
                             Style="{StaticResource ShellActionCardBorderStyle}">
                         <WrapPanel Style="{StaticResource ShellToolbarWrapPanelStyle}">
                             <Button Margin="0 10 12 0"
-                                    MinWidth="120"
+                                    MinWidth="80"
                                     IsEnabled="{Binding IsImportLegacyConfigurationEnabled}"
                                     Click="OnImportLegacyConfigurationClicked"
                                     Content="{loc:Loc ClientAppInfoControl.ImportLegacyConfigurationButton}" />
                             <Button Margin="0 10 12 0"
-                                        MinWidth="120"
+                                    MinWidth="80"
                                     IsEnabled="{Binding IsSaveClientAppInfoEnabled}"
                                     Click="OnSaveClicked"
                                     Style="{StaticResource ButtonPrimary}"
@@ -274,7 +274,7 @@
                             <StackPanel Margin="0 10 0 0"
                                         Orientation="Horizontal"
                                         HorizontalAlignment="Right">
-                                <Button MinWidth="120"
+                                <Button MinWidth="80"
                                         Padding="12 6"
                                         Style="{StaticResource ButtonDanger}"
                                         Visibility="{Binding IsWearPartMonitoringEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -282,7 +282,7 @@
                                         Click="OnToggleWearPartMonitoringClicked">
                                     <TextBlock Text="{Binding WearPartMonitoringButtonText, Mode=OneWay}" />
                                 </Button>
-                                <Button MinWidth="120"
+                                <Button MinWidth="80"
                                         Padding="12 6"
                                         IsEnabled="{Binding IsToggleWearPartMonitoringEnabled}"
                                         Click="OnToggleWearPartMonitoringClicked">
@@ -302,7 +302,7 @@
                                     </Button.Style>
                                     <TextBlock Text="{Binding WearPartMonitoringButtonText, Mode=OneWay}" />
                                 </Button>
-                                <Button MinWidth="120"
+                                <Button MinWidth="80"
                                         Margin="12 0 0 0"
                                         Padding="12 6"
                                         IsEnabled="{Binding IsTestPlcConnectionEnabled}"

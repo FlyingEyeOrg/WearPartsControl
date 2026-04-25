@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="WearPartsControl.UserControls.LoginBox"
+﻿<UserControl x:Class="WearPartsControl.UserControls.LoginBoxUserControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -69,13 +69,13 @@
                         Command="{Binding OpenLoginCommand}"
                         Content="{loc:Loc LoginBoxControl.LoginButton}"
                         Visibility="{Binding ShowLoginButton, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        MinWidth="120" />
+                    MinWidth="80" />
                 <Button x:Name="LogoutButton"
                         Margin="0 6 0 0"
                         Command="{Binding LogoutCommand}"
                         Content="{loc:Loc LoginBoxControl.LogoutButton}"
                         Visibility="{Binding ShowLogoutButton, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        MinWidth="120" />
+                    MinWidth="80" />
             </StackPanel>
         </Grid>
     </Border>

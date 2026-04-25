@@ -46,7 +46,7 @@
         <Setter Property="Margin"
                 Value="0 10 12 0" />
         <Setter Property="MinWidth"
-                Value="120" />
+                Value="80" />
     </Style>
     <Style x:Key="ShellSectionHeaderBorderStyle"
            TargetType="Border">

@@ -12,9 +12,9 @@ using System.Windows.Threading;
 namespace WearPartsControl.UserControls
 {
     /// <summary>
-    /// UserTabControl.xaml 的交互逻辑
+    /// NavigationTabControl.xaml 的交互逻辑
     /// </summary>
-    public partial class UserTabControl : UserControl
+    public partial class NavigationTabControl : UserControl
     {
         // 说明 (简要):
         // - 在模板中我们通过 ItemsControl.AlternationIndex 将容器索引暴露到模板内的控件(Tag)，
@@ -30,11 +30,11 @@ namespace WearPartsControl.UserControls
         private bool _isUpdatingSelection;
         private ToggleButton? _selectedButton;
 
-        public UserTabControl()
+        public NavigationTabControl()
         {
             InitializeComponent();
 
-            _tabIndexDescriptor = DependencyPropertyDescriptor.FromProperty(Control.TabIndexProperty, typeof(UserTabControl));
+            _tabIndexDescriptor = DependencyPropertyDescriptor.FromProperty(Control.TabIndexProperty, typeof(NavigationTabControl));
 
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
@@ -50,7 +50,7 @@ namespace WearPartsControl.UserControls
             DependencyProperty.Register(
                 nameof(Headers),
                 typeof(IEnumerable<string>),
-                typeof(UserTabControl),
+                typeof(NavigationTabControl),
                 new PropertyMetadata(new List<string>(), OnHeadersChanged));
 
         public ICommand? Command
@@ -60,7 +60,7 @@ namespace WearPartsControl.UserControls
         }
 
         public static readonly DependencyProperty CommandProperty =
-            DependencyProperty.Register(nameof(Command), typeof(ICommand), typeof(UserTabControl), new PropertyMetadata(null));
+            DependencyProperty.Register(nameof(Command), typeof(ICommand), typeof(NavigationTabControl), new PropertyMetadata(null));
 
         public object? SelectedContent
         {
@@ -69,7 +69,7 @@ namespace WearPartsControl.UserControls
         }
 
         public static readonly DependencyProperty SelectedContentProperty =
-            DependencyProperty.Register(nameof(SelectedContent), typeof(object), typeof(UserTabControl), new PropertyMetadata(null));
+            DependencyProperty.Register(nameof(SelectedContent), typeof(object), typeof(NavigationTabControl), new PropertyMetadata(null));
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
@@ -86,7 +86,7 @@ namespace WearPartsControl.UserControls
 
         private static void OnHeadersChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
         {
-            if (dependencyObject is not UserTabControl control)
+            if (dependencyObject is not NavigationTabControl control)
             {
                 return;
             }

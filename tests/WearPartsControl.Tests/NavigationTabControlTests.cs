@@ -10,8 +10,8 @@ using Xunit;
 
 namespace WearPartsControl.Tests;
 
-[Collection(UserTabControlTestCollection.Name)]
-public sealed class UserTabControlTests
+[Collection(NavigationTabControlTestCollection.Name)]
+public sealed class NavigationTabControlTests
 {
     [Fact]
     public void HeadersChange_ShouldReselectCurrentTab_UsingUpdatedItems()
@@ -19,7 +19,7 @@ public sealed class UserTabControlTests
         WpfTestHost.Run(() =>
         {
             var command = new RecordingCommand();
-            using var host = UserTabControlHost.Create(new[] { "A", "B", "C" }, 1, command);
+            using var host = NavigationTabControlHost.Create(new[] { "A", "B", "C" }, 1, command);
 
             Assert.Equal(1, host.Control.TabIndex);
             Assert.Equal(new[] { 1 }, command.ExecutedIndexes);
@@ -42,7 +42,7 @@ public sealed class UserTabControlTests
         WpfTestHost.Run(() =>
         {
             var command = new RecordingCommand();
-            using var host = UserTabControlHost.Create(new[] { "Same", "Same", "Other" }, 0, command);
+            using var host = NavigationTabControlHost.Create(new[] { "Same", "Same", "Other" }, 0, command);
 
             var secondButton = host.GetButton(1);
             secondButton.IsChecked = true;
@@ -76,23 +76,23 @@ public sealed class UserTabControlTests
         }
     }
 
-    private sealed class UserTabControlHost : IDisposable
+    private sealed class NavigationTabControlHost : IDisposable
     {
         private readonly Window _window;
         private readonly ItemsControl _itemsControl;
 
-        private UserTabControlHost(Window window, UserTabControl control, ItemsControl itemsControl)
+        private NavigationTabControlHost(Window window, NavigationTabControl control, ItemsControl itemsControl)
         {
             _window = window;
             Control = control;
             _itemsControl = itemsControl;
         }
 
-        public UserTabControl Control { get; }
+        public NavigationTabControl Control { get; }
 
-        public static UserTabControlHost Create(IEnumerable<string> headers, int tabIndex, ICommand command)
+        public static NavigationTabControlHost Create(IEnumerable<string> headers, int tabIndex, ICommand command)
         {
-            var control = new UserTabControl
+            var control = new NavigationTabControl
             {
                 Headers = headers,
                 TabIndex = tabIndex,
@@ -113,7 +113,7 @@ public sealed class UserTabControlTests
             WpfTestHost.DrainDispatcher();
 
             var itemsControl = (ItemsControl)control.FindName("TabItemsControl")!;
-            return new UserTabControlHost(window, control, itemsControl);
+            return new NavigationTabControlHost(window, control, itemsControl);
         }
 
         public ToggleButton GetButton(int index)
@@ -143,7 +143,7 @@ public sealed class UserTabControlTests
 }
 
 [CollectionDefinition(Name, DisableParallelization = true)]
-public sealed class UserTabControlTestCollection
+public sealed class NavigationTabControlTestCollection
 {
-    public const string Name = "UserTabControl.Wpf";
+    public const string Name = "NavigationTabControl.Wpf";
 }

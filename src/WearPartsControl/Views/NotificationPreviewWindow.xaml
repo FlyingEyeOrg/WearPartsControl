@@ -77,7 +77,7 @@
                     Style="{StaticResource ShellActionCardBorderStyle}">
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Right">
-                    <Button MinWidth="120"
+                        <Button MinWidth="80"
                             Style="{StaticResource ButtonPrimary}"
                             Content="{loc:Loc UserConfigControl.NotificationPreviewCloseButton}"
                             Click="OnCloseClicked" />

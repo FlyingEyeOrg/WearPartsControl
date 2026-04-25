@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace WearPartsControl.UserControls
 {
     /// <summary>
-    /// LoginBox.xaml 的交互逻辑
+    /// LoginBoxUserControl.xaml 的交互逻辑
     /// </summary>
-    public partial class LoginBox : UserControl
+    public partial class LoginBoxUserControl : UserControl
     {
-        public LoginBox()
+        public LoginBoxUserControl()
         {
             InitializeComponent();
         }
