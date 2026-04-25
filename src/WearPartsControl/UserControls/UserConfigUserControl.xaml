@@ -43,7 +43,7 @@
     <ScrollViewer Grid.Row="1"
                   VerticalScrollBarVisibility="Auto">
         <StackPanel Grid.IsSharedSizeScope="True"
-                    Margin="0">
+                Style="{StaticResource ShellPageContentStackPanelStyle}">
 
             <Border Margin="0 12 0 0"
                     Style="{StaticResource ShellStatusCardBorderStyle}">

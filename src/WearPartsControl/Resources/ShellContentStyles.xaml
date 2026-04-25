@@ -23,6 +23,23 @@
     <SolidColorBrush x:Key="ShellCardBackgroundBrush" Color="#FDFDFEFF" />
     <SolidColorBrush x:Key="ShellCardBorderBrush" Color="#FFD5E0EC" />
     <SolidColorBrush x:Key="ShellMutedForegroundBrush" Color="#FF5B6B7A" />
+    <Style x:Key="ShellPageContentStackPanelStyle"
+           TargetType="StackPanel">
+        <Setter Property="Margin"
+                Value="0 12 0 8" />
+    </Style>
+    <Style x:Key="ShellToolbarWrapPanelStyle"
+           TargetType="WrapPanel">
+        <Setter Property="Margin"
+                Value="0 10 0 0" />
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+    </Style>
+    <Style x:Key="ShellToolbarFieldGridStyle"
+           TargetType="Grid">
+        <Setter Property="Margin"
+                Value="0 10 12 0" />
+    </Style>
     <Style x:Key="ShellSectionHeaderBorderStyle"
            TargetType="Border">
         <Setter Property="Background"
@@ -77,6 +94,16 @@
                 Value="#FFF7FAFD" />
         <Setter Property="BorderBrush"
                 Value="#FFD9E7F4" />
+    </Style>
+    <Style x:Key="ShellActionCardBorderStyle"
+           TargetType="Border"
+           BasedOn="{StaticResource ShellStatusCardBorderStyle}">
+        <Setter Property="Background"
+                Value="#FFF3F8FC" />
+        <Setter Property="BorderBrush"
+                Value="#FFC7D9E8" />
+        <Setter Property="Padding"
+                Value="16 14" />
     </Style>
     <Style x:Key="ShellSectionLabelTextStyle"
            TargetType="TextBlock">

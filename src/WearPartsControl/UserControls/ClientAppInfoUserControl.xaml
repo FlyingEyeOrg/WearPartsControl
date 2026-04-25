@@ -26,6 +26,18 @@
             <Setter Property="MaxWidth"
                 Value="140" />
             </Style>
+            <Style x:Key="FormRowGridStyle"
+                   TargetType="Grid">
+                <Setter Property="Margin"
+                        Value="0 10 0 0" />
+            </Style>
+            <Style x:Key="ActionSecondaryButtonStyle"
+                   TargetType="Button">
+                <Setter Property="Margin"
+                        Value="0 10 12 0" />
+                <Setter Property="MinWidth"
+                        Value="120" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Background="{StaticResource ShellPanelBackgroundBrush}">
@@ -43,7 +55,7 @@
           <Grid Grid.IsSharedSizeScope="True"
               Margin="0">
         <StackPanel IsEnabled="{Binding IsNotBusy}"
-                  Margin="0">
+                Style="{StaticResource ShellPageContentStackPanelStyle}">
             <Border Margin="0 12 0 0"
                     Style="{StaticResource ShellCardBorderStyle}">
             <Grid>
@@ -253,21 +265,19 @@
                            Text="{Binding StatusMessage, Mode=OneWay}" />
                     </Border>
                     <Border Margin="0 12 0 0"
-                        Style="{StaticResource ShellCardBorderStyle}">
-                    <WrapPanel>
-                <Button Margin="0 8 0 0"
-                        MinWidth="120"
+                        Style="{StaticResource ShellActionCardBorderStyle}">
+                    <WrapPanel Style="{StaticResource ShellToolbarWrapPanelStyle}">
+                <Button Style="{StaticResource ActionSecondaryButtonStyle}"
                         IsEnabled="{Binding IsImportLegacyConfigurationEnabled}"
                         Click="OnImportLegacyConfigurationClicked"
                         Content="{loc:Loc ClientAppInfoControl.ImportLegacyConfigurationButton}" />
-                <Button Margin="8 8 0 0"
+                <Button Margin="0 10 12 0"
                     MinWidth="96"
                         IsEnabled="{Binding IsSaveClientAppInfoEnabled}"
                         Click="OnSaveClicked"
                         Style="{StaticResource ButtonPrimary}"
                         Content="{loc:Loc ClientAppInfoControl.SaveButton}" />
-                <Grid Margin="16 8 0 0"
-                      VerticalAlignment="Center">
+                <Grid Style="{StaticResource ShellToolbarFieldGridStyle}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
@@ -277,13 +287,13 @@
                                TextWrapping="Wrap"
                                Text="{loc:Loc ClientAppInfoControl.WearPartMonitoringStatusLabel}" />
                     <TextBox Grid.Column="1"
-                             Margin="8 0 0 0"
+                             Margin="10 0 0 0"
                              IsReadOnly="True"
                              Background="{Binding WearPartMonitoringStatusBackground, Mode=OneWay}"
                              Foreground="White"
                              Text="{Binding WearPartMonitoringStatusText, Mode=OneWay}" />
                 </Grid>
-                <StackPanel Margin="8 8 0 0"
+                <StackPanel Margin="0 10 0 0"
                             Orientation="Horizontal"
                             HorizontalAlignment="Right">
                     <Button MinWidth="120"
@@ -314,8 +324,8 @@
                         </Button.Style>
                         <TextBlock Text="{Binding WearPartMonitoringButtonText, Mode=OneWay}" />
                     </Button>
-                    <Button MinWidth="120"
-                            Margin="8 0 0 0"
+                        <Button MinWidth="120"
+                            Margin="12 0 0 0"
                             Padding="12 6"
                             IsEnabled="{Binding IsTestPlcConnectionEnabled}"
                             Click="OnTestPlcConnectionClicked"

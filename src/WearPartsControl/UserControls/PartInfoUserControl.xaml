@@ -26,16 +26,21 @@
                 <Setter Property="MaxWidth"
                     Value="160" />
             </Style>
+            <Style x:Key="FormRowGridStyle"
+                   TargetType="Grid">
+                <Setter Property="Margin"
+                        Value="0 0 0 10" />
+            </Style>
             </ResourceDictionary>
             </UserControl.Resources>
     <ScrollViewer DataContext="{Binding Editor, RelativeSource={RelativeSource AncestorType=UserControl}}"
                   VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled"
                   CanContentScroll="True">
-            <StackPanel Margin="16"
+                <StackPanel Margin="18"
                     IsEnabled="{Binding IsNotBusy}">
                 <Border Style="{StaticResource ShellStatusCardBorderStyle}"
-                    Padding="12">
+                    Padding="14 12">
                 <TextBlock FontSize="14"
                            Foreground="{StaticResource InfoBrush}"
                            FontWeight="SemiBold"
@@ -51,7 +56,7 @@
 
                 <StackPanel Grid.Column="0"
                             Margin="0 0 8 0">
-                    <Grid Margin="0 0 0 8">
+                    <Grid Style="{StaticResource FormRowGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="PartInfoLabelColumn" />
@@ -64,7 +69,7 @@
                                  Text="{Binding ResourceNumber, Mode=OneWay}"
                                  Style="{StaticResource TextBoxExtend}" />
                     </Grid>
-                    <Grid Margin="0 0 0 8">
+                    <Grid Style="{StaticResource FormRowGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="PartInfoLabelColumn" />
@@ -77,7 +82,7 @@
                                  Style="{StaticResource TextBoxExtend}"
                                  hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.PartNamePlaceholder}" />
                     </Grid>
-                    <Grid Margin="0 0 0 8">
+                    <Grid Style="{StaticResource FormRowGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="PartInfoLabelColumn" />
@@ -90,7 +95,7 @@
                                  Style="{StaticResource TextBoxExtend}"
                                  hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.CurrentValueAddressPlaceholder}" />
                     </Grid>
-                    <Grid Margin="0 0 0 8">
+                    <Grid Style="{StaticResource FormRowGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="PartInfoLabelColumn" />
@@ -103,7 +108,7 @@
                                  Style="{StaticResource TextBoxExtend}"
                                  hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.WarningValueAddressPlaceholder}" />
                     </Grid>
-                    <Grid Margin="0 0 0 8">
+                    <Grid Style="{StaticResource FormRowGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="PartInfoLabelColumn" />
@@ -116,7 +121,7 @@
                                  Style="{StaticResource TextBoxExtend}"
                                  hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.ShutdownValueAddressPlaceholder}" />
                     </Grid>
-                    <Grid Margin="0 0 0 8">
+                    <Grid Style="{StaticResource FormRowGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="PartInfoLabelColumn" />
@@ -132,7 +137,7 @@
                                   Style="{StaticResource ComboBoxExtend}"
                                   hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.LifetimeTypePlaceholder}" />
                     </Grid>
-                    <Grid Margin="0 0 0 8"
+                      <Grid Style="{StaticResource FormRowGridStyle}"
                           Height="28">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
@@ -162,7 +167,7 @@
 
                 <StackPanel Grid.Column="1"
                             Margin="8 0 0 0">
-                    <Grid Margin="0 0 0 8">
+                    <Grid Style="{StaticResource FormRowGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="PartInfoLabelColumn" />
@@ -177,7 +182,7 @@
                                   Style="{StaticResource ComboBoxExtend}"
                                   hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.DataTypePlaceholder}" />
                     </Grid>
-                    <Grid Margin="0 0 0 8">
+                    <Grid Style="{StaticResource FormRowGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="PartInfoLabelColumn" />
@@ -192,7 +197,7 @@
                                   Style="{StaticResource ComboBoxExtend}"
                                   hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.DataTypePlaceholder}" />
                     </Grid>
-                    <Grid Margin="0 0 0 8">
+                    <Grid Style="{StaticResource FormRowGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="PartInfoLabelColumn" />
@@ -207,7 +212,7 @@
                                   Style="{StaticResource ComboBoxExtend}"
                                   hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.DataTypePlaceholder}" />
                     </Grid>
-                    <Grid Margin="0 0 0 8">
+                    <Grid Style="{StaticResource FormRowGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="PartInfoLabelColumn" />
@@ -222,7 +227,7 @@
                                   Style="{StaticResource ComboBoxExtend}"
                                   hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.InputModePlaceholder}" />
                     </Grid>
-                    <Grid Margin="0 0 0 8">
+                    <Grid Style="{StaticResource FormRowGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="PartInfoLabelColumn" />
@@ -235,7 +240,7 @@
                                  Style="{StaticResource TextBoxExtend}"
                                  hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.CodeMinLengthPlaceholder}" />
                     </Grid>
-                    <Grid Margin="0 0 0 8">
+                    <Grid Style="{StaticResource FormRowGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                               SharedSizeGroup="PartInfoLabelColumn" />

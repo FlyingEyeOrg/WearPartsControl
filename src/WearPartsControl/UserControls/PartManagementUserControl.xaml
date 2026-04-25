@@ -13,6 +13,14 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="ToolbarPrimaryButtonStyle"
+                   TargetType="Button"
+                   BasedOn="{StaticResource ButtonPrimary}">
+                <Setter Property="Margin"
+                        Value="0 10 12 0" />
+                <Setter Property="MinWidth"
+                        Value="96" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
         <Grid Grid.IsSharedSizeScope="True"
@@ -57,10 +65,9 @@
                         </TextBlock>
                     </DockPanel>
 
-                    <WrapPanel Grid.Row="1"
-                               Margin="0 8 0 0"
-                               VerticalAlignment="Center">
-                        <Grid Margin="0 8 8 0">
+                          <WrapPanel Grid.Row="1"
+                               Style="{StaticResource ShellToolbarWrapPanelStyle}">
+                           <Grid Style="{StaticResource ShellToolbarFieldGridStyle}">
                             <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="PartManagementFilterLabelColumn" />
@@ -75,38 +82,27 @@
                                      Style="{StaticResource TextBoxExtend}"
                                      hc:InfoElement.Placeholder="{loc:Loc PartManagementControl.PartNamePlaceholder}" />
                         </Grid>
-                        <Button Margin="0 8 8 0"
-                            MinWidth="96"
+                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
                                 Command="{Binding SearchCommand}"
-                                Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource SearchGeometry}"
                                 Content="{loc:Loc PartManagementControl.SearchButton}" />
-                        <Button Margin="0 8 8 0"
-                            MinWidth="96"
+                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
                                 Command="{Binding RefreshCommand}"
-                                Style="{StaticResource ButtonPrimary}"
                                 Content="{loc:Loc PartManagementControl.RefreshButton}" />
-                        <Button Margin="0 8 8 0"
-                            MinWidth="96"
+                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
                                 Command="{Binding AddCommand}"
-                                Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource AddGeometry}"
                                 Content="{loc:Loc PartManagementControl.AddButton}" />
-                        <Button Margin="0 8 8 0"
-                            MinWidth="96"
+                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
                                 Command="{Binding EditCommand}"
-                                Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource DropperGeometry}"
                                 Content="{loc:Loc PartManagementControl.EditButton}" />
-                        <Button Margin="0 8 8 0"
-                            MinWidth="96"
+                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
                                 Command="{Binding DeleteCommand}"
-                                Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource DeleteGeometry}"
                                 Content="{loc:Loc PartManagementControl.DeleteButton}" />
-                        <Button Margin="0 8 8 0"
+                        <Button Style="{StaticResource ToolbarPrimaryButtonStyle}"
                                 Command="{Binding ImportLegacyDefinitionsCommand}"
-                                Style="{StaticResource ButtonPrimary}"
                                 hc:IconElement.Geometry="{StaticResource AddGeometry}"
                                 Content="{loc:Loc PartManagementControl.ImportLegacyDefinitionsButton}" />
                     </WrapPanel>
