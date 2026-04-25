@@ -45,7 +45,7 @@ public sealed class AppStartupCoordinatorTests
     }
 
     [Fact]
-    public async Task EnsureInitializedAsync_WhenPlcConnectionFails_ShouldDisableWearPartMonitoring()
+    public async Task EnsureInitializedAsync_WhenPlcConnectionFails_ShouldKeepWearPartMonitoringSetting()
     {
         var initializer = new StubDatabaseInitializer();
         var appSettingsService = new StubAppSettingsService
@@ -65,8 +65,8 @@ public sealed class AppStartupCoordinatorTests
 
         await coordinator.EnsureInitializedAsync();
 
-        Assert.False(appSettingsService.Current.IsWearPartMonitoringEnabled);
-        Assert.Equal(1, appSettingsService.SaveCallCount);
+        Assert.True(appSettingsService.Current.IsWearPartMonitoringEnabled);
+        Assert.Equal(0, appSettingsService.SaveCallCount);
         Assert.Equal(1, plcStartupConnectionService.CallCount);
     }
 

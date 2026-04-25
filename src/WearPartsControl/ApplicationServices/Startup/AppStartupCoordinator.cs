@@ -74,9 +74,6 @@ public sealed class AppStartupCoordinator : IAppStartupCoordinator
         {
             return;
         }
-
-        settings.IsWearPartMonitoringEnabled = false;
-        await _appSettingsService.SaveAsync(settings).ConfigureAwait(false);
     }
 
     private static Task ReportLoadingAsync(Func<string, Task>? reportLoadingAsync, string message)
