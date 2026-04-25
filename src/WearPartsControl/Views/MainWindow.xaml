@@ -19,14 +19,19 @@
         ShowInTaskbar="True"
         d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}">
     <Window.Resources>
-        <LinearGradientBrush x:Key="ShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#EEF4F8" Offset="0" />
-            <GradientStop Color="#F8FBFD" Offset="1" />
-        </LinearGradientBrush>
-        <LinearGradientBrush x:Key="ShellHeaderBrush" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#F8FBFE" Offset="0" />
-            <GradientStop Color="#EAF2F8" Offset="1" />
-        </LinearGradientBrush>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <LinearGradientBrush x:Key="ShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#EEF4F8" Offset="0" />
+                <GradientStop Color="#F8FBFD" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="ShellHeaderBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#F8FBFE" Offset="0" />
+                <GradientStop Color="#EAF2F8" Offset="1" />
+            </LinearGradientBrush>
+        </ResourceDictionary>
     </Window.Resources>
     <Grid Background="{StaticResource ShellBackgroundBrush}">
           <Grid Margin="10"
@@ -91,11 +96,8 @@
                 HorizontalAlignment="Stretch"
                 Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Border Width="260"
-                    Padding="24"
-                    Background="White"
-                    BorderBrush="#DCE7EF"
-                    BorderThickness="1"
-                    CornerRadius="18"
+                Padding="24"
+                Style="{StaticResource ShellCardBorderStyle}"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center">
                 <StackPanel>

@@ -14,13 +14,17 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="LoginBoxActionButtonStyle"
+                   TargetType="Button">
+                <Setter Property="MinWidth"
+                        Value="92" />
+                <Setter Property="Padding"
+                        Value="14 6" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-        <Border Padding="12"
-            Background="#FCFEFF"
-            BorderBrush="#DCE7EF"
-            BorderThickness="1"
-            CornerRadius="18">
+        <Border Style="{StaticResource ShellCardBorderStyle}"
+                Padding="14 12">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -32,6 +36,8 @@
                     Width="56"
                     Height="56"
                     Background="#EEF5FA"
+                    BorderBrush="#D9E8F2"
+                    BorderThickness="1"
                     CornerRadius="28">
                 <Viewbox Width="28"
                          Height="28"
@@ -65,17 +71,17 @@
                 <Button x:Name="LoginButton"
                         Style="{StaticResource ButtonPrimary}"
                         Command="{Binding OpenLoginCommand}"
-                    Padding="14 6"
+                        Padding="14 6"
                         Content="{loc:Loc LoginBoxControl.LoginButton}"
                         Visibility="{Binding ShowLoginButton, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        MinWidth="88" />
+                        MinWidth="92" />
                 <Button x:Name="LogoutButton"
-                    Margin="0 6 0 0"
+                        Margin="0 6 0 0"
                         Command="{Binding LogoutCommand}"
-                    Padding="14 6"
+                        Padding="14 6"
                         Content="{loc:Loc LoginBoxControl.LogoutButton}"
                         Visibility="{Binding ShowLogoutButton, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        MinWidth="88" />
+                        Style="{StaticResource LoginBoxActionButtonStyle}" />
             </StackPanel>
         </Grid>
     </Border>

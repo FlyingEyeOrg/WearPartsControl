@@ -13,57 +13,65 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="TrayMetaLabelStyle"
+                   TargetType="TextBlock">
+                <Setter Property="Foreground"
+                        Value="#61758A" />
+                <Setter Property="Margin"
+                        Value="0 12 0 0" />
+            </Style>
+            <Style x:Key="TrayMetaValueStyle"
+                   TargetType="TextBlock">
+                <Setter Property="Margin"
+                        Value="0 2 0 0" />
+                <Setter Property="Foreground"
+                        Value="#1E3550" />
+                <Setter Property="FontWeight"
+                        Value="SemiBold" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Border MinWidth="300"
             MaxWidth="340"
-            Padding="18"
-            Background="#FCFEFF"
-            BorderBrush="#DCE7EF"
-            BorderThickness="1"
-            CornerRadius="18">
+            Style="{StaticResource ShellCardBorderStyle}">
         <StackPanel>
             <TextBlock FontSize="17"
                        FontWeight="Bold"
-                   Foreground="#1E3550"
+                       Foreground="#1E3550"
                        Text="{loc:Loc MainWindowTrayContent.Title}" />
             <TextBlock Margin="0 6 0 0"
-                   Foreground="#61758A"
+                       Foreground="#61758A"
                        Text="{loc:Loc MainWindowTrayContent.Subtitle}" />
 
-            <Border Margin="0 14 0 14"
-                    Height="1"
-                Background="#E4ECF3" />
+            <Border Margin="0 14 0 0"
+                    Style="{StaticResource ShellStatusCardBorderStyle}">
+                <StackPanel>
+                    <TextBlock Foreground="{StaticResource InfoBrush}"
+                               FontWeight="SemiBold"
+                               Text="{loc:Loc MainWindowTrayContent.CurrentUserLabel}" />
+                    <TextBlock Style="{StaticResource TrayMetaValueStyle}"
+                               Text="{Binding CurrentUserWorkIdText, Mode=OneWay}" />
 
-            <TextBlock Foreground="#FF61758A"
-                       Text="{loc:Loc MainWindowTrayContent.CurrentUserLabel}" />
-            <TextBlock Margin="0 2 0 0"
-                   Foreground="#1E3550"
-                       FontWeight="SemiBold"
-                       Text="{Binding CurrentUserWorkIdText, Mode=OneWay}" />
+                    <TextBlock Style="{StaticResource TrayMetaLabelStyle}"
+                               Text="{loc:Loc MainWindowTrayContent.AccessLevelLabel}" />
+                    <TextBlock Style="{StaticResource TrayMetaValueStyle}"
+                               Text="{Binding CurrentUserAccessLevelText, Mode=OneWay}" />
 
-            <TextBlock Margin="0 12 0 0"
-                   Foreground="#61758A"
-                       Text="{loc:Loc MainWindowTrayContent.AccessLevelLabel}" />
-            <TextBlock Margin="0 2 0 0"
-                   Foreground="#1E3550"
-                       FontWeight="SemiBold"
-                       Text="{Binding CurrentUserAccessLevelText, Mode=OneWay}" />
-
-            <TextBlock Margin="0 12 0 0"
-                   Foreground="#61758A"
-                       Text="{loc:Loc MainWindowTrayContent.VersionLabel}" />
-            <TextBlock Margin="0 2 0 0"
-                   Foreground="#1E3550"
-                       FontWeight="SemiBold"
-                       Text="{Binding SoftwareVersionText, Mode=OneWay}" />
+                    <TextBlock Style="{StaticResource TrayMetaLabelStyle}"
+                               Text="{loc:Loc MainWindowTrayContent.VersionLabel}" />
+                    <TextBlock Style="{StaticResource TrayMetaValueStyle}"
+                               Text="{Binding SoftwareVersionText, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
 
             <TextBlock Margin="0 14 0 0"
                        TextWrapping="Wrap"
-                   Foreground="#506173"
+                       Foreground="#506173"
                        Text="{loc:Loc MainWindowTrayContent.MinimizeHint}" />
 
-            <Grid Margin="0 16 0 0">
+            <Border Margin="0 16 0 0"
+                    Style="{StaticResource ShellActionCardBorderStyle}">
+                <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition Width="10" />
@@ -80,7 +88,8 @@
                         Padding="14 6"
                         Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:MainWindowTrayContentControl}}, Path=ExitCommand}"
                         Content="{loc:Loc MainWindowTrayContent.ExitButton}" />
-            </Grid>
+                </Grid>
+            </Border>
         </StackPanel>
     </Border>
 </UserControl>

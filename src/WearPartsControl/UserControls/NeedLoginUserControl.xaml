@@ -23,40 +23,49 @@
                 HorizontalAlignment="Center"
                 Style="{StaticResource ShellCardBorderStyle}">
             <StackPanel>
-                <Border Width="56"
-                        Height="56"
-                        CornerRadius="28"
-                        Background="#FFE5EEF8"
-                        HorizontalAlignment="Center">
-                    <TextBlock VerticalAlignment="Center"
-                               HorizontalAlignment="Center"
-                               Foreground="#FF365082"
-                               FontSize="24"
-                               FontWeight="Bold"
-                               Text="!" />
-                </Border>
-                <TextBlock Margin="0 20 0 0"
+                <Border Style="{StaticResource ShellStatusCardBorderStyle}">
+                    <StackPanel>
+                        <Border Width="56"
+                                Height="56"
+                                CornerRadius="28"
+                                Background="#FFE5EEF8"
+                                HorizontalAlignment="Center">
+                            <TextBlock VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       Foreground="#FF365082"
+                                       FontSize="24"
+                                       FontWeight="Bold"
+                                       Text="!" />
+                        </Border>
+                        <TextBlock Margin="0 20 0 0"
                            Style="{StaticResource TextBlockLarge}"
                            TextAlignment="Center"
                            Foreground="{StaticResource InfoBrush}"
                            Text="{Binding Title}" />
-                <TextBlock Margin="0 14 0 0"
+                        <TextBlock Margin="0 14 0 0"
                            TextWrapping="Wrap"
                            TextAlignment="Center"
                            Style="{StaticResource TextBlockDefaultInfo}"
                            Text="{Binding Description}" />
-                <TextBlock Margin="0 8 0 0"
+                        <TextBlock Margin="0 8 0 0"
                            TextWrapping="Wrap"
                            TextAlignment="Center"
                            Foreground="{StaticResource ShellMutedForegroundBrush}"
                            Style="{StaticResource TextBlockDefaultInfo}"
                            Text="{Binding Hint}" />
-                <Button Margin="0 24 0 0"
-                        MinWidth="140"
-                        HorizontalAlignment="Center"
-                        Style="{StaticResource ButtonPrimary}"
-                        Command="{Binding DataContext.OpenLoginCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                        Content="{loc:Loc LoginBoxControl.LoginButton}" />
+                    </StackPanel>
+                </Border>
+                <Border Margin="0 16 0 0"
+                        Style="{StaticResource ShellActionCardBorderStyle}">
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center">
+                        <Button MinWidth="148"
+                                HorizontalAlignment="Center"
+                                Style="{StaticResource ButtonPrimary}"
+                                Command="{Binding DataContext.OpenLoginCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                Content="{loc:Loc LoginBoxControl.LoginButton}" />
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </Border>
     </Grid>
