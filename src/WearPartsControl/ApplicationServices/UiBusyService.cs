@@ -82,19 +82,40 @@ public sealed class UiBusyService : ObservableObject, IUiBusyService
 
     private void ApplyBusyState(bool isBusy, string busyMessage)
     {
+        var isBusyChanged = _isBusy != isBusy;
+        var busyMessageChanged = !string.Equals(_busyMessage, busyMessage, StringComparison.Ordinal);
+        if (!isBusyChanged && !busyMessageChanged)
+        {
+            return;
+        }
+
+        _isBusy = isBusy;
+        _busyMessage = busyMessage;
+
         if (_synchronizationContext is null || SynchronizationContext.Current == _synchronizationContext)
         {
-            IsBusy = isBusy;
-            BusyMessage = busyMessage;
+            RaiseBusyStateChanged(isBusyChanged, busyMessageChanged);
             return;
         }
 
         _synchronizationContext.Post(static state =>
         {
-            var payload = ((UiBusyService Owner, bool IsBusy, string BusyMessage))state!;
-            payload.Owner.IsBusy = payload.IsBusy;
-            payload.Owner.BusyMessage = payload.BusyMessage;
-        }, (this, isBusy, busyMessage));
+            var payload = ((UiBusyService Owner, bool IsBusyChanged, bool BusyMessageChanged))state!;
+            payload.Owner.RaiseBusyStateChanged(payload.IsBusyChanged, payload.BusyMessageChanged);
+        }, (this, isBusyChanged, busyMessageChanged));
+    }
+
+    private void RaiseBusyStateChanged(bool isBusyChanged, bool busyMessageChanged)
+    {
+        if (isBusyChanged)
+        {
+            OnPropertyChanged(nameof(IsBusy));
+        }
+
+        if (busyMessageChanged)
+        {
+            OnPropertyChanged(nameof(BusyMessage));
+        }
     }
 
     private sealed record BusyEntry(int Id, string? Message);

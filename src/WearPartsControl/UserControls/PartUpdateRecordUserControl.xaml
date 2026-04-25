@@ -78,7 +78,7 @@
                 <Border Margin="8 12 8 0"
                     Style="{StaticResource ShellCardBorderStyle}">
                 <WrapPanel>
-                <Grid>
+                <Grid Margin="0 8 8 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"
                                           SharedSizeGroup="PartUpdateRecordLabelColumn" />
@@ -94,13 +94,13 @@
                               DisplayMemberPath="PartName"
                               hc:InfoElement.Placeholder="{loc:Loc PartUpdateRecordControl.PartPlaceholder}"></ComboBox>
                 </Grid>
-                <Button Margin="8 0 0 0"
+                <Button Margin="0 8 8 0"
                         MinWidth="96"
                         Command="{Binding QueryCommand}"
                         Style="{StaticResource ButtonPrimary}"
                         hc:IconElement.Geometry="{StaticResource SearchGeometry}"
                         Content="{loc:Loc PartUpdateRecordControl.QueryButton}" />
-                <Button Margin="8 0 0 0"
+                <Button Margin="0 8 8 0"
                         MinWidth="96"
                         Command="{Binding ExportCommand}"
                         Style="{StaticResource ButtonPrimary}"
@@ -156,7 +156,7 @@
             <Border Grid.Row="2"
                 Margin="8 12 8 8"
                 Style="{StaticResource ShellCardBorderStyle}">
-            <StackPanel Orientation="Horizontal">
+            <WrapPanel VerticalAlignment="Center">
             <TextBlock VerticalAlignment="Center"
                        Text="{loc:Loc PartUpdateRecordControl.PageSizePrefix}" />
             <ComboBox Margin="8 0 0 0"
@@ -208,7 +208,7 @@
                     </MultiBinding>
                 </TextBlock.Text>
             </TextBlock>
-        </StackPanel>
+        </WrapPanel>
         </Border>
     </Grid>
 </UserControl>
