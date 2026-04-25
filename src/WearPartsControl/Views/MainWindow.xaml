@@ -82,7 +82,7 @@
                         </StackPanel>
                         <uc:LoginBoxUserControl x:Name="LoginBoxControl"
                                      Grid.Column="4"
-                                     Width="328"
+                                     Width="360"
                                      IsEnabled="{Binding IsClientAppInfoConfigured}" />
                     </Grid>
                 </Border>
