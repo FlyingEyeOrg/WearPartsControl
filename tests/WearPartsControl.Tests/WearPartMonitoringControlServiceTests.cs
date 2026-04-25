@@ -24,6 +24,7 @@ public sealed class WearPartMonitoringControlServiceTests
         };
         var hostedService = CreateHostedService(appSettingsService, new TrackableWearPartMonitorService(), PlcStartupConnectionResult.Connected());
         var service = new WearPartMonitoringControlService(
+            new MonitoringRuntimeStateProvider(appSettingsService),
             appSettingsService,
             new StubPlcStartupConnectionService
             {
@@ -53,6 +54,7 @@ public sealed class WearPartMonitoringControlServiceTests
         var monitorService = new TrackableWearPartMonitorService();
         var hostedService = CreateHostedService(appSettingsService, monitorService, PlcStartupConnectionResult.Connected());
         var service = new WearPartMonitoringControlService(
+            new MonitoringRuntimeStateProvider(appSettingsService),
             appSettingsService,
             new StubPlcStartupConnectionService(),
             hostedService);
@@ -77,6 +79,7 @@ public sealed class WearPartMonitoringControlServiceTests
                 {
                     Result = plcStartupConnectionResult
                 }),
+            new MonitoringRuntimeStateProvider(appSettingsService),
             NullLogger<WearPartMonitoringHostedService>.Instance);
     }
 

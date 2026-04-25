@@ -14,19 +14,21 @@ public sealed class WearPartMonitoringHostedServiceTests
     public async Task RunOnceAsync_WhenMonitorThrowsBusinessException_ShouldLogWarning()
     {
         var logger = new TestLogger<WearPartMonitoringHostedService>();
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                ResourceNumber = "RES-01",
+                IsWearPartMonitoringEnabled = true
+            }
+        };
         var service = new WearPartMonitoringHostedService(
             new StubServiceScopeFactory(
-                new StubAppSettingsService
-                {
-                    Current = new AppSettings
-                    {
-                        IsSetClientAppInfo = true,
-                        ResourceNumber = "RES-01",
-                        IsWearPartMonitoringEnabled = true
-                    }
-                },
+                appSettingsService,
                 new StubWearPartMonitorService(new BusinessException("PLC 未连接")),
                 new StubPlcStartupConnectionService()),
+            new MonitoringRuntimeStateProvider(appSettingsService),
             logger);
 
         await service.RunOnceAsync();
@@ -40,19 +42,21 @@ public sealed class WearPartMonitoringHostedServiceTests
     {
         var logger = new TestLogger<WearPartMonitoringHostedService>();
         var monitorService = new TrackableWearPartMonitorService();
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                ResourceNumber = "RES-01",
+                IsWearPartMonitoringEnabled = false
+            }
+        };
         var service = new WearPartMonitoringHostedService(
             new StubServiceScopeFactory(
-                new StubAppSettingsService
-                {
-                    Current = new AppSettings
-                    {
-                        IsSetClientAppInfo = true,
-                        ResourceNumber = "RES-01",
-                        IsWearPartMonitoringEnabled = false
-                    }
-                },
+                appSettingsService,
                 monitorService,
                 new StubPlcStartupConnectionService()),
+            new MonitoringRuntimeStateProvider(appSettingsService),
             logger);
 
         await service.RunOnceAsync();
@@ -66,19 +70,21 @@ public sealed class WearPartMonitoringHostedServiceTests
     {
         var logger = new TestLogger<WearPartMonitoringHostedService>();
         var monitorService = new TrackableWearPartMonitorService();
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = false,
+                ResourceNumber = string.Empty,
+                IsWearPartMonitoringEnabled = true
+            }
+        };
         var service = new WearPartMonitoringHostedService(
             new StubServiceScopeFactory(
-                new StubAppSettingsService
-                {
-                    Current = new AppSettings
-                    {
-                        IsSetClientAppInfo = false,
-                        ResourceNumber = string.Empty,
-                        IsWearPartMonitoringEnabled = true
-                    }
-                },
+                appSettingsService,
                 monitorService,
                 new StubPlcStartupConnectionService()),
+            new MonitoringRuntimeStateProvider(appSettingsService),
             logger);
 
         await service.RunOnceAsync();
@@ -92,22 +98,24 @@ public sealed class WearPartMonitoringHostedServiceTests
     {
         var logger = new TestLogger<WearPartMonitoringHostedService>();
         var monitorService = new TrackableWearPartMonitorService();
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                ResourceNumber = "RES-01",
+                IsWearPartMonitoringEnabled = true
+            }
+        };
         var service = new WearPartMonitoringHostedService(
             new StubServiceScopeFactory(
-                new StubAppSettingsService
-                {
-                    Current = new AppSettings
-                    {
-                        IsSetClientAppInfo = true,
-                        ResourceNumber = "RES-01",
-                        IsWearPartMonitoringEnabled = true
-                    }
-                },
+                appSettingsService,
                 monitorService,
                 new StubPlcStartupConnectionService
                 {
                     Result = PlcStartupConnectionResult.Failed("PLC 连接失败")
                 }),
+            new MonitoringRuntimeStateProvider(appSettingsService),
             logger);
 
         await service.RunOnceAsync();

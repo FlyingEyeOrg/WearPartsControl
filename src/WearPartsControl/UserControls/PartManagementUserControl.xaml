@@ -8,27 +8,29 @@
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="1000">
-    <Grid Grid.IsSharedSizeScope="True">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+        <Grid Grid.IsSharedSizeScope="True"
+            Background="{StaticResource ShellPanelBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <StackPanel>
-            <Border Background="#FF365082"
-                    Padding="0 8">
-                <TextBlock HorizontalAlignment="Center"
-                           FontWeight="Bold"
-                           FontSize="16"
-                           Foreground="White"
-                           Text="{loc:Loc PartManagementControl.Title}" />
+                <Border Margin="8 8 8 0"
+                    Style="{StaticResource ShellSectionHeaderBorderStyle}">
+                <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
+                       Text="{loc:Loc PartManagementControl.Title}" />
             </Border>
 
-            <Border Margin="8 8 8 0"
-                    CornerRadius="6"
-                    Background="#FFF5F7FA"
-                    BorderBrush="#FFD9E2F2"
-                    BorderThickness="1">
+                <Border Margin="8 12 8 0"
+                    Style="{StaticResource ShellStatusCardBorderStyle}">
                 <Grid Margin="8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -113,10 +115,11 @@
         </StackPanel>
 
         <Border Grid.Row="1"
-                Margin="8"
+            Margin="8 12 8 8"
                 MinHeight="0"
                 MinWidth="0"
-                ClipToBounds="True">
+            ClipToBounds="True"
+            Style="{StaticResource ShellCardBorderStyle}">
             <DataGrid AutoGenerateColumns="False"
                       CanUserAddRows="False"
                       CanUserDeleteRows="False"

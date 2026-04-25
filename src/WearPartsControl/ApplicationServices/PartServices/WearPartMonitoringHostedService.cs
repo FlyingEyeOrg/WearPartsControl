@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.Exceptions;
 
@@ -12,11 +11,16 @@ public sealed class WearPartMonitoringHostedService : BackgroundService
     private static readonly TimeSpan MonitorInterval = TimeSpan.FromMinutes(5);
 
     private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly IMonitoringRuntimeStateProvider _monitoringRuntimeStateProvider;
     private readonly ILogger<WearPartMonitoringHostedService> _logger;
 
-    public WearPartMonitoringHostedService(IServiceScopeFactory serviceScopeFactory, ILogger<WearPartMonitoringHostedService> logger)
+    public WearPartMonitoringHostedService(
+        IServiceScopeFactory serviceScopeFactory,
+        IMonitoringRuntimeStateProvider monitoringRuntimeStateProvider,
+        ILogger<WearPartMonitoringHostedService> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
+        _monitoringRuntimeStateProvider = monitoringRuntimeStateProvider;
         _logger = logger;
     }
 
@@ -41,29 +45,29 @@ public sealed class WearPartMonitoringHostedService : BackgroundService
     {
         try
         {
-            await using var scope = _serviceScopeFactory.CreateAsyncScope();
-            var appSettingsService = scope.ServiceProvider.GetRequiredService<IAppSettingsService>();
-            var plcStartupConnectionService = scope.ServiceProvider.GetRequiredService<IPlcStartupConnectionService>();
-            var monitorService = scope.ServiceProvider.GetRequiredService<IWearPartMonitorService>();
-            var settings = await appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
+            var runtimeState = await _monitoringRuntimeStateProvider.GetCurrentAsync(cancellationToken).ConfigureAwait(false);
 
-            if (!settings.IsSetClientAppInfo)
+            if (!runtimeState.IsClientAppInfoConfigured)
             {
                 _logger.LogDebug("跳过后台易损件监控：当前未设置客户端基础信息。");
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(settings.ResourceNumber))
+            if (!runtimeState.HasResourceNumber)
             {
                 _logger.LogDebug("跳过后台易损件监控：当前未配置资源号。");
                 return;
             }
 
-            if (!settings.IsWearPartMonitoringEnabled)
+            if (!runtimeState.IsWearPartMonitoringEnabled)
             {
                 _logger.LogDebug("跳过后台易损件监控：当前已关闭后台监控。");
                 return;
             }
+
+            await using var scope = _serviceScopeFactory.CreateAsyncScope();
+            var plcStartupConnectionService = scope.ServiceProvider.GetRequiredService<IPlcStartupConnectionService>();
+            var monitorService = scope.ServiceProvider.GetRequiredService<IWearPartMonitorService>();
 
             var plcConnectionResult = await plcStartupConnectionService.EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
             if (plcConnectionResult.Status != PlcStartupConnectionStatus.Connected)
@@ -72,8 +76,8 @@ public sealed class WearPartMonitoringHostedService : BackgroundService
                 return;
             }
 
-            var results = await monitorService.MonitorByResourceNumberAsync(settings.ResourceNumber, cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation("后台易损件监控完成，资源号 {ResourceNumber}，处理 {Count} 项。", settings.ResourceNumber, results.Count);
+            var results = await monitorService.MonitorByResourceNumberAsync(runtimeState.ResourceNumber, cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("后台易损件监控完成，资源号 {ResourceNumber}，处理 {Count} 项。", runtimeState.ResourceNumber, results.Count);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

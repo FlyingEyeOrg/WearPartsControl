@@ -11,29 +11,36 @@
              d:DesignWidth="800"
              d:DataContext="{d:DesignInstance Type=vm:ClientAppInfoViewModel}">
     <UserControl.Resources>
-        <Style x:Key="FormLabelTextBlockStyle"
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="FormLabelTextBlockStyle"
                TargetType="TextBlock">
             <Setter Property="VerticalAlignment"
-                    Value="Center" />
+                Value="Center" />
             <Setter Property="Margin"
-                    Value="0 0 8 0" />
+                Value="0 0 8 0" />
             <Setter Property="TextWrapping"
-                    Value="Wrap" />
+                Value="Wrap" />
             <Setter Property="MaxWidth"
-                    Value="140" />
-        </Style>
+                Value="140" />
+            </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
-    <Grid Grid.IsSharedSizeScope="True">
-        <StackPanel IsEnabled="{Binding IsNotBusy}">
-            <Border Background="#FF365082"
-                    Padding="0 8">
-                <TextBlock HorizontalAlignment="Center"
-                           FontWeight="Bold"
-                           FontSize="16"
-                           Foreground="White"
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Grid.IsSharedSizeScope="True"
+              Margin="8"
+              Background="{StaticResource ShellPanelBackgroundBrush}">
+        <StackPanel IsEnabled="{Binding IsNotBusy}"
+                    Margin="12">
+            <Border Style="{StaticResource ShellSectionHeaderBorderStyle}">
+                <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
                            Text="{loc:Loc ClientAppInfoControl.Title}" />
             </Border>
-            <Grid Margin="8 8 8 0">
+            <Border Margin="0 12 0 0"
+                    Style="{StaticResource ShellCardBorderStyle}">
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition />
@@ -233,10 +240,15 @@
                     </Grid>
                 </StackPanel>
             </Grid>
-            <TextBlock Style="{StaticResource TextBlockDefaultWarning}"
-                       Margin="8 16 0 0"
-                       Text="{Binding StatusMessage, Mode=OneWay}" />
-            <WrapPanel Margin="8 8 8 8">
+                    </Border>
+                    <Border Margin="0 12 0 0"
+                        Style="{StaticResource ShellStatusCardBorderStyle}">
+                    <TextBlock Style="{StaticResource TextBlockDefaultWarning}"
+                           Text="{Binding StatusMessage, Mode=OneWay}" />
+                    </Border>
+                    <Border Margin="0 12 0 0"
+                        Style="{StaticResource ShellCardBorderStyle}">
+                    <WrapPanel>
                 <Button Margin="0 8 0 0"
                         MinWidth="120"
                         IsEnabled="{Binding IsImportLegacyConfigurationEnabled}"
@@ -304,6 +316,8 @@
                             Content="{loc:Loc ClientAppInfoControl.TestPlcConnectionButton}" />
                 </StackPanel>
             </WrapPanel>
+            </Border>
         </StackPanel>
     </Grid>
+    </ScrollViewer>
 </UserControl>

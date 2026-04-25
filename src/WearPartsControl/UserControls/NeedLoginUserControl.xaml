@@ -3,25 +3,61 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
              xmlns:vm="clr-namespace:WearPartsControl.ViewModels"
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="800"
              d:DataContext="{d:DesignInstance Type=vm:NeedLoginViewModel}">
-    <Grid Background="White">
-        <StackPanel VerticalAlignment="Center">
-            <TextBlock Style="{StaticResource TextBlockLarge}"
-                       Foreground="{StaticResource InfoBrush}"
-                       Text="{Binding Title}" />
-            <TextBlock Margin="0 16 0 0"
-                       TextWrapping="Wrap"
-                       Style="{StaticResource TextBlockDefaultInfo}"
-                       Text="{Binding Description}" />
-            <TextBlock Margin="0 8 0 0"
-                       TextWrapping="Wrap"
-                       Foreground="#FF5B6B7A"
-                       Style="{StaticResource TextBlockDefaultInfo}"
-                       Text="{Binding Hint}" />
-        </StackPanel>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Background="{StaticResource ShellPanelBackgroundBrush}">
+        <Border MaxWidth="540"
+                Margin="24"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Style="{StaticResource ShellCardBorderStyle}">
+            <StackPanel>
+                <Border Width="56"
+                        Height="56"
+                        CornerRadius="28"
+                        Background="#FFE5EEF8"
+                        HorizontalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
+                               Foreground="#FF365082"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Text="!" />
+                </Border>
+                <TextBlock Margin="0 20 0 0"
+                           Style="{StaticResource TextBlockLarge}"
+                           TextAlignment="Center"
+                           Foreground="{StaticResource InfoBrush}"
+                           Text="{Binding Title}" />
+                <TextBlock Margin="0 14 0 0"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           Style="{StaticResource TextBlockDefaultInfo}"
+                           Text="{Binding Description}" />
+                <TextBlock Margin="0 8 0 0"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           Foreground="{StaticResource ShellMutedForegroundBrush}"
+                           Style="{StaticResource TextBlockDefaultInfo}"
+                           Text="{Binding Hint}" />
+                <Button Margin="0 24 0 0"
+                        MinWidth="140"
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource ButtonPrimary}"
+                        Command="{Binding DataContext.OpenLoginCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                        Content="{loc:Loc LoginBoxControl.LoginButton}" />
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>

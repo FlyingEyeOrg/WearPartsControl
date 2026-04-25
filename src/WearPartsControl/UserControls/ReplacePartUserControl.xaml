@@ -11,20 +11,26 @@
              d:DesignWidth="800"
              d:DataContext="{d:DesignInstance Type=vm:ReplacePartViewModel}">
             <UserControl.Resources>
-            <Style x:Key="FormLabelTextBlockStyle"
-                   TargetType="TextBlock">
-                <Setter Property="VerticalAlignment"
-                    Value="Center" />
-                <Setter Property="Margin"
-                    Value="0 0 8 0" />
-                <Setter Property="TextWrapping"
-                    Value="Wrap" />
-                <Setter Property="MaxWidth"
-                    Value="140" />
-            </Style>
+                <ResourceDictionary>
+                    <ResourceDictionary.MergedDictionaries>
+                        <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+                    </ResourceDictionary.MergedDictionaries>
+                    <Style x:Key="FormLabelTextBlockStyle"
+                           TargetType="TextBlock">
+                        <Setter Property="VerticalAlignment"
+                                Value="Center" />
+                        <Setter Property="Margin"
+                                Value="0 0 8 0" />
+                        <Setter Property="TextWrapping"
+                                Value="Wrap" />
+                        <Setter Property="MaxWidth"
+                                Value="140" />
+                    </Style>
+                </ResourceDictionary>
             </UserControl.Resources>
-    <ScrollViewer>
+        <ScrollViewer Background="{StaticResource ShellPanelBackgroundBrush}">
             <Grid IsEnabled="{Binding IsTabContentEnabled}"
+                Margin="8"
                   Grid.IsSharedSizeScope="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -32,20 +38,13 @@
             </Grid.RowDefinitions>
 
             <StackPanel>
-                <Border Background="#FF365082"
-                        Padding="0 8">
-                    <TextBlock HorizontalAlignment="Center"
-                               FontWeight="Bold"
-                               FontSize="16"
-                               Foreground="White"
-                               Text="{loc:Loc ReplacePartControl.Title}" />
+                <Border Style="{StaticResource ShellSectionHeaderBorderStyle}">
+                    <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
+                           Text="{loc:Loc ReplacePartControl.Title}" />
                 </Border>
 
-                <Border Margin="8 8 8 0"
-                        CornerRadius="6"
-                        Background="#FFF5F7FA"
-                        BorderBrush="#FFD9E2F2"
-                        BorderThickness="1">
+                <Border Margin="8 12 8 0"
+                    Style="{StaticResource ShellStatusCardBorderStyle}">
                     <Grid Margin="8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -78,7 +77,9 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-                <Grid Margin="8 8 8 0">
+                <Border Margin="8 12 8 0"
+                        Style="{StaticResource ShellCardBorderStyle}">
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                         <ColumnDefinition />
@@ -194,7 +195,10 @@
                         </Grid>
                     </StackPanel>
                 </Grid>
-                <Grid Margin="8 8 8 0">
+                </Border>
+                <Border Margin="8 12 8 0"
+                        Style="{StaticResource ShellCardBorderStyle}">
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                         <ColumnDefinition />
@@ -228,6 +232,7 @@
                                   Style="{StaticResource ComboBoxExtend}" />
                     </Grid>
                 </Grid>
+                </Border>
                 <Grid Margin="8 8 8 0"
                       Visibility="{Binding IsToolValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Grid.ColumnDefinitions>
@@ -307,8 +312,10 @@
                             Content="{loc:Loc ReplacePartControl.ReplaceButton}" />
                 </Grid>
             </StackPanel>
-            <DataGrid Grid.Row="1"
-                      Margin="8 0 8 8"
+                <Border Grid.Row="1"
+                    Margin="8 12 8 8"
+                    Style="{StaticResource ShellCardBorderStyle}">
+                <DataGrid
                       MinHeight="260"
                       AutoGenerateColumns="False"
                       CanUserAddRows="False"
@@ -349,6 +356,7 @@
                                         Width="*"></DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
+            </Border>
         </Grid>
     </ScrollViewer>
 </UserControl>

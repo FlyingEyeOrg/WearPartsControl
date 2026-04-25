@@ -53,6 +53,7 @@ public static class ServiceRegistration
     {
         builder.RegisterType<TypeJsonSaveInfoStore>().As<ISaveInfoStore>().SingleInstance();
         builder.RegisterType<AppStartupCoordinator>().As<IAppStartupCoordinator>().SingleInstance();
+        builder.RegisterType<StartupPlcWarmupService>().As<IStartupPlcWarmupService>().SingleInstance();
         builder.RegisterType<LocalizationService>().As<ILocalizationService>().SingleInstance();
         builder.RegisterType<ExceptionToStatusCodeMapper>().As<WearPartsControl.Exceptions.IExceptionToStatusCodeMapper>().SingleInstance();
         builder.Register(_ => new SocketsHttpHandler
@@ -88,7 +89,9 @@ public static class ServiceRegistration
         builder.RegisterType<ComNotificationService>().As<IComNotificationService>().SingleInstance();
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<AppSettingsService>().As<IAppSettingsService>().SingleInstance();
+        builder.RegisterType<MonitoringRuntimeStateProvider>().As<IMonitoringRuntimeStateProvider>().SingleInstance();
         builder.RegisterType<PlcService>().AsSelf().SingleInstance();
+        builder.RegisterType<PlcClientConfigurationResolver>().As<IPlcClientConfigurationResolver>().SingleInstance();
         builder.RegisterType<PlcConnectionTestService>().As<IPlcConnectionTestService>().SingleInstance();
         builder.Register(_ => new PlcOperationPipeline(
                 _.Resolve<PlcService>(),

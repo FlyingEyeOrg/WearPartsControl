@@ -6,15 +6,18 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 
 public sealed class WearPartMonitoringControlService : IWearPartMonitoringControlService
 {
+    private readonly IMonitoringRuntimeStateProvider _monitoringRuntimeStateProvider;
     private readonly IAppSettingsService _appSettingsService;
     private readonly IPlcStartupConnectionService _plcStartupConnectionService;
     private readonly WearPartMonitoringHostedService _wearPartMonitoringHostedService;
 
     public WearPartMonitoringControlService(
+        IMonitoringRuntimeStateProvider monitoringRuntimeStateProvider,
         IAppSettingsService appSettingsService,
         IPlcStartupConnectionService plcStartupConnectionService,
         WearPartMonitoringHostedService wearPartMonitoringHostedService)
     {
+        _monitoringRuntimeStateProvider = monitoringRuntimeStateProvider;
         _appSettingsService = appSettingsService;
         _plcStartupConnectionService = plcStartupConnectionService;
         _wearPartMonitoringHostedService = wearPartMonitoringHostedService;
@@ -22,8 +25,8 @@ public sealed class WearPartMonitoringControlService : IWearPartMonitoringContro
 
     public async Task<bool> GetIsEnabledAsync(CancellationToken cancellationToken = default)
     {
-        var settings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
-        return settings.IsWearPartMonitoringEnabled;
+        var runtimeState = await _monitoringRuntimeStateProvider.GetCurrentAsync(cancellationToken).ConfigureAwait(false);
+        return runtimeState.IsWearPartMonitoringEnabled;
     }
 
     public async Task EnableAsync(CancellationToken cancellationToken = default)

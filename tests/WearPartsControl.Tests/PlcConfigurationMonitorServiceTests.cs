@@ -19,9 +19,10 @@ public sealed class PlcConfigurationMonitorServiceTests
         var plcService = new StubPlcService();
         var plcOperationPipeline = new PlcOperationPipeline(plcService, new TestLogger<PlcOperationPipeline>());
         var connectionStatusService = new PlcConnectionStatusService();
+        var configurationResolver = new PlcClientConfigurationResolver(appSettingsService, new StubServiceScopeFactory(clientAppInfoService));
         using var monitorService = new PlcConfigurationMonitorService(
             appSettingsService,
-            new StubServiceScopeFactory(clientAppInfoService),
+            configurationResolver,
             plcOperationPipeline,
             connectionStatusService,
             new TestLogger<PlcConfigurationMonitorService>());
@@ -52,9 +53,10 @@ public sealed class PlcConfigurationMonitorServiceTests
         var plcService = new StubPlcService();
         var plcOperationPipeline = new PlcOperationPipeline(plcService, new TestLogger<PlcOperationPipeline>());
         var connectionStatusService = new PlcConnectionStatusService();
+        var configurationResolver = new PlcClientConfigurationResolver(appSettingsService, new StubServiceScopeFactory(clientAppInfoService));
         using var monitorService = new PlcConfigurationMonitorService(
             appSettingsService,
-            new StubServiceScopeFactory(clientAppInfoService),
+            configurationResolver,
             plcOperationPipeline,
             connectionStatusService,
             new TestLogger<PlcConfigurationMonitorService>());
@@ -86,9 +88,10 @@ public sealed class PlcConfigurationMonitorServiceTests
         var plcService = new StubPlcService();
         var plcOperationPipeline = new PlcOperationPipeline(plcService, new TestLogger<PlcOperationPipeline>());
         var connectionStatusService = new PlcConnectionStatusService();
+        var configurationResolver = new PlcClientConfigurationResolver(appSettingsService, new StubServiceScopeFactory(clientAppInfoService));
         using var monitorService = new PlcConfigurationMonitorService(
             appSettingsService,
-            new StubServiceScopeFactory(clientAppInfoService),
+            configurationResolver,
             plcOperationPipeline,
             connectionStatusService,
             new TestLogger<PlcConfigurationMonitorService>());
@@ -129,9 +132,10 @@ public sealed class PlcConfigurationMonitorServiceTests
         var plcService = new StubPlcService();
         var plcOperationPipeline = new PlcOperationPipeline(plcService, new TestLogger<PlcOperationPipeline>());
         var connectionStatusService = new PlcConnectionStatusService();
+        var configurationResolver = new PlcClientConfigurationResolver(appSettingsService, new StubServiceScopeFactory(clientAppInfoService));
         using var monitorService = new PlcConfigurationMonitorService(
             appSettingsService,
-            new StubServiceScopeFactory(clientAppInfoService),
+            configurationResolver,
             plcOperationPipeline,
             connectionStatusService,
             new TestLogger<PlcConfigurationMonitorService>());

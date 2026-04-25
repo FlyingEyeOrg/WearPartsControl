@@ -22,16 +22,16 @@ public sealed class ReplacePartViewModelTests
         var plcService = new StubPlcService();
         var plcOperationPipeline = new PlcOperationPipeline(plcService, NullLogger<PlcOperationPipeline>.Instance);
         var plcConnectionStatusService = new PlcConnectionStatusService();
-        var service = new PlcStartupConnectionService(
-            new StubAppSettingsService
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
             {
-                Current = new AppSettings
-                {
-                    IsSetClientAppInfo = false,
-                    ResourceNumber = string.Empty
-                }
-            },
-            new StubServiceScopeFactory(new StubClientAppInfoService()),
+                IsSetClientAppInfo = false,
+                ResourceNumber = string.Empty
+            }
+        };
+        var service = new PlcStartupConnectionService(
+            new PlcClientConfigurationResolver(appSettingsService, new StubServiceScopeFactory(new StubClientAppInfoService())),
             plcOperationPipeline,
             plcConnectionStatusService,
             NullLogger<PlcStartupConnectionService>.Instance);
@@ -50,16 +50,18 @@ public sealed class ReplacePartViewModelTests
         var plcService = new StubPlcService();
         var plcOperationPipeline = new PlcOperationPipeline(plcService, NullLogger<PlcOperationPipeline>.Instance);
         var plcConnectionStatusService = new PlcConnectionStatusService();
-        var service = new PlcStartupConnectionService(
-            new StubAppSettingsService
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
             {
-                Current = new AppSettings
-                {
-                    IsSetClientAppInfo = true,
-                    ResourceNumber = "RES-01"
-                }
-            },
-            new StubServiceScopeFactory(
+                IsSetClientAppInfo = true,
+                ResourceNumber = "RES-01"
+            }
+        };
+        var service = new PlcStartupConnectionService(
+            new PlcClientConfigurationResolver(
+                appSettingsService,
+                new StubServiceScopeFactory(
                 new StubClientAppInfoService
                 {
                     Model = new ClientAppInfoModel
@@ -72,7 +74,7 @@ public sealed class ReplacePartViewModelTests
                         SiemensSlot = 0,
                         IsStringReverse = false
                     }
-                }),
+                })),
             plcOperationPipeline,
             plcConnectionStatusService,
             NullLogger<PlcStartupConnectionService>.Instance);

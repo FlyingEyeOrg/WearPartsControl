@@ -9,19 +9,41 @@
         mc:Ignorable="d"
     Title="{loc:Loc AddPartWindowView.Title}"
         Width="860"
+        Background="Transparent"
+        WindowStartupLocation="CenterOwner"
         SizeToContent="Height"
         ResizeMode="NoResize">
-    <Grid>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Border Margin="18"
+            Background="{StaticResource ShellPanelBackgroundBrush}"
+            CornerRadius="26">
+    <Grid Margin="18">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <uc:PartInfoUserControl Grid.Row="0"
-                    Editor="{Binding}" />
+        <Border Style="{StaticResource ShellSectionHeaderBorderStyle}">
+            <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
+                       Text="{loc:Loc AddPartWindowView.Title}" />
+        </Border>
 
-        <Grid Grid.Row="1"
-              Margin="12 0 12 12">
+        <Border Grid.Row="1"
+                Margin="0 16 0 0"
+                Style="{StaticResource ShellCardBorderStyle}">
+        <uc:PartInfoUserControl
+                    Editor="{Binding}" />
+        </Border>
+
+        <Grid Grid.Row="2"
+              Margin="12 18 12 12">
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right">
                 <Button MinWidth="96"
@@ -44,4 +66,5 @@
                               IsRunning="{Binding IsBusy}" />
         </Border>
     </Grid>
+    </Border>
 </Window>

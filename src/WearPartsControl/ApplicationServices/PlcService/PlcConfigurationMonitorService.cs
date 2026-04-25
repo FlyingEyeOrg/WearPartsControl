@@ -1,5 +1,4 @@
 using System.Threading;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
@@ -12,7 +11,7 @@ public sealed class PlcConfigurationMonitorService : IDisposable
 {
     private readonly object _stateLock = new();
     private readonly IAppSettingsService _appSettingsService;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly IPlcClientConfigurationResolver _plcClientConfigurationResolver;
     private readonly IPlcOperationPipeline _plcOperationPipeline;
     private readonly IPlcConnectionStatusService _plcConnectionStatusService;
     private readonly ILogger<PlcConfigurationMonitorService> _logger;
@@ -23,13 +22,13 @@ public sealed class PlcConfigurationMonitorService : IDisposable
 
     public PlcConfigurationMonitorService(
         IAppSettingsService appSettingsService,
-        IServiceScopeFactory serviceScopeFactory,
+        IPlcClientConfigurationResolver plcClientConfigurationResolver,
         IPlcOperationPipeline plcOperationPipeline,
         IPlcConnectionStatusService plcConnectionStatusService,
         ILogger<PlcConfigurationMonitorService> logger)
     {
         _appSettingsService = appSettingsService;
-        _serviceScopeFactory = serviceScopeFactory;
+        _plcClientConfigurationResolver = plcClientConfigurationResolver;
         _plcOperationPipeline = plcOperationPipeline;
         _plcConnectionStatusService = plcConnectionStatusService;
         _logger = logger;
@@ -115,9 +114,9 @@ public sealed class PlcConfigurationMonitorService : IDisposable
 
         try
         {
-            var settings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
-            resourceNumber = settings.ResourceNumber?.Trim() ?? string.Empty;
-            if (!settings.IsSetClientAppInfo || string.IsNullOrWhiteSpace(settings.ResourceNumber))
+            var configurationResolution = await _plcClientConfigurationResolver.ResolveAsync(cancellationToken).ConfigureAwait(false);
+            resourceNumber = configurationResolution.ResourceNumber;
+            if (!configurationResolution.IsConfigured)
             {
                 await _plcOperationPipeline.DisconnectAsync(PlcConfigurationPipelineOperations.DisconnectWhenNotConfigured, cancellationToken).ConfigureAwait(false);
                 _lastAppliedConfigurationKey = null;
@@ -125,18 +124,7 @@ public sealed class PlcConfigurationMonitorService : IDisposable
                 return;
             }
 
-            await using var scope = _serviceScopeFactory.CreateAsyncScope();
-            var clientAppInfoService = scope.ServiceProvider.GetRequiredService<IClientAppInfoService>();
-            var clientAppInfo = await clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(false);
-            if (string.IsNullOrWhiteSpace(clientAppInfo.ResourceNumber)
-                || string.IsNullOrWhiteSpace(clientAppInfo.PlcProtocolType)
-                || string.IsNullOrWhiteSpace(clientAppInfo.PlcIpAddress))
-            {
-                await _plcOperationPipeline.DisconnectAsync(PlcConfigurationPipelineOperations.DisconnectWhenInvalid, cancellationToken).ConfigureAwait(false);
-                _lastAppliedConfigurationKey = null;
-                _plcConnectionStatusService.Set(PlcStartupConnectionResult.NotConfigured());
-                return;
-            }
+            var clientAppInfo = configurationResolution.ClientAppInfo!;
 
             var configurationKey = CreateConfigurationKey(clientAppInfo);
             if (string.Equals(_lastAppliedConfigurationKey, configurationKey, StringComparison.Ordinal))

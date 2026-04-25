@@ -10,39 +10,39 @@
              d:DesignHeight="450"
              d:DesignWidth="800"
              d:DataContext="{d:DesignInstance Type=vm:PartUpdateRecordViewModel}">
-            <UserControl.Resources>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
             <Style x:Key="FormLabelTextBlockStyle"
                    TargetType="TextBlock">
                 <Setter Property="VerticalAlignment"
-                    Value="Center" />
+                        Value="Center" />
                 <Setter Property="Margin"
-                    Value="0 0 8 0" />
+                        Value="0 0 8 0" />
                 <Setter Property="TextWrapping"
-                    Value="Wrap" />
+                        Value="Wrap" />
                 <Setter Property="MaxWidth"
-                    Value="140" />
+                        Value="140" />
             </Style>
-            </UserControl.Resources>
-            <Grid Grid.IsSharedSizeScope="True">
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Grid.IsSharedSizeScope="True"
+          Background="{StaticResource ShellPanelBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <StackPanel>
-            <Border Background="#FF365082"
-                    Padding="0 8">
-                <TextBlock HorizontalAlignment="Center"
-                           FontWeight="Bold"
-                           FontSize="16"
-                           Foreground="White"
+            <Border Margin="8 8 8 0"
+                    Style="{StaticResource ShellSectionHeaderBorderStyle}">
+                <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
                            Text="{loc:Loc PartUpdateRecordControl.Title}" />
             </Border>
-            <Border Margin="8 8 8 0"
-                    CornerRadius="6"
-                    Background="#FFF5F7FA"
-                    BorderBrush="#FFD9E2F2"
-                    BorderThickness="1">
+            <Border Margin="8 12 8 0"
+                    Style="{StaticResource ShellStatusCardBorderStyle}">
                 <Grid Margin="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -75,7 +75,9 @@
                     </StackPanel>
                 </Grid>
             </Border>
-            <WrapPanel Margin="8 8 8 0">
+                <Border Margin="8 12 8 0"
+                    Style="{StaticResource ShellCardBorderStyle}">
+                <WrapPanel>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"
@@ -105,9 +107,12 @@
                         hc:IconElement.Geometry="{StaticResource SaveGeometry}"
                         Content="{loc:Loc PartUpdateRecordControl.ExportButton}" />
             </WrapPanel>
+                </Border>
         </StackPanel>
-        <DataGrid Grid.Row="1"
-                  Margin="8 8 8 0"
+            <Border Grid.Row="1"
+                Margin="8 12 8 0"
+                Style="{StaticResource ShellCardBorderStyle}">
+            <DataGrid
                   AutoGenerateColumns="False"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
@@ -147,9 +152,11 @@
                                     Width="*"></DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
-        <StackPanel Margin="8 8 8 8"
-                    Grid.Row="2"
-                    Orientation="Horizontal">
+            </Border>
+            <Border Grid.Row="2"
+                Margin="8 12 8 8"
+                Style="{StaticResource ShellCardBorderStyle}">
+            <StackPanel Orientation="Horizontal">
             <TextBlock VerticalAlignment="Center"
                        Text="{loc:Loc PartUpdateRecordControl.PageSizePrefix}" />
             <ComboBox Margin="8 0 0 0"
@@ -202,5 +209,6 @@
                 </TextBlock.Text>
             </TextBlock>
         </StackPanel>
+        </Border>
     </Grid>
 </UserControl>
