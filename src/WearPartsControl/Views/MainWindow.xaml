@@ -13,78 +13,115 @@
         Height="600"
         MinWidth="980"
         Width="980"
-        Background="AliceBlue"
+        MinHeight="640"
+        Background="#EEF4F8"
         Icon="pack://application:,,,/WearPartsControl;component/Assets/app.ico"
         ShowInTaskbar="True"
         d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}">
-    <Grid>
-        <Grid IsEnabled="{Binding IsNotBusy}">
-            <Grid.RowDefinitions>
-                <RowDefinition  Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <StackPanel>
-                <Grid x:Name="TitleBarGrid">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="1" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="1" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel x:Name="LogoPanel"
+    <Window.Resources>
+        <LinearGradientBrush x:Key="ShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#EEF4F8" Offset="0" />
+            <GradientStop Color="#F8FBFD" Offset="1" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="ShellHeaderBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#F8FBFE" Offset="0" />
+            <GradientStop Color="#EAF2F8" Offset="1" />
+        </LinearGradientBrush>
+    </Window.Resources>
+    <Grid Background="{StaticResource ShellBackgroundBrush}">
+        <Border Margin="20"
+                Background="#FBFDFF"
+                BorderBrush="#D8E4ED"
+                BorderThickness="1"
+                CornerRadius="22">
+            <Grid IsEnabled="{Binding IsNotBusy}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Border Margin="18 18 18 0"
+                        Padding="18"
+                        Background="{StaticResource ShellHeaderBrush}"
+                        BorderBrush="#DFE9F1"
+                        BorderThickness="1"
+                        CornerRadius="18">
+                    <Grid x:Name="TitleBarGrid">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Border x:Name="LogoPanel"
+                                Padding="16 10"
                                 Background="White"
-                                Orientation="Horizontal">
-                        <Image x:Name="LogoImage"
-                               Source="pack://application:,,,/WearPartsControl;component/Assets/catl.ico"
-                               Width="240" />
-                    </StackPanel>
-                    <Border Grid.Column="1"
-                            Width="1"
-                            Background="{StaticResource PrimaryBrush}" />
-                    <TextBlock x:Name="TitleLabel"
-                               Margin="8 0 8 0"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center"
-                               TextTrimming="CharacterEllipsis"
-                               Grid.Column="2"
-                               FontSize="40"
-                               FontWeight="Bold"
-                               Text="{Binding BrandTitle, Mode=OneWay}" />
-                    <Border Grid.Column="3"
-                            Width="1"
-                            Background="{StaticResource PrimaryBrush}" />
-                    <uc:LoginBox x:Name="LoginBoxControl"
-                                 Margin="8"
-                                 Width="360"
-                                 IsEnabled="{Binding IsClientAppInfoConfigured}"
-                                 Grid.Column="4" />
-                </Grid>
-                <Grid Height="1"
-                      Background="{StaticResource PrimaryBrush}"></Grid>
-            </StackPanel>
-            <uc:UserTabControl Grid.Row="1"
-                               Headers="{Binding Tabs}"
-                               TabIndex="0"
-                               SelectedContent="{Binding SelectedContent, Mode=OneWay}"
-                               Command="{Binding TabChangedCommand}" />
-        </Grid>
-        <Border Background="#40FFFFFF"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Center"
+                                BorderBrush="#E1EBF3"
+                                BorderThickness="1"
+                                CornerRadius="14">
+                            <StackPanel Orientation="Horizontal">
+                                <Image x:Name="LogoImage"
+                                       Source="pack://application:,,,/WearPartsControl;component/Assets/catl.ico"
+                                       Width="220" />
+                            </StackPanel>
+                        </Border>
+                        <StackPanel Grid.Column="2"
+                                    VerticalAlignment="Center">
+                            <TextBlock x:Name="TitleLabel"
+                                       TextTrimming="CharacterEllipsis"
+                                       FontSize="34"
+                                       FontWeight="Bold"
+                                       Foreground="#1B3248"
+                                       Text="{Binding BrandTitle, Mode=OneWay}" />
+                            <TextBlock Margin="0 8 0 0"
+                                       Foreground="#5D7388"
+                                       Text="{Binding Title, Mode=OneWay}" />
+                        </StackPanel>
+                        <uc:LoginBox x:Name="LoginBoxControl"
+                                     Grid.Column="4"
+                                     Width="380"
+                                     IsEnabled="{Binding IsClientAppInfoConfigured}" />
+                    </Grid>
+                </Border>
+                <Border Grid.Row="1"
+                        Margin="18"
+                        Background="#F5F9FC"
+                        BorderBrush="#DFE9F1"
+                        BorderThickness="1"
+                        CornerRadius="18">
+                    <uc:UserTabControl Headers="{Binding Tabs}"
+                                       TabIndex="0"
+                                       SelectedContent="{Binding SelectedContent, Mode=OneWay}"
+                                       Command="{Binding TabChangedCommand}" />
+                </Border>
+            </Grid>
+        </Border>
+        <Border Background="#55F6FAFD"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
                 Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <StackPanel>
-                <hc:LoadingCircle Width="60"
-                                  Height="60"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"
-                                  IsRunning="{Binding IsBusy}" />
-                <TextBlock HorizontalAlignment="Center"
-                           Style="{StaticResource TextBlockDefaultPrimary}"
-                           Margin="0 8 0 0"
-                           Text="{Binding LoadingText, Mode=OneWay}"
-                           Visibility="{Binding HasLoadingText, Converter={StaticResource BooleanToVisibilityConverter}}" />
-            </StackPanel>
+            <Border Width="260"
+                    Padding="24"
+                    Background="White"
+                    BorderBrush="#DCE7EF"
+                    BorderThickness="1"
+                    CornerRadius="18"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+                <StackPanel>
+                    <hc:LoadingCircle Width="60"
+                                      Height="60"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      IsRunning="{Binding IsBusy}" />
+                    <TextBlock HorizontalAlignment="Center"
+                               Style="{StaticResource TextBlockDefaultPrimary}"
+                               Margin="0 10 0 0"
+                               TextAlignment="Center"
+                               Text="{Binding LoadingText, Mode=OneWay}"
+                               Visibility="{Binding HasLoadingText, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </StackPanel>
+            </Border>
         </Border>
         <hc:NotifyIcon x:Name="TrayNotifyIcon"
                        Text="{loc:Loc MainWindow.TrayIconText}"

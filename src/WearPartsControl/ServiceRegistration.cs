@@ -29,11 +29,31 @@ public static class ServiceRegistration
 {
     public static void RegisterServices(ContainerBuilder builder)
     {
-        // Register WPF windows and application services here
-        builder.RegisterType<MainWindow>().SingleInstance();
+        RegisterShell(builder);
+        RegisterInfrastructure(builder);
+        RegisterCoreApplicationServices(builder);
+        RegisterMonitoringServices(builder);
+        RegisterViewModels(builder);
+        RegisterViews(builder);
+        RegisterUserControls(builder);
+    }
+
+    private static void RegisterShell(ContainerBuilder builder)
+    {
+        builder.RegisterType<MainWindowViewModel>().AsSelf().SingleInstance();
+        builder.RegisterType<MainWindow>().AsSelf().SingleInstance();
+        builder.RegisterType<LoginWindowViewModel>().AsSelf().InstancePerDependency();
+        builder.RegisterType<LoginWindow>().AsSelf().InstancePerDependency();
+        builder.RegisterType<UiDispatcher>().As<IUiDispatcher>().SingleInstance();
+        builder.RegisterType<UiBusyService>().As<IUiBusyService>().SingleInstance();
+        builder.RegisterType<AutoLogoutInteractionService>().As<IAutoLogoutInteractionService>().SingleInstance();
+    }
+
+    private static void RegisterInfrastructure(ContainerBuilder builder)
+    {
         builder.RegisterType<TypeJsonSaveInfoStore>().As<ISaveInfoStore>().SingleInstance();
-        builder.RegisterType<LocalizationService>().As<ILocalizationService>().SingleInstance();
         builder.RegisterType<AppStartupCoordinator>().As<IAppStartupCoordinator>().SingleInstance();
+        builder.RegisterType<LocalizationService>().As<ILocalizationService>().SingleInstance();
         builder.RegisterType<ExceptionToStatusCodeMapper>().As<WearPartsControl.Exceptions.IExceptionToStatusCodeMapper>().SingleInstance();
         builder.Register(_ => new SocketsHttpHandler
             {
@@ -52,7 +72,11 @@ public static class ServiceRegistration
             })
             .SingleInstance();
         builder.RegisterType<HttpJsonService>().As<IHttpJsonService>().SingleInstance();
-        builder.RegisterType<UiDispatcher>().As<IUiDispatcher>().SingleInstance();
+        EntityFrameworkCoreServiceRegistration.RegisterServices(builder);
+    }
+
+    private static void RegisterCoreApplicationServices(ContainerBuilder builder)
+    {
         builder.RegisterType<CurrentUserAccessor>()
             .As<ICurrentUserAccessor>()
             .As<ICurrentUser>()
@@ -60,7 +84,6 @@ public static class ServiceRegistration
         builder.RegisterType<MhrUserDirectoryCache>().As<IMhrUserDirectoryCache>().SingleInstance();
         builder.RegisterType<LoginService>().As<ILoginService>().SingleInstance();
         builder.RegisterType<LoginSessionStateMachine>().As<ILoginSessionStateMachine>().SingleInstance();
-        builder.RegisterType<AutoLogoutInteractionService>().As<IAutoLogoutInteractionService>().SingleInstance();
         builder.RegisterType<UserConfigService>().As<IUserConfigService>().SingleInstance();
         builder.RegisterType<ComNotificationService>().As<IComNotificationService>().SingleInstance();
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
@@ -74,9 +97,7 @@ public static class ServiceRegistration
             .As<IPlcOperationPipeline>()
             .SingleInstance();
         builder.RegisterType<PlcConnectionStatusService>().As<IPlcConnectionStatusService>().SingleInstance();
-        builder.RegisterType<PlcConfigurationMonitorService>().SingleInstance().AutoActivate();
         builder.RegisterType<PlcStartupConnectionService>().As<IPlcStartupConnectionService>().InstancePerDependency();
-        builder.RegisterType<UiBusyService>().As<IUiBusyService>().SingleInstance();
         builder.RegisterType<JsonClientAppInfoSelectionOptionsProvider>().As<IClientAppInfoSelectionOptionsProvider>().SingleInstance();
         builder.RegisterType<ClientAppInfoService>().As<IClientAppInfoService>().InstancePerDependency();
         builder.RegisterType<LegacyDatabaseImportService>().As<ILegacyDatabaseImportService>().SingleInstance();
@@ -91,11 +112,19 @@ public static class ServiceRegistration
         builder.RegisterType<BarcodeReuseReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<LifetimeReachedReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<ChangePositionReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
+        builder.RegisterType<WearPartDefinitionDomainService>().AsSelf().SingleInstance();
+    }
+
+    private static void RegisterMonitoringServices(ContainerBuilder builder)
+    {
+        builder.RegisterType<PlcConfigurationMonitorService>().AsSelf().SingleInstance().AutoActivate();
         builder.RegisterType<WearPartMonitorService>().As<IWearPartMonitorService>().InstancePerDependency();
         builder.RegisterType<WearPartMonitoringHostedService>().AsSelf().As<IHostedService>().SingleInstance();
         builder.RegisterType<WearPartMonitoringControlService>().As<IWearPartMonitoringControlService>().SingleInstance();
-        EntityFrameworkCoreServiceRegistration.RegisterServices(builder);
-        builder.RegisterType<WearPartDefinitionDomainService>().AsSelf().SingleInstance();
+    }
+
+    private static void RegisterViewModels(ContainerBuilder builder)
+    {
         builder.RegisterType<PartManagementViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<AddPartWindowViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<EditPartWindowViewModel>().AsSelf().InstancePerDependency();
@@ -105,11 +134,16 @@ public static class ServiceRegistration
         builder.RegisterType<PartUpdateRecordViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<NeedLoginViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<UserConfigViewModel>().AsSelf().InstancePerDependency();
-        builder.RegisterType<MainWindowViewModel>().AsSelf().InstancePerDependency();
-        // Add other services as needed
+    }
 
+    private static void RegisterViews(ContainerBuilder builder)
+    {
         builder.RegisterType<AddPartWindow>().AsSelf().InstancePerDependency();
         builder.RegisterType<EditPartWindow>().AsSelf().InstancePerDependency();
+    }
+
+    private static void RegisterUserControls(ContainerBuilder builder)
+    {
         builder.RegisterType<ReplacePartUserControl>().AsSelf();
         builder.RegisterType<ClientAppInfoUserControl>().AsSelf();
         builder.RegisterType<PartInfoUserControl>().AsSelf();
@@ -118,7 +152,5 @@ public static class ServiceRegistration
         builder.RegisterType<PartManagementUserControl>().AsSelf();
         builder.RegisterType<ToolChangeManagementUserControl>().AsSelf();
         builder.RegisterType<PartUpdateRecordUserControl>().AsSelf();
-        builder.RegisterType<LoginWindowViewModel>().AsSelf();
-        builder.RegisterType<LoginWindow>();
     }
 }

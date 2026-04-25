@@ -352,9 +352,21 @@ namespace WearPartsControl.Views
         private bool ShowLoginDialog()
         {
             var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
+            ConfigureLoginWindowOwnership(loginWindow);
+            return _autoLogoutInteractionService.RunModal(() => loginWindow.ShowDialog() == true);
+        }
+
+        private void ConfigureLoginWindowOwnership(Window loginWindow)
+        {
+            if (_isInTray || !IsVisible || WindowState == WindowState.Minimized)
+            {
+                loginWindow.Owner = null;
+                loginWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                return;
+            }
+
             loginWindow.Owner = this;
             loginWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            return _autoLogoutInteractionService.RunModal(() => loginWindow.ShowDialog() == true);
         }
 
         private void HideTrayIcon()
@@ -364,6 +376,8 @@ namespace WearPartsControl.Views
 
         private void OnMainWindowClosed(object? sender, EventArgs e)
         {
+            _isInTray = false;
+            HideTrayIcon();
             Closing -= OnMainWindowClosing;
             StateChanged -= OnMainWindowStateChanged;
             Activated -= OnMainWindowActivated;
