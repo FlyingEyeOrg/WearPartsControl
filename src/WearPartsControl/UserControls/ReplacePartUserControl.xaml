@@ -7,84 +7,86 @@
              xmlns:vm="clr-namespace:WearPartsControl.ViewModels"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              mc:Ignorable="d"
+             d:Width="1920"
+             d:Height="1080"
              d:DataContext="{d:DesignInstance Type=vm:ReplacePartViewModel}">
-            <UserControl.Resources>
-                <ResourceDictionary>
-                    <ResourceDictionary.MergedDictionaries>
-                        <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
-                    </ResourceDictionary.MergedDictionaries>
-                          <Style x:Key="ReplacePartOverviewRowStyle"
-                                    TargetType="Grid">
-                                <Setter Property="Margin"
-                                          Value="0 12 0 0" />
-                          </Style>
-                          <Style x:Key="ReplacePartEntryRowStyle"
-                                    TargetType="FrameworkElement">
-                                <Setter Property="Margin"
-                                          Value="0 12 0 0" />
-                          </Style>
-                        <Style x:Key="ReplacePartMetricCardStyle"
-                           TargetType="Border"
-                           BasedOn="{StaticResource ShellStatusCardBorderStyle}">
-                        <Setter Property="Padding"
-                            Value="14 12" />
-                        </Style>
-                            <Style x:Key="ReplacePartWarningMetricCardStyle"
-                               TargetType="Border"
-                               BasedOn="{StaticResource ReplacePartMetricCardStyle}">
-                            <Setter Property="Background"
-                                Value="#FFFFF6E7" />
-                            <Setter Property="BorderBrush"
-                                Value="#FFE2C164" />
-                            </Style>
-                            <Style x:Key="ReplacePartDangerMetricCardStyle"
-                               TargetType="Border"
-                               BasedOn="{StaticResource ReplacePartMetricCardStyle}">
-                            <Setter Property="Background"
-                                Value="#FFFCECEF" />
-                            <Setter Property="BorderBrush"
-                                Value="#FFE0A4AD" />
-                            </Style>
-                        <Style x:Key="ReplacePartMetricValueTextStyle"
-                           TargetType="TextBlock">
-                        <Setter Property="FontSize"
-                            Value="20" />
-                        <Setter Property="FontWeight"
-                            Value="SemiBold" />
-                        <Setter Property="Foreground"
-                            Value="#FF1F3351" />
-                        </Style>
-                        <Style x:Key="ReplacePartHintTextStyle"
-                           TargetType="TextBlock">
-                        <Setter Property="Foreground"
-                            Value="{StaticResource ShellMutedForegroundBrush}" />
-                        <Setter Property="FontSize"
-                            Value="12" />
-                        </Style>
-                            <Style x:Key="ReplacePartActionButtonStyle"
-                               TargetType="Button"
-                               BasedOn="{StaticResource ButtonPrimary}">
-                            <Setter Property="MinWidth"
-                                Value="168" />
-                            <Setter Property="Height"
-                                Value="42" />
-                            <Setter Property="Padding"
-                                Value="22 0" />
-                            <Setter Property="VerticalContentAlignment"
-                                Value="Center" />
-                            </Style>
-                </ResourceDictionary>
-            </UserControl.Resources>
-        <Grid Background="{StaticResource ShellPanelBackgroundBrush}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-                <Border Margin="0"
-                    Style="{StaticResource ShellSectionHeaderBorderStyle}">
-                <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
-                           Text="{loc:Loc ReplacePartControl.Title}" />
-            </Border>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="ReplacePartOverviewRowStyle"
+                   TargetType="Grid">
+                <Setter Property="Margin"
+                        Value="0 12 0 0" />
+            </Style>
+            <Style x:Key="ReplacePartEntryRowStyle"
+                   TargetType="FrameworkElement">
+                <Setter Property="Margin"
+                        Value="0 12 0 0" />
+            </Style>
+            <Style x:Key="ReplacePartMetricCardStyle"
+                   TargetType="Border"
+                   BasedOn="{StaticResource ShellStatusCardBorderStyle}">
+                <Setter Property="Padding"
+                        Value="14 12" />
+            </Style>
+            <Style x:Key="ReplacePartWarningMetricCardStyle"
+                   TargetType="Border"
+                   BasedOn="{StaticResource ReplacePartMetricCardStyle}">
+                <Setter Property="Background"
+                        Value="#FFFFF6E7" />
+                <Setter Property="BorderBrush"
+                        Value="#FFE2C164" />
+            </Style>
+            <Style x:Key="ReplacePartDangerMetricCardStyle"
+                   TargetType="Border"
+                   BasedOn="{StaticResource ReplacePartMetricCardStyle}">
+                <Setter Property="Background"
+                        Value="#FFFCECEF" />
+                <Setter Property="BorderBrush"
+                        Value="#FFE0A4AD" />
+            </Style>
+            <Style x:Key="ReplacePartMetricValueTextStyle"
+                   TargetType="TextBlock">
+                <Setter Property="FontSize"
+                        Value="20" />
+                <Setter Property="FontWeight"
+                        Value="SemiBold" />
+                <Setter Property="Foreground"
+                        Value="#FF1F3351" />
+            </Style>
+            <Style x:Key="ReplacePartHintTextStyle"
+                   TargetType="TextBlock">
+                <Setter Property="Foreground"
+                        Value="{StaticResource ShellMutedForegroundBrush}" />
+                <Setter Property="FontSize"
+                        Value="12" />
+            </Style>
+            <Style x:Key="ReplacePartActionButtonStyle"
+                   TargetType="Button"
+                   BasedOn="{StaticResource ButtonPrimary}">
+                <Setter Property="MinWidth"
+                        Value="168" />
+                <Setter Property="Height"
+                        Value="42" />
+                <Setter Property="Padding"
+                        Value="22 0" />
+                <Setter Property="VerticalContentAlignment"
+                        Value="Center" />
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Background="{StaticResource ShellPanelBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Border Margin="0"
+                Style="{StaticResource ShellSectionHeaderBorderStyle}">
+            <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
+                       Text="{loc:Loc ReplacePartControl.Title}" />
+        </Border>
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto">
             <StackPanel IsEnabled="{Binding IsTabContentEnabled}"
@@ -210,7 +212,7 @@
                                     </StackPanel>
                                 </Border>
                                 <Border Grid.Column="2"
-                                    Style="{StaticResource ReplacePartWarningMetricCardStyle}">
+                                        Style="{StaticResource ReplacePartWarningMetricCardStyle}">
                                     <StackPanel>
                                         <TextBlock Style="{StaticResource ReplacePartHintTextStyle}"
                                                    Text="{loc:Loc ReplacePartControl.WarningValueLabel}" />
@@ -220,7 +222,7 @@
                                     </StackPanel>
                                 </Border>
                                 <Border Grid.Column="4"
-                                    Style="{StaticResource ReplacePartDangerMetricCardStyle}">
+                                        Style="{StaticResource ReplacePartDangerMetricCardStyle}">
                                     <StackPanel>
                                         <TextBlock Style="{StaticResource ReplacePartHintTextStyle}"
                                                    Text="{loc:Loc ReplacePartControl.ShutdownValueLabel}" />
@@ -297,66 +299,66 @@
                                 <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
                                            Text="{loc:Loc ReplacePartControl.ReplacementReasonLabel}" />
                                 <ComboBox Grid.Column="1"
-                                                                                    Height="38"
+                                          Height="38"
                                           ItemsSource="{Binding ReplacementReasons}"
                                           DisplayMemberPath="DisplayName"
                                           SelectedValuePath="Code"
                                           SelectedValue="{Binding SelectedReplacementReason, Mode=TwoWay}"
                                           Style="{StaticResource ComboBoxExtend}" />
                                 <TextBlock Grid.Row="1"
-                                                                                     Style="{StaticResource ShellFormLabelTextStyle}"
-                                                                                     Margin="0 12 0 0"
-                                                                                     Text="{loc:Loc ReplacePartControl.ToolCodeLabel}"
-                                                                                     Visibility="{Binding IsToolValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                                                <ComboBox Grid.Row="1"
-                                                                                    Grid.Column="1"
-                                                                                    Height="38"
-                                                                                    Margin="0 12 0 0"
-                                                                                    ItemsSource="{Binding ToolCodeOptions}"
-                                                                                    DisplayMemberPath="DisplayText"
-                                                                                    SelectedValuePath="Code"
-                                                                                    SelectedValue="{Binding SelectedToolCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                                    Style="{StaticResource ComboBoxExtend}"
-                                                                                    Visibility="{Binding IsToolValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                                                    hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.ToolCodePlaceholder}" />
-                                                                <TextBlock Grid.Row="2"
                                            Style="{StaticResource ShellFormLabelTextStyle}"
-                                                                                     Margin="0 12 0 0"
-                                                                                     Text="{loc:Loc ReplacePartControl.AbSideLabel}"
-                                                                                     Visibility="{Binding IsCoatingValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                           Margin="0 12 0 0"
+                                           Text="{loc:Loc ReplacePartControl.ToolCodeLabel}"
+                                           Visibility="{Binding IsToolValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <ComboBox Grid.Row="1"
+                                          Grid.Column="1"
+                                          Height="38"
+                                          Margin="0 12 0 0"
+                                          ItemsSource="{Binding ToolCodeOptions}"
+                                          DisplayMemberPath="DisplayText"
+                                          SelectedValuePath="Code"
+                                          SelectedValue="{Binding SelectedToolCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Style="{StaticResource ComboBoxExtend}"
+                                          Visibility="{Binding IsToolValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                          hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.ToolCodePlaceholder}" />
+                                <TextBlock Grid.Row="2"
+                                           Style="{StaticResource ShellFormLabelTextStyle}"
+                                           Margin="0 12 0 0"
+                                           Text="{loc:Loc ReplacePartControl.AbSideLabel}"
+                                           Visibility="{Binding IsCoatingValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 <ComboBox Grid.Row="2"
                                           Grid.Column="1"
-                                                                                    Height="38"
-                                                                                    Margin="0 12 0 0"
+                                          Height="38"
+                                          Margin="0 12 0 0"
                                           ItemsSource="{Binding AbSideOptions}"
                                           SelectedItem="{Binding SelectedAbSide, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                           Style="{StaticResource ComboBoxExtend}"
                                           Visibility="{Binding IsCoatingValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"
                                           hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.AbSidePlaceholder}" />
-                                                                <TextBlock Grid.Row="3"
-                                                                                     Margin="0 12 0 0"
+                                <TextBlock Grid.Row="3"
+                                           Margin="0 12 0 0"
                                            Style="{StaticResource ShellFormLabelTextStyle}"
                                            Text="{loc:Loc ReplacePartControl.NewBarcodeLabel}" />
                                 <TextBox Grid.Row="3"
                                          Grid.Column="1"
-                                                                                 Height="38"
-                                                                                 Margin="0 12 0 0"
+                                         Height="38"
+                                         Margin="0 12 0 0"
                                          Style="{StaticResource TextBoxExtend}"
                                          Text="{Binding NewBarcode, UpdateSourceTrigger=PropertyChanged}"
                                          hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.NewBarcodePlaceholder}" />
-                                                                <TextBlock Grid.Row="4"
-                                                                                     Margin="0 12 0 0"
-                                                                           Style="{StaticResource ShellFormLabelTextStyle}"
+                                <TextBlock Grid.Row="4"
+                                           Margin="0 12 0 0"
+                                           Style="{StaticResource ShellFormLabelTextStyle}"
                                            Text="{loc:Loc ReplacePartControl.RemarkLabel}" />
                                 <TextBox Grid.Row="4"
                                          Grid.Column="1"
-                                                                                 Margin="0 12 0 0"
+                                         Margin="0 12 0 0"
                                          MinHeight="88"
-                                                                                 Padding="12 10"
+                                         Padding="12 10"
                                          VerticalContentAlignment="Top"
                                          AcceptsReturn="True"
-                                                                                 HorizontalScrollBarVisibility="Disabled"
-                                                                                 VerticalScrollBarVisibility="Auto"
+                                         HorizontalScrollBarVisibility="Disabled"
+                                         VerticalScrollBarVisibility="Auto"
                                          TextWrapping="Wrap"
                                          Style="{StaticResource TextBoxExtend}"
                                          Text="{Binding ReplacementMessage, UpdateSourceTrigger=PropertyChanged}"
@@ -392,14 +394,13 @@
                     <StackPanel>
                         <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
                                    Text="{loc:Loc ReplacePartControl.HistorySectionTitle}" />
-                        <DataGrid
-                            MinHeight="260"
-                            AutoGenerateColumns="False"
-                            CanUserAddRows="False"
-                            CanUserDeleteRows="False"
-                            IsReadOnly="True"
-                            ItemsSource="{Binding ReplacementHistory}"
-                            Style="{StaticResource DataGridBaseStyle}">
+                        <DataGrid MinHeight="260"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  IsReadOnly="True"
+                                  ItemsSource="{Binding ReplacementHistory}"
+                                  Style="{StaticResource DataGridBaseStyle}">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="{loc:Loc ReplacePartControl.NameHeader}"
                                                     Binding="{Binding PartName}"
