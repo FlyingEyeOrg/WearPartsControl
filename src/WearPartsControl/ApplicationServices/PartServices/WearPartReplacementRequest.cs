@@ -8,6 +8,10 @@ public sealed class WearPartReplacementRequest
 
     public string ToolCode { get; set; } = string.Empty;
 
+    public string RollNumber { get; set; } = string.Empty;
+
+    public string BurrResult { get; set; } = string.Empty;
+
     public string SelectedAbSide { get; set; } = string.Empty;
 
     public string ReplacementReason { get; set; } = string.Empty;

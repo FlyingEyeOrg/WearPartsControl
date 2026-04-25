@@ -55,7 +55,7 @@ public partial class PartManagementUserControl : UserControl
     private async void OnAddRequested(object? sender, EventArgs e)
     {
         var dialog = _serviceProvider.GetRequiredService<AddPartWindow>();
-        dialog.ViewModel.InitializeForCreate(_viewModel.ClientAppConfigurationId, _viewModel.ResourceNumber);
+        await dialog.ViewModel.InitializeForCreateAsync(_viewModel.ClientAppConfigurationId, _viewModel.ResourceNumber);
 
         var dialogResult = _dialogService.ShowDialog(dialog, Window.GetWindow(this));
 
@@ -68,7 +68,7 @@ public partial class PartManagementUserControl : UserControl
     private async void OnEditRequested(object? sender, WearPartDefinition definition)
     {
         var dialog = _serviceProvider.GetRequiredService<EditPartWindow>();
-        dialog.ViewModel.InitializeForEdit(definition);
+        await dialog.ViewModel.InitializeForEditAsync(definition);
 
         var dialogResult = _dialogService.ShowDialog(dialog, Window.GetWindow(this));
 

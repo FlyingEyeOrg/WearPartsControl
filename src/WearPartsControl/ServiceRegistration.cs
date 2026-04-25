@@ -112,10 +112,14 @@ public static class ServiceRegistration
         builder.RegisterType<LegacyDatabaseImportService>().As<ILegacyDatabaseImportService>().SingleInstance();
         builder.RegisterType<LegacyConfigurationImportService>().As<ILegacyConfigurationImportService>().SingleInstance();
         builder.RegisterType<WearPartManagementService>().As<IWearPartManagementService>().InstancePerDependency();
+        builder.RegisterType<WearPartTypeService>().As<IWearPartTypeService>().InstancePerDependency();
         builder.RegisterType<ToolChangeManagementService>().As<IToolChangeManagementService>().InstancePerDependency();
+        builder.RegisterType<CutterMesValidationService>().As<ICutterMesValidationService>().InstancePerDependency();
         builder.RegisterType<WearPartReplacementService>().As<IWearPartReplacementService>().InstancePerDependency();
         builder.RegisterType<ToolChangeSelectionService>().As<IToolChangeSelectionService>().SingleInstance();
         builder.RegisterType<BarcodeLengthReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
+        builder.RegisterType<CutterRollValidationReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
+        builder.RegisterType<CutterMesConsistencyReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<ToolCodeReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<CoatingSpacerReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<BarcodeReuseReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();

@@ -19,17 +19,20 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
 
     private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
     private readonly IWearPartRepository _wearPartRepository;
+    private readonly IWearPartTypeRepository _wearPartTypeRepository;
     private readonly IToolChangeRepository _toolChangeRepository;
 
     public WearPartManagementService(
         ICurrentUserAccessor currentUserAccessor,
         IClientAppConfigurationRepository clientAppConfigurationRepository,
         IWearPartRepository wearPartRepository,
+        IWearPartTypeRepository wearPartTypeRepository,
         IToolChangeRepository toolChangeRepository)
         : base(currentUserAccessor)
     {
         _clientAppConfigurationRepository = clientAppConfigurationRepository;
         _wearPartRepository = wearPartRepository;
+        _wearPartTypeRepository = wearPartTypeRepository;
         _toolChangeRepository = toolChangeRepository;
     }
 
@@ -69,6 +72,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         ValidateDefinition(definition);
 
         var clientAppConfiguration = await ResolveClientAppConfigurationAsync(definition.ClientAppConfigurationId, definition.ResourceNumber, cancellationToken).ConfigureAwait(false);
+        await ValidateWearPartTypeAsync(definition.WearPartTypeId, cancellationToken).ConfigureAwait(false);
         await ValidateToolChangeAsync(definition.ToolChangeId, cancellationToken).ConfigureAwait(false);
         var partName = definition.PartName.Trim();
 
@@ -109,6 +113,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
                 entity.ClientAppConfigurationId)
             .ConfigureAwait(false);
 
+        await ValidateWearPartTypeAsync(definition.WearPartTypeId, cancellationToken).ConfigureAwait(false);
         await ValidateToolChangeAsync(definition.ToolChangeId, cancellationToken).ConfigureAwait(false);
 
         var partName = definition.PartName.Trim();
@@ -245,6 +250,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
             CodeMinLength = sourceDefinition.CodeMinLength,
             CodeMaxLength = sourceDefinition.CodeMaxLength,
             LifetimeType = sourceDefinition.LifetimeType,
+            WearPartTypeId = sourceDefinition.WearPartTypeId,
             ToolChangeId = sourceDefinition.ToolChangeId,
             PlcZeroClearAddress = sourceDefinition.PlcZeroClearAddress,
             BarcodeWriteAddress = sourceDefinition.BarcodeWriteAddress
@@ -267,6 +273,7 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         entity.CodeMinLength = definition.CodeMinLength;
         entity.CodeMaxLength = definition.CodeMaxLength;
         entity.LifetimeType = NormalizeLifetimeType(definition.LifetimeType);
+        entity.WearPartTypeId = definition.WearPartTypeId;
         entity.ToolChangeId = definition.ToolChangeId;
         entity.PlcZeroClearAddress = NormalizeOptional(definition.PlcZeroClearAddress);
         entity.BarcodeWriteAddress = NormalizeOptional(definition.BarcodeWriteAddress);
@@ -291,6 +298,9 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
             CodeMinLength = entity.CodeMinLength,
             CodeMaxLength = entity.CodeMaxLength,
             LifetimeType = entity.LifetimeType,
+            WearPartTypeId = entity.WearPartTypeId,
+            WearPartTypeCode = entity.WearPartType?.Code ?? WearPartTypeCodes.Uncategorized,
+            WearPartTypeName = entity.WearPartType?.Name ?? "未分类",
             ToolChangeId = entity.ToolChangeId,
             PlcZeroClearAddress = entity.PlcZeroClearAddress,
             BarcodeWriteAddress = entity.BarcodeWriteAddress,
@@ -312,6 +322,11 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
         NormalizeRequired(definition.ShutdownValueAddress, LocalizedText.Get("Services.WearPartManagement.ShutdownValueAddressRequired"));
         NormalizeRequired(definition.ShutdownValueDataType, LocalizedText.Get("Services.WearPartManagement.ShutdownValueDataTypeRequired"));
         NormalizeLifetimeType(definition.LifetimeType);
+
+        if (!definition.WearPartTypeId.HasValue || definition.WearPartTypeId.Value == Guid.Empty)
+        {
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartManagement.WearPartTypeRequired"));
+        }
 
         if (definition.CodeMinLength < 0)
         {
@@ -342,6 +357,20 @@ public sealed class WearPartManagementService : ApplicationService, IWearPartMan
     private static string NormalizeOptional(string? value)
     {
         return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+    }
+
+    private async Task ValidateWearPartTypeAsync(Guid? wearPartTypeId, CancellationToken cancellationToken)
+    {
+        if (!wearPartTypeId.HasValue || wearPartTypeId.Value == Guid.Empty)
+        {
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartManagement.WearPartTypeRequired"));
+        }
+
+        var exists = await _wearPartTypeRepository.GetByIdAsync(wearPartTypeId.Value, cancellationToken).ConfigureAwait(false);
+        if (exists is null)
+        {
+            throw new EntityNotFoundException(LocalizedText.Format("Services.WearPartManagement.WearPartTypeNotFoundById", wearPartTypeId.Value));
+        }
     }
 
     private async Task ValidateToolChangeAsync(Guid? toolChangeId, CancellationToken cancellationToken)

@@ -290,6 +290,8 @@
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"
@@ -324,9 +326,36 @@
                                 <TextBlock Grid.Row="2"
                                            Style="{StaticResource ShellFormLabelTextStyle}"
                                            Margin="0 12 0 0"
+                                           Text="{loc:Loc ReplacePartControl.RollNumberLabel}"
+                                           Visibility="{Binding IsCutterValidationRequired, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <TextBox Grid.Row="2"
+                                         Grid.Column="1"
+                                         Height="38"
+                                         Margin="0 12 0 0"
+                                         Style="{StaticResource TextBoxExtend}"
+                                         Text="{Binding RollNumber, UpdateSourceTrigger=PropertyChanged}"
+                                         Visibility="{Binding IsCutterValidationRequired, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                         hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.RollNumberPlaceholder}" />
+                                <TextBlock Grid.Row="3"
+                                           Style="{StaticResource ShellFormLabelTextStyle}"
+                                           Margin="0 12 0 0"
+                                           Text="{loc:Loc ReplacePartControl.BurrResultLabel}"
+                                           Visibility="{Binding IsCutterValidationRequired, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <ComboBox Grid.Row="3"
+                                          Grid.Column="1"
+                                          Height="38"
+                                          Margin="0 12 0 0"
+                                          ItemsSource="{Binding BurrResultOptions}"
+                                          SelectedItem="{Binding SelectedBurrResult, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Style="{StaticResource ComboBoxExtend}"
+                                          Visibility="{Binding IsCutterValidationRequired, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                          hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.BurrResultPlaceholder}" />
+                                <TextBlock Grid.Row="4"
+                                           Style="{StaticResource ShellFormLabelTextStyle}"
+                                           Margin="0 12 0 0"
                                            Text="{loc:Loc ReplacePartControl.AbSideLabel}"
                                            Visibility="{Binding IsCoatingValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                <ComboBox Grid.Row="2"
+                                <ComboBox Grid.Row="4"
                                           Grid.Column="1"
                                           Height="38"
                                           Margin="0 12 0 0"
@@ -335,22 +364,22 @@
                                           Style="{StaticResource ComboBoxExtend}"
                                           Visibility="{Binding IsCoatingValidationEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"
                                           hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.AbSidePlaceholder}" />
-                                <TextBlock Grid.Row="3"
+                                <TextBlock Grid.Row="5"
                                            Margin="0 12 0 0"
                                            Style="{StaticResource ShellFormLabelTextStyle}"
                                            Text="{loc:Loc ReplacePartControl.NewBarcodeLabel}" />
-                                <TextBox Grid.Row="3"
+                                <TextBox Grid.Row="5"
                                          Grid.Column="1"
                                          Height="38"
                                          Margin="0 12 0 0"
                                          Style="{StaticResource TextBoxExtend}"
                                          Text="{Binding NewBarcode, UpdateSourceTrigger=PropertyChanged}"
                                          hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.NewBarcodePlaceholder}" />
-                                <TextBlock Grid.Row="4"
+                                <TextBlock Grid.Row="6"
                                            Margin="0 12 0 0"
                                            Style="{StaticResource ShellFormLabelTextStyle}"
                                            Text="{loc:Loc ReplacePartControl.RemarkLabel}" />
-                                <TextBox Grid.Row="4"
+                                <TextBox Grid.Row="6"
                                          Grid.Column="1"
                                          Margin="0 12 0 0"
                                          MinHeight="88"

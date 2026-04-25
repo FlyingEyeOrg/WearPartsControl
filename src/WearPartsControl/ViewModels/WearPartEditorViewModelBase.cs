@@ -32,6 +32,7 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
     private const string DefaultCreateCodeMaxLength = "0";
 
     private readonly IWearPartManagementService _wearPartManagementService;
+    private readonly IWearPartTypeService _wearPartTypeService;
     private readonly IUiBusyService _uiBusyService;
     private Guid _id;
     private Guid _clientAppConfigurationId;
@@ -49,6 +50,7 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
     private string _codeMinLength = DefaultCreateCodeMinLength;
     private string _codeMaxLength = DefaultCreateCodeMaxLength;
     private string _lifetimeType = DefaultCreateLifetimeType;
+    private Guid? _selectedWearPartTypeId;
     private string _plcZeroClearAddress = string.Empty;
     private string _barcodeWriteAddress = string.Empty;
     private string _statusMessage = string.Empty;
@@ -56,9 +58,11 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
 
     protected WearPartEditorViewModelBase(
         IWearPartManagementService wearPartManagementService,
+        IWearPartTypeService wearPartTypeService,
         IUiBusyService uiBusyService)
     {
         _wearPartManagementService = wearPartManagementService;
+        _wearPartTypeService = wearPartTypeService;
         _uiBusyService = uiBusyService;
 
         foreach (var item in new[] { "Manual", "Scanner", "Barcode" })
@@ -82,8 +86,15 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
     public ObservableCollection<string> InputModes { get; } = new();
 
     public ObservableCollection<LifetimeTypeOption> LifetimeTypes { get; } = new();
+    public ObservableCollection<WearPartTypeDefinition> WearPartTypes { get; } = new();
 
     public ObservableCollection<string> DataTypes { get; } = new();
+
+    public Guid? SelectedWearPartTypeId
+    {
+        get => _selectedWearPartTypeId;
+        set => SetEditorProperty(ref _selectedWearPartTypeId, value);
+    }
 
     public IAsyncRelayCommand SaveCommand { get; }
 
@@ -212,8 +223,9 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
         protected set => SetProperty(ref _statusMessage, value);
     }
 
-    public void InitializeForCreate(Guid clientAppConfigurationId, string resourceNumber)
+    public async Task InitializeForCreateAsync(Guid clientAppConfigurationId, string resourceNumber, CancellationToken cancellationToken = default)
     {
+        await LoadWearPartTypesAsync(null, cancellationToken).ConfigureAwait(true);
         _id = Guid.Empty;
         ClientAppConfigurationId = clientAppConfigurationId;
         ResourceNumber = resourceNumber?.Trim() ?? string.Empty;
@@ -229,6 +241,7 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
         CodeMinLength = DefaultCreateCodeMinLength;
         CodeMaxLength = DefaultCreateCodeMaxLength;
         LifetimeType = DefaultCreateLifetimeType;
+        SelectedWearPartTypeId = ResolveDefaultWearPartTypeId();
         PlcZeroClearAddress = string.Empty;
         BarcodeWriteAddress = string.Empty;
         SetLocalizedStatusMessage(() => string.IsNullOrWhiteSpace(ResourceNumber)
@@ -237,9 +250,11 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
         SaveCommand.NotifyCanExecuteChanged();
     }
 
-    public void InitializeForEdit(WearPartDefinition definition)
+    public async Task InitializeForEditAsync(WearPartDefinition definition, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(definition);
+
+        await LoadWearPartTypesAsync(definition.WearPartTypeId, cancellationToken).ConfigureAwait(true);
 
         _id = definition.Id;
         ClientAppConfigurationId = definition.ClientAppConfigurationId;
@@ -256,6 +271,7 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
         CodeMinLength = definition.CodeMinLength.ToString();
         CodeMaxLength = definition.CodeMaxLength.ToString();
         LifetimeType = NormalizeLifetimeType(definition.LifetimeType);
+        SelectedWearPartTypeId = definition.WearPartTypeId ?? ResolveDefaultWearPartTypeId();
         PlcZeroClearAddress = definition.PlcZeroClearAddress;
         BarcodeWriteAddress = definition.BarcodeWriteAddress;
         SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.WearPartEditorVm.Editing", ResourceNumber));
@@ -280,6 +296,7 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
             && !string.IsNullOrWhiteSpace(ShutdownValueAddress)
             && !string.IsNullOrWhiteSpace(ShutdownValueDataType)
             && !string.IsNullOrWhiteSpace(LifetimeType)
+            && SelectedWearPartTypeId.HasValue
             && int.TryParse(CodeMinLength?.Trim(), out _)
             && int.TryParse(CodeMaxLength?.Trim(), out _);
     }
@@ -340,9 +357,29 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
             CodeMinLength = codeMinLength,
             CodeMaxLength = codeMaxLength,
             LifetimeType = NormalizeLifetimeType(LifetimeType),
+            WearPartTypeId = SelectedWearPartTypeId,
             ToolChangeId = null,
             PlcZeroClearAddress = PlcZeroClearAddress,
             BarcodeWriteAddress = BarcodeWriteAddress
+            private async Task LoadWearPartTypesAsync(Guid? selectedWearPartTypeId, CancellationToken cancellationToken)
+            {
+                var wearPartTypes = await _wearPartTypeService.GetAllAsync(cancellationToken).ConfigureAwait(true);
+                WearPartTypes.Clear();
+                foreach (var wearPartType in wearPartTypes)
+                {
+                    WearPartTypes.Add(wearPartType);
+                }
+
+                SelectedWearPartTypeId = selectedWearPartTypeId.HasValue && WearPartTypes.Any(x => x.Id == selectedWearPartTypeId.Value)
+                    ? selectedWearPartTypeId
+                    : ResolveDefaultWearPartTypeId();
+            }
+
+            private Guid? ResolveDefaultWearPartTypeId()
+            {
+                return WearPartTypes.FirstOrDefault(x => string.Equals(x.Code, WearPartTypeCodes.Uncategorized, StringComparison.OrdinalIgnoreCase))?.Id
+                    ?? WearPartTypes.FirstOrDefault()?.Id;
+            }
         };
     }
 

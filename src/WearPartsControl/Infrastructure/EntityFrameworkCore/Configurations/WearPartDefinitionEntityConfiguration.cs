@@ -29,6 +29,7 @@ public sealed class WearPartDefinitionEntityConfiguration : IEntityTypeConfigura
         builder.Property(x => x.CodeMinLength).IsRequired();
         builder.Property(x => x.CodeMaxLength).IsRequired();
         builder.Property(x => x.LifetimeType).HasMaxLength(64).IsRequired();
+        builder.Property(x => x.WearPartTypeId);
         builder.Property(x => x.ToolChangeId);
         builder.Property(x => x.PlcZeroClearAddress).HasMaxLength(128);
         builder.Property(x => x.BarcodeWriteAddress).HasMaxLength(128).IsRequired();
@@ -41,6 +42,11 @@ public sealed class WearPartDefinitionEntityConfiguration : IEntityTypeConfigura
         builder.HasOne(x => x.ToolChange)
             .WithMany(x => x.WearPartDefinitions)
             .HasForeignKey(x => x.ToolChangeId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(x => x.WearPartType)
+            .WithMany(x => x.WearPartDefinitions)
+            .HasForeignKey(x => x.WearPartTypeId)
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasIndex(x => new { x.ClientAppConfigurationId, x.PartName }).IsUnique();

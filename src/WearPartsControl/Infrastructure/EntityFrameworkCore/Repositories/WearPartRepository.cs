@@ -24,6 +24,8 @@ public sealed class WearPartRepository : EfRepositoryBase<WearPartsControlDbCont
     public override async Task<IReadOnlyList<WearPartDefinitionEntity>> ListAsync(CancellationToken cancellationToken = default)
     {
         return await Queryable(asNoTracking: true)
+            .Include(x => x.WearPartType)
+            .Include(x => x.ToolChange)
             .OrderBy(x => x.PartName)
             .ToArrayAsync(cancellationToken)
             .ConfigureAwait(false);
@@ -32,10 +34,20 @@ public sealed class WearPartRepository : EfRepositoryBase<WearPartsControlDbCont
     public async Task<IReadOnlyList<WearPartDefinitionEntity>> ListByClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
     {
         return await Queryable(asNoTracking: true)
+            .Include(x => x.WearPartType)
+            .Include(x => x.ToolChange)
             .Where(x => x.ClientAppConfigurationId == clientAppConfigurationId)
             .OrderBy(x => x.PartName)
             .ToArrayAsync(cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    public override Task<WearPartDefinitionEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Queryable(asNoTracking: true)
+            .Include(x => x.WearPartType)
+            .Include(x => x.ToolChange)
+            .FirstOrDefaultAsync(BuildIdPredicate(id), cancellationToken);
     }
 
     public async Task<bool> ExistsPartNameAsync(Guid clientAppConfigurationId, string partName, Guid? excludeId = null, CancellationToken cancellationToken = default)

@@ -45,6 +45,8 @@ public sealed class WearPartDefinitionEntity :
 
     public string LifetimeType { get; set; } = string.Empty;
 
+    public Guid? WearPartTypeId { get; set; }
+
     public Guid? ToolChangeId { get; set; }
 
     public string PlcZeroClearAddress { get; set; } = string.Empty;
@@ -52,6 +54,8 @@ public sealed class WearPartDefinitionEntity :
     public string BarcodeWriteAddress { get; set; } = string.Empty;
 
     public ClientAppConfigurationEntity ClientAppConfiguration { get; set; } = null!;
+
+    public WearPartTypeEntity? WearPartType { get; set; }
 
     public ToolChangeEntity? ToolChange { get; set; }
 

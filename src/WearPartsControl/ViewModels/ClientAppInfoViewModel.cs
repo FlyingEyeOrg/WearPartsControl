@@ -42,6 +42,11 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
     private string _plcIpAddress = string.Empty;
     private string _plcPort = "102";
     private string _shutdownPointAddress = string.Empty;
+    private bool _enableCutterMesValidation;
+    private string _cutterMesWsdl = string.Empty;
+    private string _cutterMesUser = string.Empty;
+    private string _cutterMesPassword = string.Empty;
+    private string _cutterMesSite = string.Empty;
     private string _siemensRack = "0";
     private string _siemensSlot = "0";
     private string _statusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.PromptComplete");
@@ -311,6 +316,66 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
         }
     }
 
+    public bool EnableCutterMesValidation
+    {
+        get => _enableCutterMesValidation;
+        set
+        {
+            if (SetProperty(ref _enableCutterMesValidation, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string CutterMesWsdl
+    {
+        get => _cutterMesWsdl;
+        set
+        {
+            if (SetProperty(ref _cutterMesWsdl, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string CutterMesUser
+    {
+        get => _cutterMesUser;
+        set
+        {
+            if (SetProperty(ref _cutterMesUser, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string CutterMesPassword
+    {
+        get => _cutterMesPassword;
+        set
+        {
+            if (SetProperty(ref _cutterMesPassword, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string CutterMesSite
+    {
+        get => _cutterMesSite;
+        set
+        {
+            if (SetProperty(ref _cutterMesSite, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
     public string SiemensRack
     {
         get => _siemensRack;
@@ -526,6 +591,11 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
             PlcIpAddress = request.PlcIpAddress,
             PlcPort = request.PlcPort,
             ShutdownPointAddress = request.ShutdownPointAddress,
+            EnableCutterMesValidation = request.EnableCutterMesValidation,
+            CutterMesWsdl = request.CutterMesWsdl,
+            CutterMesUser = request.CutterMesUser,
+            CutterMesPassword = request.CutterMesPassword,
+            CutterMesSite = request.CutterMesSite,
             SiemensRack = request.SiemensRack,
             SiemensSlot = request.SiemensSlot,
             IsStringReverse = request.IsStringReverse
@@ -564,6 +634,11 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
             PlcIpAddress = PlcIpAddress,
             PlcPort = plcPort,
             ShutdownPointAddress = ShutdownPointAddress,
+            EnableCutterMesValidation = EnableCutterMesValidation,
+            CutterMesWsdl = CutterMesWsdl,
+            CutterMesUser = CutterMesUser,
+            CutterMesPassword = CutterMesPassword,
+            CutterMesSite = CutterMesSite,
             SiemensRack = siemensRack,
             SiemensSlot = siemensSlot,
             IsStringReverse = IsStringReverseVisible && IsStringReverse
@@ -594,6 +669,11 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
             PlcIpAddress = model.PlcIpAddress;
             PlcPort = model.PlcPort.ToString();
             ShutdownPointAddress = model.ShutdownPointAddress;
+            EnableCutterMesValidation = model.EnableCutterMesValidation;
+            CutterMesWsdl = model.CutterMesWsdl;
+            CutterMesUser = model.CutterMesUser;
+            CutterMesPassword = model.CutterMesPassword;
+            CutterMesSite = model.CutterMesSite;
             SiemensRack = model.SiemensRack.ToString();
             SiemensSlot = model.SiemensSlot.ToString();
             IsStringReverse = model.IsStringReverse;
@@ -619,6 +699,11 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
             Normalize(PlcIpAddress),
             Normalize(PlcPort),
             Normalize(ShutdownPointAddress),
+            EnableCutterMesValidation,
+            Normalize(CutterMesWsdl),
+            Normalize(CutterMesUser),
+            Normalize(CutterMesPassword),
+            Normalize(CutterMesSite),
             Normalize(SiemensRack),
             Normalize(SiemensSlot),
             IsStringReverse);
@@ -925,11 +1010,16 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
         string PlcIpAddress,
         string PlcPort,
         string ShutdownPointAddress,
+        bool EnableCutterMesValidation,
+        string CutterMesWsdl,
+        string CutterMesUser,
+        string CutterMesPassword,
+        string CutterMesSite,
         string SiemensRack,
         string SiemensSlot,
         bool IsStringReverse)
     {
-        public static ClientAppInfoSnapshot Empty { get; } = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true);
+        public static ClientAppInfoSnapshot Empty { get; } = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true);
     }
 
     public sealed class SiteOption

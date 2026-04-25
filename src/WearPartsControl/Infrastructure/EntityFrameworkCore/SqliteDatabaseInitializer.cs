@@ -12,13 +12,18 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
         ["basic_configurations"] =
         [
             "Id", "CreatedAt", "UpdatedAt", "CreatedBy", "UpdatedBy", "SiteCode", "FactoryCode", "AreaCode", "ProcedureCode",
-            "EquipmentCode", "ResourceNumber", "PlcProtocolType", "PlcIpAddress", "PlcPort", "ShutdownPointAddress", "SiemensRack", "SiemensSlot", "IsStringReverse"
+            "EquipmentCode", "ResourceNumber", "PlcProtocolType", "PlcIpAddress", "PlcPort", "ShutdownPointAddress", "EnableCutterMesValidation",
+            "CutterMesWsdl", "CutterMesUser", "CutterMesPassword", "CutterMesSite", "SiemensRack", "SiemensSlot", "IsStringReverse"
         ],
         ["wear_part_definitions"] =
         [
             "Id", "CreatedAt", "UpdatedAt", "CreatedBy", "UpdatedBy", "ClientAppConfigurationId", "ResourceNumber", "PartName", "InputMode",
             "CurrentValueAddress", "CurrentValueDataType", "WarningValueAddress", "WarningValueDataType", "ShutdownValueAddress", "ShutdownValueDataType",
-            "IsShutdown", "CodeMinLength", "CodeMaxLength", "LifetimeType", "ToolChangeId", "PlcZeroClearAddress", "BarcodeWriteAddress"
+            "IsShutdown", "CodeMinLength", "CodeMaxLength", "LifetimeType", "WearPartTypeId", "ToolChangeId", "PlcZeroClearAddress", "BarcodeWriteAddress"
+        ],
+        ["wear_part_types"] =
+        [
+            "Id", "CreatedAt", "UpdatedAt", "CreatedBy", "UpdatedBy", "Code", "Name"
         ],
         ["wear_part_replacement_records"] =
         [
@@ -62,6 +67,36 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
         {
             await dbContext.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
         }
+
+        await EnsureWearPartTypesSeededAsync(dbContext, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task EnsureWearPartTypesSeededAsync(WearPartsControlDbContext dbContext, CancellationToken cancellationToken)
+    {
+        var existingCodes = await dbContext.WearPartTypes
+            .AsNoTracking()
+            .Select(x => x.Code)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var existingSet = existingCodes.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var seedItems = new[]
+        {
+            new WearPartTypeEntity { Code = "uncategorized", Name = "未分类" },
+            new WearPartTypeEntity { Code = "cutter", Name = "切刀" }
+        };
+
+        var pending = seedItems
+            .Where(item => !existingSet.Contains(item.Code))
+            .ToArray();
+
+        if (pending.Length == 0)
+        {
+            return;
+        }
+
+        await dbContext.WearPartTypes.AddRangeAsync(pending, cancellationToken).ConfigureAwait(false);
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<bool> RequiresDatabaseResetAsync(CancellationToken cancellationToken)

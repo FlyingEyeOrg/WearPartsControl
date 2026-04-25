@@ -24,6 +24,16 @@ public sealed class ClientAppInfoModel
 
     public string ShutdownPointAddress { get; set; } = string.Empty;
 
+    public bool EnableCutterMesValidation { get; set; }
+
+    public string CutterMesWsdl { get; set; } = string.Empty;
+
+    public string CutterMesUser { get; set; } = string.Empty;
+
+    public string CutterMesPassword { get; set; } = string.Empty;
+
+    public string CutterMesSite { get; set; } = string.Empty;
+
     public int SiemensRack { get; set; }
 
     public int SiemensSlot { get; set; }

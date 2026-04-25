@@ -26,6 +26,11 @@ public sealed class ClientAppConfigurationEntityConfiguration : IEntityTypeConfi
         builder.Property(x => x.PlcIpAddress).HasMaxLength(128).IsRequired();
         builder.Property(x => x.PlcPort).IsRequired();
         builder.Property(x => x.ShutdownPointAddress).HasMaxLength(128);
+        builder.Property(x => x.EnableCutterMesValidation).IsRequired();
+        builder.Property(x => x.CutterMesWsdl).HasMaxLength(512).IsRequired();
+        builder.Property(x => x.CutterMesUser).HasMaxLength(128).IsRequired();
+        builder.Property(x => x.CutterMesPassword).HasMaxLength(128).IsRequired();
+        builder.Property(x => x.CutterMesSite).HasMaxLength(64).IsRequired();
         builder.Property(x => x.SiemensRack).IsRequired();
         builder.Property(x => x.SiemensSlot).IsRequired();
         builder.Property(x => x.IsStringReverse).IsRequired();

@@ -129,6 +129,9 @@
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.NameHeader}"
                                         Binding="{Binding PartName}"
                                         Width="SizeToHeader" />
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.WearPartTypeHeader}"
+                                        Binding="{Binding WearPartTypeName}"
+                                        Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.LifetimeTypeHeader}"
                                         Binding="{Binding LifetimeType}"
                                         Width="SizeToHeader" />

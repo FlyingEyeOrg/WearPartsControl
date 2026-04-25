@@ -16,6 +16,8 @@ public sealed class WearPartsControlDbContext : DbContextBase
 
     public DbSet<WearPartDefinitionEntity> WearPartDefinitions => Set<WearPartDefinitionEntity>();
 
+    public DbSet<WearPartTypeEntity> WearPartTypes => Set<WearPartTypeEntity>();
+
     public DbSet<WearPartReplacementRecordEntity> WearPartReplacementRecords => Set<WearPartReplacementRecordEntity>();
 
     public DbSet<ExceedLimitRecordEntity> ExceedLimitRecords => Set<ExceedLimitRecordEntity>();

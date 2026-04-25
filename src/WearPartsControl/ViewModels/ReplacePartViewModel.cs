@@ -38,6 +38,8 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
     private string _newBarcode = string.Empty;
     private string _selectedReplacementReason = string.Empty;
     private string _selectedToolCode = string.Empty;
+    private string _rollNumber = string.Empty;
+    private string _selectedBurrResult = string.Empty;
     private string _selectedAbSide = string.Empty;
     private string _replacementMessage = string.Empty;
     private string _statusMessage = LocalizedText.Get("ViewModels.ReplacePartVm.PromptSelectAndLoadPreview");
@@ -47,6 +49,7 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
     private bool _isBusy;
     private bool _isInitialized;
     private bool _isApplyingToolCode;
+    private bool _enableCutterMesValidation;
     private int _selectionLoadVersion;
     private Func<string>? _statusMessageFactory;
     private bool _isLastBarcodePlaceholder = true;
@@ -83,6 +86,11 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
             AbSideOptions.Add(item);
         }
 
+        foreach (var item in new[] { "OK", "NG" })
+        {
+            BurrResultOptions.Add(item);
+        }
+
         SelectedReplacementReason = ReplacementReasons.FirstOrDefault()?.Code ?? string.Empty;
         SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ReplacePartVm.PromptSelectAndLoadPreview"));
         SetLastBarcodePlaceholder();
@@ -93,6 +101,8 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
     public ObservableCollection<WearPartReplacementReasonOption> ReplacementReasons { get; } = new();
 
     public ObservableCollection<ToolChangeDefinition> ToolCodeOptions { get; } = new();
+
+    public ObservableCollection<string> BurrResultOptions { get; } = new();
 
     public ObservableCollection<string> AbSideOptions { get; } = new();
 
@@ -148,6 +158,8 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
             if (SetProperty(ref _selectedDefinition, value))
             {
                 ApplySelectedDefinition(value);
+                OnPropertyChanged(nameof(IsCutterValidationRequired));
+                OnPropertyChanged(nameof(IsCutterMesValidationEnabled));
                 NotifyReplaceStateChanged();
                 _ = LoadSelectedDefinitionDetailsAsync(value, CancellationToken.None, Interlocked.Increment(ref _selectionLoadVersion));
             }
@@ -237,6 +249,34 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
     }
 
     public bool IsToolValidationEnabled => ToolCodeReplacementGuard.RequiresToolCodeValidation(_procedureCode);
+
+    public bool IsCutterValidationRequired => CutterReplacementValidationPolicy.RequiresCutterValidation(_procedureCode, SelectedDefinition?.WearPartTypeCode);
+
+    public bool IsCutterMesValidationEnabled => IsCutterValidationRequired && _enableCutterMesValidation;
+
+    public string RollNumber
+    {
+        get => _rollNumber;
+        set
+        {
+            if (SetProperty(ref _rollNumber, value))
+            {
+                NotifyReplaceStateChanged();
+            }
+        }
+    }
+
+    public string SelectedBurrResult
+    {
+        get => _selectedBurrResult;
+        set
+        {
+            if (SetProperty(ref _selectedBurrResult, value))
+            {
+                NotifyReplaceStateChanged();
+            }
+        }
+    }
 
     public string SelectedAbSide
     {
@@ -338,7 +378,10 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
             ApplyWearPartMonitoringStatus(settings.IsWearPartMonitoringEnabled);
             var clientInfo = await _clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(true);
             _procedureCode = clientInfo.ProcedureCode?.Trim() ?? string.Empty;
+            _enableCutterMesValidation = clientInfo.EnableCutterMesValidation;
             OnPropertyChanged(nameof(IsToolValidationEnabled));
+            OnPropertyChanged(nameof(IsCutterValidationRequired));
+            OnPropertyChanged(nameof(IsCutterMesValidationEnabled));
             OnPropertyChanged(nameof(IsCoatingValidationEnabled));
             Definitions.Clear();
             ReplacementHistory.Clear();
@@ -434,6 +477,8 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
                 WearPartDefinitionId = SelectedDefinition.Id,
                 NewBarcode = NewBarcode,
                 ToolCode = SelectedToolCode,
+                RollNumber = RollNumber,
+                BurrResult = SelectedBurrResult,
                 SelectedAbSide = SelectedAbSide,
                 ReplacementReason = SelectedReplacementReason,
                 ReplacementMessage = ReplacementMessage
@@ -441,6 +486,8 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
 
             ApplyReplacementRecord(record);
             NewBarcode = string.Empty;
+            RollNumber = string.Empty;
+            SelectedBurrResult = string.Empty;
             ReplacementMessage = string.Empty;
             await LoadSelectedDefinitionDetailsAsync(SelectedDefinition, CancellationToken.None, Interlocked.Increment(ref _selectionLoadVersion)).ConfigureAwait(true);
             SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.ReplacePartVm.ReplaceSucceeded", record.PartName, record.NewBarcode));
@@ -468,6 +515,7 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
             && string.IsNullOrWhiteSpace(GetLifetimeValidationError())
             && !string.IsNullOrWhiteSpace(NewBarcode)
             && (!IsToolValidationEnabled || !string.IsNullOrWhiteSpace(SelectedToolCode))
+            && (!IsCutterValidationRequired || (!string.IsNullOrWhiteSpace(RollNumber) && !string.IsNullOrWhiteSpace(SelectedBurrResult)))
             && (!IsCoatingValidationEnabled || !string.IsNullOrWhiteSpace(SelectedAbSide))
             && !string.IsNullOrWhiteSpace(SelectedReplacementReason);
     }
@@ -526,8 +574,17 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
             _shutdownValueText = string.Empty;
             SetLastBarcodePlaceholder();
             ToolCodeOptions.Clear();
+            RollNumber = string.Empty;
+            SelectedBurrResult = string.Empty;
             SetSelectedToolCode(string.Empty);
             NotifyReplaceStateChanged();
+            return;
+        }
+
+        if (!CutterReplacementValidationPolicy.RequiresCutterValidation(_procedureCode, definition.WearPartTypeCode))
+        {
+            RollNumber = string.Empty;
+            SelectedBurrResult = string.Empty;
         }
     }
 

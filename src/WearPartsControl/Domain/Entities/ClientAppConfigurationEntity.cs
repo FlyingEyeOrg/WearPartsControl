@@ -39,6 +39,16 @@ public sealed class ClientAppConfigurationEntity :
 
     public string ShutdownPointAddress { get; set; } = string.Empty;
 
+    public bool EnableCutterMesValidation { get; set; }
+
+    public string CutterMesWsdl { get; set; } = string.Empty;
+
+    public string CutterMesUser { get; set; } = string.Empty;
+
+    public string CutterMesPassword { get; set; } = string.Empty;
+
+    public string CutterMesSite { get; set; } = string.Empty;
+
     public int SiemensRack { get; set; }
 
     public int SiemensSlot { get; set; }
@@ -95,6 +105,14 @@ public sealed class ClientAppConfigurationEntity :
         {
             throw new DomainValidationException("西门子 PLC 插槽号必须在 0 到 255 之间。")
                 .WithData(nameof(SiemensSlot), SiemensSlot);
+        }
+
+        if (EnableCutterMesValidation)
+        {
+            DomainValidationRules.NotWhiteSpace(CutterMesWsdl, nameof(CutterMesWsdl));
+            DomainValidationRules.NotWhiteSpace(CutterMesUser, nameof(CutterMesUser));
+            DomainValidationRules.NotWhiteSpace(CutterMesPassword, nameof(CutterMesPassword));
+            DomainValidationRules.NotWhiteSpace(CutterMesSite, nameof(CutterMesSite));
         }
     }
 }

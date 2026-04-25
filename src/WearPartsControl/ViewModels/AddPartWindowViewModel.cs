@@ -7,8 +7,9 @@ public sealed class AddPartWindowViewModel : WearPartEditorViewModelBase
 {
     public AddPartWindowViewModel(
         IWearPartManagementService wearPartManagementService,
+        IWearPartTypeService wearPartTypeService,
         IUiBusyService uiBusyService)
-        : base(wearPartManagementService, uiBusyService)
+        : base(wearPartManagementService, wearPartTypeService, uiBusyService)
     {
     }
 

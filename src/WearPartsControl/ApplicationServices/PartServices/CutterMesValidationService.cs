@@ -1,0 +1,130 @@
+using System.Net.Http.Headers;
+using System.Security;
+using System.Text;
+using System.Xml.Linq;
+using WearPartsControl.ApplicationServices.Localization;
+
+namespace WearPartsControl.ApplicationServices.PartServices;
+
+public sealed class CutterMesValidationService : ICutterMesValidationService
+{
+    private static readonly XNamespace SoapEnvelopeNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
+    private static readonly XNamespace AtlMesNamespace = "http://machineintegration.ws.atlmes.com/";
+    private readonly HttpClient _httpClient;
+
+    public CutterMesValidationService(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+    }
+
+    public async Task<string> GetExpectedCutterCodeAsync(CutterMesValidationRequest request, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var endpoint = ResolveServiceEndpoint(request.Wsdl);
+        var payload = BuildEnvelope(request);
+        using var message = new HttpRequestMessage(HttpMethod.Post, endpoint)
+        {
+            Content = new StringContent(payload, Encoding.UTF8, "text/xml")
+        };
+        message.Headers.Authorization = new AuthenticationHeaderValue(
+            "Basic",
+            Convert.ToBase64String(Encoding.UTF8.GetBytes($"{request.UserName}:{request.Password}")));
+
+        try
+        {
+            using var response = await _httpClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
+            var xml = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+            return ParseExpectedCutterCode(xml, request.Parameter);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            throw new InvalidOperationException(LocalizedText.Format("Services.WearPartReplacement.CutterMesCallFailed", ex.Message), ex);
+        }
+    }
+
+    private static string BuildEnvelope(CutterMesValidationRequest request)
+    {
+        return $"""
+<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:atl=\"http://machineintegration.ws.atlmes.com/\">
+  <soapenv:Header />
+  <soapenv:Body>
+    <atl:getParametricValue>
+      <GetParametricValueRequest>
+        <site>{Escape(request.Site)}</site>
+        <sfc>{Escape(request.RollNumber)}</sfc>
+        <parametricDataArray>
+          <parameter>{Escape(request.Parameter)}</parameter>
+        </parametricDataArray>
+        <parametricDataArray>
+          <parameter>DXDT</parameter>
+        </parametricDataArray>
+        <parametricDataArray>
+          <parameter>DZYT</parameter>
+        </parametricDataArray>
+        <parametricDataArray>
+          <parameter>KDL</parameter>
+        </parametricDataArray>
+      </GetParametricValueRequest>
+    </atl:getParametricValue>
+  </soapenv:Body>
+</soapenv:Envelope>
+""";
+    }
+
+    private static string ParseExpectedCutterCode(string xml, string requestedParameter)
+    {
+        var document = XDocument.Parse(xml);
+        var body = document.Descendants(SoapEnvelopeNamespace + "Body").FirstOrDefault()
+            ?? throw new InvalidOperationException(LocalizedText.Get("Services.WearPartReplacement.CutterMesResponseInvalid"));
+        var returnElement = body.Descendants().FirstOrDefault(x => x.Name.LocalName == "return")
+            ?? throw new InvalidOperationException(LocalizedText.Get("Services.WearPartReplacement.CutterMesResponseInvalid"));
+
+        var codeText = returnElement.Elements().FirstOrDefault(x => x.Name.LocalName == "code")?.Value;
+        if (!int.TryParse(codeText, out var code))
+        {
+            throw new InvalidOperationException(LocalizedText.Get("Services.WearPartReplacement.CutterMesResponseInvalid"));
+        }
+
+        var message = returnElement.Elements().FirstOrDefault(x => x.Name.LocalName == "message")?.Value ?? string.Empty;
+        if (code != 0)
+        {
+            throw new InvalidOperationException($"{LocalizedText.Get("Services.WearPartReplacement.CutterMesBusinessFailed")} {message}".Trim());
+        }
+
+        var expectedCode = returnElement.Elements()
+            .Where(x => x.Name.LocalName == "parametricDataArray")
+            .Select(x => new
+            {
+                Parameter = x.Elements().FirstOrDefault(child => child.Name.LocalName == "parameter")?.Value ?? string.Empty,
+                Value = x.Elements().FirstOrDefault(child => child.Name.LocalName == "value")?.Value ?? string.Empty
+            })
+            .FirstOrDefault(x => string.Equals(x.Parameter, requestedParameter, StringComparison.OrdinalIgnoreCase))
+            ?.Value
+            ?.Trim();
+
+        if (string.IsNullOrWhiteSpace(expectedCode))
+        {
+            throw new InvalidOperationException(LocalizedText.Get("Services.WearPartReplacement.CutterMesCutterCodeMissing"));
+        }
+
+        return expectedCode;
+    }
+
+    private static string ResolveServiceEndpoint(string wsdl)
+    {
+        var normalized = wsdl?.Trim() ?? string.Empty;
+        if (normalized.EndsWith("?wsdl", StringComparison.OrdinalIgnoreCase))
+        {
+            return normalized[..^5];
+        }
+
+        return normalized;
+    }
+
+    private static string Escape(string? value)
+    {
+        return SecurityElement.Escape(value?.Trim() ?? string.Empty) ?? string.Empty;
+    }
+}

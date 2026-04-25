@@ -89,6 +89,22 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                   Text="{loc:Loc PartInfoControl.WearPartTypeLabel}" />
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding WearPartTypes}"
+                                  DisplayMemberPath="DisplayText"
+                                  SelectedValuePath="Id"
+                                  SelectedValue="{Binding SelectedWearPartTypeId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  Style="{StaticResource ComboBoxExtend}"
+                                  hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.WearPartTypePlaceholder}" />
+                    </Grid>
+                    <Grid Style="{StaticResource FormRowGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc PartInfoControl.CurrentValueAddressLabel}" />
                         <TextBox Grid.Column="1"
                                  Text="{Binding CurrentValueAddress, UpdateSourceTrigger=PropertyChanged}"

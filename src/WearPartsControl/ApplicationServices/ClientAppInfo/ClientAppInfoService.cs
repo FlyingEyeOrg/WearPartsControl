@@ -113,6 +113,11 @@ public sealed class ClientAppInfoService : IClientAppInfoService
         entity.PlcIpAddress = NormalizeRequired(request.PlcIpAddress, LocalizedText.Get("Services.ClientAppInfo.PlcIpRequired"));
         entity.PlcPort = request.PlcPort;
         entity.ShutdownPointAddress = NormalizeRequired(request.ShutdownPointAddress, LocalizedText.Get("Services.ClientAppInfo.ShutdownPointAddressRequired"));
+        entity.EnableCutterMesValidation = request.EnableCutterMesValidation;
+        entity.CutterMesWsdl = NormalizeOptional(request.CutterMesWsdl);
+        entity.CutterMesUser = NormalizeOptional(request.CutterMesUser);
+        entity.CutterMesPassword = NormalizeOptional(request.CutterMesPassword);
+        entity.CutterMesSite = NormalizeOptional(request.CutterMesSite);
         entity.SiemensRack = request.SiemensRack;
         entity.SiemensSlot = request.SiemensSlot;
         entity.IsStringReverse = request.IsStringReverse;
@@ -134,6 +139,11 @@ public sealed class ClientAppInfoService : IClientAppInfoService
             PlcIpAddress = entity.PlcIpAddress,
             PlcPort = entity.PlcPort,
             ShutdownPointAddress = entity.ShutdownPointAddress,
+            EnableCutterMesValidation = entity.EnableCutterMesValidation,
+            CutterMesWsdl = entity.CutterMesWsdl,
+            CutterMesUser = entity.CutterMesUser,
+            CutterMesPassword = entity.CutterMesPassword,
+            CutterMesSite = entity.CutterMesSite,
             SiemensRack = entity.SiemensRack,
             SiemensSlot = entity.SiemensSlot,
             IsStringReverse = entity.IsStringReverse
@@ -161,5 +171,10 @@ public sealed class ClientAppInfoService : IClientAppInfoService
         }
 
         return value.Trim();
+    }
+
+    private static string NormalizeOptional(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
     }
 }

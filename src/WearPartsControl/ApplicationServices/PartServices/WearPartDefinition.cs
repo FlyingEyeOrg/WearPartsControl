@@ -81,6 +81,21 @@ public sealed class WearPartDefinition
     public string LifetimeType { get; set; } = string.Empty;
 
     /// <summary>
+    /// 易损件类型主键。
+    /// </summary>
+    public Guid? WearPartTypeId { get; set; }
+
+    /// <summary>
+    /// 易损件类型编码。
+    /// </summary>
+    public string WearPartTypeCode { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 易损件类型名称。
+    /// </summary>
+    public string WearPartTypeName { get; set; } = string.Empty;
+
+    /// <summary>
     /// 关联的换刀类型主键。
     /// </summary>
     public Guid? ToolChangeId { get; set; }
@@ -114,4 +129,6 @@ public sealed class WearPartDefinition
     /// 最后更新时间。
     /// </summary>
     public DateTime? UpdatedAt { get; set; } = DateTime.Now;
+
+    public bool IsCutterType => string.Equals(WearPartTypeCode, WearPartTypeCodes.Cutter, StringComparison.OrdinalIgnoreCase);
 }

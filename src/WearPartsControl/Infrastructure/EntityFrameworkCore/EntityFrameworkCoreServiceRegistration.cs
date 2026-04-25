@@ -32,6 +32,10 @@ public static class EntityFrameworkCoreServiceRegistration
             .As<IWearPartRepository>()
             .InstancePerDependency();
 
+        builder.RegisterType<WearPartTypeRepository>()
+            .As<IWearPartTypeRepository>()
+            .InstancePerDependency();
+
         builder.RegisterType<ToolChangeRepository>()
             .As<IToolChangeRepository>()
             .InstancePerDependency();
