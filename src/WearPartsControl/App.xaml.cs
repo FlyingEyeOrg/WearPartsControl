@@ -42,17 +42,17 @@ public partial class App : Application
 
         if (exception is UserFriendlyException userFriendlyException)
         {
-            MessageBox.Show(userFriendlyException.Message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageDialogWindow.ShowMessage(MainWindow, userFriendlyException.Message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
         if (exception is BusinessException businessException)
         {
-            MessageBox.Show(businessException.Message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageDialogWindow.ShowMessage(MainWindow, businessException.Message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
-        MessageBox.Show(GetLocalizedText("UnexpectedError"), title, MessageBoxButton.OK, MessageBoxImage.Error);
+        MessageDialogWindow.ShowMessage(MainWindow, GetLocalizedText("UnexpectedError"), title, MessageBoxButton.OK, MessageBoxImage.Error);
     }
 
     private static void ConfigureLogging()
@@ -140,7 +140,7 @@ public partial class App : Application
         await _appStartupCoordinator.EnsureInitializedAsync().ConfigureAwait(true);
         var importService = _host.Services.GetRequiredService<ILegacyDatabaseImportService>();
         var importResult = await importService.ImportAsync(legacyDatabasePath).ConfigureAwait(true);
-        MessageBox.Show(importResult.ToSummary(), GetLocalizedText("App.LegacyImportCompletedTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageDialogWindow.ShowMessage(MainWindow, importResult.ToSummary(), GetLocalizedText("App.LegacyImportCompletedTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
         await RequestShutdownAsync("旧库导入完成后退出").ConfigureAwait(true);
     }
 

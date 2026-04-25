@@ -3,6 +3,7 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
 
@@ -13,6 +14,7 @@ public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
     private readonly IToolChangeManagementService _toolChangeManagementService;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly IUiBusyService _uiBusyService;
+    private readonly IAppDialogService _dialogService;
     private readonly List<ToolChangeDefinition> _allDefinitions = new();
     private ToolChangeDefinition? _selectedDefinition;
     private string _toolName = string.Empty;
@@ -23,11 +25,12 @@ public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
     private bool _isInitialized;
     private Func<string>? _statusMessageFactory;
 
-    public ToolChangeManagementViewModel(IToolChangeManagementService toolChangeManagementService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService)
+    public ToolChangeManagementViewModel(IToolChangeManagementService toolChangeManagementService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService, IAppDialogService dialogService)
     {
         _toolChangeManagementService = toolChangeManagementService;
         _uiDispatcher = uiDispatcher;
         _uiBusyService = uiBusyService;
+        _dialogService = dialogService;
 
         SearchCommand = new RelayCommand(ApplyFilter);
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync(CancellationToken.None), () => !IsBusy);
@@ -254,7 +257,7 @@ public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
         }
 
         var selected = SelectedDefinition;
-        var result = MessageBox.Show(
+        var result = _dialogService.ShowMessage(
             LocalizedText.Format("ViewModels.ToolChangeManagementVm.DeleteConfirmationMessage", selected.Name),
             LocalizedText.Get("ViewModels.ToolChangeManagementVm.DeleteConfirmationTitle"),
             MessageBoxButton.YesNo,

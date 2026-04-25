@@ -1,5 +1,6 @@
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.LegacyImport;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
@@ -22,7 +23,8 @@ public sealed class PartManagementViewModelTests
             legacyImportService,
             new StubWearPartManagementService(),
             uiDispatcher,
-            new UiBusyService(TimeSpan.Zero));
+            new UiBusyService(TimeSpan.Zero),
+            new StubAppDialogService());
 
         await viewModel.InitializeAsync();
 
@@ -44,7 +46,8 @@ public sealed class PartManagementViewModelTests
             new StubLegacyDatabaseImportService(),
             new StubWearPartManagementService(),
             new StubUiDispatcher(),
-            new UiBusyService(TimeSpan.Zero));
+            new UiBusyService(TimeSpan.Zero),
+            new StubAppDialogService());
         var raised = false;
         viewModel.ImportLegacyDefinitionsRequested += (_, _) => raised = true;
 
@@ -62,7 +65,8 @@ public sealed class PartManagementViewModelTests
             new StubLegacyDatabaseImportService(),
             new StubWearPartManagementService(),
             new StubUiDispatcher(),
-            new UiBusyService(TimeSpan.Zero));
+            new UiBusyService(TimeSpan.Zero),
+            new StubAppDialogService());
 
         using var _ = new TestCultureScope("en-US");
         LocalizationBindingSource.Instance.Refresh();
@@ -165,6 +169,19 @@ public sealed class PartManagementViewModelTests
         {
             RenderCount++;
             return Task.CompletedTask;
+        }
+    }
+
+    private sealed class StubAppDialogService : IAppDialogService
+    {
+        public bool ShowDialog(System.Windows.Window dialog, System.Windows.Window? owner = null)
+        {
+            throw new NotSupportedException();
+        }
+
+        public System.Windows.MessageBoxResult ShowMessage(string message, string title, System.Windows.MessageBoxButton buttons = System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage image = System.Windows.MessageBoxImage.None, System.Windows.Window? owner = null, System.Windows.MessageBoxResult defaultResult = System.Windows.MessageBoxResult.None)
+        {
+            return System.Windows.MessageBoxResult.Yes;
         }
     }
 }

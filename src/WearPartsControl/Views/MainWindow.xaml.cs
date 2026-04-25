@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ViewModels;
@@ -17,6 +18,7 @@ namespace WearPartsControl.Views
         private readonly MainWindowViewModel _viewModel;
         private readonly IServiceProvider _serviceProvider;
         private readonly IAutoLogoutInteractionService _autoLogoutInteractionService;
+        private readonly IAppDialogService _dialogService;
         private readonly Func<bool> _showLoginDialog;
         private bool _isClosingIntercepted;
         private bool _isExitRequested;
@@ -29,11 +31,13 @@ namespace WearPartsControl.Views
             MainWindowViewModel viewModel,
             IServiceProvider serviceProvider,
             IAutoLogoutInteractionService autoLogoutInteractionService,
-            Func<bool>? showLoginDialog = null)
+            Func<bool>? showLoginDialog = null,
+            IAppDialogService? dialogService = null)
         {
             _viewModel = viewModel;
             _serviceProvider = serviceProvider;
             _autoLogoutInteractionService = autoLogoutInteractionService;
+            _dialogService = dialogService ?? new AppDialogService(autoLogoutInteractionService);
             _showLoginDialog = showLoginDialog ?? ShowLoginDialog;
             RestoreFromTrayCommand = new RelayCommand(RestoreFromTray);
             ExitFromTrayCommand = new AsyncRelayCommand(ExitFromTrayAsync);
@@ -248,36 +252,36 @@ namespace WearPartsControl.Views
                 return true;
             }
 
-            _autoLogoutInteractionService.RunModal(() => System.Windows.MessageBox.Show(
-                this,
+            _dialogService.ShowMessage(
                 LocalizedText.Get("MainWindowTrayContent.LoginRequiredToExitMessage"),
                 LocalizedText.Get("MainWindowTrayContent.LoginRequiredToExitTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning,
-                MessageBoxResult.OK));
+                this,
+                MessageBoxResult.OK);
             return false;
         }
 
         private MessageBoxResult ShowClosePrompt()
         {
-            return _autoLogoutInteractionService.RunModal(() => System.Windows.MessageBox.Show(
-                this,
+            return _dialogService.ShowMessage(
                 LocalizedText.Get("MainWindowTrayContent.ClosePromptMessage"),
                 LocalizedText.Get("MainWindowTrayContent.ClosePromptTitle"),
                 MessageBoxButton.YesNoCancel,
                 MessageBoxImage.Question,
-                MessageBoxResult.Yes));
+                this,
+                MessageBoxResult.Yes);
         }
 
         private bool ConfirmTrayExit()
         {
-            var result = _autoLogoutInteractionService.RunModal(() => System.Windows.MessageBox.Show(
-                this,
+            var result = _dialogService.ShowMessage(
                 LocalizedText.Get("MainWindowTrayContent.ExitConfirmMessage"),
                 LocalizedText.Get("MainWindowTrayContent.ExitConfirmTitle"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question,
-                MessageBoxResult.No));
+                this,
+                MessageBoxResult.No);
 
             return result == MessageBoxResult.Yes;
         }
@@ -352,21 +356,17 @@ namespace WearPartsControl.Views
         private bool ShowLoginDialog()
         {
             var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
-            ConfigureLoginWindowOwnership(loginWindow);
-            return _autoLogoutInteractionService.RunModal(() => loginWindow.ShowDialog() == true);
+            return _dialogService.ShowDialog(loginWindow, ResolveLoginDialogOwner());
         }
 
-        private void ConfigureLoginWindowOwnership(Window loginWindow)
+        private Window? ResolveLoginDialogOwner()
         {
             if (_isInTray || !IsVisible || WindowState == WindowState.Minimized)
             {
-                loginWindow.Owner = null;
-                loginWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                return;
+                return null;
             }
 
-            loginWindow.Owner = this;
-            loginWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            return this;
         }
 
         private void HideTrayIcon()

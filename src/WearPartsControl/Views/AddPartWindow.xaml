@@ -1,13 +1,14 @@
-﻿<Window x:Class="WearPartsControl.Views.AddPartWindow"
+﻿<views:AppDialogWindow x:Class="WearPartsControl.Views.AddPartWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:hc="https://handyorg.github.io/handycontrol"
-    xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
+        xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
         xmlns:uc="clr-namespace:WearPartsControl.UserControls"
+        xmlns:views="clr-namespace:WearPartsControl.Views"
         mc:Ignorable="d"
-    Title="{loc:Loc AddPartWindowView.Title}"
+        Title="{loc:Loc AddPartWindowView.Title}"
         Width="860"
         Background="Transparent"
         WindowStartupLocation="CenterOwner"
@@ -67,4 +68,4 @@
         </Border>
     </Grid>
     </Border>
-</Window>
+</views:AppDialogWindow>

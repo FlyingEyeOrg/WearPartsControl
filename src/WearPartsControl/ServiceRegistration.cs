@@ -5,6 +5,7 @@ using System.Net.Http;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.LegacyImport;
 using WearPartsControl.ApplicationServices.Localization;
@@ -41,6 +42,7 @@ public static class ServiceRegistration
 
     private static void RegisterShell(ContainerBuilder builder)
     {
+        builder.RegisterType<AppDialogService>().As<IAppDialogService>().SingleInstance();
         builder.RegisterType<MainWindowNavigationService>().As<IMainWindowNavigationService>().SingleInstance();
         builder.RegisterType<MainWindowContentFactory>().As<IMainWindowContentFactory>().SingleInstance();
         builder.RegisterType<MainWindowViewModel>().AsSelf().SingleInstance();

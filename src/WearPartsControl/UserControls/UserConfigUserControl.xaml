@@ -25,14 +25,20 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                  Background="{StaticResource ShellPanelBackgroundBrush}">
+    <Grid Background="{StaticResource ShellPanelBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Border Margin="8 8 8 0"
+                Style="{StaticResource ShellSectionHeaderBorderStyle}">
+            <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
+                       Text="{loc:Loc UserConfigControl.Title}" />
+        </Border>
+    <ScrollViewer Grid.Row="1"
+                  VerticalScrollBarVisibility="Auto">
         <StackPanel Grid.IsSharedSizeScope="True"
                     Margin="20 16">
-            <Border Style="{StaticResource ShellSectionHeaderBorderStyle}">
-                <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
-                           Text="{loc:Loc UserConfigControl.Title}" />
-            </Border>
 
             <Border Margin="0 12 0 0"
                     Style="{StaticResource ShellStatusCardBorderStyle}">
@@ -347,4 +353,5 @@
             </Border>
         </StackPanel>
     </ScrollViewer>
+    </Grid>
 </UserControl>

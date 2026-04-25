@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ViewModels;
@@ -18,6 +19,7 @@ namespace WearPartsControl.UserControls
         private readonly ClientAppInfoViewModel _viewModel;
         private readonly IServiceProvider _serviceProvider;
         private readonly IAutoLogoutInteractionService _autoLogoutInteractionService;
+        private readonly IAppDialogService _dialogService;
         private readonly ICurrentUserAccessor _currentUserAccessor;
         private readonly IAppSettingsService _appSettingsService;
         private bool _isInitialized;
@@ -27,12 +29,14 @@ namespace WearPartsControl.UserControls
             IServiceProvider serviceProvider,
             IAutoLogoutInteractionService autoLogoutInteractionService,
             ICurrentUserAccessor currentUserAccessor,
-            IAppSettingsService appSettingsService)
+            IAppSettingsService appSettingsService,
+            IAppDialogService? dialogService = null)
         {
             InitializeComponent();
             _viewModel = viewModel;
             _serviceProvider = serviceProvider;
             _autoLogoutInteractionService = autoLogoutInteractionService;
+            _dialogService = dialogService ?? new AppDialogService(autoLogoutInteractionService);
             _currentUserAccessor = currentUserAccessor;
             _appSettingsService = appSettingsService;
             DataContext = viewModel;
@@ -82,7 +86,7 @@ namespace WearPartsControl.UserControls
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(ex.Message, LocalizedText.Get("FriendlyErrorTitle"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                _dialogService.ShowMessage(ex.Message, LocalizedText.Get("FriendlyErrorTitle"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning, System.Windows.Window.GetWindow(this));
             }
         }
 
@@ -160,10 +164,7 @@ namespace WearPartsControl.UserControls
             }
 
             var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
-            loginWindow.Owner = System.Windows.Window.GetWindow(this);
-            loginWindow.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
-
-            var dialogResult = _autoLogoutInteractionService.RunModal(() => loginWindow.ShowDialog() == true);
+            var dialogResult = _dialogService.ShowDialog(loginWindow, System.Windows.Window.GetWindow(this));
             return dialogResult && _currentUserAccessor.CurrentUser is not null;
         }
     }

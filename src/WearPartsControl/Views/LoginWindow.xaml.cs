@@ -8,7 +8,7 @@ namespace WearPartsControl.Views
     /// <summary>
     /// LoginWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class LoginWindow : Window
+    public partial class LoginWindow : AppDialogWindow
     {
         private readonly LoginWindowViewModel _viewModel;
         private DateTimeOffset? _lastInputAt;

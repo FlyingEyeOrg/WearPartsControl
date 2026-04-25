@@ -6,7 +6,7 @@ namespace WearPartsControl.Views;
 /// <summary>
 /// EditPartWindow.xaml 的交互逻辑
 /// </summary>
-public partial class EditPartWindow : Window
+public partial class EditPartWindow : AppDialogWindow
 {
     public EditPartWindow(EditPartWindowViewModel viewModel)
     {

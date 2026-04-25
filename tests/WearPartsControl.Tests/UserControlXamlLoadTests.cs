@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.UserControls;
@@ -78,7 +79,8 @@ public sealed class UserControlXamlLoadTests
                 new ToolChangeManagementViewModel(
                     new StubToolChangeManagementService(),
                     new StubUiDispatcher(),
-                    new UiBusyService(TimeSpan.Zero)));
+                    new UiBusyService(TimeSpan.Zero),
+                    new StubAppDialogService()));
 
             Assert.NotNull(control);
         }, ensureApplicationResources: true);
@@ -153,6 +155,19 @@ public sealed class UserControlXamlLoadTests
         public TResult RunModal<TResult>(Func<TResult> interaction)
         {
             return interaction();
+        }
+    }
+
+    private sealed class StubAppDialogService : IAppDialogService
+    {
+        public bool ShowDialog(System.Windows.Window dialog, System.Windows.Window? owner = null)
+        {
+            return false;
+        }
+
+        public System.Windows.MessageBoxResult ShowMessage(string message, string title, System.Windows.MessageBoxButton buttons = System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage image = System.Windows.MessageBoxImage.None, System.Windows.Window? owner = null, System.Windows.MessageBoxResult defaultResult = System.Windows.MessageBoxResult.None)
+        {
+            return System.Windows.MessageBoxResult.OK;
         }
     }
 

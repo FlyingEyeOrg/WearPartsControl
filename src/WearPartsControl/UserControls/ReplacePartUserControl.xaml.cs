@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ViewModels;
@@ -14,12 +15,14 @@ namespace WearPartsControl.UserControls
     public partial class ReplacePartUserControl : UserControl
     {
         private readonly IAutoLogoutInteractionService _autoLogoutInteractionService;
+        private readonly IAppDialogService _dialogService;
         private bool _isInitialized;
 
-        public ReplacePartUserControl(ReplacePartViewModel viewModel, IAutoLogoutInteractionService autoLogoutInteractionService)
+        public ReplacePartUserControl(ReplacePartViewModel viewModel, IAutoLogoutInteractionService autoLogoutInteractionService, IAppDialogService? dialogService = null)
         {
             InitializeComponent();
             _autoLogoutInteractionService = autoLogoutInteractionService;
+            _dialogService = dialogService ?? new AppDialogService(autoLogoutInteractionService);
             DataContext = viewModel;
             Loaded += OnLoaded;
         }
@@ -56,8 +59,7 @@ namespace WearPartsControl.UserControls
                 ? LocalizedText.Format("ViewModels.ReplacePartVm.ReplaceConfirmReturningOldPartMessage", context.PartName, context.Barcode)
                 : LocalizedText.Format("ViewModels.ReplacePartVm.ReplaceConfirmMessage", context.PartName, context.Barcode);
 
-            var confirmed = _autoLogoutInteractionService.RunModal(() =>
-                MessageBox.Show(owner, message, title, MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes);
+            var confirmed = _dialogService.ShowMessage(message, title, MessageBoxButton.YesNo, MessageBoxImage.Warning, owner) == MessageBoxResult.Yes;
             if (!confirmed)
             {
                 return;
@@ -65,18 +67,17 @@ namespace WearPartsControl.UserControls
 
             if (context.IsReturningOldPart && context.HasReachedWarningLifetime)
             {
-                var warningConfirmed = _autoLogoutInteractionService.RunModal(() =>
-                    MessageBox.Show(
-                        owner,
-                        LocalizedText.Format(
-                            "ViewModels.ReplacePartVm.ReturningOldPartWarningConfirmMessage",
-                            context.Barcode,
-                            context.CurrentValueText,
-                            context.WarningValueText,
-                            context.ShutdownValueText),
-                        title,
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning) == MessageBoxResult.Yes);
+                var warningConfirmed = _dialogService.ShowMessage(
+                    LocalizedText.Format(
+                        "ViewModels.ReplacePartVm.ReturningOldPartWarningConfirmMessage",
+                        context.Barcode,
+                        context.CurrentValueText,
+                        context.WarningValueText,
+                        context.ShutdownValueText),
+                    title,
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning,
+                    owner) == MessageBoxResult.Yes;
                 if (!warningConfirmed)
                 {
                     return;

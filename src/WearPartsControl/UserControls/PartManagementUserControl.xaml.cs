@@ -2,6 +2,7 @@
 using System.Windows.Controls;
 using Microsoft.Win32;
 using Microsoft.Extensions.DependencyInjection;
+using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PartServices;
@@ -18,12 +19,14 @@ public partial class PartManagementUserControl : UserControl
     private readonly PartManagementViewModel _viewModel;
     private readonly IServiceProvider _serviceProvider;
     private readonly IAutoLogoutInteractionService _autoLogoutInteractionService;
+    private readonly IAppDialogService _dialogService;
 
-    public PartManagementUserControl(PartManagementViewModel viewModel, IServiceProvider serviceProvider, IAutoLogoutInteractionService autoLogoutInteractionService)
+    public PartManagementUserControl(PartManagementViewModel viewModel, IServiceProvider serviceProvider, IAutoLogoutInteractionService autoLogoutInteractionService, IAppDialogService? dialogService = null)
     {
         _viewModel = viewModel;
         _serviceProvider = serviceProvider;
         _autoLogoutInteractionService = autoLogoutInteractionService;
+        _dialogService = dialogService ?? new AppDialogService(autoLogoutInteractionService);
         DataContext = viewModel;
         InitializeComponent();
 
@@ -51,11 +54,9 @@ public partial class PartManagementUserControl : UserControl
     private async void OnAddRequested(object? sender, EventArgs e)
     {
         var dialog = _serviceProvider.GetRequiredService<AddPartWindow>();
-        dialog.Owner = Window.GetWindow(this);
-        dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
         dialog.ViewModel.InitializeForCreate(_viewModel.ClientAppConfigurationId, _viewModel.ResourceNumber);
 
-        var dialogResult = _autoLogoutInteractionService.RunModal(() => dialog.ShowDialog() == true);
+        var dialogResult = _dialogService.ShowDialog(dialog, Window.GetWindow(this));
 
         if (dialogResult)
         {
@@ -66,11 +67,9 @@ public partial class PartManagementUserControl : UserControl
     private async void OnEditRequested(object? sender, WearPartDefinition definition)
     {
         var dialog = _serviceProvider.GetRequiredService<EditPartWindow>();
-        dialog.Owner = Window.GetWindow(this);
-        dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
         dialog.ViewModel.InitializeForEdit(definition);
 
-        var dialogResult = _autoLogoutInteractionService.RunModal(() => dialog.ShowDialog() == true);
+        var dialogResult = _dialogService.ShowDialog(dialog, Window.GetWindow(this));
 
         if (dialogResult)
         {
@@ -98,11 +97,11 @@ public partial class PartManagementUserControl : UserControl
         try
         {
             var result = await _viewModel.ImportLegacyDefinitionsAsync(dialog.FileName);
-            MessageBox.Show(result.ToWearPartDefinitionSummary(), LocalizedText.Get("App.LegacyImportCompletedTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialogService.ShowMessage(result.ToWearPartDefinitionSummary(), LocalizedText.Get("App.LegacyImportCompletedTitle"), MessageBoxButton.OK, MessageBoxImage.Information, Window.GetWindow(this));
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, LocalizedText.Get("FriendlyErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialogService.ShowMessage(ex.Message, LocalizedText.Get("FriendlyErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Warning, Window.GetWindow(this));
         }
     }
 }

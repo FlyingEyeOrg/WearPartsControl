@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.LegacyImport;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
@@ -17,6 +18,7 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
     private readonly IWearPartManagementService _wearPartManagementService;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly IUiBusyService _uiBusyService;
+    private readonly IAppDialogService _dialogService;
     private readonly List<WearPartDefinition> _allDefinitions = new();
     private Guid _clientAppConfigurationId;
     private string _resourceNumber = string.Empty;
@@ -32,13 +34,15 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
         ILegacyDatabaseImportService legacyDatabaseImportService,
         IWearPartManagementService wearPartManagementService,
         IUiDispatcher uiDispatcher,
-        IUiBusyService uiBusyService)
+        IUiBusyService uiBusyService,
+        IAppDialogService dialogService)
     {
         _clientAppInfoService = clientAppInfoService;
         _legacyDatabaseImportService = legacyDatabaseImportService;
         _wearPartManagementService = wearPartManagementService;
         _uiDispatcher = uiDispatcher;
         _uiBusyService = uiBusyService;
+        _dialogService = dialogService;
 
         SearchCommand = new RelayCommand(ApplyFilter);
         RefreshCommand = new AsyncRelayCommand(RefreshCommandAsync, CanRefresh);
@@ -241,7 +245,7 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
         }
 
         var definition = SelectedDefinition;
-        var result = MessageBox.Show(
+        var result = _dialogService.ShowMessage(
             LocalizedText.Format("ViewModels.PartManagementVm.DeleteConfirmationMessage", definition.PartName),
             LocalizedText.Get("ViewModels.PartManagementVm.DeleteConfirmationTitle"),
             MessageBoxButton.YesNo,

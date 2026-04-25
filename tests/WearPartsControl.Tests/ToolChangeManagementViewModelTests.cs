@@ -1,4 +1,5 @@
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ViewModels;
@@ -14,7 +15,7 @@ public sealed class ToolChangeManagementViewModelTests
     {
         var service = new StubToolChangeManagementService();
         var uiDispatcher = new StubUiDispatcher();
-        var viewModel = new ToolChangeManagementViewModel(service, uiDispatcher, new UiBusyService(TimeSpan.Zero));
+        var viewModel = new ToolChangeManagementViewModel(service, uiDispatcher, new UiBusyService(TimeSpan.Zero), new StubAppDialogService());
 
         await viewModel.InitializeAsync();
         viewModel.ToolName = "标准刀";
@@ -43,7 +44,7 @@ public sealed class ToolChangeManagementViewModelTests
 
         var service = new StubToolChangeManagementService(existing);
         var uiDispatcher = new StubUiDispatcher();
-        var viewModel = new ToolChangeManagementViewModel(service, uiDispatcher, new UiBusyService(TimeSpan.Zero));
+        var viewModel = new ToolChangeManagementViewModel(service, uiDispatcher, new UiBusyService(TimeSpan.Zero), new StubAppDialogService());
 
         await viewModel.InitializeAsync();
         viewModel.SelectedDefinition = viewModel.Definitions.Single();
@@ -69,7 +70,7 @@ public sealed class ToolChangeManagementViewModelTests
             Name = "标准刀",
             Code = "TL-01"
         };
-        var viewModel = new ToolChangeManagementViewModel(new StubToolChangeManagementService(existing), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        var viewModel = new ToolChangeManagementViewModel(new StubToolChangeManagementService(existing), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero), new StubAppDialogService());
 
         await viewModel.InitializeAsync();
         viewModel.SelectedDefinition = viewModel.Definitions.Single();
@@ -150,6 +151,19 @@ public sealed class ToolChangeManagementViewModelTests
         {
             RenderCount++;
             return Task.CompletedTask;
+        }
+    }
+
+    private sealed class StubAppDialogService : IAppDialogService
+    {
+        public bool ShowDialog(System.Windows.Window dialog, System.Windows.Window? owner = null)
+        {
+            throw new NotSupportedException();
+        }
+
+        public System.Windows.MessageBoxResult ShowMessage(string message, string title, System.Windows.MessageBoxButton buttons = System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage image = System.Windows.MessageBoxImage.None, System.Windows.Window? owner = null, System.Windows.MessageBoxResult defaultResult = System.Windows.MessageBoxResult.None)
+        {
+            return System.Windows.MessageBoxResult.Yes;
         }
     }
 }

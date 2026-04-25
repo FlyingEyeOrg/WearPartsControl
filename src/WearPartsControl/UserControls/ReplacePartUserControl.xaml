@@ -28,9 +28,19 @@
                     </Style>
                 </ResourceDictionary>
             </UserControl.Resources>
-        <ScrollViewer Background="{StaticResource ShellPanelBackgroundBrush}">
+        <Grid Background="{StaticResource ShellPanelBackgroundBrush}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Border Margin="8 8 8 0"
+                    Style="{StaticResource ShellSectionHeaderBorderStyle}">
+                <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
+                           Text="{loc:Loc ReplacePartControl.Title}" />
+            </Border>
+        <ScrollViewer Grid.Row="1">
             <Grid IsEnabled="{Binding IsTabContentEnabled}"
-                Margin="8"
+                  Margin="8"
                   Grid.IsSharedSizeScope="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -38,11 +48,6 @@
             </Grid.RowDefinitions>
 
             <StackPanel>
-                <Border Style="{StaticResource ShellSectionHeaderBorderStyle}">
-                    <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
-                           Text="{loc:Loc ReplacePartControl.Title}" />
-                </Border>
-
                 <Border Margin="8 12 8 0"
                     Style="{StaticResource ShellStatusCardBorderStyle}">
                     <Grid Margin="8">
@@ -359,4 +364,5 @@
             </Border>
         </Grid>
     </ScrollViewer>
+    </Grid>
 </UserControl>
