@@ -118,7 +118,7 @@
                                 </TextBlock.Text>
                             </TextBlock>
                             <Button Margin="16 0 0 0"
-                                    MinWidth="96"
+                                    MinWidth="120"
                                     Command="{Binding RefreshCommand}"
                                     Style="{StaticResource ButtonPrimary}"
                                     Content="{loc:Loc ReplacePartControl.RefreshButton}" />
