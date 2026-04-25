@@ -91,16 +91,12 @@
                                    SelectedContent="{Binding SelectedContent, Mode=OneWay}"
                                    Command="{Binding TabChangedCommand}" />
         </Grid>
-        <Border Background="#55F6FAFD"
+        <Border Background="Transparent"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <Border Width="260"
-                Padding="24"
-                Style="{StaticResource ShellCardBorderStyle}"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Center">
-                <StackPanel>
+            <StackPanel VerticalAlignment="Center"
+                        HorizontalAlignment="Center">
                     <hc:LoadingCircle Width="60"
                                       Height="60"
                                       HorizontalAlignment="Center"
@@ -112,8 +108,7 @@
                                TextAlignment="Center"
                                Text="{Binding LoadingText, Mode=OneWay}"
                                Visibility="{Binding HasLoadingText, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                </StackPanel>
-            </Border>
+            </StackPanel>
         </Border>
         <hc:NotifyIcon x:Name="TrayNotifyIcon"
                        Text="{loc:Loc MainWindow.TrayIconText}"

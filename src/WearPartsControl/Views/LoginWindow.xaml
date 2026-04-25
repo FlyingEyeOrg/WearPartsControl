@@ -8,10 +8,10 @@
         xmlns:views="clr-namespace:WearPartsControl.Views"
         mc:Ignorable="d"
         Title="{loc:Loc LoginWindowView.Title}"
-        Height="430"
-        Width="760"
-        MinWidth="720"
-        MinHeight="430"
+        Height="360"
+        Width="430"
+        MinWidth="410"
+        MinHeight="360"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner">
     <Window.Resources>
@@ -32,19 +32,18 @@
     <Grid>
         <Rectangle Fill="{StaticResource LoginWindowHeroImageBrush}" />
         <Rectangle Fill="{StaticResource LoginWindowHeroOverlayBrush}"
-                   Opacity="0.88" />
-        <Grid Margin="24">
-            <Border Width="380"
+                   Opacity="0.82" />
+        <Grid Margin="18">
+            <Border Width="330"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Padding="24"
+                    Padding="18"
                     Background="#F8FBFF"
                     BorderBrush="#8FD5E0EC"
                     BorderThickness="1"
-                    CornerRadius="20">
+                    CornerRadius="0">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -53,13 +52,13 @@
                     </Grid.RowDefinitions>
 
                     <Image Source="pack://application:,,,/WearPartsControl;component/Assets/catl.ico"
-                           Width="132"
+                           Width="110"
                            HorizontalAlignment="Center"
                            Stretch="Uniform" />
 
                     <TextBlock Grid.Row="1"
-                               Margin="0 14 0 0"
-                               FontSize="24"
+                               Margin="0 10 0 0"
+                               FontSize="21"
                                FontWeight="Bold"
                                Foreground="#1E3550"
                                TextAlignment="Center"
@@ -67,42 +66,45 @@
                                Text="{Binding LoginPrompt}" />
 
                     <TextBlock Grid.Row="2"
-                               Margin="0 10 0 0"
+                               Margin="0 8 0 0"
                                Foreground="#61758A"
-                               LineHeight="20"
+                               FontSize="12"
+                               LineHeight="18"
                                TextAlignment="Center"
                                TextWrapping="Wrap"
                                Text="{loc:Loc LoginWindowView.HeroHint}" />
 
                     <Grid Grid.Row="3"
-                          Margin="0 18 0 0">
+                          Margin="0 14 0 0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="12" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <StackPanel>
                             <TextBlock Margin="0"
                                        Style="{StaticResource ShellMetaLabelTextStyle}"
+                                       FontSize="11"
                                        Text="{loc:Loc LoginWindowView.ResourceNumberLabel}" />
                             <TextBlock Style="{StaticResource ShellMetaValueTextStyle}"
-                                       FontSize="16"
+                                       FontSize="14"
                                        Text="{Binding ResourceNumber, Mode=OneWay}" />
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock Margin="0"
                                        Style="{StaticResource ShellMetaLabelTextStyle}"
+                                       FontSize="11"
                                        Text="{loc:Loc LoginWindowView.SiteLabel}" />
                             <TextBlock Style="{StaticResource ShellMetaValueTextStyle}"
-                                       FontSize="16"
+                                       FontSize="14"
                                        Text="{Binding SiteCode, Mode=OneWay}" />
                         </StackPanel>
                     </Grid>
 
                     <PasswordBox x:Name="PasswordInputBox"
                                  Grid.Row="4"
-                                 Height="42"
-                                 Margin="0 18 0 0"
+                                 Height="38"
+                                 Margin="0 14 0 0"
                                  Padding="12 0"
                                  VerticalContentAlignment="Center"
                                  PasswordChanged="PasswordInputBox_OnPasswordChanged"
@@ -111,24 +113,25 @@
                                  DataObject.Pasting="PasswordInputBox_OnPasting" />
 
                     <StackPanel Grid.Row="5"
-                                Margin="0 14 0 0">
-                        <Button Width="160"
-                                Height="40"
+                                Margin="0 10 0 0">
+                        <Button Width="140"
+                                Height="36"
                                 HorizontalAlignment="Center"
                                 Style="{StaticResource ButtonPrimary}"
                                 Command="{Binding LoginCommand}"
                                 Content="{loc:Loc LoginWindowView.LoginButton}" />
                         <TextBlock Margin="0 12 0 0"
-                                   MinHeight="40"
+                                   MinHeight="34"
                                    Foreground="#61758A"
-                                   LineHeight="20"
+                                   FontSize="12"
+                                   LineHeight="18"
                                    TextAlignment="Center"
                                    TextWrapping="Wrap"
                                    Text="{Binding StatusMessage}" />
                     </StackPanel>
                 </Grid>
             </Border>
-            <Border Background="#40FFFFFF"
+            <Border Background="Transparent"
                     Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <hc:LoadingCircle Width="60"
                                   Height="60"

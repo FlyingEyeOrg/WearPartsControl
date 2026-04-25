@@ -3,6 +3,7 @@
                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                       xmlns:hc="https://handyorg.github.io/handycontrol"
                        xmlns:local="clr-namespace:WearPartsControl.Views"
                        mc:Ignorable="d"
                        Width="520"
@@ -15,15 +16,6 @@
                 <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <SolidColorBrush x:Key="DialogSurfaceBrush" Color="#FFFDFEFF" />
-            <Style x:Key="DialogSecondaryButtonStyle"
-                   TargetType="Button">
-                <Setter Property="MinWidth"
-                        Value="96" />
-                <Setter Property="Padding"
-                        Value="18 6" />
-                <Setter Property="Margin"
-                        Value="0 0 10 0" />
-            </Style>
         </ResourceDictionary>
     </Window.Resources>
     <Border Margin="1"
@@ -44,26 +36,26 @@
                         <ColumnDefinition Width="18" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel>
+                    <Grid Width="52"
+                          Height="52">
                         <Border x:Name="AccentBar"
-                                Width="72"
-                                Height="6"
-                                HorizontalAlignment="Left"
-                            CornerRadius="0" />
-                        <Border x:Name="GlyphBorder"
                                 Width="52"
                                 Height="52"
-                                Margin="0 18 0 0"
-                            CornerRadius="0"
-                                VerticalAlignment="Top">
-                            <TextBlock x:Name="GlyphTextBlock"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       FontSize="22"
-                                       FontWeight="Bold"
-                                       Foreground="White" />
-                        </Border>
-                    </StackPanel>
+                                HorizontalAlignment="Stretch"
+                            CornerRadius="0" />
+                        <Button x:Name="GlyphBorder"
+                                Width="52"
+                                Height="52"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                IsHitTestVisible="False"
+                                Focusable="False"
+                                Style="{StaticResource ButtonIcon}"
+                                Foreground="White"
+                                VerticalAlignment="Top" />
+                        <TextBlock x:Name="GlyphTextBlock"
+                                   Visibility="Collapsed" />
+                    </Grid>
                     <StackPanel Grid.Column="2">
                         <TextBlock FontSize="22"
                                    FontWeight="Bold"
@@ -89,11 +81,17 @@
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Right">
                     <Button x:Name="TertiaryButton"
-                            Style="{StaticResource DialogSecondaryButtonStyle}"
+                        MinWidth="96"
+                        Padding="18 6"
+                        Margin="0 0 10 0"
+                        Style="{StaticResource ButtonDefault}"
                             Visibility="Collapsed"
                             Click="OnTertiaryButtonClick" />
                     <Button x:Name="SecondaryButton"
-                            Style="{StaticResource DialogSecondaryButtonStyle}"
+                        MinWidth="96"
+                        Padding="18 6"
+                        Margin="0 0 10 0"
+                        Style="{StaticResource ButtonDefault}"
                             Visibility="Collapsed"
                             Click="OnSecondaryButtonClick" />
                     <Button x:Name="PrimaryButton"
