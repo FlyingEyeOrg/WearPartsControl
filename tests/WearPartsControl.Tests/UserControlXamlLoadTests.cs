@@ -17,20 +17,20 @@ public sealed class UserControlXamlLoadTests
     [Fact]
     public void ReplacePartUserControl_ShouldLoadWithoutXamlParseException()
     {
-        WpfTestHost.Run(() =>
+        RunWithEnglishCulture(() =>
         {
             var control = new ReplacePartUserControl(
                 CreateUninitialized<ReplacePartViewModel>(),
                 new StubAutoLogoutInteractionService());
 
             Assert.NotNull(control);
-        }, ensureApplicationResources: true);
+        });
     }
 
     [Fact]
     public void PartManagementUserControl_ShouldLoadWithoutXamlParseException()
     {
-        WpfTestHost.Run(() =>
+        RunWithEnglishCulture(() =>
         {
             var control = new PartManagementUserControl(
                 CreateUninitialized<PartManagementViewModel>(),
@@ -38,26 +38,26 @@ public sealed class UserControlXamlLoadTests
                 new StubAutoLogoutInteractionService());
 
             Assert.NotNull(control);
-        }, ensureApplicationResources: true);
+        });
     }
 
     [Fact]
     public void PartUpdateRecordUserControl_ShouldLoadWithoutXamlParseException()
     {
-        WpfTestHost.Run(() =>
+        RunWithEnglishCulture(() =>
         {
             var control = new PartUpdateRecordUserControl(
                 CreateUninitialized<PartUpdateRecordViewModel>(),
                 new StubAutoLogoutInteractionService());
 
             Assert.NotNull(control);
-        }, ensureApplicationResources: true);
+        });
     }
 
     [Fact]
     public void ClientAppInfoUserControl_ShouldLoadWithoutXamlParseException()
     {
-        WpfTestHost.Run(() =>
+        RunWithEnglishCulture(() =>
         {
             var control = new ClientAppInfoUserControl(
                 CreateUninitialized<ClientAppInfoViewModel>(),
@@ -67,13 +67,13 @@ public sealed class UserControlXamlLoadTests
                 new StubAppSettingsService());
 
             Assert.NotNull(control);
-        }, ensureApplicationResources: true);
+        });
     }
 
     [Fact]
     public void ToolChangeManagementUserControl_ShouldLoadWithoutXamlParseException()
     {
-        WpfTestHost.Run(() =>
+        RunWithEnglishCulture(() =>
         {
             var control = new ToolChangeManagementUserControl(
                 new ToolChangeManagementViewModel(
@@ -83,62 +83,68 @@ public sealed class UserControlXamlLoadTests
                     new StubAppDialogService()));
 
             Assert.NotNull(control);
-        }, ensureApplicationResources: true);
+        });
     }
 
     [Fact]
     public void PartInfoUserControl_ShouldLoadWithoutXamlParseException()
     {
-        WpfTestHost.Run(() =>
+        RunWithEnglishCulture(() =>
         {
             var control = new PartInfoUserControl();
 
             Assert.NotNull(control);
-        }, ensureApplicationResources: true);
+        });
     }
 
     [Fact]
     public void MainWindowTrayContentControl_ShouldLoadWithoutXamlParseException()
     {
-        WpfTestHost.Run(() =>
+        RunWithEnglishCulture(() =>
         {
             var control = new MainWindowTrayContentControl();
 
             Assert.NotNull(control);
-        }, ensureApplicationResources: true);
+        });
     }
 
     [Fact]
     public void LoginBox_ShouldLoadWithoutXamlParseException()
     {
-        WpfTestHost.Run(() =>
+        RunWithEnglishCulture(() =>
         {
             var control = new LoginBox();
 
             Assert.NotNull(control);
-        }, ensureApplicationResources: true);
+        });
     }
 
     [Fact]
     public void NeedLoginUserControl_ShouldLoadWithoutXamlParseException()
     {
-        WpfTestHost.Run(() =>
+        RunWithEnglishCulture(() =>
         {
             var control = new NeedLoginUserControl(new NeedLoginViewModel());
 
             Assert.NotNull(control);
-        }, ensureApplicationResources: true);
+        });
     }
 
     [Fact]
     public void UserTabControl_ShouldLoadWithoutXamlParseException()
     {
-        WpfTestHost.Run(() =>
+        RunWithEnglishCulture(() =>
         {
             var control = new UserTabControl();
 
             Assert.NotNull(control);
-        }, ensureApplicationResources: true);
+        });
+    }
+
+    private static void RunWithEnglishCulture(Action action)
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+        WpfTestHost.Run(action, ensureApplicationResources: true);
     }
 
     private static T CreateUninitialized<T>() where T : class

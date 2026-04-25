@@ -20,6 +20,8 @@ public sealed class LoginWindowTests
     [Fact]
     public void Show_ShouldLoadWithoutXamlParseException_WhenViewModelHasReadOnlyDisplayProperties()
     {
+        using var cultureScope = new TestCultureScope("en-US");
+
         WpfTestHost.Run(() =>
         {
             var viewModel = new LoginWindowViewModel(

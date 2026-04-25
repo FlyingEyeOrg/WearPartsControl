@@ -37,15 +37,16 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <DockPanel LastChildFill="False">
+                    <WrapPanel>
                         <TextBlock VerticalAlignment="Center"
+                                   Margin="0 0 24 0"
                                    TextWrapping="WrapWithOverflow"
                                    Foreground="{StaticResource InfoBrush}"
                                    FontWeight="SemiBold"
                                    Text="{Binding StatusMessage, Mode=OneWay}" />
-                        <TextBlock Margin="24 0 0 0"
-                                   VerticalAlignment="Center"
-                                   FontWeight="SemiBold">
+                        <TextBlock VerticalAlignment="Center"
+                                   FontWeight="SemiBold"
+                                   TextWrapping="Wrap">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0}{1}">
                                     <Binding Source="{x:Static loc:LocalizationBindingSource.Instance}"
@@ -55,7 +56,7 @@
                                 </MultiBinding>
                             </TextBlock.Text>
                         </TextBlock>
-                    </DockPanel>
+                    </WrapPanel>
 
                           <WrapPanel Grid.Row="1"
                                Style="{StaticResource ShellToolbarWrapPanelStyle}">
@@ -63,7 +64,7 @@
                             <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="PartManagementFilterLabelColumn" />
-                                <ColumnDefinition Width="180" />
+                                <ColumnDefinition Width="220" />
                             </Grid.ColumnDefinitions>
                             <TextBlock VerticalAlignment="Center"
                                    Margin="0 0 8 0"

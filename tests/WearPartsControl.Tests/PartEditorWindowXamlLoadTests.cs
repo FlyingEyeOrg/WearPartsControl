@@ -1,4 +1,5 @@
 using System;
+using System.Windows;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ViewModels;
@@ -13,7 +14,7 @@ public sealed class PartEditorWindowXamlLoadTests
     [Fact]
     public void AddPartWindow_ShouldLoadWithoutXamlParseException()
     {
-        WpfTestHost.Run(() =>
+        RunWithEnglishCulture(() =>
         {
             var viewModel = new AddPartWindowViewModel(new StubWearPartManagementService(), new UiBusyService(TimeSpan.Zero));
             var window = new AddPartWindow(viewModel);
@@ -26,13 +27,13 @@ public sealed class PartEditorWindowXamlLoadTests
             {
                 window.Close();
             }
-        }, ensureApplicationResources: true);
+        });
     }
 
     [Fact]
     public void EditPartWindow_ShouldLoadWithoutXamlParseException()
     {
-        WpfTestHost.Run(() =>
+        RunWithEnglishCulture(() =>
         {
             var viewModel = new EditPartWindowViewModel(new StubWearPartManagementService(), new UiBusyService(TimeSpan.Zero));
             var window = new EditPartWindow(viewModel);
@@ -45,13 +46,13 @@ public sealed class PartEditorWindowXamlLoadTests
             {
                 window.Close();
             }
-        }, ensureApplicationResources: true);
+        });
     }
 
     [Fact]
     public void NotificationPreviewWindow_ShouldLoadWithoutXamlParseException()
     {
-        WpfTestHost.Run(() =>
+        RunWithEnglishCulture(() =>
         {
             var window = new NotificationPreviewWindow("# warning", "# shutdown");
 
@@ -63,7 +64,35 @@ public sealed class PartEditorWindowXamlLoadTests
             {
                 window.Close();
             }
-        }, ensureApplicationResources: true);
+        });
+    }
+
+    [Fact]
+    public void MessageDialogWindow_ShouldLoadWithoutXamlParseException()
+    {
+        RunWithEnglishCulture(() =>
+        {
+            var window = new MessageDialogWindow(
+                "This is a localized dialog message used to validate dynamic layout in English.",
+                "Dialog Title",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Warning);
+
+            try
+            {
+                Assert.NotNull(window);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    private static void RunWithEnglishCulture(Action action)
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+        WpfTestHost.Run(action, ensureApplicationResources: true);
     }
 
     private sealed class StubWearPartManagementService : IWearPartManagementService

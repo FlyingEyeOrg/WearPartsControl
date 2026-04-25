@@ -5,9 +5,9 @@
                        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                        xmlns:local="clr-namespace:WearPartsControl.Views"
                        mc:Ignorable="d"
-                       Width="520"
-                       MinWidth="420"
-                       MaxWidth="620"
+                       Width="540"
+                       MinWidth="440"
+                       MaxWidth="680"
                        SizeToContent="Height">
     <Window.Resources>
         <ResourceDictionary>
@@ -23,26 +23,42 @@
             BorderBrush="{StaticResource ShellCardBorderBrush}"
             BorderThickness="1"
             CornerRadius="0">
-        <Grid>
+        <Grid MinHeight="244">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <StackPanel Margin="24 24 24 20">
-                <TextBlock Margin="0 18 0 0"
+            <Grid Margin="24 24 24 20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Border x:Name="AccentBar"
+                        Width="72"
+                        Height="6"
+                        HorizontalAlignment="Left"
+                        Background="#3C6C97"
+                        CornerRadius="0" />
+                <TextBlock Grid.Row="1"
+                           Margin="0 16 0 0"
                            FontSize="22"
                            FontWeight="Bold"
                            Foreground="#1E3550"
                            TextWrapping="Wrap"
                            Text="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=Title}" />
-                <TextBlock x:Name="MessageTextBlock"
-                           Margin="0 12 0 0"
-                           TextWrapping="Wrap"
-                           Foreground="#42586C"
-                           FontSize="14"
-                           LineHeight="22" />
-            </StackPanel>
+                <ScrollViewer Grid.Row="2"
+                              Margin="0 12 0 0"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <TextBlock x:Name="MessageTextBlock"
+                               TextWrapping="Wrap"
+                               Foreground="#42586C"
+                               FontSize="14"
+                               LineHeight="22" />
+                </ScrollViewer>
+            </Grid>
 
             <Border Grid.Row="1"
                     Padding="24 18 24 22"
@@ -50,8 +66,8 @@
                     BorderBrush="#E1EAF2"
                     BorderThickness="0,1,0,0"
                     CornerRadius="0">
-                <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Right">
+                <WrapPanel HorizontalAlignment="Right"
+                           ItemHeight="36">
                     <Button x:Name="TertiaryButton"
                             MinWidth="96"
                             Padding="18 6"
@@ -72,7 +88,7 @@
                             Style="{StaticResource ButtonPrimary}"
                             Visibility="Collapsed"
                             Click="OnPrimaryButtonClick" />
-                </StackPanel>
+                </WrapPanel>
             </Border>
         </Grid>
     </Border>

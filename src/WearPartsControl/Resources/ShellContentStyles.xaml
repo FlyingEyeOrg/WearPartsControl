@@ -67,6 +67,10 @@
                 Value="18" />
         <Setter Property="HorizontalAlignment"
                 Value="Center" />
+        <Setter Property="TextAlignment"
+                Value="Center" />
+        <Setter Property="TextWrapping"
+                Value="Wrap" />
     </Style>
     <Style x:Key="ShellCardBorderStyle"
            TargetType="Border">
@@ -131,7 +135,7 @@
         <Setter Property="TextWrapping"
                 Value="Wrap" />
         <Setter Property="MaxWidth"
-                Value="140" />
+                Value="180" />
     </Style>
     <Style x:Key="ShellFormRowGridStyle"
            TargetType="Grid">
@@ -152,6 +156,8 @@
                 Value="#61758A" />
         <Setter Property="Margin"
                 Value="0 12 0 0" />
+        <Setter Property="TextWrapping"
+                Value="Wrap" />
     </Style>
     <Style x:Key="ShellMetaValueTextStyle"
            TargetType="TextBlock">
@@ -161,5 +167,7 @@
                 Value="#1E3550" />
         <Setter Property="FontWeight"
                 Value="SemiBold" />
+        <Setter Property="TextWrapping"
+                Value="Wrap" />
     </Style>
 </ResourceDictionary>

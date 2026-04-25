@@ -15,16 +15,18 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Border MinWidth="300"
-            MaxWidth="340"
+    <Border MinWidth="320"
+            MaxWidth="400"
             Style="{StaticResource ShellCardBorderStyle}">
         <StackPanel>
             <TextBlock FontSize="17"
                        FontWeight="Bold"
                        Foreground="#1E3550"
+                       TextWrapping="Wrap"
                        Text="{loc:Loc MainWindowTrayContent.Title}" />
             <TextBlock Margin="0 6 0 0"
                        Foreground="#61758A"
+                       TextWrapping="Wrap"
                        Text="{loc:Loc MainWindowTrayContent.Subtitle}" />
 
                 <Border Margin="0 14 0 0"
@@ -36,6 +38,7 @@
                 <StackPanel>
                     <TextBlock Foreground="{StaticResource InfoBrush}"
                                FontWeight="SemiBold"
+                               TextWrapping="Wrap"
                                Text="{loc:Loc MainWindowTrayContent.CurrentUserLabel}" />
                     <TextBlock Style="{StaticResource ShellMetaValueTextStyle}"
                                Text="{Binding CurrentUserWorkIdText, Mode=OneWay}" />
@@ -57,24 +60,20 @@
                        Foreground="#506173"
                        Text="{loc:Loc MainWindowTrayContent.MinimizeHint}" />
 
-            <Grid Margin="0 16 0 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="10" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Button Grid.Column="0"
+            <WrapPanel Margin="0 16 0 0"
+                       HorizontalAlignment="Right">
+                <Button Margin="0 0 10 0"
                         MinWidth="120"
                         Padding="14 6"
-                    Style="{StaticResource ButtonPrimary}"
+                        Style="{StaticResource ButtonPrimary}"
                         Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:MainWindowTrayContentControl}}, Path=RestoreCommand}"
                         Content="{loc:Loc MainWindowTrayContent.RestoreButton}" />
-                <Button Grid.Column="2"
+                <Button
                         MinWidth="120"
                         Padding="14 6"
                         Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:MainWindowTrayContentControl}}, Path=ExitCommand}"
                         Content="{loc:Loc MainWindowTrayContent.ExitButton}" />
-            </Grid>
+            </WrapPanel>
         </StackPanel>
     </Border>
 </UserControl>

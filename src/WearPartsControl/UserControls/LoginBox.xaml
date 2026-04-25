@@ -17,7 +17,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
         <Border Style="{StaticResource ShellCardBorderStyle}"
-                Padding="14 12">
+            Padding="14 12">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -46,14 +46,17 @@
                     Margin="12,0">
                 <TextBlock FontWeight="SemiBold"
                            Foreground="#1E3550"
-                       FontSize="14"
+                           TextWrapping="Wrap"
+                           FontSize="14"
                            Text="{Binding CurrentUserWorkIdText}" />
                 <TextBlock Margin="0 6 0 0"
-                       FontSize="11"
+                           FontSize="11"
+                           TextWrapping="Wrap"
                            Foreground="#61758A"
                            Text="{Binding CurrentUserAccessLevelText}" />
                 <TextBlock Margin="0 4 0 0"
-                       FontSize="11"
+                           FontSize="11"
+                           TextWrapping="Wrap"
                            Foreground="#61758A"
                            Text="{Binding SoftwareVersionText}" />
             </StackPanel>

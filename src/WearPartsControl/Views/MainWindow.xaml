@@ -63,13 +63,13 @@
                             <StackPanel Orientation="Horizontal">
                                 <Image x:Name="LogoImage"
                                        Source="pack://application:,,,/WearPartsControl;component/Assets/catl.ico"
-                                       Width="190" />
+                                       Width="168" />
                             </StackPanel>
                         </Border>
                         <StackPanel Grid.Column="2"
                                     VerticalAlignment="Center">
                             <TextBlock x:Name="TitleLabel"
-                                       TextTrimming="CharacterEllipsis"
+                                       TextWrapping="Wrap"
                                        FontSize="30"
                                        FontWeight="Bold"
                                        Foreground="#1B3248"
@@ -77,11 +77,12 @@
                             <TextBlock Margin="0 4 0 0"
                                        FontSize="13"
                                        Foreground="#5D7388"
+                                       TextWrapping="Wrap"
                                        Text="{Binding Title, Mode=OneWay}" />
                         </StackPanel>
                         <uc:LoginBox x:Name="LoginBoxControl"
                                      Grid.Column="4"
-                                     Width="350"
+                                     Width="328"
                                      IsEnabled="{Binding IsClientAppInfoConfigured}" />
                     </Grid>
                 </Border>
