@@ -2,7 +2,7 @@
 using System.Text;
 using System.IO;
 using System.Threading;
-using Microsoft.Win32;
+using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ViewModels;
@@ -16,12 +16,14 @@ public partial class PartUpdateRecordUserControl : UserControl
 {
     private readonly PartUpdateRecordViewModel _viewModel;
     private readonly IAutoLogoutInteractionService _autoLogoutInteractionService;
+    private readonly IFileDialogService _fileDialogService;
     private bool _isInitialized;
 
-    public PartUpdateRecordUserControl(PartUpdateRecordViewModel viewModel, IAutoLogoutInteractionService autoLogoutInteractionService)
+    public PartUpdateRecordUserControl(PartUpdateRecordViewModel viewModel, IAutoLogoutInteractionService autoLogoutInteractionService, IFileDialogService? fileDialogService = null)
     {
         _viewModel = viewModel;
         _autoLogoutInteractionService = autoLogoutInteractionService;
+        _fileDialogService = fileDialogService ?? new FileDialogService(autoLogoutInteractionService);
         DataContext = viewModel;
         InitializeComponent();
         Loaded += OnLoaded;
@@ -52,25 +54,21 @@ public partial class PartUpdateRecordUserControl : UserControl
     {
         try
         {
-            var dialog = new SaveFileDialog
-            {
-                FileName = e.SuggestedFileName,
-                Filter = LocalizedText.Get("Dialogs.CsvFileFilter"),
-                DefaultExt = ".csv",
-                AddExtension = true,
-                OverwritePrompt = true
-            };
+            var fileName = _fileDialogService.ShowSaveFileDialog(
+                new SaveFileDialogRequest(
+                    e.SuggestedFileName,
+                    LocalizedText.Get("Dialogs.CsvFileFilter"),
+                    ".csv"),
+                System.Windows.Window.GetWindow(this));
 
-            var dialogResult = _autoLogoutInteractionService.RunModal(() => dialog.ShowDialog() == true);
-
-            if (!dialogResult)
+            if (string.IsNullOrWhiteSpace(fileName))
             {
                 _viewModel.NotifyExportCanceled();
                 return;
             }
 
-            await System.IO.File.WriteAllTextAsync(dialog.FileName, e.Content, new UTF8Encoding(true)).ConfigureAwait(true);
-            _viewModel.NotifyExportSucceeded(dialog.FileName);
+            await System.IO.File.WriteAllTextAsync(fileName, e.Content, new UTF8Encoding(true)).ConfigureAwait(true);
+            _viewModel.NotifyExportSucceeded(fileName);
         }
         catch (Exception ex)
         {

@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Win32;
 using Microsoft.Extensions.DependencyInjection;
 using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.Localization;
@@ -20,13 +19,15 @@ public partial class PartManagementUserControl : UserControl
     private readonly IServiceProvider _serviceProvider;
     private readonly IAutoLogoutInteractionService _autoLogoutInteractionService;
     private readonly IAppDialogService _dialogService;
+    private readonly IFileDialogService _fileDialogService;
 
-    public PartManagementUserControl(PartManagementViewModel viewModel, IServiceProvider serviceProvider, IAutoLogoutInteractionService autoLogoutInteractionService, IAppDialogService? dialogService = null)
+    public PartManagementUserControl(PartManagementViewModel viewModel, IServiceProvider serviceProvider, IAutoLogoutInteractionService autoLogoutInteractionService, IAppDialogService? dialogService = null, IFileDialogService? fileDialogService = null)
     {
         _viewModel = viewModel;
         _serviceProvider = serviceProvider;
         _autoLogoutInteractionService = autoLogoutInteractionService;
         _dialogService = dialogService ?? new AppDialogService(autoLogoutInteractionService);
+        _fileDialogService = fileDialogService ?? new FileDialogService(autoLogoutInteractionService);
         DataContext = viewModel;
         InitializeComponent();
 
@@ -79,16 +80,12 @@ public partial class PartManagementUserControl : UserControl
 
     private async void OnImportLegacyDefinitionsRequested(object? sender, EventArgs e)
     {
-        var dialog = new OpenFileDialog
-        {
-            Title = LocalizedText.Get("ViewModels.PartManagementVm.ImportDialogTitle"),
-            Filter = LocalizedText.Get("Dialogs.SQLiteDatabaseFilter"),
-            CheckFileExists = true,
-            Multiselect = false
-        };
-
-        var dialogResult = _autoLogoutInteractionService.RunModal(() => dialog.ShowDialog() == true);
-        if (!dialogResult)
+        var fileName = _fileDialogService.ShowOpenFileDialog(
+            new OpenFileDialogRequest(
+                LocalizedText.Get("ViewModels.PartManagementVm.ImportDialogTitle"),
+                LocalizedText.Get("Dialogs.SQLiteDatabaseFilter")),
+            Window.GetWindow(this));
+        if (string.IsNullOrWhiteSpace(fileName))
         {
             _viewModel.NotifyLegacyImportCanceled();
             return;
@@ -96,7 +93,7 @@ public partial class PartManagementUserControl : UserControl
 
         try
         {
-            var result = await _viewModel.ImportLegacyDefinitionsAsync(dialog.FileName);
+            var result = await _viewModel.ImportLegacyDefinitionsAsync(fileName);
             _dialogService.ShowMessage(result.ToWearPartDefinitionSummary(), LocalizedText.Get("App.LegacyImportCompletedTitle"), MessageBoxButton.OK, MessageBoxImage.Information, Window.GetWindow(this));
         }
         catch (Exception ex)

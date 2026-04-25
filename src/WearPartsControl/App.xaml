@@ -19,7 +19,7 @@
                 <Setter Property="ResizeMode" Value="NoResize" />
                 <Setter Property="WindowStartupLocation" Value="CenterOwner" />
                 <Setter Property="WindowStyle" Value="SingleBorderWindow" />
-                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Background" Value="#FFF7FAFC" />
             </Style>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         </ResourceDictionary>

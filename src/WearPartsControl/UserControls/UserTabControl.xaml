@@ -113,11 +113,19 @@
             </ScrollViewer>
         </Border>
 
-        <ContentControl Grid.Column="1"
-                        MinWidth="0"
-                        MinHeight="0"
-                        HorizontalContentAlignment="Stretch"
-                        VerticalContentAlignment="Stretch"
-                        Content="{Binding SelectedContent, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:UserTabControl}}" />
+        <Border Grid.Column="1"
+                MinWidth="0"
+                MinHeight="0"
+                Padding="3"
+                Background="#FFF8FBFD"
+                BorderBrush="#DCE7EF"
+                BorderThickness="1"
+                CornerRadius="18">
+            <ContentControl MinWidth="0"
+                            MinHeight="0"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch"
+                            Content="{Binding SelectedContent, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:UserTabControl}}" />
+        </Border>
     </Grid>
 </UserControl>

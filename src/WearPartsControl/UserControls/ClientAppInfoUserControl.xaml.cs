@@ -1,6 +1,5 @@
 ﻿using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Win32;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.Dialogs;
@@ -20,6 +19,7 @@ namespace WearPartsControl.UserControls
         private readonly IServiceProvider _serviceProvider;
         private readonly IAutoLogoutInteractionService _autoLogoutInteractionService;
         private readonly IAppDialogService _dialogService;
+        private readonly IFileDialogService _fileDialogService;
         private readonly ICurrentUserAccessor _currentUserAccessor;
         private readonly IAppSettingsService _appSettingsService;
         private bool _isInitialized;
@@ -30,13 +30,15 @@ namespace WearPartsControl.UserControls
             IAutoLogoutInteractionService autoLogoutInteractionService,
             ICurrentUserAccessor currentUserAccessor,
             IAppSettingsService appSettingsService,
-            IAppDialogService? dialogService = null)
+            IAppDialogService? dialogService = null,
+            IFileDialogService? fileDialogService = null)
         {
             InitializeComponent();
             _viewModel = viewModel;
             _serviceProvider = serviceProvider;
             _autoLogoutInteractionService = autoLogoutInteractionService;
             _dialogService = dialogService ?? new AppDialogService(autoLogoutInteractionService);
+            _fileDialogService = fileDialogService ?? new FileDialogService(autoLogoutInteractionService);
             _currentUserAccessor = currentUserAccessor;
             _appSettingsService = appSettingsService;
             DataContext = viewModel;
@@ -65,16 +67,12 @@ namespace WearPartsControl.UserControls
 
         private async void OnImportLegacyConfigurationRequested(object? sender, EventArgs e)
         {
-            var dialog = new OpenFileDialog
-            {
-                Title = LocalizedText.Get("ViewModels.ClientAppInfoVm.ImportDialogTitle"),
-                Filter = LocalizedText.Get("Dialogs.SQLiteDatabaseFilter"),
-                CheckFileExists = true,
-                Multiselect = false
-            };
-
-            var dialogResult = _autoLogoutInteractionService.RunModal(() => dialog.ShowDialog() == true);
-            if (!dialogResult)
+            var fileName = _fileDialogService.ShowOpenFileDialog(
+                new OpenFileDialogRequest(
+                    LocalizedText.Get("ViewModels.ClientAppInfoVm.ImportDialogTitle"),
+                    LocalizedText.Get("Dialogs.SQLiteDatabaseFilter")),
+                System.Windows.Window.GetWindow(this));
+            if (string.IsNullOrWhiteSpace(fileName))
             {
                 _viewModel.NotifyLegacyConfigurationImportCanceled();
                 return;
@@ -82,7 +80,7 @@ namespace WearPartsControl.UserControls
 
             try
             {
-                await _viewModel.ImportLegacyConfigurationAsync(dialog.FileName).ConfigureAwait(true);
+                await _viewModel.ImportLegacyConfigurationAsync(fileName).ConfigureAwait(true);
             }
             catch (Exception ex)
             {
