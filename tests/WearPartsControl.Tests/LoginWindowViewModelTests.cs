@@ -72,9 +72,29 @@ public sealed class LoginWindowViewModelTests
             new StubUiDispatcher());
 
         await viewModel.InitializeAsync();
+        viewModel.AuthId = "CARD-01";
 
         Assert.Equal(string.Empty, viewModel.SiteCode);
         Assert.Equal(LocalizedText.Format("ViewModels.LoginWindowVm.ClientConfigurationSiteMissing", "RES-001"), viewModel.StatusMessage);
+        Assert.False(viewModel.LoginCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WhenResourceNumberMissing_ShouldDisableLoginCommand()
+    {
+        var loginService = new StubLoginService();
+        var viewModel = new LoginWindowViewModel(
+            loginService,
+            new StubClientAppConfigurationRepository(),
+            new StubAppSettingsService { ResourceNumber = "" },
+            new StubUiDispatcher());
+
+        await viewModel.InitializeAsync();
+        viewModel.AuthId = "CARD-01";
+
+        Assert.Equal(string.Empty, viewModel.ResourceNumber);
+        Assert.Equal(LocalizedText.Get("ViewModels.LoginWindowVm.ResourceNumberMissing"), viewModel.StatusMessage);
+        Assert.False(viewModel.LoginCommand.CanExecute(null));
     }
 
     [Fact]
@@ -263,11 +283,13 @@ public sealed class LoginWindowViewModelTests
 
         public bool UseWorkNumberLogin { get; set; }
 
+        public string ResourceNumber { get; set; } = "RES-001";
+
         public ValueTask<AppSettings> GetAsync(CancellationToken cancellationToken = default)
         {
             return ValueTask.FromResult(new AppSettings
             {
-                ResourceNumber = "RES-001",
+                ResourceNumber = ResourceNumber,
                 LoginInputMaxIntervalMilliseconds = 88,
                 UseWorkNumberLogin = UseWorkNumberLogin
             });

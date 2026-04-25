@@ -70,13 +70,25 @@ namespace WearPartsControl.ViewModels
         public string ResourceNumber
         {
             get => _resourceNumber;
-            private set => SetProperty(ref _resourceNumber, value);
+            private set
+            {
+                if (SetProperty(ref _resourceNumber, value))
+                {
+                    NotifyLoginCommandCanExecuteChanged();
+                }
+            }
         }
 
         public string SiteCode
         {
             get => _siteCode;
-            private set => SetProperty(ref _siteCode, value);
+            private set
+            {
+                if (SetProperty(ref _siteCode, value))
+                {
+                    NotifyLoginCommandCanExecuteChanged();
+                }
+            }
         }
 
         public int LoginInputMaxIntervalMilliseconds
@@ -173,7 +185,10 @@ namespace WearPartsControl.ViewModels
 
         private bool CanLogin()
         {
-            return !IsBusy && !string.IsNullOrWhiteSpace(AuthId);
+            return !IsBusy
+                && !string.IsNullOrWhiteSpace(AuthId)
+                && !string.IsNullOrWhiteSpace(ResourceNumber)
+                && !string.IsNullOrWhiteSpace(SiteCode);
         }
 
         private async Task LoginAsync()

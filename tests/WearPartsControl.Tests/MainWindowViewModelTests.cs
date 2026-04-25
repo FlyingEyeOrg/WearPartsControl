@@ -545,7 +545,7 @@ public sealed class MainWindowViewModelTests : IDisposable
     }
 
     [Fact]
-    public void Constructor_ShouldSynchronizeLocalizationCultureFromUserConfigBeforeRefreshingShellState()
+    public void Constructor_ShouldUseLocalizationServiceCurrentCultureWithoutAdditionalSynchronization()
     {
         var appSettingsService = new StubAppSettingsService
         {
@@ -555,14 +555,8 @@ public sealed class MainWindowViewModelTests : IDisposable
                 AutoLogoutCountdownSeconds = 360
             }
         };
-        var localizationService = new MutableLocalizationService("zh-CN");
-        var userConfigService = new StubUserConfigService
-        {
-            Current = new UserConfig
-            {
-                Language = "en-US"
-            }
-        };
+        using var _ = new TestCultureScope("en-US");
+        var localizationService = new MutableLocalizationService("en-US");
 
         var viewModel = CreateViewModel(
             new CurrentUserAccessor(),
@@ -570,47 +564,11 @@ public sealed class MainWindowViewModelTests : IDisposable
             appSettingsService,
             new UiBusyService(),
             new StubPlcStartupConnectionService(),
-            localizationService: localizationService,
-            userConfigService: userConfigService);
+            localizationService: localizationService);
 
         Assert.Equal("en-US", localizationService.CurrentCulture.Name);
-        Assert.Equal("en-US", localizationService.LastSetCultureName);
+        Assert.Null(localizationService.LastSetCultureName);
         Assert.Equal(LocalizedText.Get("MainWindow.Title"), viewModel.Title);
-    }
-
-    [Fact]
-    public void LocalizationRefresh_ShouldNotReloadUserConfigSynchronously()
-    {
-        var appSettingsService = new StubAppSettingsService
-        {
-            Current = new AppSettings
-            {
-                IsSetClientAppInfo = true,
-                AutoLogoutCountdownSeconds = 360
-            }
-        };
-        var userConfigService = new StubUserConfigService
-        {
-            Current = new UserConfig
-            {
-                Language = "zh-CN"
-            }
-        };
-
-        _ = CreateViewModel(
-            new CurrentUserAccessor(),
-            new StubLoginService(),
-            appSettingsService,
-            new UiBusyService(),
-            new StubPlcStartupConnectionService(),
-            userConfigService: userConfigService);
-
-        Assert.Equal(1, userConfigService.GetAsyncCallCount);
-
-        using var cultureScope = new TestCultureScope("en-US");
-        LocalizationBindingSource.Instance.Refresh();
-
-        Assert.Equal(1, userConfigService.GetAsyncCallCount);
     }
 
     [Fact]
@@ -768,8 +726,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         StubServiceProvider? serviceProvider = null,
         StubAppStartupCoordinator? appStartupCoordinator = null,
         StubClientAppInfoService? clientAppInfoService = null,
-        ILocalizationService? localizationService = null,
-        StubUserConfigService? userConfigService = null)
+        ILocalizationService? localizationService = null)
     {
         var stateMachine = new LoginSessionStateMachine(accessor, loginService, delayAsync);
         return new MainWindowViewModel(
@@ -777,7 +734,6 @@ public sealed class MainWindowViewModelTests : IDisposable
             serviceProvider ?? new StubServiceProvider(),
             loginService,
             appSettingsService,
-            userConfigService ?? new StubUserConfigService(),
             clientAppInfoService ?? new StubClientAppInfoService(),
             uiBusyService,
             startupConnectionService,
@@ -879,28 +835,6 @@ public sealed class MainWindowViewModelTests : IDisposable
             CultureInfo.DefaultThreadCurrentCulture = culture;
             CultureInfo.DefaultThreadCurrentUICulture = culture;
             LocalizedText.SetCulture(culture);
-        }
-    }
-
-    private sealed class StubUserConfigService : IUserConfigService
-    {
-        public UserConfig Current { get; set; } = new();
-
-        public int GetAsyncCallCount { get; private set; }
-
-        public ValueTask<UserConfig> GetAsync(CancellationToken cancellationToken = default)
-        {
-            GetAsyncCallCount++;
-            return ValueTask.FromResult(new UserConfig
-            {
-                Language = Current.Language
-            });
-        }
-
-        public ValueTask SaveAsync(UserConfig config, CancellationToken cancellationToken = default)
-        {
-            Current = config;
-            return ValueTask.CompletedTask;
         }
     }
 

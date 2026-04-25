@@ -15,7 +15,6 @@ using WearPartsControl.ApplicationServices.Localization.Generated;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.ApplicationServices.Startup;
-using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.UserControls;
 using WearPartsControl.ViewModels;
 using WearPartsControl.Views;
@@ -40,7 +39,6 @@ public sealed class MainWindowTests
                 new StubServiceProvider(),
                 loginService,
                 new StubAppSettingsService(),
-                new StubUserConfigService(),
                 new StubClientAppInfoService(),
                 new UiBusyService(TimeSpan.Zero),
                 new StubPlcStartupConnectionService(),
@@ -398,7 +396,6 @@ public sealed class MainWindowTests
             new StubServiceProvider(),
             loginService,
             new StubAppSettingsService(),
-            new StubUserConfigService(),
             new StubClientAppInfoService(),
             new UiBusyService(TimeSpan.Zero),
             new StubPlcStartupConnectionService(),
@@ -494,22 +491,6 @@ public sealed class MainWindowTests
         public Task<ClientAppInfoModel> SaveAsync(ClientAppInfoSaveRequest request, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
-        }
-    }
-
-    private sealed class StubUserConfigService : IUserConfigService
-    {
-        public ValueTask<UserConfig> GetAsync(CancellationToken cancellationToken = default)
-        {
-            return ValueTask.FromResult(new UserConfig
-            {
-                Language = "en-US"
-            });
-        }
-
-        public ValueTask SaveAsync(UserConfig config, CancellationToken cancellationToken = default)
-        {
-            return ValueTask.CompletedTask;
         }
     }
 
