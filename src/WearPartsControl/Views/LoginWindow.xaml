@@ -22,23 +22,13 @@
     </Window.Resources>
     <Grid Background="White">
         <Grid Margin="20">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
+            <StackPanel>
                 <Image Width="84"
                        HorizontalAlignment="Center"
                        Source="pack://application:,,,/WearPartsControl;component/Assets/catl.ico"
                        Stretch="Uniform" />
 
-                <TextBlock Grid.Row="1"
+                <TextBlock
                            Margin="0 12 0 0"
                            FontSize="19"
                            FontWeight="SemiBold"
@@ -47,7 +37,7 @@
                            TextWrapping="Wrap"
                            Text="{Binding LoginPrompt}" />
 
-                <TextBlock Grid.Row="2"
+                <TextBlock
                            Margin="0 8 0 0"
                            Foreground="#61758A"
                            FontSize="12"
@@ -56,8 +46,7 @@
                            TextWrapping="Wrap"
                            Text="{loc:Loc LoginWindowView.HeroHint}" />
 
-                <Grid Grid.Row="3"
-                      Margin="0 14 0 0">
+                                <Grid Margin="0 14 0 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="12" />
@@ -84,7 +73,6 @@
                 </Grid>
 
                 <PasswordBox x:Name="PasswordInputBox"
-                             Grid.Row="4"
                              Height="36"
                              Margin="0 14 0 0"
                              Padding="10 0"
@@ -94,7 +82,7 @@
                              PreviewTextInput="PasswordInputBox_OnPreviewTextInput"
                              DataObject.Pasting="PasswordInputBox_OnPasting" />
 
-                <TextBlock Grid.Row="5"
+                <TextBlock
                            Margin="0 10 0 0"
                            MinHeight="34"
                            Foreground="#61758A"
@@ -104,8 +92,7 @@
                            TextWrapping="Wrap"
                            Text="{Binding StatusMessage}" />
 
-                <StackPanel Grid.Row="6"
-                            Margin="0 10 0 0">
+                <StackPanel Margin="0 10 0 0">
                     <Button MinWidth="120"
                             Height="34"
                             HorizontalAlignment="Center"
@@ -113,7 +100,7 @@
                             Command="{Binding LoginCommand}"
                             Content="{loc:Loc LoginWindowView.LoginButton}" />
                 </StackPanel>
-            </Grid>
+            </StackPanel>
             <Border Background="Transparent"
                     Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <hc:LoadingCircle Width="60"
