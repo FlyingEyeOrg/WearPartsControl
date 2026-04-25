@@ -229,6 +229,11 @@
   },
   "ReplacePartControl": {
     "Title": "Wear Part Replacement",
+    "OverviewSectionTitle": "Current Wear Part Overview",
+    "LifetimeSectionTitle": "Lifetime thresholds",
+    "BarcodeRuleSectionTitle": "Barcode rules",
+    "ReplacementSectionTitle": "Replacement entry",
+    "HistorySectionTitle": "Replacement history",
     "CurrentResourceNumberLabel": "Current resource number: ",
     "RefreshButton": "Refresh",
     "MonitoringStatusLabel": "Wear part monitoring:",

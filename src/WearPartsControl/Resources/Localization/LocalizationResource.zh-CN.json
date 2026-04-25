@@ -229,6 +229,11 @@
   },
   "ReplacePartControl": {
     "Title": "易损件更换",
+    "OverviewSectionTitle": "当前易损件概览",
+    "LifetimeSectionTitle": "寿命阈值",
+    "BarcodeRuleSectionTitle": "条码规则",
+    "ReplacementSectionTitle": "更换录入",
+    "HistorySectionTitle": "更换记录",
     "CurrentResourceNumberLabel": "当前资源号：",
     "RefreshButton": "刷新",
     "MonitoringStatusLabel": "易损件监控：",
