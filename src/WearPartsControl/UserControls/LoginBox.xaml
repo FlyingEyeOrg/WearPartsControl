@@ -9,11 +9,18 @@
              mc:Ignorable="d"
              d:DesignHeight="80"
              d:DesignWidth="400">
-        <Border Padding="10"
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+        <Border Padding="12"
             Background="#FCFEFF"
             BorderBrush="#DCE7EF"
             BorderThickness="1"
-            CornerRadius="14">
+            CornerRadius="18">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -37,7 +44,7 @@
             </Border>
             <StackPanel Grid.Column="1"
                         VerticalAlignment="Center"
-                    Margin="10,0">
+                    Margin="12,0">
                 <TextBlock FontWeight="SemiBold"
                            Foreground="#1E3550"
                        FontSize="14"
@@ -58,14 +65,14 @@
                 <Button x:Name="LoginButton"
                         Style="{StaticResource ButtonPrimary}"
                         Command="{Binding OpenLoginCommand}"
-                    Padding="14 5"
+                    Padding="14 6"
                         Content="{loc:Loc LoginBoxControl.LoginButton}"
                         Visibility="{Binding ShowLoginButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                         MinWidth="88" />
                 <Button x:Name="LogoutButton"
                     Margin="0 6 0 0"
                         Command="{Binding LogoutCommand}"
-                    Padding="14 5"
+                    Padding="14 6"
                         Content="{loc:Loc LoginBoxControl.LogoutButton}"
                         Visibility="{Binding ShowLogoutButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                         MinWidth="88" />

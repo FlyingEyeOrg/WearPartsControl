@@ -32,35 +32,35 @@
                 Background="#FCFEFF"
                 BorderBrush="#D8E5F0"
                 BorderThickness="1"
-                CornerRadius="12">
+                CornerRadius="18">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.2*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Border CornerRadius="12,0,0,12"
+                <Border CornerRadius="18,0,0,18"
                         Background="{StaticResource LoginWindowHeroImageBrush}">
                     <Grid>
                         <Rectangle Fill="{StaticResource LoginWindowHeroOverlayBrush}" />
                         <Image Source="pack://application:,,,/WearPartsControl;component/Assets/catl-logo-white.png"
-                               Width="190"
-                               Margin="32 32 32 0"
+                               Width="180"
+                               Margin="24 24 24 0"
                                VerticalAlignment="Top"
                                HorizontalAlignment="Left" />
                         <Image Source="pack://application:,,,/WearPartsControl;component/Assets/card.png"
-                               Margin="24"
+                               Margin="18"
                                VerticalAlignment="Bottom"
                                HorizontalAlignment="Center"
                                Stretch="Uniform" />
                     </Grid>
                 </Border>
                 <Grid Grid.Column="1">
-                    <Border Margin="20"
-                        Padding="24"
+                    <Border Margin="18"
+                        Padding="18"
                             Background="White"
                             BorderBrush="#E4EDF5"
                             BorderThickness="1"
-                        CornerRadius="14">
+                        CornerRadius="18">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -76,17 +76,17 @@
                                        TextAlignment="Center"
                                        Text="{Binding LoginPrompt}" />
                             <Border Grid.Row="1"
-                                    Margin="0 20 0 0"
-                                    Padding="16 12"
+                                    Margin="0 16 0 0"
+                                    Padding="14 12"
                                     Background="#F4F8FB"
-                                    CornerRadius="12">
+                                    CornerRadius="14">
                                 <StackPanel>
                                     <TextBlock HorizontalAlignment="Center"
                                                Foreground="#5D7388">
                                         <Run Text="{loc:Loc LoginWindowView.ResourceNumberLabel}" />
                                         <Run Text="{Binding ResourceNumber, Mode=OneWay}" />
                                     </TextBlock>
-                                    <TextBlock Margin="0 6 0 0"
+                                    <TextBlock Margin="0 4 0 0"
                                                HorizontalAlignment="Center"
                                                Foreground="#5D7388">
                                         <Run Text="{loc:Loc LoginWindowView.SiteLabel}" />
@@ -95,7 +95,7 @@
                                 </StackPanel>
                             </Border>
                             <Grid Grid.Row="2"
-                                  Margin="0 20 0 0">
+                                  Margin="0 16 0 0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />
                                     <ColumnDefinition Width="Auto" />
@@ -109,7 +109,7 @@
                                              PreviewTextInput="PasswordInputBox_OnPreviewTextInput"
                                              DataObject.Pasting="PasswordInputBox_OnPasting" />
                                 <Button Grid.Column="1"
-                                        Margin="10 0 0 0"
+                                            Margin="12 0 0 0"
                                         MinWidth="104"
                                         Height="40"
                                         Padding="18 0"
@@ -118,7 +118,7 @@
                                         Content="{loc:Loc LoginWindowView.LoginButton}" />
                             </Grid>
                             <TextBlock Grid.Row="3"
-                                       Margin="0 16 0 0"
+                                           Margin="0 14 0 0"
                                        MinHeight="44"
                                        TextWrapping="Wrap"
                                        TextAlignment="Center"

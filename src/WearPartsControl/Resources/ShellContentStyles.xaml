@@ -56,6 +56,18 @@
         <Setter Property="Padding"
                 Value="18" />
     </Style>
+    <Style x:Key="ShellSurfaceBorderStyle"
+           TargetType="Border"
+           BasedOn="{StaticResource ShellCardBorderStyle}">
+        <Setter Property="Background"
+                Value="{StaticResource ShellPanelBackgroundBrush}" />
+    </Style>
+    <Style x:Key="ShellFormSectionCardBorderStyle"
+           TargetType="Border"
+           BasedOn="{StaticResource ShellCardBorderStyle}">
+        <Setter Property="Padding"
+                Value="16" />
+    </Style>
     <Style x:Key="ShellStatusCardBorderStyle"
            TargetType="Border"
            BasedOn="{StaticResource ShellCardBorderStyle}">
@@ -72,5 +84,13 @@
                 Value="#FF365082" />
         <Setter Property="Margin"
                 Value="0 0 0 10" />
+    </Style>
+    <Style x:Key="ShellFormSectionTitleTextStyle"
+           TargetType="TextBlock"
+           BasedOn="{StaticResource ShellSectionLabelTextStyle}">
+        <Setter Property="FontSize"
+                Value="15" />
+        <Setter Property="Margin"
+                Value="0 0 0 12" />
     </Style>
 </ResourceDictionary>

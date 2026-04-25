@@ -25,7 +25,6 @@ public partial class MessageDialogWindow : AppDialogWindow
             : GetFallbackResult(buttons);
 
         Title = title;
-        TitleTextBlock.Text = title;
         MessageTextBlock.Text = message;
 
         ConfigureVisual(image);
@@ -72,7 +71,7 @@ public partial class MessageDialogWindow : AppDialogWindow
             _ => (CreateBrush("#3C6C97"), "i")
         };
 
-        HeaderBorder.Background = brush;
+        AccentBar.Background = brush;
         GlyphBorder.Background = brush;
         GlyphTextBlock.Text = glyph;
     }

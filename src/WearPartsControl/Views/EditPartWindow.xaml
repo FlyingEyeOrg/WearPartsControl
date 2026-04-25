@@ -21,34 +21,26 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    <Border Margin="18"
-            Background="{StaticResource ShellPanelBackgroundBrush}"
-            CornerRadius="26">
-    <Grid Margin="18">
+    <Border Margin="10"
+            Style="{StaticResource ShellSurfaceBorderStyle}">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Border Style="{StaticResource ShellSectionHeaderBorderStyle}">
-            <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
-                       Text="{loc:Loc EditPartWindowView.Title}" />
-        </Border>
-
-        <Border Grid.Row="1"
-                Margin="0 16 0 0"
+        <Border
                 Style="{StaticResource ShellCardBorderStyle}">
         <uc:PartInfoUserControl
                     Editor="{Binding}" />
         </Border>
 
-        <Grid Grid.Row="2"
-              Margin="12 18 12 12">
+        <Grid Grid.Row="1"
+              Margin="0 16 0 0">
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right">
                 <Button MinWidth="96"
-                        Margin="0 0 8 0"
+                        Margin="0 0 10 0"
                     Command="{Binding CancelCommand}"
                     Content="{loc:Loc EditPartWindowView.CancelButton}" />
                 <Button MinWidth="128"

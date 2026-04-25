@@ -10,7 +10,11 @@
              d:DesignHeight="450"
              d:DesignWidth="800"
              d:DataContext="{d:DesignInstance Type=vm:AddPartWindowViewModel}">
-            <UserControl.Resources>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
             <Style x:Key="FormLabelTextBlockStyle"
                    TargetType="TextBlock">
                 <Setter Property="VerticalAlignment"
@@ -22,25 +26,23 @@
                 <Setter Property="MaxWidth"
                     Value="160" />
             </Style>
+            </ResourceDictionary>
             </UserControl.Resources>
     <ScrollViewer DataContext="{Binding Editor, RelativeSource={RelativeSource AncestorType=UserControl}}"
                   VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled"
                   CanContentScroll="True">
-        <StackPanel Margin="12"
+            <StackPanel Margin="16"
                     IsEnabled="{Binding IsNotBusy}">
-            <Border Background="#FFF5F7FA"
-                    BorderBrush="#FFD9E2F2"
-                    BorderThickness="1"
-                    Padding="10"
-                    CornerRadius="6">
+                <Border Style="{StaticResource ShellStatusCardBorderStyle}"
+                    Padding="12">
                 <TextBlock FontSize="14"
                            Foreground="{StaticResource InfoBrush}"
                            FontWeight="SemiBold"
                            Text="{Binding StatusMessage, Mode=OneWay}" />
             </Border>
 
-            <Grid Margin="0 12 0 0"
+                <Grid Margin="0 16 0 0"
                   Grid.IsSharedSizeScope="True">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />

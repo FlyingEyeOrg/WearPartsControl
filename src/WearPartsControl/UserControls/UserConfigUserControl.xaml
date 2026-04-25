@@ -23,6 +23,11 @@
             <Setter Property="MaxWidth"
                 Value="220" />
             </Style>
+            <Style x:Key="FormRowGridStyle"
+                   TargetType="Grid">
+                <Setter Property="Margin"
+                        Value="0 10 0 0" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Background="{StaticResource ShellPanelBackgroundBrush}">
@@ -38,9 +43,9 @@
     <ScrollViewer Grid.Row="1"
                   VerticalScrollBarVisibility="Auto">
         <StackPanel Grid.IsSharedSizeScope="True"
-                    Margin="20 16">
+                    Margin="16">
 
-            <Border Margin="0 12 0 0"
+            <Border
                     Style="{StaticResource ShellStatusCardBorderStyle}">
                 <TextBlock FontWeight="SemiBold"
                            Foreground="{StaticResource InfoBrush}"
@@ -48,44 +53,48 @@
                            Text="{Binding StatusMessage, Mode=OneWay}" />
             </Border>
 
-            <TextBlock Margin="8 18 8 0"
-                       Style="{StaticResource ShellSectionLabelTextStyle}"
-                       Text="{loc:Loc UserConfigControl.LanguageSection}" />
+            <Border Margin="0 12 0 0"
+                    Style="{StaticResource ShellFormSectionCardBorderStyle}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
+                               Text="{loc:Loc UserConfigControl.LanguageSection}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="UserConfigLabelColumn" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                   Text="{loc:Loc UserConfigControl.LanguageLabel}" />
+                        <ComboBox Grid.Column="1"
+                                  Style="{StaticResource ComboBoxExtend}"
+                                  ItemsSource="{Binding LanguageOptions, Mode=OneWay}"
+                                  SelectedItem="{Binding SelectedLanguageOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  DisplayMemberPath="DisplayName"
+                                  hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.LanguagePlaceholder}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
 
-            <Grid Margin="8 8 8 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.LanguageLabel}" />
-                <ComboBox Grid.Column="1"
-                          Style="{StaticResource ComboBoxExtend}"
-                          ItemsSource="{Binding LanguageOptions, Mode=OneWay}"
-                          SelectedItem="{Binding SelectedLanguageOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          DisplayMemberPath="DisplayName"
-                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.LanguagePlaceholder}" />
-            </Grid>
-
-            <TextBlock Margin="8 18 8 0"
-                       Style="{StaticResource ShellSectionLabelTextStyle}"
-                       Text="{loc:Loc UserConfigControl.NotificationSection}" />
-
-            <Grid Margin="8 8 8 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.MeResponsibleWorkIdLabel}" />
-                <TextBox Grid.Column="1"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding MeResponsibleWorkId, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.MeResponsibleWorkIdPlaceholder}" />
-            </Grid>
-            <Grid Margin="8 8 8 0">
+            <Border Margin="0 12 0 0"
+                    Style="{StaticResource ShellFormSectionCardBorderStyle}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
+                               Text="{loc:Loc UserConfigControl.NotificationSection}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="UserConfigLabelColumn" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                   Text="{loc:Loc UserConfigControl.MeResponsibleWorkIdLabel}" />
+                        <TextBox Grid.Column="1"
+                                 Style="{StaticResource TextBoxExtend}"
+                                 Text="{Binding MeResponsibleWorkId, UpdateSourceTrigger=PropertyChanged}"
+                                 hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.MeResponsibleWorkIdPlaceholder}" />
+                    </Grid>
+                    <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -98,7 +107,7 @@
                          Text="{Binding MeResponsibleName, UpdateSourceTrigger=PropertyChanged}"
                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.MeResponsibleNamePlaceholder}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -111,7 +120,7 @@
                          Text="{Binding PrdResponsibleWorkId, UpdateSourceTrigger=PropertyChanged}"
                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.PrdResponsibleWorkIdPlaceholder}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -124,7 +133,7 @@
                          Text="{Binding PrdResponsibleName, UpdateSourceTrigger=PropertyChanged}"
                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.PrdResponsibleNamePlaceholder}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -137,7 +146,7 @@
                          Text="{Binding ReplacementOperatorName, UpdateSourceTrigger=PropertyChanged}"
                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.ReplacementOperatorNamePlaceholder}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -149,7 +158,7 @@
                           VerticalAlignment="Center"
                           IsChecked="{Binding ComNotificationEnabled}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -162,7 +171,7 @@
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding ComPushUrl, Mode=OneWay}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -175,7 +184,7 @@
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding ComDeIpaasKeyAuth, Mode=OneWay}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -188,7 +197,7 @@
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding ComAgentId, Mode=OneWay}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -201,7 +210,7 @@
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding ComGroupTemplateId, Mode=OneWay}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -214,7 +223,7 @@
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding ComWorkTemplateId, Mode=OneWay}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -227,7 +236,7 @@
                          Style="{StaticResource TextBoxExtend}"
                          Text="{Binding ComUserType, Mode=OneWay}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -240,7 +249,7 @@
                          Text="{Binding ComAccessToken, UpdateSourceTrigger=PropertyChanged}"
                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.ComAccessTokenPlaceholder}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -253,15 +262,15 @@
                          Text="{Binding ComSecret, UpdateSourceTrigger=PropertyChanged}"
                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.ComSecretPlaceholder}" />
             </Grid>
-
-            <TextBlock Margin="8 18 8 0"
-                       Style="{StaticResource ShellSectionLabelTextStyle}"
-                       Text="{loc:Loc UserConfigControl.SpacerValidationSection}" />
+                </StackPanel>
+            </Border>
 
             <Border Margin="0 12 0 0"
-                    Style="{StaticResource ShellCardBorderStyle}">
+                    Style="{StaticResource ShellFormSectionCardBorderStyle}">
             <StackPanel>
-            <Grid Margin="8 0 8 0">
+            <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
+                       Text="{loc:Loc UserConfigControl.SpacerValidationSection}" />
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -273,7 +282,7 @@
                           VerticalAlignment="Center"
                           IsChecked="{Binding SpacerValidationEnabled}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -287,7 +296,7 @@
                          Text="{Binding SpacerValidationUrl, Mode=OneWay}"
                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationUrlPlaceholder}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -300,7 +309,7 @@
                          Text="{Binding SpacerValidationTimeoutMilliseconds, UpdateSourceTrigger=PropertyChanged}"
                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationTimeoutPlaceholder}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -312,7 +321,7 @@
                           VerticalAlignment="Center"
                           IsChecked="{Binding SpacerValidationIgnoreServerCertificateErrors}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -325,7 +334,7 @@
                          Text="{Binding SpacerValidationCodeSeparator, UpdateSourceTrigger=PropertyChanged}"
                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationCodeSeparatorPlaceholder}" />
             </Grid>
-            <Grid Margin="8 8 8 0">
+            <Grid Style="{StaticResource FormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -339,7 +348,7 @@
                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationExpectedSegmentCountPlaceholder}" />
             </Grid>
 
-            <Grid Margin="8 16 8 8">
+                    <Grid Margin="0 16 0 0">
                 <Button MinWidth="96"
                         Style="{StaticResource ButtonPrimary}"
                         Command="{Binding SaveCommand}"

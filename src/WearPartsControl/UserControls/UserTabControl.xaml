@@ -9,67 +9,72 @@
              d:DesignHeight="450"
              d:DesignWidth="800">
     <UserControl.Resources>
-        <SolidColorBrush x:Key="TabHoverBrush"
-                 Color="#FFE7F1F7" />
-        <SolidColorBrush x:Key="TabTextBrush"
+            <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+                </ResourceDictionary.MergedDictionaries>
+                <SolidColorBrush x:Key="TabHoverBrush"
+                     Color="#FFE7F1F7" />
+                <SolidColorBrush x:Key="TabTextBrush"
                          Color="#FF1F2D3D" />
-        <SolidColorBrush x:Key="TabPanelBackgroundBrush"
-                 Color="#FFF8FBFD" />
-        <SolidColorBrush x:Key="TabPanelBorderBrush"
-                 Color="#FFDFE9F1" />
+                <SolidColorBrush x:Key="TabPanelBackgroundBrush"
+                     Color="#FFF8FBFD" />
+                <SolidColorBrush x:Key="TabPanelBorderBrush"
+                     Color="#FFDFE9F1" />
 
-        <Style x:Key="TabItemButtonStyle"
-               TargetType="ToggleButton">
-            <Setter Property="Background"
+                <Style x:Key="TabItemButtonStyle"
+                   TargetType="ToggleButton">
+                <Setter Property="Background"
                     Value="Transparent" />
-            <Setter Property="BorderThickness"
+                <Setter Property="BorderThickness"
                     Value="0" />
-            <Setter Property="Padding"
+                <Setter Property="Padding"
                     Value="0" />
-            <Setter Property="HorizontalContentAlignment"
+                <Setter Property="HorizontalContentAlignment"
                     Value="Stretch" />
-            <Setter Property="VerticalContentAlignment"
+                <Setter Property="VerticalContentAlignment"
                     Value="Stretch" />
-            <Setter Property="HorizontalAlignment"
+                <Setter Property="HorizontalAlignment"
                     Value="Stretch" />
-            <Setter Property="Cursor"
+                <Setter Property="Cursor"
                     Value="Hand" />
-            <Setter Property="Foreground"
+                <Setter Property="Foreground"
                     Value="{StaticResource TabTextBrush}" />
-            <Setter Property="Template">
-                <Setter.Value>
+                <Setter Property="Template">
+                    <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
                         <Border x:Name="RootBorder"
-                            Background="{TemplateBinding Background}"
-                            CornerRadius="14">
-                            <ContentPresenter HorizontalAlignment="Stretch"
-                                              VerticalAlignment="Center" />
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="14">
+                        <ContentPresenter HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsMouseOver"
-                                               Value="True" />
-                                    <Condition Property="IsChecked"
-                                               Value="False" />
-                                </MultiTrigger.Conditions>
-                                <Setter TargetName="RootBorder"
-                                        Property="Background"
-                                        Value="{StaticResource TabHoverBrush}" />
-                            </MultiTrigger>
-                            <Trigger Property="IsChecked"
-                                     Value="True">
-                                <Setter TargetName="RootBorder"
-                                        Property="Background"
-                                        Value="{DynamicResource PrimaryBrush}" />
-                                <Setter Property="Foreground"
-                                        Value="White" />
-                            </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                            <Condition Property="IsMouseOver"
+                                   Value="True" />
+                            <Condition Property="IsChecked"
+                                   Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="RootBorder"
+                                Property="Background"
+                                Value="{StaticResource TabHoverBrush}" />
+                        </MultiTrigger>
+                        <Trigger Property="IsChecked"
+                             Value="True">
+                            <Setter TargetName="RootBorder"
+                                Property="Background"
+                                Value="{DynamicResource PrimaryBrush}" />
+                            <Setter Property="Foreground"
+                                Value="White" />
+                        </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+                    </Setter.Value>
+                </Setter>
+                </Style>
+            </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid>
@@ -83,8 +88,8 @@
                 Background="{StaticResource TabPanelBackgroundBrush}"
                 BorderBrush="{StaticResource TabPanelBorderBrush}"
                 BorderThickness="1"
-                CornerRadius="16">
-            <ScrollViewer Padding="10"
+                CornerRadius="18">
+            <ScrollViewer Padding="12"
                       VerticalScrollBarVisibility="Auto">
             <ItemsControl x:Name="TabItemsControl"
                           AlternationCount="{x:Static sys:Int32.MaxValue}"
@@ -116,7 +121,7 @@
         <Border Grid.Column="1"
                 MinWidth="0"
                 MinHeight="0"
-                Padding="3"
+            Padding="4"
                 Background="#FFF8FBFD"
                 BorderBrush="#DCE7EF"
                 BorderThickness="1"

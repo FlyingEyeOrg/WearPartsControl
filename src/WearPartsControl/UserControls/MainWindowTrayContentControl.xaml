@@ -8,23 +8,30 @@
              xmlns:vm="clr-namespace:WearPartsControl.ViewModels"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Border MinWidth="300"
             MaxWidth="340"
             Padding="18"
             Background="#FCFEFF"
             BorderBrush="#DCE7EF"
             BorderThickness="1"
-            CornerRadius="16">
+            CornerRadius="18">
         <StackPanel>
             <TextBlock FontSize="17"
                        FontWeight="Bold"
                    Foreground="#1E3550"
                        Text="{loc:Loc MainWindowTrayContent.Title}" />
-            <TextBlock Margin="0 4 0 0"
+            <TextBlock Margin="0 6 0 0"
                    Foreground="#61758A"
                        Text="{loc:Loc MainWindowTrayContent.Subtitle}" />
 
-            <Border Margin="0 12 0 12"
+            <Border Margin="0 14 0 14"
                     Height="1"
                 Background="#E4ECF3" />
 
@@ -35,7 +42,7 @@
                        FontWeight="SemiBold"
                        Text="{Binding CurrentUserWorkIdText, Mode=OneWay}" />
 
-            <TextBlock Margin="0 10 0 0"
+            <TextBlock Margin="0 12 0 0"
                    Foreground="#61758A"
                        Text="{loc:Loc MainWindowTrayContent.AccessLevelLabel}" />
             <TextBlock Margin="0 2 0 0"
@@ -43,7 +50,7 @@
                        FontWeight="SemiBold"
                        Text="{Binding CurrentUserAccessLevelText, Mode=OneWay}" />
 
-            <TextBlock Margin="0 10 0 0"
+            <TextBlock Margin="0 12 0 0"
                    Foreground="#61758A"
                        Text="{loc:Loc MainWindowTrayContent.VersionLabel}" />
             <TextBlock Margin="0 2 0 0"
@@ -51,7 +58,7 @@
                        FontWeight="SemiBold"
                        Text="{Binding SoftwareVersionText, Mode=OneWay}" />
 
-            <TextBlock Margin="0 12 0 0"
+            <TextBlock Margin="0 14 0 0"
                        TextWrapping="Wrap"
                    Foreground="#506173"
                        Text="{loc:Loc MainWindowTrayContent.MinimizeHint}" />
@@ -59,18 +66,18 @@
             <Grid Margin="0 16 0 0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
-                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="10" />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="0"
                         MinWidth="120"
-                        Padding="12 6"
+                        Padding="14 6"
                     Style="{StaticResource ButtonPrimary}"
                         Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:MainWindowTrayContentControl}}, Path=RestoreCommand}"
                         Content="{loc:Loc MainWindowTrayContent.RestoreButton}" />
                 <Button Grid.Column="2"
                         MinWidth="120"
-                        Padding="12 6"
+                        Padding="14 6"
                         Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:MainWindowTrayContentControl}}, Path=ExitCommand}"
                         Content="{loc:Loc MainWindowTrayContent.ExitButton}" />
             </Grid>

@@ -40,7 +40,7 @@
                         Background="{StaticResource ShellHeaderBrush}"
                         BorderBrush="#DFE9F1"
                         BorderThickness="1"
-                        CornerRadius="16">
+                    CornerRadius="18">
                     <Grid x:Name="TitleBarGrid">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -54,7 +54,7 @@
                                 Background="White"
                                 BorderBrush="#E1EBF3"
                                 BorderThickness="1"
-                                CornerRadius="12">
+                            CornerRadius="14">
                             <StackPanel Orientation="Horizontal">
                                 <Image x:Name="LogoImage"
                                        Source="pack://application:,,,/WearPartsControl;component/Assets/catl.ico"

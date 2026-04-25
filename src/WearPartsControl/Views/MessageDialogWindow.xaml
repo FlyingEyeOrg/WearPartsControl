@@ -17,11 +17,11 @@
             <SolidColorBrush x:Key="DialogSurfaceBrush" Color="#FFFDFEFF" />
         </ResourceDictionary>
     </Window.Resources>
-        <Border Margin="1"
+    <Border Margin="1"
             Background="{StaticResource DialogSurfaceBrush}"
             BorderBrush="{StaticResource ShellCardBorderBrush}"
             BorderThickness="1"
-            CornerRadius="10">
+            CornerRadius="18">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -29,27 +29,23 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Border x:Name="HeaderBorder"
-                    Padding="18 14"
-                    Background="{StaticResource ShellHeaderBackgroundBrush}"
-                    CornerRadius="10 10 0 0">
-                <TextBlock x:Name="TitleTextBlock"
-                           FontSize="18"
-                           FontWeight="Bold"
-                           Foreground="White" />
-            </Border>
+            <Border x:Name="AccentBar"
+                    Height="4"
+                    Margin="18 18 18 0"
+                    HorizontalAlignment="Stretch"
+                    CornerRadius="2" />
 
             <Grid Grid.Row="1"
-                Margin="18 16 18 0">
+                  Margin="18 18 18 0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="16" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Border x:Name="GlyphBorder"
-                    Width="36"
-                    Height="36"
-                    CornerRadius="18"
+                    Width="40"
+                    Height="40"
+                    CornerRadius="20"
                         VerticalAlignment="Top">
                     <TextBlock x:Name="GlyphTextBlock"
                                HorizontalAlignment="Center"
@@ -67,17 +63,17 @@
             </Grid>
 
             <StackPanel Grid.Row="2"
-                           Margin="18 18 18 18"
+                    Margin="18 20 18 18"
                         Orientation="Horizontal"
                         HorizontalAlignment="Right">
                 <Button x:Name="TertiaryButton"
                         MinWidth="96"
-                        Margin="0 0 8 0"
+                    Margin="0 0 10 0"
                         Visibility="Collapsed"
                         Click="OnTertiaryButtonClick" />
                 <Button x:Name="SecondaryButton"
                         MinWidth="96"
-                        Margin="0 0 8 0"
+                    Margin="0 0 10 0"
                         Visibility="Collapsed"
                         Click="OnSecondaryButtonClick" />
                 <Button x:Name="PrimaryButton"
