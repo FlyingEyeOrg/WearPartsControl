@@ -121,7 +121,7 @@
         <Border Grid.Column="1"
                 MinWidth="0"
                 MinHeight="0"
-            Padding="4"
+                Padding="12"
                 Background="#FFF8FBFD"
                 BorderBrush="#DCE7EF"
                 BorderThickness="1"

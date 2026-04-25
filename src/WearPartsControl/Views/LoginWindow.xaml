@@ -32,13 +32,13 @@
                 Background="#FCFEFF"
                 BorderBrush="#D8E5F0"
                 BorderThickness="1"
-                CornerRadius="18">
+            CornerRadius="0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.2*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Border CornerRadius="18,0,0,18"
+                <Border CornerRadius="0"
                         Background="{StaticResource LoginWindowHeroImageBrush}">
                     <Grid>
                         <Rectangle Fill="{StaticResource LoginWindowHeroOverlayBrush}" />

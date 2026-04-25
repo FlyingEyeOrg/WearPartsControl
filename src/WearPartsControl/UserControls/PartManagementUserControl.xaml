@@ -23,13 +23,13 @@
         </Grid.RowDefinitions>
 
         <StackPanel>
-                <Border Margin="8 8 8 0"
+                <Border Margin="0"
                     Style="{StaticResource ShellSectionHeaderBorderStyle}">
                 <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
                        Text="{loc:Loc PartManagementControl.Title}" />
             </Border>
 
-                <Border Margin="8 12 8 0"
+                <Border Margin="0 12 0 0"
                     Style="{StaticResource ShellStatusCardBorderStyle}">
                 <Grid Margin="8">
                     <Grid.RowDefinitions>
@@ -115,7 +115,7 @@
         </StackPanel>
 
         <Border Grid.Row="1"
-            Margin="8 12 8 8"
+            Margin="0 12 0 0"
                 MinHeight="0"
                 MinWidth="0"
             ClipToBounds="True"

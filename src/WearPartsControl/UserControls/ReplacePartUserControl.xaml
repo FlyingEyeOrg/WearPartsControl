@@ -33,14 +33,14 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <Border Margin="8 8 8 0"
+                <Border Margin="0"
                     Style="{StaticResource ShellSectionHeaderBorderStyle}">
                 <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
                            Text="{loc:Loc ReplacePartControl.Title}" />
             </Border>
         <ScrollViewer Grid.Row="1">
             <Grid IsEnabled="{Binding IsTabContentEnabled}"
-                  Margin="8"
+                Margin="0"
                   Grid.IsSharedSizeScope="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -48,7 +48,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel>
-                <Border Margin="8 12 8 0"
+                <Border Margin="0 12 0 0"
                     Style="{StaticResource ShellStatusCardBorderStyle}">
                     <Grid Margin="8">
                         <Grid.ColumnDefinitions>
@@ -82,7 +82,7 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-                <Border Margin="8 12 8 0"
+                <Border Margin="0 12 0 0"
                         Style="{StaticResource ShellCardBorderStyle}">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -201,7 +201,7 @@
                     </StackPanel>
                 </Grid>
                 </Border>
-                <Border Margin="8 12 8 0"
+                <Border Margin="0 12 0 0"
                         Style="{StaticResource ShellCardBorderStyle}">
                 <Grid>
                     <Grid.ColumnDefinitions>

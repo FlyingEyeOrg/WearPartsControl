@@ -9,6 +9,7 @@ public partial class MessageDialogWindow : AppDialogWindow
 {
     private MessageBoxResult _result;
     private readonly MessageBoxButton _buttons;
+    private bool _hasExplicitResult;
 
     public MessageDialogWindow(
         string message,
@@ -29,6 +30,7 @@ public partial class MessageDialogWindow : AppDialogWindow
 
         ConfigureVisual(image);
         ConfigureButtons(buttons);
+        Closing += OnDialogClosing;
     }
 
     public MessageBoxResult Result => _result;
@@ -125,9 +127,20 @@ public partial class MessageDialogWindow : AppDialogWindow
 
     private void CloseWith(MessageBoxResult result)
     {
+        _hasExplicitResult = true;
         _result = result;
         DialogResult = result is MessageBoxResult.OK or MessageBoxResult.Yes;
         Close();
+    }
+
+    private void OnDialogClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (_hasExplicitResult)
+        {
+            return;
+        }
+
+        _result = GetCloseResult(_buttons, _result);
     }
 
     private static MessageBoxResult GetFallbackResult(MessageBoxButton buttons)
@@ -139,6 +152,16 @@ public partial class MessageDialogWindow : AppDialogWindow
             MessageBoxButton.YesNo => MessageBoxResult.No,
             MessageBoxButton.YesNoCancel => MessageBoxResult.Cancel,
             _ => MessageBoxResult.None
+        };
+    }
+
+    private static MessageBoxResult GetCloseResult(MessageBoxButton buttons, MessageBoxResult fallbackResult)
+    {
+        return buttons switch
+        {
+            MessageBoxButton.OKCancel => MessageBoxResult.Cancel,
+            MessageBoxButton.YesNoCancel => MessageBoxResult.Cancel,
+            _ => fallbackResult
         };
     }
 

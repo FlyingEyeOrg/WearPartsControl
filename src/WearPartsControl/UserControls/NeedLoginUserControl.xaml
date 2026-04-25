@@ -18,7 +18,7 @@
     </UserControl.Resources>
     <Grid Background="{StaticResource ShellPanelBackgroundBrush}">
         <Border MaxWidth="540"
-                Margin="24"
+            Margin="0"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center"
                 Style="{StaticResource ShellCardBorderStyle}">

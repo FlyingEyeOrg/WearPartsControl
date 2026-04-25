@@ -21,7 +21,7 @@
             Background="{StaticResource DialogSurfaceBrush}"
             BorderBrush="{StaticResource ShellCardBorderBrush}"
             BorderThickness="1"
-            CornerRadius="18">
+            CornerRadius="0">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />

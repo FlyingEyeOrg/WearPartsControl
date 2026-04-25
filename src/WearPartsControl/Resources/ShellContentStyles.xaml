@@ -61,6 +61,8 @@
            BasedOn="{StaticResource ShellCardBorderStyle}">
         <Setter Property="Background"
                 Value="{StaticResource ShellPanelBackgroundBrush}" />
+        <Setter Property="CornerRadius"
+                Value="0" />
     </Style>
     <Style x:Key="ShellFormSectionCardBorderStyle"
            TargetType="Border"

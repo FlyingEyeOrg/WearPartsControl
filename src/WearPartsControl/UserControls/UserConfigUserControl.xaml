@@ -35,7 +35,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Border Margin="8 8 8 0"
+        <Border Margin="0"
                 Style="{StaticResource ShellSectionHeaderBorderStyle}">
             <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
                        Text="{loc:Loc UserConfigControl.Title}" />
@@ -43,7 +43,7 @@
     <ScrollViewer Grid.Row="1"
                   VerticalScrollBarVisibility="Auto">
         <StackPanel Grid.IsSharedSizeScope="True"
-                    Margin="16">
+                    Margin="0">
 
             <Border
                     Style="{StaticResource ShellStatusCardBorderStyle}">

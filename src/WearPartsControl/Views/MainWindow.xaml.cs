@@ -270,7 +270,7 @@ namespace WearPartsControl.Views
                 MessageBoxButton.YesNoCancel,
                 MessageBoxImage.Question,
                 this,
-                MessageBoxResult.Yes);
+                MessageBoxResult.Cancel);
         }
 
         private bool ConfirmTrayExit()
