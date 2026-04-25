@@ -303,7 +303,7 @@
                          Text="{Binding SpacerValidationUrl, Mode=OneWay}"
                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationUrlPlaceholder}" />
             </Grid>
-            <Grid Style="{StaticResource FormRowGridStyle}">
+            <Grid Style="{StaticResource ShellFormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -316,7 +316,7 @@
                          Text="{Binding SpacerValidationTimeoutMilliseconds, UpdateSourceTrigger=PropertyChanged}"
                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationTimeoutPlaceholder}" />
             </Grid>
-            <Grid Style="{StaticResource FormRowGridStyle}">
+            <Grid Style="{StaticResource ShellFormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -328,7 +328,7 @@
                           VerticalAlignment="Center"
                           IsChecked="{Binding SpacerValidationIgnoreServerCertificateErrors}" />
             </Grid>
-            <Grid Style="{StaticResource FormRowGridStyle}">
+            <Grid Style="{StaticResource ShellFormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />
@@ -341,7 +341,7 @@
                          Text="{Binding SpacerValidationCodeSeparator, UpdateSourceTrigger=PropertyChanged}"
                          hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationCodeSeparatorPlaceholder}" />
             </Grid>
-            <Grid Style="{StaticResource FormRowGridStyle}">
+            <Grid Style="{StaticResource ShellFormRowGridStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"
                                       SharedSizeGroup="UserConfigLabelColumn" />

@@ -30,7 +30,7 @@
             Background="{StaticResource DialogSurfaceBrush}"
             BorderBrush="{StaticResource ShellCardBorderBrush}"
             BorderThickness="1"
-            CornerRadius="22">
+            CornerRadius="0">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -49,12 +49,12 @@
                                 Width="72"
                                 Height="6"
                                 HorizontalAlignment="Left"
-                                CornerRadius="3" />
+                            CornerRadius="0" />
                         <Border x:Name="GlyphBorder"
                                 Width="52"
                                 Height="52"
                                 Margin="0 18 0 0"
-                                CornerRadius="26"
+                            CornerRadius="0"
                                 VerticalAlignment="Top">
                             <TextBlock x:Name="GlyphTextBlock"
                                        HorizontalAlignment="Center"
@@ -85,7 +85,7 @@
                     Background="#F6FAFD"
                     BorderBrush="#E1EAF2"
                     BorderThickness="0,1,0,0"
-                    CornerRadius="0,0,22,22">
+                    CornerRadius="0">
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Right">
                     <Button x:Name="TertiaryButton"
