@@ -15,13 +15,6 @@
             <ResourceDictionary.MergedDictionaries>
             <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <Style x:Key="ActionSecondaryButtonStyle"
-                   TargetType="Button">
-                <Setter Property="Margin"
-                        Value="0 10 12 0" />
-                <Setter Property="MinWidth"
-                        Value="120" />
-            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Background="{StaticResource ShellPanelBackgroundBrush}">
@@ -251,7 +244,9 @@
                     <Border Margin="0 12 0 0"
                         Style="{StaticResource ShellActionCardBorderStyle}">
                     <WrapPanel Style="{StaticResource ShellToolbarWrapPanelStyle}">
-                <Button Style="{StaticResource ActionSecondaryButtonStyle}"
+                <Button Margin="0 10 12 0"
+                    MinWidth="120"
+                    Style="{StaticResource ButtonDefault}"
                         IsEnabled="{Binding IsImportLegacyConfigurationEnabled}"
                         Click="OnImportLegacyConfigurationClicked"
                         Content="{loc:Loc ClientAppInfoControl.ImportLegacyConfigurationButton}" />

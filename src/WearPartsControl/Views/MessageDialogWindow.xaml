@@ -3,7 +3,6 @@
                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                       xmlns:hc="https://handyorg.github.io/handycontrol"
                        xmlns:local="clr-namespace:WearPartsControl.Views"
                        mc:Ignorable="d"
                        Width="520"
@@ -29,48 +28,25 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Grid Margin="24 24 24 20">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="18" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid Width="52"
-                          Height="52">
-                        <Border x:Name="AccentBar"
-                                Width="52"
-                                Height="52"
-                                HorizontalAlignment="Stretch"
-                            CornerRadius="0" />
-                        <Button x:Name="GlyphBorder"
-                                Width="52"
-                                Height="52"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                IsHitTestVisible="False"
-                                Focusable="False"
-                                Style="{StaticResource ButtonIcon}"
-                                Foreground="White"
-                                VerticalAlignment="Top" />
-                        <TextBlock x:Name="GlyphTextBlock"
-                                   Visibility="Collapsed" />
-                    </Grid>
-                    <StackPanel Grid.Column="2">
-                        <TextBlock FontSize="22"
-                                   FontWeight="Bold"
-                                   Foreground="#1E3550"
-                                   TextWrapping="Wrap"
-                                   Text="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=Title}" />
-                        <TextBlock x:Name="MessageTextBlock"
-                                   Margin="0 12 0 0"
-                                   TextWrapping="Wrap"
-                                   Foreground="#42586C"
-                                   FontSize="14"
-                                   LineHeight="22" />
-                    </StackPanel>
-                </Grid>
-            </Grid>
+            <StackPanel Margin="24 24 24 20">
+                <Border x:Name="AccentBar"
+                        Width="72"
+                        Height="6"
+                        HorizontalAlignment="Left"
+                        CornerRadius="0" />
+                <TextBlock Margin="0 18 0 0"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           Foreground="#1E3550"
+                           TextWrapping="Wrap"
+                           Text="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=Title}" />
+                <TextBlock x:Name="MessageTextBlock"
+                           Margin="0 12 0 0"
+                           TextWrapping="Wrap"
+                           Foreground="#42586C"
+                           FontSize="14"
+                           LineHeight="22" />
+            </StackPanel>
 
             <Border Grid.Row="1"
                     Padding="24 18 24 22"

@@ -2,7 +2,6 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using IconElement = HandyControl.Controls.IconElement;
 
 namespace WearPartsControl.Views;
 
@@ -65,18 +64,16 @@ public partial class MessageDialogWindow : AppDialogWindow
 
     private void ConfigureVisual(MessageBoxImage image)
     {
-        var (brush, geometryKey) = image switch
+        var brush = image switch
         {
-            MessageBoxImage.Error => (CreateBrush("#D64C4C"), "DeleteFillCircleGeometry"),
-            MessageBoxImage.Warning => (CreateBrush("#D88B22"), "DeleteFillCircleGeometry"),
-            MessageBoxImage.Question => (CreateBrush("#3C6C97"), "SearchGeometry"),
-            MessageBoxImage.Information => (CreateBrush("#2D8F78"), "SearchGeometry"),
-            _ => (CreateBrush("#3C6C97"), "SearchGeometry")
+            MessageBoxImage.Error => CreateBrush("#D64C4C"),
+            MessageBoxImage.Warning => CreateBrush("#D88B22"),
+            MessageBoxImage.Question => CreateBrush("#3C6C97"),
+            MessageBoxImage.Information => CreateBrush("#2D8F78"),
+            _ => CreateBrush("#3C6C97")
         };
 
         AccentBar.Background = brush;
-        GlyphBorder.Foreground = Brushes.White;
-        GlyphBorder.SetResourceReference(IconElement.GeometryProperty, geometryKey);
     }
 
     private void ConfigureButtons(MessageBoxButton buttons)
