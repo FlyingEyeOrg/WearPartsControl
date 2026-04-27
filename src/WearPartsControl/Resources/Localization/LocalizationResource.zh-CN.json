@@ -66,6 +66,7 @@
   },
   "UserConfigControl": {
     "Title": "用户配置",
+    "StatusBannerTitle": "状态信息通知",
     "LanguageSection": "语言配置",
     "NotificationSection": "通知配置",
     "LanguageLabel": "语言：",
@@ -194,6 +195,7 @@
   },
   "PartManagementControl": {
     "Title": "易损件管理",
+    "CheckedHeader": "勾选",
     "CurrentResourceNumberLabel": "当前资源号：",
     "PartNameLabel": "易损件名称：",
     "PartNamePlaceholder": "请输入易损件名称",
@@ -295,6 +297,7 @@
   },
   "ToolChangeManagementControl": {
     "Title": "换刀类型管理",
+    "CheckedHeader": "勾选",
     "NameLabel": "名称：",
     "NamePlaceholder": "请输入换刀类型名称",
     "CodeLabel": "编码：",
@@ -442,9 +445,11 @@
       "DefinitionsEmpty": "资源号 {0} 当前暂无易损件定义。",
       "DefinitionsLoaded": "已加载资源号 {0} 的 {1} 条易损件定义。",
       "DeleteConfirmationMessage": "确认删除易损件“{0}”吗？",
+      "DeleteMultipleConfirmationMessage": "确认删除已勾选的 {0} 条易损件定义吗？",
       "DeleteConfirmationTitle": "删除确认",
       "Deleting": "正在删除易损件...",
       "Deleted": "易损件 {0} 已删除。",
+      "DeletedMultiple": "已删除 {0} 条易损件定义。",
       "NoMatchedDefinitions": "资源号 {0} 没有匹配“{1}”的易损件。",
       "FilteredDefinitionsCount": "当前显示 {0} 条易损件定义。"
     },
@@ -474,9 +479,11 @@
       "Updating": "正在编辑换刀类型...",
       "UpdatedWithName": "换刀类型 {0} 已修改。",
       "DeleteConfirmationMessage": "确认删除换刀类型“{0}”吗？",
+      "DeleteMultipleConfirmationMessage": "确认删除已勾选的 {0} 条换刀类型吗？",
       "DeleteConfirmationTitle": "删除确认",
       "Deleting": "正在删除换刀类型...",
-      "Deleted": "换刀类型 {0} 已删除。"
+      "Deleted": "换刀类型 {0} 已删除。",
+      "DeletedMultiple": "已删除 {0} 条换刀类型。"
     },
     "PartUpdateRecordVm": {
       "PromptLoadCurrent": "请先加载当前设备的易损件更换记录。",

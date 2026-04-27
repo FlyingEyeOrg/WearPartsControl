@@ -112,9 +112,9 @@
             <DataGrid AutoGenerateColumns="False"
                       CanUserAddRows="False"
                       CanUserDeleteRows="False"
-                      IsReadOnly="True"
+                      IsReadOnly="False"
                       ItemsSource="{Binding Definitions}"
-                      SelectedItem="{Binding SelectedDefinition, Mode=TwoWay}"
+                      SelectedItem="{Binding SelectedDefinitionRow, Mode=TwoWay}"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
@@ -123,65 +123,101 @@
                       EnableColumnVirtualization="True"
                       EnableRowVirtualization="True">
                 <DataGrid.Columns>
+                    <DataGridTemplateColumn Width="SizeToHeader">
+                        <DataGridTemplateColumn.HeaderTemplate>
+                            <DataTemplate>
+                                <CheckBox VerticalAlignment="Center"
+                                          IsChecked="{Binding DataContext.AreAllDefinitionsChecked, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Content="{loc:Loc PartManagementControl.CheckedHeader}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.HeaderTemplate>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.ResourceNumberHeader}"
-                                        Binding="{Binding ResourceNumber}"
+                                        Binding="{Binding Item.ResourceNumber}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.NameHeader}"
-                                        Binding="{Binding PartName}"
+                                        Binding="{Binding Item.PartName}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.WearPartTypeHeader}"
-                                        Binding="{Binding WearPartTypeName}"
+                                        Binding="{Binding Item.WearPartTypeName}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.LifetimeTypeHeader}"
-                                        Binding="{Binding LifetimeType}"
+                                        Binding="{Binding Item.LifetimeType}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridCheckBoxColumn Header="{loc:Loc PartManagementControl.IsShutdownHeader}"
-                                            Binding="{Binding IsShutdown}"
+                                            Binding="{Binding Item.IsShutdown}"
+                                            IsReadOnly="True"
                                             Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.CurrentValueAddressHeader}"
-                                        Binding="{Binding CurrentValueAddress}"
+                                        Binding="{Binding Item.CurrentValueAddress}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.CurrentValueDataTypeHeader}"
-                                        Binding="{Binding CurrentValueDataType}"
+                                        Binding="{Binding Item.CurrentValueDataType}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.WarningValueAddressHeader}"
-                                        Binding="{Binding WarningValueAddress}"
+                                        Binding="{Binding Item.WarningValueAddress}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.WarningValueDataTypeHeader}"
-                                        Binding="{Binding WarningValueDataType}"
+                                        Binding="{Binding Item.WarningValueDataType}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.ShutdownValueAddressHeader}"
-                                        Binding="{Binding ShutdownValueAddress}"
+                                        Binding="{Binding Item.ShutdownValueAddress}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.ShutdownValueDataTypeHeader}"
-                                        Binding="{Binding ShutdownValueDataType}"
+                                        Binding="{Binding Item.ShutdownValueDataType}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.InputModeHeader}"
-                                        Binding="{Binding InputMode}"
+                                        Binding="{Binding Item.InputMode}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.CodeMinLengthHeader}"
-                                        Binding="{Binding CodeMinLength}"
+                                        Binding="{Binding Item.CodeMinLength}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.CodeMaxLengthHeader}"
-                                        Binding="{Binding CodeMaxLength}"
+                                        Binding="{Binding Item.CodeMaxLength}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.PlcZeroClearAddressHeader}"
-                                        Binding="{Binding PlcZeroClearAddress}"
+                                        Binding="{Binding Item.PlcZeroClearAddress}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.BarcodeWriteAddressHeader}"
-                                        Binding="{Binding BarcodeWriteAddress}"
+                                        Binding="{Binding Item.BarcodeWriteAddress}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.CreatedAtHeader}"
-                                        Binding="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                        Binding="{Binding Item.CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.CreatedByHeader}"
-                                        Binding="{Binding CreatedBy}"
+                                        Binding="{Binding Item.CreatedBy}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.UpdatedAtHeader}"
-                                        Binding="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                        Binding="{Binding Item.UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.UpdatedByHeader}"
-                                        Binding="{Binding UpdatedBy}"
+                                        Binding="{Binding Item.UpdatedBy}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                 </DataGrid.Columns>
             </DataGrid>

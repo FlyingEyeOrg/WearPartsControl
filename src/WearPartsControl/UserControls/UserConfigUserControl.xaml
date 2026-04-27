@@ -28,6 +28,7 @@
     <Grid Background="{StaticResource ShellPanelBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -36,19 +37,24 @@
                        Text="{loc:Loc UserConfigControl.Title}" />
         </Border>
 
-        <ScrollViewer Grid.Row="1"
+        <Border Grid.Row="1"
+            Margin="0 12 0 0"
+            Style="{StaticResource ShellStatusCardBorderStyle}">
+            <StackPanel>
+            <TextBlock FontWeight="SemiBold"
+                   Foreground="{StaticResource InfoBrush}"
+                   Text="{loc:Loc UserConfigControl.StatusBannerTitle}" />
+            <TextBlock Margin="0 6 0 0"
+                   TextWrapping="Wrap"
+                   Text="{Binding StatusMessage, Mode=OneWay}" />
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Row="2"
                       VerticalScrollBarVisibility="Auto">
             <StackPanel Grid.IsSharedSizeScope="True"
                         Style="{StaticResource ShellPageContentStackPanelStyle}">
-                <Border Style="{StaticResource ShellStatusCardBorderStyle}">
-                    <TextBlock FontWeight="SemiBold"
-                               Foreground="{StaticResource InfoBrush}"
-                               TextWrapping="Wrap"
-                               Text="{Binding StatusMessage, Mode=OneWay}" />
-                </Border>
-
-                <Border Margin="0 12 0 0"
-                        Style="{StaticResource ShellFormSectionCardBorderStyle}">
+            <Border Style="{StaticResource ShellFormSectionCardBorderStyle}">
                     <StackPanel>
                         <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
                                    Text="{loc:Loc UserConfigControl.LanguageSection}" />

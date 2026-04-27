@@ -122,29 +122,51 @@
             <DataGrid AutoGenerateColumns="False"
                       CanUserAddRows="False"
                       CanUserDeleteRows="False"
-                      IsReadOnly="True"
+                      IsReadOnly="False"
                       ItemsSource="{Binding Definitions}"
-                      SelectedItem="{Binding SelectedDefinition, Mode=TwoWay}"
+                      SelectedItem="{Binding SelectedDefinitionRow, Mode=TwoWay}"
                       EnableColumnVirtualization="True"
                       EnableRowVirtualization="True">
                 <DataGrid.Columns>
+                    <DataGridTemplateColumn Width="SizeToHeader">
+                        <DataGridTemplateColumn.HeaderTemplate>
+                            <DataTemplate>
+                                <CheckBox VerticalAlignment="Center"
+                                          IsChecked="{Binding DataContext.AreAllDefinitionsChecked, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Content="{loc:Loc ToolChangeManagementControl.CheckedHeader}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.HeaderTemplate>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTextColumn Header="{loc:Loc ToolChangeManagementControl.NameHeader}"
-                                        Binding="{Binding Name}"
+                                        Binding="{Binding Item.Name}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc ToolChangeManagementControl.CodeHeader}"
-                                        Binding="{Binding Code}"
+                                        Binding="{Binding Item.Code}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc ToolChangeManagementControl.CreatedAtHeader}"
-                                        Binding="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                        Binding="{Binding Item.CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc ToolChangeManagementControl.CreatedByHeader}"
-                                        Binding="{Binding CreatedBy}"
+                                        Binding="{Binding Item.CreatedBy}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc ToolChangeManagementControl.UpdatedAtHeader}"
-                                        Binding="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                        Binding="{Binding Item.UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc ToolChangeManagementControl.UpdatedByHeader}"
-                                        Binding="{Binding UpdatedBy}"
+                                        Binding="{Binding Item.UpdatedBy}"
+                                        IsReadOnly="True"
                                         Width="SizeToHeader" />
                 </DataGrid.Columns>
             </DataGrid>

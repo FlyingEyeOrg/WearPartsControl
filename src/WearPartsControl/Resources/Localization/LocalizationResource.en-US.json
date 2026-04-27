@@ -66,6 +66,7 @@
   },
   "UserConfigControl": {
     "Title": "User Settings",
+    "StatusBannerTitle": "Status notification",
     "LanguageSection": "Language Settings",
     "NotificationSection": "Notification Settings",
     "LanguageLabel": "Language:",
@@ -194,6 +195,7 @@
   },
   "PartManagementControl": {
     "Title": "Wear Part Management",
+    "CheckedHeader": "Checked",
     "CurrentResourceNumberLabel": "Current resource number: ",
     "PartNameLabel": "Wear part name:",
     "PartNamePlaceholder": "Enter wear part name",
@@ -295,6 +297,7 @@
   },
   "ToolChangeManagementControl": {
     "Title": "Tool Change Type Management",
+    "CheckedHeader": "Checked",
     "NameLabel": "Name:",
     "NamePlaceholder": "Enter tool change type name",
     "CodeLabel": "Code:",
@@ -442,9 +445,11 @@
       "DefinitionsEmpty": "No wear part definitions found for resource number {0}.",
       "DefinitionsLoaded": "Loaded {1} wear part definitions for resource number {0}.",
       "DeleteConfirmationMessage": "Delete wear part \"{0}\"?",
+      "DeleteMultipleConfirmationMessage": "Delete the {0} checked wear part definitions?",
       "DeleteConfirmationTitle": "Delete Confirmation",
       "Deleting": "Deleting wear part...",
       "Deleted": "Wear part {0} deleted.",
+      "DeletedMultiple": "Deleted {0} wear part definitions.",
       "NoMatchedDefinitions": "No wear parts matching \"{1}\" for resource number {0}.",
       "FilteredDefinitionsCount": "Showing {0} wear part definitions."
     },
@@ -474,9 +479,11 @@
       "Updating": "Updating tool change type...",
       "UpdatedWithName": "Tool change type {0} updated.",
       "DeleteConfirmationMessage": "Delete tool change type \"{0}\"?",
+      "DeleteMultipleConfirmationMessage": "Delete the {0} checked tool change types?",
       "DeleteConfirmationTitle": "Delete Confirmation",
       "Deleting": "Deleting tool change type...",
-      "Deleted": "Tool change type {0} deleted."
+      "Deleted": "Tool change type {0} deleted.",
+      "DeletedMultiple": "Deleted {0} tool change types."
     },
     "PartUpdateRecordVm": {
       "PromptLoadCurrent": "Please load wear part replacement history for the current device first.",

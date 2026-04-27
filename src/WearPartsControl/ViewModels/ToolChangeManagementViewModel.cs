@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.Dialogs;
@@ -15,14 +15,16 @@ public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
     private readonly IUiDispatcher _uiDispatcher;
     private readonly IUiBusyService _uiBusyService;
     private readonly IAppDialogService _dialogService;
-    private readonly List<ToolChangeDefinition> _allDefinitions = new();
-    private ToolChangeDefinition? _selectedDefinition;
+    private readonly List<SelectableItem<ToolChangeDefinition>> _allDefinitions = new();
+    private SelectableItem<ToolChangeDefinition>? _selectedDefinitionRow;
     private string _toolName = string.Empty;
     private string _toolCode = string.Empty;
     private string _keyword = string.Empty;
     private string _statusMessage = LocalizedText.Get("ViewModels.ToolChangeManagementVm.PromptLoadCurrent");
+    private bool _areAllDefinitionsChecked;
     private bool _isBusy;
     private bool _isInitialized;
+    private bool _isUpdatingCheckedState;
     private Func<string>? _statusMessageFactory;
 
     public ToolChangeManagementViewModel(IToolChangeManagementService toolChangeManagementService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService, IAppDialogService dialogService)
@@ -40,7 +42,7 @@ public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
         SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ToolChangeManagementVm.PromptLoadCurrent"));
     }
 
-    public ObservableCollection<ToolChangeDefinition> Definitions { get; } = new();
+    public ObservableCollection<SelectableItem<ToolChangeDefinition>> Definitions { get; } = new();
 
     public IRelayCommand SearchCommand { get; }
 
@@ -52,29 +54,64 @@ public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
 
     public IAsyncRelayCommand DeleteCommand { get; }
 
-    public ToolChangeDefinition? SelectedDefinition
+    public SelectableItem<ToolChangeDefinition>? SelectedDefinitionRow
     {
-        get => _selectedDefinition;
+        get => _selectedDefinitionRow;
         set
         {
-            if (SetProperty(ref _selectedDefinition, value))
+            if (!SetProperty(ref _selectedDefinitionRow, value))
             {
-                if (value is null)
-                {
-                    ToolName = string.Empty;
-                    ToolCode = string.Empty;
-                }
-                else
-                {
-                    ToolName = value.Name;
-                    ToolCode = value.Code;
-                    SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.ToolChangeManagementVm.Editing", value.Name));
-                }
-
-                NewCommand.NotifyCanExecuteChanged();
-                EditCommand.NotifyCanExecuteChanged();
-                DeleteCommand.NotifyCanExecuteChanged();
+                return;
             }
+
+            OnPropertyChanged(nameof(SelectedDefinition));
+
+            var definition = value?.Item;
+            if (definition is null)
+            {
+                ToolName = string.Empty;
+                ToolCode = string.Empty;
+            }
+            else
+            {
+                ToolName = definition.Name;
+                ToolCode = definition.Code;
+                SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.ToolChangeManagementVm.Editing", definition.Name));
+            }
+
+            NewCommand.NotifyCanExecuteChanged();
+            EditCommand.NotifyCanExecuteChanged();
+            DeleteCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    public ToolChangeDefinition? SelectedDefinition
+    {
+        get => SelectedDefinitionRow?.Item;
+        set => SelectedDefinitionRow = value is null ? null : Definitions.FirstOrDefault(x => x.Item.Id == value.Id);
+    }
+
+    public bool AreAllDefinitionsChecked
+    {
+        get => _areAllDefinitionsChecked;
+        set
+        {
+            if (!SetProperty(ref _areAllDefinitionsChecked, value))
+            {
+                return;
+            }
+
+            if (_isUpdatingCheckedState)
+            {
+                return;
+            }
+
+            foreach (var definition in Definitions)
+            {
+                definition.IsChecked = value;
+            }
+
+            DeleteCommand.NotifyCanExecuteChanged();
         }
     }
 
@@ -200,7 +237,7 @@ public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
             }
 
             await ReloadDefinitionsAsync(cancellationToken, saved.Id).ConfigureAwait(true);
-            SelectedDefinition = Definitions.FirstOrDefault(x => x.Id == saved.Id);
+            SelectedDefinition = Definitions.FirstOrDefault(x => x.Item.Id == saved.Id)?.Item;
             SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.ToolChangeManagementVm.CreatedWithName", saved.Name));
         }
         catch (Exception ex)
@@ -236,7 +273,7 @@ public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
 
             var saved = await _toolChangeManagementService.UpdateAsync(model, cancellationToken).ConfigureAwait(true);
             await ReloadDefinitionsAsync(cancellationToken, saved.Id).ConfigureAwait(true);
-            SelectedDefinition = Definitions.FirstOrDefault(x => x.Id == saved.Id);
+            SelectedDefinition = Definitions.FirstOrDefault(x => x.Item.Id == saved.Id)?.Item;
             SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.ToolChangeManagementVm.UpdatedWithName", saved.Name));
         }
         catch (Exception ex)
@@ -251,14 +288,22 @@ public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
 
     private async Task DeleteAsync(CancellationToken cancellationToken)
     {
-        if (SelectedDefinition is null)
+        var definitionsToDelete = Definitions.Where(x => x.IsChecked).Select(x => x.Item).ToList();
+        if (definitionsToDelete.Count == 0 && SelectedDefinition is not null)
+        {
+            definitionsToDelete.Add(SelectedDefinition);
+        }
+
+        if (definitionsToDelete.Count == 0)
         {
             return;
         }
 
-        var selected = SelectedDefinition;
+        var isBatchDelete = definitionsToDelete.Count > 1;
         var result = _dialogService.ShowMessage(
-            LocalizedText.Format("ViewModels.ToolChangeManagementVm.DeleteConfirmationMessage", selected.Name),
+            isBatchDelete
+                ? LocalizedText.Format("ViewModels.ToolChangeManagementVm.DeleteMultipleConfirmationMessage", definitionsToDelete.Count)
+                : LocalizedText.Format("ViewModels.ToolChangeManagementVm.DeleteConfirmationMessage", definitionsToDelete[0].Name),
             LocalizedText.Get("ViewModels.ToolChangeManagementVm.DeleteConfirmationTitle"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
@@ -275,10 +320,16 @@ public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
 
         try
         {
-            await _toolChangeManagementService.DeleteAsync(selected.Id, cancellationToken).ConfigureAwait(true);
+            foreach (var definition in definitionsToDelete)
+            {
+                await _toolChangeManagementService.DeleteAsync(definition.Id, cancellationToken).ConfigureAwait(true);
+            }
+
             await ReloadDefinitionsAsync(cancellationToken, selectedId: null).ConfigureAwait(true);
             ClearEditor();
-            SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.ToolChangeManagementVm.Deleted", selected.Name));
+            SetLocalizedStatusMessage(() => isBatchDelete
+                ? LocalizedText.Format("ViewModels.ToolChangeManagementVm.DeletedMultiple", definitionsToDelete.Count)
+                : LocalizedText.Format("ViewModels.ToolChangeManagementVm.Deleted", definitionsToDelete[0].Name));
         }
         catch (Exception ex)
         {
@@ -302,7 +353,7 @@ public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
         var keyword = Keyword?.Trim();
         var filtered = string.IsNullOrWhiteSpace(keyword)
             ? _allDefinitions
-            : _allDefinitions.Where(x => x.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase) || x.Code.Contains(keyword, StringComparison.OrdinalIgnoreCase)).ToList();
+            : _allDefinitions.Where(x => x.Item.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase) || x.Item.Code.Contains(keyword, StringComparison.OrdinalIgnoreCase)).ToList();
 
         Definitions.Clear();
         foreach (var definition in filtered)
@@ -312,8 +363,11 @@ public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
 
         if (SelectedDefinition is not null)
         {
-            SelectedDefinition = Definitions.FirstOrDefault(x => x.Id == SelectedDefinition.Id);
+            SelectedDefinition = Definitions.FirstOrDefault(x => x.Item.Id == SelectedDefinition.Id)?.Item;
         }
+
+        UpdateCheckedSummaryState();
+        DeleteCommand.NotifyCanExecuteChanged();
     }
 
     private async Task ReloadDefinitionsAsync(CancellationToken cancellationToken, bool preserveSelection)
@@ -324,13 +378,19 @@ public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
     private async Task ReloadDefinitionsAsync(CancellationToken cancellationToken, Guid? selectedId)
     {
         var definitions = await _toolChangeManagementService.GetAllAsync(cancellationToken).ConfigureAwait(true);
-        _allDefinitions.Clear();
-        _allDefinitions.AddRange(definitions);
+        ClearDefinitionRows();
+        foreach (var definition in definitions)
+        {
+            var row = new SelectableItem<ToolChangeDefinition>(definition);
+            row.PropertyChanged += OnDefinitionRowPropertyChanged;
+            _allDefinitions.Add(row);
+        }
+
         ApplyFilter();
 
         if (selectedId.HasValue)
         {
-            SelectedDefinition = Definitions.FirstOrDefault(x => x.Id == selectedId.Value);
+            SelectedDefinition = Definitions.FirstOrDefault(x => x.Item.Id == selectedId.Value)?.Item;
         }
     }
 
@@ -346,7 +406,7 @@ public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
 
     private bool CanDelete()
     {
-        return !IsBusy && SelectedDefinition is not null;
+        return !IsBusy && (SelectedDefinition is not null || Definitions.Any(x => x.IsChecked));
     }
 
     protected override void OnLocalizationRefreshed()
@@ -367,5 +427,33 @@ public sealed class ToolChangeManagementViewModel : LocalizedViewModelBase
     {
         _statusMessageFactory = null;
         StatusMessage = message;
+    }
+
+    private void OnDefinitionRowPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(SelectableItem<ToolChangeDefinition>.IsChecked))
+        {
+            return;
+        }
+
+        UpdateCheckedSummaryState();
+        DeleteCommand.NotifyCanExecuteChanged();
+    }
+
+    private void UpdateCheckedSummaryState()
+    {
+        _isUpdatingCheckedState = true;
+        SetProperty(ref _areAllDefinitionsChecked, Definitions.Count > 0 && Definitions.All(x => x.IsChecked), nameof(AreAllDefinitionsChecked));
+        _isUpdatingCheckedState = false;
+    }
+
+    private void ClearDefinitionRows()
+    {
+        foreach (var definition in _allDefinitions)
+        {
+            definition.PropertyChanged -= OnDefinitionRowPropertyChanged;
+        }
+
+        _allDefinitions.Clear();
     }
 }

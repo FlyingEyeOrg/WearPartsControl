@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
@@ -19,13 +19,15 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
     private readonly IUiDispatcher _uiDispatcher;
     private readonly IUiBusyService _uiBusyService;
     private readonly IAppDialogService _dialogService;
-    private readonly List<WearPartDefinition> _allDefinitions = new();
+    private readonly List<SelectableItem<WearPartDefinition>> _allDefinitions = new();
     private Guid _clientAppConfigurationId;
     private string _resourceNumber = string.Empty;
     private string _partNameFilter = string.Empty;
-    private WearPartDefinition? _selectedDefinition;
+    private SelectableItem<WearPartDefinition>? _selectedDefinitionRow;
+    private bool _areAllDefinitionsChecked;
     private bool _isBusy;
     private bool _isInitialized;
+    private bool _isUpdatingCheckedState;
     private string _statusMessage = LocalizedText.Get("ViewModels.PartManagementVm.PromptLoadCurrent");
     private Func<string>? _statusMessageFactory;
 
@@ -59,7 +61,7 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
 
     public event EventHandler<WearPartDefinition>? EditRequested;
 
-    public ObservableCollection<WearPartDefinition> Definitions { get; } = new();
+    public ObservableCollection<SelectableItem<WearPartDefinition>> Definitions { get; } = new();
 
     public IRelayCommand SearchCommand { get; }
 
@@ -87,16 +89,49 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
         set => SetProperty(ref _partNameFilter, value);
     }
 
-    public WearPartDefinition? SelectedDefinition
+    public SelectableItem<WearPartDefinition>? SelectedDefinitionRow
     {
-        get => _selectedDefinition;
+        get => _selectedDefinitionRow;
         set
         {
-            if (SetProperty(ref _selectedDefinition, value))
+            if (!SetProperty(ref _selectedDefinitionRow, value))
             {
-                EditCommand.NotifyCanExecuteChanged();
-                DeleteCommand.NotifyCanExecuteChanged();
+                return;
             }
+
+            OnPropertyChanged(nameof(SelectedDefinition));
+            EditCommand.NotifyCanExecuteChanged();
+            DeleteCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    public WearPartDefinition? SelectedDefinition
+    {
+        get => SelectedDefinitionRow?.Item;
+        set => SelectedDefinitionRow = value is null ? null : Definitions.FirstOrDefault(x => x.Item.Id == value.Id);
+    }
+
+    public bool AreAllDefinitionsChecked
+    {
+        get => _areAllDefinitionsChecked;
+        set
+        {
+            if (!SetProperty(ref _areAllDefinitionsChecked, value))
+            {
+                return;
+            }
+
+            if (_isUpdatingCheckedState)
+            {
+                return;
+            }
+
+            foreach (var definition in Definitions)
+            {
+                definition.IsChecked = value;
+            }
+
+            DeleteCommand.NotifyCanExecuteChanged();
         }
     }
 
@@ -160,7 +195,7 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
             _clientAppConfigurationId = clientInfo.Id ?? Guid.Empty;
             ResourceNumber = clientInfo.ResourceNumber?.Trim() ?? string.Empty;
 
-            _allDefinitions.Clear();
+            ClearDefinitionRows();
             Definitions.Clear();
             SelectedDefinition = null;
 
@@ -174,7 +209,13 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
                 .GetDefinitionsByClientAppConfigurationAsync(_clientAppConfigurationId, cancellationToken)
                 .ConfigureAwait(true);
 
-            _allDefinitions.AddRange(definitions.OrderBy(x => x.PartName, StringComparer.OrdinalIgnoreCase));
+            foreach (var definition in definitions.OrderBy(x => x.PartName, StringComparer.OrdinalIgnoreCase))
+            {
+                var row = new SelectableItem<WearPartDefinition>(definition);
+                row.PropertyChanged += OnDefinitionRowPropertyChanged;
+                _allDefinitions.Add(row);
+            }
+
             ApplyFilter();
             await EnsureMinimumBusyDurationAsync(enteredAt, cancellationToken).ConfigureAwait(true);
             SetLocalizedStatusMessage(() => _allDefinitions.Count == 0
@@ -214,7 +255,7 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
 
     private bool CanDelete()
     {
-        return !IsBusy && SelectedDefinition is not null;
+        return !IsBusy && (SelectedDefinition is not null || Definitions.Any(x => x.IsChecked));
     }
 
     private void OpenAddDialog()
@@ -239,14 +280,22 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
 
     private async Task DeleteAsync()
     {
-        if (SelectedDefinition is null)
+        var definitionsToDelete = Definitions.Where(x => x.IsChecked).Select(x => x.Item).ToList();
+        if (definitionsToDelete.Count == 0 && SelectedDefinition is not null)
+        {
+            definitionsToDelete.Add(SelectedDefinition);
+        }
+
+        if (definitionsToDelete.Count == 0)
         {
             return;
         }
 
-        var definition = SelectedDefinition;
+        var isBatchDelete = definitionsToDelete.Count > 1;
         var result = _dialogService.ShowMessage(
-            LocalizedText.Format("ViewModels.PartManagementVm.DeleteConfirmationMessage", definition.PartName),
+            isBatchDelete
+                ? LocalizedText.Format("ViewModels.PartManagementVm.DeleteMultipleConfirmationMessage", definitionsToDelete.Count)
+                : LocalizedText.Format("ViewModels.PartManagementVm.DeleteConfirmationMessage", definitionsToDelete[0].PartName),
             LocalizedText.Get("ViewModels.PartManagementVm.DeleteConfirmationTitle"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
@@ -264,10 +313,16 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
 
         try
         {
-            await _wearPartManagementService.DeleteDefinitionAsync(definition.Id).ConfigureAwait(true);
+            foreach (var definition in definitionsToDelete)
+            {
+                await _wearPartManagementService.DeleteDefinitionAsync(definition.Id).ConfigureAwait(true);
+            }
+
             await RefreshAsync(CancellationToken.None).ConfigureAwait(true);
             await EnsureMinimumBusyDurationAsync(enteredAt, CancellationToken.None).ConfigureAwait(true);
-            SetLocalizedStatusMessage(() => LocalizedText.Format("ViewModels.PartManagementVm.Deleted", definition.PartName));
+            SetLocalizedStatusMessage(() => isBatchDelete
+                ? LocalizedText.Format("ViewModels.PartManagementVm.DeletedMultiple", definitionsToDelete.Count)
+                : LocalizedText.Format("ViewModels.PartManagementVm.Deleted", definitionsToDelete[0].PartName));
         }
         catch (Exception ex)
         {
@@ -325,7 +380,7 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
         var keyword = PartNameFilter?.Trim();
         var filtered = string.IsNullOrWhiteSpace(keyword)
             ? _allDefinitions
-            : _allDefinitions.Where(x => x.PartName.Contains(keyword, StringComparison.OrdinalIgnoreCase)).ToList();
+            : _allDefinitions.Where(x => x.Item.PartName.Contains(keyword, StringComparison.OrdinalIgnoreCase)).ToList();
 
         Definitions.Clear();
         foreach (var definition in filtered)
@@ -333,10 +388,13 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
             Definitions.Add(definition);
         }
 
-        if (SelectedDefinition is not null && !Definitions.Any(x => x.Id == SelectedDefinition.Id))
+        if (SelectedDefinition is not null && !Definitions.Any(x => x.Item.Id == SelectedDefinition.Id))
         {
             SelectedDefinition = null;
         }
+
+        UpdateCheckedSummaryState();
+        DeleteCommand.NotifyCanExecuteChanged();
 
         if (!string.IsNullOrWhiteSpace(ResourceNumber))
         {
@@ -376,5 +434,33 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
     {
         _statusMessageFactory = null;
         StatusMessage = message;
+    }
+
+    private void OnDefinitionRowPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(SelectableItem<WearPartDefinition>.IsChecked))
+        {
+            return;
+        }
+
+        UpdateCheckedSummaryState();
+        DeleteCommand.NotifyCanExecuteChanged();
+    }
+
+    private void UpdateCheckedSummaryState()
+    {
+        _isUpdatingCheckedState = true;
+        SetProperty(ref _areAllDefinitionsChecked, Definitions.Count > 0 && Definitions.All(x => x.IsChecked), nameof(AreAllDefinitionsChecked));
+        _isUpdatingCheckedState = false;
+    }
+
+    private void ClearDefinitionRows()
+    {
+        foreach (var definition in _allDefinitions)
+        {
+            definition.PropertyChanged -= OnDefinitionRowPropertyChanged;
+        }
+
+        _allDefinitions.Clear();
     }
 }

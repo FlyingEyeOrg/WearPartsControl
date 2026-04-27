@@ -74,6 +74,33 @@ public sealed class PartManagementViewModelTests
         Assert.Equal(LocalizedText.Get("ViewModels.PartManagementVm.PromptLoadCurrent"), viewModel.StatusMessage);
     }
 
+    [Fact]
+    public async Task DeleteCommand_WhenCheckedDefinitionsExist_ShouldDeleteAllCheckedDefinitions()
+    {
+        using var cultureScope = new TestCultureScope("zh-CN");
+        var managementService = new StubWearPartManagementService(
+            new WearPartDefinition { Id = Guid.NewGuid(), ResourceNumber = "RES-01", PartName = "刀具 A" },
+            new WearPartDefinition { Id = Guid.NewGuid(), ResourceNumber = "RES-01", PartName = "刀具 B" },
+            new WearPartDefinition { Id = Guid.NewGuid(), ResourceNumber = "RES-01", PartName = "刀具 C" });
+        var viewModel = new PartManagementViewModel(
+            new StubClientAppInfoService(),
+            new StubLegacyDatabaseImportService(),
+            managementService,
+            new StubUiDispatcher(),
+            new UiBusyService(TimeSpan.Zero),
+            new StubAppDialogService());
+
+        await viewModel.InitializeAsync();
+        viewModel.Definitions[0].IsChecked = true;
+        viewModel.Definitions[1].IsChecked = true;
+
+        await viewModel.DeleteCommand.ExecuteAsync(null);
+
+        Assert.Equal(2, managementService.DeletedIds.Count);
+        Assert.Equal(LocalizedText.Format("ViewModels.PartManagementVm.DeletedMultiple", 2), viewModel.StatusMessage);
+        Assert.Single(viewModel.Definitions);
+    }
+
     private sealed class StubClientAppInfoService : IClientAppInfoService
     {
         private readonly Guid _id = Guid.NewGuid();
@@ -117,9 +144,18 @@ public sealed class PartManagementViewModelTests
 
     private sealed class StubWearPartManagementService : IWearPartManagementService
     {
+        private readonly List<WearPartDefinition> _definitions = [];
+
+        public StubWearPartManagementService(params WearPartDefinition[] definitions)
+        {
+            _definitions.AddRange(definitions);
+        }
+
+        public List<Guid> DeletedIds { get; } = [];
+
         public Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByClientAppConfigurationAsync(Guid clientAppConfigurationId, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<IReadOnlyList<WearPartDefinition>>([]);
+            return Task.FromResult<IReadOnlyList<WearPartDefinition>>(_definitions.ToArray());
         }
 
         public Task<IReadOnlyList<WearPartDefinition>> GetDefinitionsByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
@@ -144,7 +180,9 @@ public sealed class PartManagementViewModelTests
 
         public Task DeleteDefinitionAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            throw new NotSupportedException();
+            DeletedIds.Add(id);
+            _definitions.RemoveAll(x => x.Id == id);
+            return Task.CompletedTask;
         }
 
         public Task<int> CopyDefinitionsAsync(string sourceResourceNumber, string targetResourceNumber, CancellationToken cancellationToken = default)
