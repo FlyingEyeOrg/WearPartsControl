@@ -234,6 +234,94 @@ public sealed class ReplacePartViewModelTests
     }
 
     [Fact]
+    public async Task SelectedDefinition_WhenChanged_ShouldRenderLoadingBeforePreviewLoad()
+    {
+        var firstDefinition = new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            PartName = "刀具A",
+            InputMode = "Scanner",
+            CurrentValueDataType = "FLOAT",
+            CurrentValueAddress = "DB1.0",
+            WarningValueDataType = "FLOAT",
+            WarningValueAddress = "DB1.2",
+            ShutdownValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB1.4"
+        };
+        var secondDefinition = new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            PartName = "刀具B",
+            InputMode = "Scanner",
+            CurrentValueDataType = "FLOAT",
+            CurrentValueAddress = "DB2.0",
+            WarningValueDataType = "FLOAT",
+            WarningValueAddress = "DB2.2",
+            ShutdownValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB2.4"
+        };
+        var uiDispatcher = new TrackingUiDispatcher();
+        ReplacePartViewModel? viewModel = null;
+        var previewObserved = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var renderCountBeforeSelection = 0;
+        var replacementService = new StubWearPartReplacementService
+        {
+            Preview = new WearPartReplacementPreview
+            {
+                ClientAppConfigurationId = Guid.NewGuid(),
+                CurrentValue = "1",
+                WarningValue = "2",
+                ShutdownValue = "3"
+            }
+        };
+        replacementService.OnGetPreviewAsync = (definitionId, _) =>
+        {
+            if (definitionId == secondDefinition.Id)
+            {
+                Assert.NotNull(viewModel);
+                Assert.True(viewModel!.IsBusy);
+                Assert.Equal(renderCountBeforeSelection + 1, uiDispatcher.RenderCount);
+                previewObserved.SetResult();
+            }
+
+            return Task.FromResult(new WearPartReplacementPreview
+            {
+                WearPartDefinitionId = definitionId,
+                ClientAppConfigurationId = replacementService.Preview.ClientAppConfigurationId,
+                ResourceNumber = replacementService.Preview.ResourceNumber,
+                PartName = definitionId == secondDefinition.Id ? secondDefinition.PartName : firstDefinition.PartName,
+                LastBarcode = replacementService.Preview.LastBarcode,
+                CurrentValue = replacementService.Preview.CurrentValue,
+                WarningValue = replacementService.Preview.WarningValue,
+                ShutdownValue = replacementService.Preview.ShutdownValue
+            });
+        };
+        viewModel = new ReplacePartViewModel(
+            new StubAppSettingsService
+            {
+                Current = new AppSettings
+                {
+                    ResourceNumber = "RES-01",
+                    IsWearPartMonitoringEnabled = true
+                }
+            },
+            new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01" } },
+            new StubWearPartManagementService([firstDefinition, secondDefinition]),
+            replacementService,
+            new StubToolChangeManagementService(),
+            new StubToolChangeSelectionService(),
+            uiDispatcher,
+            new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+        renderCountBeforeSelection = uiDispatcher.RenderCount;
+
+        viewModel.SelectedDefinition = secondDefinition;
+
+        await previewObserved.Task.WaitAsync(TimeSpan.FromSeconds(3));
+    }
+
+    [Fact]
     public async Task ReplaceCommand_WhenMonitoringDisabled_ShouldNotBeEnabled()
     {
         var definition = new WearPartDefinition
@@ -1020,7 +1108,7 @@ public sealed class ReplacePartViewModelTests
 
         public PlcConnectionOptions? LastOptions { get; private set; }
 
-        public Task ConnectAsync(PlcConnectionOptions options, CancellationToken cancellationToken = default)
+        public Task ConnectAsync(PlcConnectionOptions options, bool forceReconnect = false, CancellationToken cancellationToken = default)
         {
             LastOptions = options;
             ConnectCount++;
@@ -1095,10 +1183,17 @@ public sealed class ReplacePartViewModelTests
 
         public List<WearPartReplacementRecord> History { get; } = [];
 
+        public Func<Guid, CancellationToken, Task<WearPartReplacementPreview>>? OnGetPreviewAsync { get; set; }
+
         public int ReplaceCallCount { get; private set; }
 
         public Task<WearPartReplacementPreview> GetReplacementPreviewAsync(Guid wearPartDefinitionId, CancellationToken cancellationToken = default)
         {
+            if (OnGetPreviewAsync is not null)
+            {
+                return OnGetPreviewAsync(wearPartDefinitionId, cancellationToken);
+            }
+
             return Task.FromResult(Preview);
         }
 

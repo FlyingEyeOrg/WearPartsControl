@@ -1328,7 +1328,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             _values[address] = value;
         }
 
-        public Task ConnectAsync(PlcConnectionOptions options, CancellationToken cancellationToken = default)
+        public Task ConnectAsync(PlcConnectionOptions options, bool forceReconnect = false, CancellationToken cancellationToken = default)
         {
             IsConnected = true;
             return Task.CompletedTask;

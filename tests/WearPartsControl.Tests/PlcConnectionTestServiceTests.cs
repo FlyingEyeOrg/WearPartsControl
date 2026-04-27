@@ -33,6 +33,8 @@ public sealed class PlcConnectionTestServiceTests
 
         Assert.Equal(PlcStartupConnectionStatus.Connected, result.Status);
         Assert.Equal(PlcStartupConnectionStatus.Connected, statusService.Current.Status);
+        Assert.True(pipeline.ForceReconnectCalled);
+        Assert.False(pipeline.ConnectCalled);
         Assert.NotNull(pipeline.LastOptions);
         Assert.Equal("192.168.0.10", pipeline.LastOptions!.IpAddress);
     }
@@ -54,10 +56,22 @@ public sealed class PlcConnectionTestServiceTests
 
     private sealed class StubPlcOperationPipeline : IPlcOperationPipeline
     {
+        public bool ConnectCalled { get; private set; }
+
+        public bool ForceReconnectCalled { get; private set; }
+
         public PlcConnectionOptions? LastOptions { get; private set; }
 
         public Task ConnectAsync(string operationName, PlcConnectionOptions options, CancellationToken cancellationToken = default)
         {
+            ConnectCalled = true;
+            LastOptions = options;
+            return Task.CompletedTask;
+        }
+
+        public Task ForceReconnectAsync(string operationName, PlcConnectionOptions options, CancellationToken cancellationToken = default)
+        {
+            ForceReconnectCalled = true;
             LastOptions = options;
             return Task.CompletedTask;
         }

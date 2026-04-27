@@ -18,7 +18,7 @@ public sealed class PlcOperationPipelineTests
         var secondStarted = false;
         var executionOrder = new List<string>();
 
-        plcService.OnConnectAsync = async options =>
+        plcService.OnConnectAsync = async (options, _) =>
         {
             if (options.IpAddress == "ADDR-1")
             {
@@ -100,17 +100,37 @@ public sealed class PlcOperationPipelineTests
             && entry.Message.Contains("Test/ConfiguredSlowOperation", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public async Task ReadAsync_WhenCalledFromThread_ShouldExecutePlcOperationOnWorkerThread()
+    {
+        var callerThreadId = Environment.CurrentManagedThreadId;
+        var operationThreadId = callerThreadId;
+        var plcService = new PipelineTestPlcService();
+        var logger = new TestLogger<PlcOperationPipeline>();
+        var pipeline = new PlcOperationPipeline(plcService, logger);
+
+        plcService.OnRead = _ =>
+        {
+            operationThreadId = Environment.CurrentManagedThreadId;
+            return 1;
+        };
+
+        _ = await pipeline.ReadAsync<int>("Test/BackgroundRead", "ADDR-1");
+
+        Assert.NotEqual(callerThreadId, operationThreadId);
+    }
+
     private sealed class PipelineTestPlcService : IPlcService
     {
         public bool IsConnected => true;
 
-        public Func<PlcConnectionOptions, Task>? OnConnectAsync { get; set; }
+        public Func<PlcConnectionOptions, bool, Task>? OnConnectAsync { get; set; }
 
         public Func<string, object>? OnRead { get; set; }
 
-        public Task ConnectAsync(PlcConnectionOptions options, CancellationToken cancellationToken = default)
+        public Task ConnectAsync(PlcConnectionOptions options, bool forceReconnect = false, CancellationToken cancellationToken = default)
         {
-            return OnConnectAsync?.Invoke(options) ?? Task.CompletedTask;
+            return OnConnectAsync?.Invoke(options, forceReconnect) ?? Task.CompletedTask;
         }
 
         public void Disconnect()

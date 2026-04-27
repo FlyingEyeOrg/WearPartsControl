@@ -32,7 +32,7 @@ public sealed class PlcService : IPlcService, IDisposable
 
     public bool IsConnected { get; private set; }
 
-    public async Task ConnectAsync(PlcConnectionOptions options, CancellationToken cancellationToken = default)
+    public async Task ConnectAsync(PlcConnectionOptions options, bool forceReconnect = false, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(options);
 
@@ -44,7 +44,7 @@ public sealed class PlcService : IPlcService, IDisposable
         {
             ThrowIfDisposed();
 
-            if (IsConnected && _currentOptions == resolvedOptions)
+            if (!forceReconnect && IsConnected && _currentOptions == resolvedOptions)
             {
                 return;
             }
@@ -62,6 +62,12 @@ public sealed class PlcService : IPlcService, IDisposable
             catch
             {
                 replacementSession.Dispose();
+                if (forceReconnect)
+                {
+                    previousSession = DisconnectInternal();
+                    _currentOptions = null;
+                }
+
                 throw;
             }
         }

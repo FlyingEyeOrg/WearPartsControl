@@ -730,6 +730,12 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
             return Task.CompletedTask;
         }
 
+        public Task ForceReconnectAsync(string operationName, PlcConnectionOptions options, CancellationToken cancellationToken = default)
+        {
+            ConnectCalled = true;
+            return Task.CompletedTask;
+        }
+
         public Task DisconnectAsync(string operationName, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();

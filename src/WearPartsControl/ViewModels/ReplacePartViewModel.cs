@@ -165,7 +165,10 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
                 OnPropertyChanged(nameof(IsCutterValidationRequired));
                 OnPropertyChanged(nameof(IsCutterMesValidationEnabled));
                 NotifyReplaceStateChanged();
-                _ = LoadSelectedDefinitionDetailsAsync(value, CancellationToken.None, Interlocked.Increment(ref _selectionLoadVersion));
+                if (!IsBusy)
+                {
+                    _ = LoadSelectedDefinitionDetailsWithBusyAsync(value, CancellationToken.None, Interlocked.Increment(ref _selectionLoadVersion));
+                }
             }
         }
     }
@@ -660,6 +663,28 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
             _shutdownValueText = string.Empty;
             NotifyReplaceStateChanged();
             SetRawStatusMessage(ex.Message);
+        }
+    }
+
+    private async Task LoadSelectedDefinitionDetailsWithBusyAsync(WearPartDefinition? definition, CancellationToken cancellationToken, int loadVersion)
+    {
+        if (definition is null || IsBusy)
+        {
+            return;
+        }
+
+        IsBusy = true;
+        SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.ReplacePartVm.Loading"));
+        using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.ReplacePartVm.Loading"));
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
+
+        try
+        {
+            await LoadSelectedDefinitionDetailsAsync(definition, cancellationToken, loadVersion).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 

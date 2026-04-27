@@ -39,7 +39,14 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        return ExecuteCoreAsync(operationName, plcService => plcService.ConnectAsync(options, cancellationToken), cancellationToken);
+        return ExecuteCoreAsync(operationName, plcService => plcService.ConnectAsync(options, forceReconnect: false, cancellationToken), cancellationToken);
+    }
+
+    public Task ForceReconnectAsync(string operationName, PlcConnectionOptions options, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        return ExecuteCoreAsync(operationName, plcService => plcService.ConnectAsync(options, forceReconnect: true, cancellationToken), cancellationToken);
     }
 
     public Task DisconnectAsync(string operationName, CancellationToken cancellationToken = default)
@@ -89,7 +96,7 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
 
         try
         {
-            await operation(_plcService).ConfigureAwait(false);
+            await Task.Run(() => operation(_plcService), cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -125,7 +132,7 @@ public sealed class PlcOperationPipeline : IPlcOperationPipeline
 
         try
         {
-            return await operation(_plcService).ConfigureAwait(false);
+            return await Task.Run(() => operation(_plcService), cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

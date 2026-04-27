@@ -238,7 +238,7 @@ public sealed class PlcConfigurationMonitorServiceTests
 
         public bool IsConnected { get; private set; }
 
-        public Task ConnectAsync(PlcConnectionOptions options, CancellationToken cancellationToken = default)
+        public Task ConnectAsync(PlcConnectionOptions options, bool forceReconnect = false, CancellationToken cancellationToken = default)
         {
             ConnectCalls.Add(options);
             if (ThrowOnConnect is not null)

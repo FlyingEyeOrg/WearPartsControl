@@ -5,7 +5,7 @@ internal interface IPlcService
 {
     bool IsConnected { get; }
 
-    Task ConnectAsync(PlcConnectionOptions options, CancellationToken cancellationToken = default);
+    Task ConnectAsync(PlcConnectionOptions options, bool forceReconnect = false, CancellationToken cancellationToken = default);
 
     void Disconnect();
 

@@ -4,6 +4,8 @@ public interface IPlcOperationPipeline
 {
     Task ConnectAsync(string operationName, PlcConnectionOptions options, CancellationToken cancellationToken = default);
 
+    Task ForceReconnectAsync(string operationName, PlcConnectionOptions options, CancellationToken cancellationToken = default);
+
     Task DisconnectAsync(string operationName, CancellationToken cancellationToken = default);
 
     Task<bool> IsConnectedAsync(string operationName, CancellationToken cancellationToken = default);

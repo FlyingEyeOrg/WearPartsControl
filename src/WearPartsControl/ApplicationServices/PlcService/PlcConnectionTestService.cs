@@ -34,7 +34,7 @@ public sealed class PlcConnectionTestService : IPlcConnectionTestService
             _plcConnectionStatusService.Set(connecting);
 
             var options = PlcConnectionOptionsFactory.Create(clientAppInfo);
-            await _plcOperationPipeline.ConnectAsync(TestConnectOperationName, options, cancellationToken).ConfigureAwait(false);
+            await _plcOperationPipeline.ForceReconnectAsync(TestConnectOperationName, options, cancellationToken).ConfigureAwait(false);
 
             var connected = PlcStartupConnectionResult.Connected(LocalizedText.Get("ViewModels.ClientAppInfoVm.PlcConnectionTestSucceeded"));
             _plcConnectionStatusService.Set(connected);
