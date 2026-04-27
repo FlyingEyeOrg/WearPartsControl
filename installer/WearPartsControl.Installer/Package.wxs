@@ -12,7 +12,7 @@
     <Icon Id="AppIcon.ico" SourceFile="$(PublishDir)WearPartsControl.exe" />
     <Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
 
-    <StandardDirectory Id="ProgramFiles64Folder">
+    <StandardDirectory Id="$(ProgramFilesFolderId)">
       <Directory Id="INSTALLFOLDER" Name="Wear Parts Control">
         <Directory Id="PrivateDataFolder" Name="PrivateData">
           <Directory Id="SettingsFolder" Name="Settings" />

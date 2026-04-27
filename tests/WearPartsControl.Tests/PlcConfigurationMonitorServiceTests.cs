@@ -35,7 +35,9 @@ public sealed class PlcConfigurationMonitorServiceTests
             ResourceNumber = clientAppInfoService.Current.ResourceNumber
         });
 
-        await WaitForAsync(() => plcService.ConnectCalls.Count == 1);
+        await WaitForAsync(() =>
+            plcService.ConnectCalls.Count == 1
+            && connectionStatusService.Current.Status == PlcStartupConnectionStatus.Connected);
 
         Assert.Single(plcService.ConnectCalls);
         Assert.Equal("192.168.0.10", plcService.ConnectCalls[0].IpAddress);

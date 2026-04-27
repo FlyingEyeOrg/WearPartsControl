@@ -1,9 +1,11 @@
 [CmdletBinding()]
 param(
     [string]$Configuration = "Release",
-    [string]$RuntimeIdentifier = "win-x64",
+    [Alias("RuntimeIdentifier")]
+    [string[]]$RuntimeIdentifiers = @("win-x64", "win-x86"),
     [string]$Version = "1.0.0",
     [switch]$SelfContained,
+    [switch]$FrameworkDependent,
     [switch]$SkipTests,
     [switch]$Clean
 )
@@ -11,58 +13,102 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
+function Invoke-DotNet {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments
+    )
+
+    & dotnet @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "dotnet $($Arguments -join ' ') failed with exit code $LASTEXITCODE."
+    }
+}
+
+function Get-InstallerPlatform {
+    param([string]$RuntimeIdentifier)
+
+    switch ($RuntimeIdentifier) {
+        "win-x64" { return "x64" }
+        "win-x86" { return "x86" }
+        default { throw "Unsupported runtime identifier '$RuntimeIdentifier'. Supported values: win-x64, win-x86." }
+    }
+}
+
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $appProject = Join-Path $repoRoot "src/WearPartsControl/WearPartsControl.csproj"
 $testProject = Join-Path $repoRoot "tests/WearPartsControl.Tests/WearPartsControl.Tests.csproj"
 $installerProject = Join-Path $repoRoot "installer/WearPartsControl.Installer/WearPartsControl.Installer.wixproj"
 $artifactsRoot = Join-Path $repoRoot "artifacts"
-$publishDir = Join-Path $artifactsRoot "publish/WearPartsControl"
+$publishRoot = Join-Path $artifactsRoot "publish/WearPartsControl"
 $installerOutputDir = Join-Path $artifactsRoot "installer"
+
+if ($SelfContained -and $FrameworkDependent) {
+    throw "Specify either -SelfContained or -FrameworkDependent, not both. The default is self-contained."
+}
 
 if ($Clean -and (Test-Path $artifactsRoot)) {
     Remove-Item $artifactsRoot -Recurse -Force
 }
 
-New-Item -ItemType Directory -Path $publishDir -Force | Out-Null
+New-Item -ItemType Directory -Path $publishRoot -Force | Out-Null
 New-Item -ItemType Directory -Path $installerOutputDir -Force | Out-Null
 
-dotnet restore $appProject -p:NuGetAudit=false
+Invoke-DotNet @("restore", $appProject, "-p:NuGetAudit=false")
 
 if (-not $SkipTests) {
-    dotnet test $testProject --configuration $Configuration --no-restore -p:NuGetAudit=false
+    Invoke-DotNet @("test", $testProject, "--configuration", $Configuration, "--no-restore", "-p:NuGetAudit=false")
 }
 
-$selfContainedValue = if ($SelfContained) { "true" } else { "false" }
+$selfContainedValue = if ($FrameworkDependent) { "false" } else { "true" }
+$createdPackages = @()
 
-dotnet publish $appProject `
-    --configuration $Configuration `
-    --runtime $RuntimeIdentifier `
-    --self-contained:$selfContainedValue `
-    -p:Version=$Version `
-    -p:AssemblyVersion=$Version `
-    -p:FileVersion=$Version `
-    -p:PublishSingleFile=false `
-    -p:DebugType=none `
-    -p:DebugSymbols=false `
-    -p:NuGetAudit=false `
-    --output $publishDir
+foreach ($runtimeIdentifier in $RuntimeIdentifiers) {
+    $installerPlatform = Get-InstallerPlatform -RuntimeIdentifier $runtimeIdentifier
+    $publishDir = Join-Path $publishRoot $runtimeIdentifier
 
-$publishDirForWix = if ($publishDir.EndsWith([IO.Path]::DirectorySeparatorChar)) { $publishDir } else { "$publishDir$([IO.Path]::DirectorySeparatorChar)" }
+    New-Item -ItemType Directory -Path $publishDir -Force | Out-Null
 
-dotnet build $installerProject `
-    --configuration $Configuration `
-    -p:PackageVersion=$Version `
-    -p:PublishDir=$publishDirForWix `
-    -p:OutputPath=$installerOutputDir `
-    -p:InstallerPlatform=x64 `
-    -p:NuGetAudit=false
+    Invoke-DotNet @(
+        "publish", $appProject,
+        "--configuration", $Configuration,
+        "--runtime", $runtimeIdentifier,
+        "--self-contained:$selfContainedValue",
+        "-p:Version=$Version",
+        "-p:AssemblyVersion=$Version",
+        "-p:FileVersion=$Version",
+        "-p:PublishSingleFile=false",
+        "-p:DebugType=none",
+        "-p:DebugSymbols=false",
+        "-p:NuGetAudit=false",
+        "--output", $publishDir)
 
-$msiPath = Get-ChildItem -Path $installerOutputDir -Filter "WearPartsControl-$Version-*.msi" -Recurse |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 1
+    $publishDirForWix = if ($publishDir.EndsWith([IO.Path]::DirectorySeparatorChar)) { $publishDir } else { "$publishDir$([IO.Path]::DirectorySeparatorChar)" }
+    $programFilesFolderId = if ($installerPlatform -eq "x64") { "ProgramFiles64Folder" } else { "ProgramFilesFolder" }
+    $wixIntermediateOutputPath = Join-Path $artifactsRoot "obj/installer/$installerPlatform/"
 
-if (-not $msiPath) {
-    throw "MSI package was not generated in '$installerOutputDir'."
+    Invoke-DotNet @(
+        "build", $installerProject,
+        "--no-incremental",
+        "--configuration", $Configuration,
+        "-p:PackageVersion=$Version",
+        "-p:PublishDir=$publishDirForWix",
+        "-p:OutputPath=$installerOutputDir",
+        "-p:IntermediateOutputPath=$wixIntermediateOutputPath",
+        "-p:InstallerPlatform=$installerPlatform",
+        "-p:ProgramFilesFolderId=$programFilesFolderId",
+        "-p:NuGetAudit=false")
+
+    $msiPath = Get-ChildItem -Path $installerOutputDir -Filter "WearPartsControl-$Version-$installerPlatform.msi" -Recurse |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+
+    if (-not $msiPath) {
+        throw "MSI package for '$runtimeIdentifier' was not generated in '$installerOutputDir'."
+    }
+
+    $createdPackages += $msiPath.FullName
 }
 
-Write-Host "MSI package created: $($msiPath.FullName)"
+Write-Host "MSI packages created:"
+$createdPackages | ForEach-Object { Write-Host "  $_" }
