@@ -394,10 +394,15 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                        Text="{loc:Loc UserConfigControl.CutterMesWsdlLabel}" />
-                            <TextBox Grid.Column="1"
-                                     Style="{StaticResource TextBoxExtend}"
-                                     Text="{Binding CutterMesWsdl, UpdateSourceTrigger=PropertyChanged}"
-                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.CutterMesWsdlPlaceholder}" />
+                            <StackPanel Grid.Column="1">
+                                <TextBox Style="{StaticResource TextBoxExtend}"
+                                         Text="{Binding CutterMesWsdl, UpdateSourceTrigger=PropertyChanged}"
+                                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.CutterMesWsdlPlaceholder}" />
+                                <TextBlock Margin="0 6 0 0"
+                                           Foreground="{StaticResource ShellMutedForegroundBrush}"
+                                           Text="{Binding CutterMesWsdlSuffix}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
                         </Grid>
                         <Grid Style="{StaticResource ShellFormRowGridStyle}">
                             <Grid.ColumnDefinitions>

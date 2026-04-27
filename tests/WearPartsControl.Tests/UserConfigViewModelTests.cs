@@ -42,7 +42,7 @@ public sealed class UserConfigViewModelTests
                 SpacerValidationExpectedSegmentCount = 9,
                 EnableCutterMesValidation = true,
                 CutterMesSite = "MES-S01",
-                CutterMesWsdl = "https://mes/wsdl",
+                CutterMesWsdl = "http://ndmes.catlbattery.com:8103/atlmeswebservice/GetParametricValueServiceService?wsdl",
                 CutterMesUser = "mes-user",
                 CutterMesPassword = "mes-pass"
             }
@@ -74,7 +74,7 @@ public sealed class UserConfigViewModelTests
         Assert.Equal("9", viewModel.SpacerValidationExpectedSegmentCount);
         Assert.True(viewModel.EnableCutterMesValidation);
         Assert.Equal("MES-S01", viewModel.CutterMesSite);
-        Assert.Equal("https://mes/wsdl", viewModel.CutterMesWsdl);
+        Assert.Equal("http://ndmes.catlbattery.com:8103", viewModel.CutterMesWsdl);
         Assert.Equal("mes-user", viewModel.CutterMesUser);
         Assert.Equal("mes-pass", viewModel.CutterMesPassword);
         Assert.Equal("en-US", viewModel.SelectedLanguage);
@@ -107,7 +107,7 @@ public sealed class UserConfigViewModelTests
         viewModel.SpacerValidationExpectedSegmentCount = "10";
         viewModel.EnableCutterMesValidation = true;
         viewModel.CutterMesSite = "MES-S02";
-        viewModel.CutterMesWsdl = "https://mes/updated";
+        viewModel.CutterMesWsdl = "http://ndmes.catlbattery.com:8103";
         viewModel.CutterMesUser = "mes-user-2";
         viewModel.CutterMesPassword = "mes-pass-2";
         viewModel.SelectedLanguage = "en-US";
@@ -136,11 +136,37 @@ public sealed class UserConfigViewModelTests
         Assert.Equal(10, service.LastSaved.SpacerValidationExpectedSegmentCount);
         Assert.True(service.LastSaved.EnableCutterMesValidation);
         Assert.Equal("MES-S02", service.LastSaved.CutterMesSite);
-        Assert.Equal("https://mes/updated", service.LastSaved.CutterMesWsdl);
+        Assert.Equal("http://ndmes.catlbattery.com:8103/atlmeswebservice/GetParametricValueServiceService?wsdl", service.LastSaved.CutterMesWsdl);
         Assert.Equal("mes-user-2", service.LastSaved.CutterMesUser);
         Assert.Equal("mes-pass-2", service.LastSaved.CutterMesPassword);
         Assert.Equal("en-US", localizationService.LastCultureName);
         Assert.True(dispatcher.RenderCount >= 1);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WhenUserConfigMissingCutterMesConfig_ShouldUseClientAppBaseUrl()
+    {
+        var service = new StubUserConfigService();
+        var clientAppInfoService = new StubClientAppInfoService
+        {
+            Current = new ClientAppInfoModel
+            {
+                EnableCutterMesValidation = true,
+                CutterMesSite = "MES-S03",
+                CutterMesWsdl = "http://ndmes.catlbattery.com:8104/atlmeswebservice/GetParametricValueServiceService?wsdl",
+                CutterMesUser = "mes-user-3",
+                CutterMesPassword = "mes-pass-3"
+            }
+        };
+        var viewModel = new UserConfigViewModel(clientAppInfoService, service, new StubComNotificationService(), new StubLocalizationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+
+        Assert.True(viewModel.EnableCutterMesValidation);
+        Assert.Equal("MES-S03", viewModel.CutterMesSite);
+        Assert.Equal("http://ndmes.catlbattery.com:8104", viewModel.CutterMesWsdl);
+        Assert.Equal("mes-user-3", viewModel.CutterMesUser);
+        Assert.Equal("mes-pass-3", viewModel.CutterMesPassword);
     }
 
     [Fact]

@@ -107,7 +107,7 @@
     "CutterMesSiteLabel": "MES 站点：",
     "CutterMesSitePlaceholder": "请输入 MES 站点编码",
     "CutterMesWsdlLabel": "MES 地址：",
-    "CutterMesWsdlPlaceholder": "请输入 MES WSDL 或服务地址",
+    "CutterMesWsdlPlaceholder": "请输入基地域名和端口，例如 http://ndmes.catlbattery.com:8103",
     "CutterMesUserLabel": "MES 账号：",
     "CutterMesUserPlaceholder": "请输入 MES 登录账号",
     "CutterMesPasswordLabel": "MES 密码：",

@@ -13,6 +13,7 @@ namespace WearPartsControl.ViewModels;
 public sealed class UserConfigViewModel : LocalizedViewModelBase
 {
     private static readonly string[] SupportedLanguageCodes = ["zh-CN", "en-US"];
+    private const string CutterMesWsdlPathSuffix = "/atlmeswebservice/GetParametricValueServiceService?wsdl";
 
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly IUserConfigService _userConfigService;
@@ -391,12 +392,15 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         get => _cutterMesWsdl;
         set
         {
-            if (SetProperty(ref _cutterMesWsdl, value))
+            var normalized = NormalizeCutterMesBaseUrl(value);
+            if (SetProperty(ref _cutterMesWsdl, normalized))
             {
                 UpdateDirtyState();
             }
         }
     }
+
+    public string CutterMesWsdlSuffix => CutterMesWsdlPathSuffix;
 
     public string CutterMesUser
     {
@@ -653,7 +657,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             SpacerValidationCodeSeparator = SpacerValidationCodeSeparator,
             SpacerValidationExpectedSegmentCount = expectedSegmentCount,
             EnableCutterMesValidation = EnableCutterMesValidation,
-            CutterMesWsdl = CutterMesWsdl,
+            CutterMesWsdl = BuildCutterMesWsdl(CutterMesWsdl),
             CutterMesUser = CutterMesUser,
             CutterMesPassword = CutterMesPassword,
             CutterMesSite = CutterMesSite
@@ -687,7 +691,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             SpacerValidationCodeSeparator = config.SpacerValidationCodeSeparator;
             SpacerValidationExpectedSegmentCount = config.SpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture);
             EnableCutterMesValidation = config.EnableCutterMesValidation;
-            CutterMesWsdl = config.CutterMesWsdl;
+            CutterMesWsdl = NormalizeCutterMesBaseUrl(config.CutterMesWsdl);
             CutterMesUser = config.CutterMesUser;
             CutterMesPassword = config.CutterMesPassword;
             CutterMesSite = config.CutterMesSite;
@@ -830,6 +834,30 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
     {
         _statusMessageFactory = null;
         StatusMessage = message;
+    }
+
+    private static string BuildCutterMesWsdl(string? value)
+    {
+        var normalizedBaseUrl = NormalizeCutterMesBaseUrl(value);
+        return string.IsNullOrWhiteSpace(normalizedBaseUrl)
+            ? string.Empty
+            : normalizedBaseUrl + CutterMesWsdlPathSuffix;
+    }
+
+    private static string NormalizeCutterMesBaseUrl(string? value)
+    {
+        var normalized = value?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return string.Empty;
+        }
+
+        if (normalized.EndsWith(CutterMesWsdlPathSuffix, StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = normalized[..^CutterMesWsdlPathSuffix.Length];
+        }
+
+        return normalized.TrimEnd('/');
     }
 
     private sealed record UserConfigSnapshot(

@@ -13,6 +13,9 @@ namespace WearPartsControl.ViewModels;
 
 public sealed class ReplacePartViewModel : LocalizedViewModelBase
 {
+    private const string InputModeManualCode = "Manual";
+    private const string InputModeScannerCode = "Scanner";
+
     private readonly IAppSettingsService _appSettingsService;
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly IWearPartManagementService _wearPartManagementService;
@@ -564,7 +567,7 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
 
     private void ApplySelectedDefinition(WearPartDefinition? definition)
     {
-        InputMode = definition?.InputMode ?? string.Empty;
+        InputMode = ResolveInputModeDisplayName(definition?.InputMode);
         CodeMinLength = definition?.CodeMinLength;
         CodeMaxLength = definition?.CodeMaxLength;
 
@@ -780,6 +783,7 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
             StatusMessage = _statusMessageFactory();
         }
 
+        InputMode = ResolveInputModeDisplayName(SelectedDefinition?.InputMode);
         ApplyWearPartMonitoringStatus(IsWearPartMonitoringEnabled);
         RefreshReplacementReasons();
         RefreshReplacementHistoryLocalizedDisplayNames();
@@ -826,6 +830,17 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
     {
         LastBarcode = LocalizedText.Get("ViewModels.ReplacePartVm.LastBarcodeEmpty");
         _isLastBarcodePlaceholder = true;
+    }
+
+    private static string ResolveInputModeDisplayName(string? inputMode)
+    {
+        var normalized = inputMode?.Trim() ?? string.Empty;
+        return normalized switch
+        {
+            InputModeManualCode => LocalizedText.Get("ViewModels.WearPartEditorVm.InputModeManual"),
+            InputModeScannerCode => LocalizedText.Get("ViewModels.WearPartEditorVm.InputModeScanner"),
+            _ => normalized
+        };
     }
 
     private void SetLocalizedStatusMessage(Func<string> factory)

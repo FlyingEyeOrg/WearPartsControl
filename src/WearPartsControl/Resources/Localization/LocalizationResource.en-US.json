@@ -107,7 +107,7 @@
     "CutterMesSiteLabel": "MES site:",
     "CutterMesSitePlaceholder": "Enter the MES site code",
     "CutterMesWsdlLabel": "MES endpoint:",
-    "CutterMesWsdlPlaceholder": "Enter the MES WSDL or service URL",
+    "CutterMesWsdlPlaceholder": "Enter the site base URL and port, for example http://ndmes.catlbattery.com:8103",
     "CutterMesUserLabel": "MES user:",
     "CutterMesUserPlaceholder": "Enter the MES account",
     "CutterMesPasswordLabel": "MES password:",

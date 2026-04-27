@@ -314,6 +314,61 @@ public sealed class ReplacePartViewModelTests
     }
 
     [Fact]
+    public async Task LocalizationRefresh_ShouldUpdateInputModeDisplayName()
+    {
+        using var cultureScope = new TestCultureScope("zh-CN");
+        var definition = new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            PartName = "刀具A",
+            InputMode = "Scanner",
+            CodeMinLength = 8,
+            CodeMaxLength = 32,
+            CurrentValueDataType = "FLOAT",
+            CurrentValueAddress = "DB1.0",
+            WarningValueDataType = "FLOAT",
+            WarningValueAddress = "DB1.2",
+            ShutdownValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB1.4"
+        };
+        var viewModel = new ReplacePartViewModel(
+            new StubAppSettingsService
+            {
+                Current = new AppSettings
+                {
+                    ResourceNumber = "RES-01",
+                    IsWearPartMonitoringEnabled = true
+                }
+            },
+            new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01" } },
+            new StubWearPartManagementService([definition]),
+            new StubWearPartReplacementService
+            {
+                Preview = new WearPartReplacementPreview
+                {
+                    WearPartDefinitionId = definition.Id,
+                    ClientAppConfigurationId = Guid.NewGuid(),
+                    CurrentValue = "10",
+                    WarningValue = "20",
+                    ShutdownValue = "30"
+                }
+            },
+            new StubToolChangeManagementService(),
+            new StubToolChangeSelectionService(),
+            new UiDispatcher(),
+            new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+
+        Assert.Equal(LocalizedText.Get("ViewModels.WearPartEditorVm.InputModeScanner"), viewModel.InputMode);
+
+        using var _ = new TestCultureScope("en-US");
+        LocalizationBindingSource.Instance.Refresh();
+
+        Assert.Equal(LocalizedText.Get("ViewModels.WearPartEditorVm.InputModeScanner"), viewModel.InputMode);
+    }
+
+    [Fact]
     public void Created_WhenNoDefinitionSelected_ShouldKeepNumericDisplayFieldsEmpty()
     {
         var viewModel = CreateViewModel();
