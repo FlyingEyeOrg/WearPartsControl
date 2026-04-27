@@ -16,7 +16,7 @@ public sealed class PartEditorWindowXamlLoadTests
     {
         RunWithEnglishCulture(() =>
         {
-            var viewModel = new AddPartWindowViewModel(new StubWearPartManagementService(), new UiBusyService(TimeSpan.Zero));
+            var viewModel = new AddPartWindowViewModel(new StubWearPartManagementService(), new StubWearPartTypeService(), new UiBusyService(TimeSpan.Zero));
             var window = new AddPartWindow(viewModel);
 
             try
@@ -35,7 +35,7 @@ public sealed class PartEditorWindowXamlLoadTests
     {
         RunWithEnglishCulture(() =>
         {
-            var viewModel = new EditPartWindowViewModel(new StubWearPartManagementService(), new UiBusyService(TimeSpan.Zero));
+            var viewModel = new EditPartWindowViewModel(new StubWearPartManagementService(), new StubWearPartTypeService(), new UiBusyService(TimeSpan.Zero));
             var window = new EditPartWindow(viewModel);
 
             try
@@ -130,6 +130,16 @@ public sealed class PartEditorWindowXamlLoadTests
         public Task<int> CopyDefinitionsAsync(string sourceResourceNumber, string targetResourceNumber, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
+        }
+    }
+
+    private sealed class StubWearPartTypeService : IWearPartTypeService
+    {
+        public Task<IReadOnlyList<WearPartTypeDefinition>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<WearPartTypeDefinition>>([
+                new WearPartTypeDefinition { Id = Guid.NewGuid(), Code = WearPartTypeCodes.Uncategorized, Name = "未分类" }
+            ]);
         }
     }
 }

@@ -21,8 +21,6 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    <Border Margin="10"
-            Style="{StaticResource ShellSurfaceBorderStyle}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -60,5 +58,4 @@
                               IsRunning="{Binding IsBusy}" />
         </Border>
     </Grid>
-    </Border>
 </views:AppDialogWindow>

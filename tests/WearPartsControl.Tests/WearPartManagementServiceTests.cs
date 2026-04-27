@@ -16,7 +16,7 @@ public sealed class WearPartManagementServiceTests
         var currentUserAccessor = new CurrentUserAccessor();
         var basicRepository = new FakeClientAppConfigurationRepository();
         var wearPartRepository = new FakeWearPartRepository();
-        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository, new FakeToolChangeRepository());
+        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository, new FakeWearPartTypeRepository(), new FakeToolChangeRepository());
 
         await Assert.ThrowsAsync<AuthorizationException>(() => service.CreateDefinitionAsync(CreateDefinitionModel()));
     }
@@ -28,7 +28,7 @@ public sealed class WearPartManagementServiceTests
         var basicConfiguration = CreateClientAppConfiguration("R100");
         var basicRepository = new FakeClientAppConfigurationRepository(basicConfiguration);
         var wearPartRepository = new FakeWearPartRepository();
-        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository, new FakeToolChangeRepository());
+        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository, new FakeWearPartTypeRepository(), new FakeToolChangeRepository());
 
         var created = await service.CreateDefinitionAsync(CreateDefinitionModel(basicConfiguration.Id, basicConfiguration.ResourceNumber));
 
@@ -46,7 +46,7 @@ public sealed class WearPartManagementServiceTests
         var basicConfiguration = CreateClientAppConfiguration("R110");
         var basicRepository = new FakeClientAppConfigurationRepository(basicConfiguration);
         var wearPartRepository = new FakeWearPartRepository();
-        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository, new FakeToolChangeRepository());
+        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository, new FakeWearPartTypeRepository(), new FakeToolChangeRepository());
         var definition = CreateDefinitionModel(basicConfiguration.Id, basicConfiguration.ResourceNumber);
         definition.BarcodeWriteAddress = string.Empty;
 
@@ -65,7 +65,7 @@ public sealed class WearPartManagementServiceTests
         var existing = CreateEntity(basicConfiguration, "刀具A");
         var duplicate = CreateEntity(basicConfiguration, "刀具B");
         var wearPartRepository = new FakeWearPartRepository(existing, duplicate);
-        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository, new FakeToolChangeRepository());
+        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository, new FakeWearPartTypeRepository(), new FakeToolChangeRepository());
 
         var model = CreateDefinitionModel(basicConfiguration.Id, basicConfiguration.ResourceNumber);
         model.Id = existing.Id;
@@ -83,7 +83,7 @@ public sealed class WearPartManagementServiceTests
         var basicRepository = new FakeClientAppConfigurationRepository(source, target);
         var sourceDefinition = CreateEntity(source, "刀具A");
         var wearPartRepository = new FakeWearPartRepository(sourceDefinition);
-        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository, new FakeToolChangeRepository());
+        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository, new FakeWearPartTypeRepository(), new FakeToolChangeRepository());
 
         var copiedCount = await service.CopyDefinitionsAsync(source.ResourceNumber, target.ResourceNumber);
 
@@ -148,6 +148,7 @@ public sealed class WearPartManagementServiceTests
             CodeMinLength = 10,
             CodeMaxLength = 30,
             LifetimeType = "计次",
+            WearPartTypeId = FakeWearPartTypeRepository.DefaultTypeId,
             PlcZeroClearAddress = "DB1.3",
             BarcodeWriteAddress = "DB1.4"
         };
@@ -184,7 +185,7 @@ public sealed class WearPartManagementServiceTests
         var basicConfiguration = CreateClientAppConfiguration("R120");
         var basicRepository = new FakeClientAppConfigurationRepository(basicConfiguration);
         var wearPartRepository = new FakeWearPartRepository();
-        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository, new FakeToolChangeRepository());
+        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository, new FakeWearPartTypeRepository(), new FakeToolChangeRepository());
         var definition = CreateDefinitionModel(basicConfiguration.Id, basicConfiguration.ResourceNumber);
         definition.PlcZeroClearAddress = string.Empty;
 
@@ -202,7 +203,7 @@ public sealed class WearPartManagementServiceTests
         var toolChange = new ToolChangeEntity { Id = Guid.NewGuid(), Name = "标准刀", Code = "TL-01" };
         var basicRepository = new FakeClientAppConfigurationRepository(basicConfiguration);
         var wearPartRepository = new FakeWearPartRepository();
-        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository, new FakeToolChangeRepository(toolChange));
+        var service = new WearPartManagementService(currentUserAccessor, basicRepository, wearPartRepository, new FakeWearPartTypeRepository(), new FakeToolChangeRepository(toolChange));
         var definition = CreateDefinitionModel(basicConfiguration.Id, basicConfiguration.ResourceNumber);
         definition.ToolChangeId = toolChange.Id;
 
@@ -413,6 +414,60 @@ public sealed class WearPartManagementServiceTests
         public Task<bool> ExistsCodeAsync(string code, Guid? excludeId = null, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(false);
+        }
+    }
+
+    private sealed class FakeWearPartTypeRepository : IWearPartTypeRepository
+    {
+        public static readonly Guid DefaultTypeId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+        private readonly List<WearPartTypeEntity> _entities =
+        [
+            new WearPartTypeEntity
+            {
+                Id = DefaultTypeId,
+                Code = WearPartTypeCodes.Uncategorized,
+                Name = "未分类"
+            }
+        ];
+
+        public IUnitOfWork UnitOfWork { get; } = new FakeUnitOfWork();
+
+        public Task<WearPartTypeEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(_entities.FirstOrDefault(x => x.Id == id));
+        }
+
+        public Task<IReadOnlyList<WearPartTypeEntity>> ListAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<WearPartTypeEntity>>(_entities.ToArray());
+        }
+
+        public Task AddAsync(WearPartTypeEntity entity, CancellationToken cancellationToken = default)
+        {
+            _entities.Add(entity);
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateAsync(WearPartTypeEntity entity, CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            _entities.RemoveAll(x => x.Id == id);
+            return Task.CompletedTask;
+        }
+
+        public Task SoftDeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return DeleteAsync(id, cancellationToken);
+        }
+
+        public Task<WearPartTypeEntity?> GetByCodeAsync(string code, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(_entities.FirstOrDefault(x => string.Equals(x.Code, code, StringComparison.OrdinalIgnoreCase)));
         }
     }
 

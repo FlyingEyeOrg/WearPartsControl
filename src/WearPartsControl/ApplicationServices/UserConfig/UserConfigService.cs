@@ -118,7 +118,12 @@ public sealed class UserConfigService : IUserConfigService
                 : config.SpacerValidationCodeSeparator.Trim(),
             SpacerValidationExpectedSegmentCount = config.SpacerValidationExpectedSegmentCount > 0
                 ? config.SpacerValidationExpectedSegmentCount
-                : UserConfig.DefaultSpacerValidationExpectedSegmentCount
+                : UserConfig.DefaultSpacerValidationExpectedSegmentCount,
+            EnableCutterMesValidation = config.EnableCutterMesValidation,
+            CutterMesWsdl = config.CutterMesWsdl?.Trim() ?? string.Empty,
+            CutterMesUser = config.CutterMesUser?.Trim() ?? string.Empty,
+            CutterMesPassword = config.CutterMesPassword?.Trim() ?? string.Empty,
+            CutterMesSite = config.CutterMesSite?.Trim() ?? string.Empty
         };
     }
 
@@ -192,7 +197,12 @@ public sealed class UserConfigService : IUserConfigService
             SpacerValidationTimeoutMilliseconds = config.SpacerValidationTimeoutMilliseconds,
             SpacerValidationIgnoreServerCertificateErrors = config.SpacerValidationIgnoreServerCertificateErrors,
             SpacerValidationCodeSeparator = config.SpacerValidationCodeSeparator,
-            SpacerValidationExpectedSegmentCount = config.SpacerValidationExpectedSegmentCount
+            SpacerValidationExpectedSegmentCount = config.SpacerValidationExpectedSegmentCount,
+            EnableCutterMesValidation = config.EnableCutterMesValidation,
+            CutterMesWsdl = config.CutterMesWsdl,
+            CutterMesUser = config.CutterMesUser,
+            CutterMesPassword = config.CutterMesPassword,
+            CutterMesSite = config.CutterMesSite
         });
     }
 
@@ -224,7 +234,12 @@ public sealed class UserConfigService : IUserConfigService
             SpacerValidationTimeoutMilliseconds = legacyConfig.TimeoutMilliseconds,
             SpacerValidationIgnoreServerCertificateErrors = legacyConfig.IgnoreServerCertificateErrors,
             SpacerValidationCodeSeparator = legacyConfig.CodeSeparator,
-            SpacerValidationExpectedSegmentCount = legacyConfig.ExpectedSegmentCount
+            SpacerValidationExpectedSegmentCount = legacyConfig.ExpectedSegmentCount,
+            EnableCutterMesValidation = config.EnableCutterMesValidation,
+            CutterMesWsdl = config.CutterMesWsdl,
+            CutterMesUser = config.CutterMesUser,
+            CutterMesPassword = config.CutterMesPassword,
+            CutterMesSite = config.CutterMesSite
         });
     }
 
@@ -256,7 +271,12 @@ public sealed class UserConfigService : IUserConfigService
             SpacerValidationTimeoutMilliseconds = config.SpacerValidationTimeoutMilliseconds,
             SpacerValidationIgnoreServerCertificateErrors = config.SpacerValidationIgnoreServerCertificateErrors,
             SpacerValidationCodeSeparator = config.SpacerValidationCodeSeparator,
-            SpacerValidationExpectedSegmentCount = config.SpacerValidationExpectedSegmentCount
+            SpacerValidationExpectedSegmentCount = config.SpacerValidationExpectedSegmentCount,
+            EnableCutterMesValidation = config.EnableCutterMesValidation,
+            CutterMesWsdl = config.CutterMesWsdl,
+            CutterMesUser = config.CutterMesUser,
+            CutterMesPassword = config.CutterMesPassword,
+            CutterMesSite = config.CutterMesSite
         });
     }
 

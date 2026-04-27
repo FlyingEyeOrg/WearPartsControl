@@ -39,7 +39,12 @@ public sealed class UserConfigViewModelTests
                 SpacerValidationTimeoutMilliseconds = 8000,
                 SpacerValidationIgnoreServerCertificateErrors = false,
                 SpacerValidationCodeSeparator = "-",
-                SpacerValidationExpectedSegmentCount = 9
+                SpacerValidationExpectedSegmentCount = 9,
+                EnableCutterMesValidation = true,
+                CutterMesSite = "MES-S01",
+                CutterMesWsdl = "https://mes/wsdl",
+                CutterMesUser = "mes-user",
+                CutterMesPassword = "mes-pass"
             }
         };
         var localizationService = new StubLocalizationService();
@@ -67,6 +72,11 @@ public sealed class UserConfigViewModelTests
         Assert.False(viewModel.SpacerValidationIgnoreServerCertificateErrors);
         Assert.Equal("-", viewModel.SpacerValidationCodeSeparator);
         Assert.Equal("9", viewModel.SpacerValidationExpectedSegmentCount);
+        Assert.True(viewModel.EnableCutterMesValidation);
+        Assert.Equal("MES-S01", viewModel.CutterMesSite);
+        Assert.Equal("https://mes/wsdl", viewModel.CutterMesWsdl);
+        Assert.Equal("mes-user", viewModel.CutterMesUser);
+        Assert.Equal("mes-pass", viewModel.CutterMesPassword);
     Assert.Equal("en-US", viewModel.SelectedLanguage);
         Assert.False(viewModel.IsDirty);
         Assert.Equal(LocalizedText.Get("ViewModels.UserConfigVm.Loaded"), viewModel.StatusMessage);
@@ -95,6 +105,11 @@ public sealed class UserConfigViewModelTests
         viewModel.SpacerValidationIgnoreServerCertificateErrors = false;
         viewModel.SpacerValidationCodeSeparator = "-";
         viewModel.SpacerValidationExpectedSegmentCount = "10";
+        viewModel.EnableCutterMesValidation = true;
+        viewModel.CutterMesSite = "MES-S02";
+        viewModel.CutterMesWsdl = "https://mes/updated";
+        viewModel.CutterMesUser = "mes-user-2";
+        viewModel.CutterMesPassword = "mes-pass-2";
         viewModel.SelectedLanguage = "en-US";
 
         Assert.True(viewModel.IsDirty);
@@ -119,6 +134,11 @@ public sealed class UserConfigViewModelTests
         Assert.False(service.LastSaved.SpacerValidationIgnoreServerCertificateErrors);
         Assert.Equal("-", service.LastSaved.SpacerValidationCodeSeparator);
         Assert.Equal(10, service.LastSaved.SpacerValidationExpectedSegmentCount);
+        Assert.True(service.LastSaved.EnableCutterMesValidation);
+        Assert.Equal("MES-S02", service.LastSaved.CutterMesSite);
+        Assert.Equal("https://mes/updated", service.LastSaved.CutterMesWsdl);
+        Assert.Equal("mes-user-2", service.LastSaved.CutterMesUser);
+        Assert.Equal("mes-pass-2", service.LastSaved.CutterMesPassword);
         Assert.Equal("en-US", localizationService.LastCultureName);
         Assert.True(dispatcher.RenderCount >= 1);
     }
@@ -243,6 +263,11 @@ public sealed class UserConfigViewModelTests
                 PlcIpAddress = Current.PlcIpAddress,
                 PlcPort = Current.PlcPort,
                 ShutdownPointAddress = Current.ShutdownPointAddress,
+                EnableCutterMesValidation = Current.EnableCutterMesValidation,
+                CutterMesWsdl = Current.CutterMesWsdl,
+                CutterMesUser = Current.CutterMesUser,
+                CutterMesPassword = Current.CutterMesPassword,
+                CutterMesSite = Current.CutterMesSite,
                 SiemensRack = Current.SiemensRack,
                 SiemensSlot = Current.SiemensSlot,
                 IsStringReverse = Current.IsStringReverse
@@ -287,7 +312,12 @@ public sealed class UserConfigViewModelTests
                 SpacerValidationTimeoutMilliseconds = Current.SpacerValidationTimeoutMilliseconds,
                 SpacerValidationIgnoreServerCertificateErrors = Current.SpacerValidationIgnoreServerCertificateErrors,
                 SpacerValidationCodeSeparator = Current.SpacerValidationCodeSeparator,
-                SpacerValidationExpectedSegmentCount = Current.SpacerValidationExpectedSegmentCount
+                SpacerValidationExpectedSegmentCount = Current.SpacerValidationExpectedSegmentCount,
+                EnableCutterMesValidation = Current.EnableCutterMesValidation,
+                CutterMesSite = Current.CutterMesSite,
+                CutterMesWsdl = Current.CutterMesWsdl,
+                CutterMesUser = Current.CutterMesUser,
+                CutterMesPassword = Current.CutterMesPassword
             });
         }
 
@@ -317,7 +347,12 @@ public sealed class UserConfigViewModelTests
                 SpacerValidationTimeoutMilliseconds = config.SpacerValidationTimeoutMilliseconds,
                 SpacerValidationIgnoreServerCertificateErrors = config.SpacerValidationIgnoreServerCertificateErrors,
                 SpacerValidationCodeSeparator = config.SpacerValidationCodeSeparator,
-                SpacerValidationExpectedSegmentCount = config.SpacerValidationExpectedSegmentCount
+                SpacerValidationExpectedSegmentCount = config.SpacerValidationExpectedSegmentCount,
+                EnableCutterMesValidation = config.EnableCutterMesValidation,
+                CutterMesSite = config.CutterMesSite,
+                CutterMesWsdl = config.CutterMesWsdl,
+                CutterMesUser = config.CutterMesUser,
+                CutterMesPassword = config.CutterMesPassword
             };
             Current = LastSaved;
             return ValueTask.CompletedTask;

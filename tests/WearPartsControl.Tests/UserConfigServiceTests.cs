@@ -36,7 +36,12 @@ public sealed class UserConfigServiceTests
                 SpacerValidationTimeoutMilliseconds = 7000,
                 SpacerValidationIgnoreServerCertificateErrors = false,
                 SpacerValidationCodeSeparator = " - ",
-                SpacerValidationExpectedSegmentCount = 9
+                SpacerValidationExpectedSegmentCount = 9,
+                EnableCutterMesValidation = true,
+                CutterMesSite = " MES-S01 ",
+                CutterMesWsdl = " https://mes/wsdl ",
+                CutterMesUser = " mes-user ",
+                CutterMesPassword = " mes-pass "
             });
 
             var config = await service.GetAsync();
@@ -66,6 +71,11 @@ public sealed class UserConfigServiceTests
             Assert.False(config.SpacerValidationIgnoreServerCertificateErrors);
             Assert.Equal("-", config.SpacerValidationCodeSeparator);
             Assert.Equal(9, config.SpacerValidationExpectedSegmentCount);
+            Assert.True(config.EnableCutterMesValidation);
+            Assert.Equal("MES-S01", config.CutterMesSite);
+            Assert.Equal("https://mes/wsdl", config.CutterMesWsdl);
+            Assert.Equal("mes-user", config.CutterMesUser);
+            Assert.Equal("mes-pass", config.CutterMesPassword);
             Assert.NotNull(persisted);
             Assert.Equal("ME001", persisted!.MeResponsibleWorkId);
             Assert.Equal("张三", persisted.MeResponsibleName);

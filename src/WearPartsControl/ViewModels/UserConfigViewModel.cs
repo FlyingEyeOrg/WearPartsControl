@@ -48,6 +48,11 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
     private bool _spacerValidationIgnoreServerCertificateErrors = true;
     private string _spacerValidationCodeSeparator = UserConfig.DefaultSpacerValidationCodeSeparator;
     private string _spacerValidationExpectedSegmentCount = UserConfig.DefaultSpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture);
+    private bool _enableCutterMesValidation;
+    private string _cutterMesWsdl = string.Empty;
+    private string _cutterMesUser = string.Empty;
+    private string _cutterMesPassword = string.Empty;
+    private string _cutterMesSite = string.Empty;
     private string _selectedLanguage = "zh-CN";
     private string _statusMessage = LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain");
     private Func<string>? _statusMessageFactory;
@@ -369,6 +374,66 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         }
     }
 
+    public bool EnableCutterMesValidation
+    {
+        get => _enableCutterMesValidation;
+        set
+        {
+            if (SetProperty(ref _enableCutterMesValidation, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string CutterMesWsdl
+    {
+        get => _cutterMesWsdl;
+        set
+        {
+            if (SetProperty(ref _cutterMesWsdl, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string CutterMesUser
+    {
+        get => _cutterMesUser;
+        set
+        {
+            if (SetProperty(ref _cutterMesUser, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string CutterMesPassword
+    {
+        get => _cutterMesPassword;
+        set
+        {
+            if (SetProperty(ref _cutterMesPassword, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string CutterMesSite
+    {
+        get => _cutterMesSite;
+        set
+        {
+            if (SetProperty(ref _cutterMesSite, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         if (_isInitialized)
@@ -379,9 +444,11 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         await ExecuteBusyAsync(async () =>
         {
             var config = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
+            var clientAppInfo = await _clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(false);
+            var effectiveConfig = MergeCutterMesConfig(config, clientAppInfo);
             await _uiDispatcher.RunAsync(() =>
             {
-                ApplyConfig(config);
+                ApplyConfig(effectiveConfig);
                 _originalSnapshot = CaptureSnapshot();
                 IsDirty = false;
                 _isInitialized = true;
@@ -551,6 +618,15 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             throw new InvalidOperationException(LocalizedText.Get("ViewModels.UserConfigVm.SpacerValidationExpectedSegmentCountInvalid"));
         }
 
+        if (EnableCutterMesValidation
+            && (string.IsNullOrWhiteSpace(CutterMesWsdl)
+                || string.IsNullOrWhiteSpace(CutterMesUser)
+                || string.IsNullOrWhiteSpace(CutterMesPassword)
+                || string.IsNullOrWhiteSpace(CutterMesSite)))
+        {
+            throw new InvalidOperationException(LocalizedText.Get("ViewModels.UserConfigVm.CutterMesConfigurationIncomplete"));
+        }
+
         return new UserConfig
         {
             MeResponsibleWorkId = MeResponsibleWorkId,
@@ -575,7 +651,12 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             SpacerValidationTimeoutMilliseconds = timeoutMilliseconds,
             SpacerValidationIgnoreServerCertificateErrors = SpacerValidationIgnoreServerCertificateErrors,
             SpacerValidationCodeSeparator = SpacerValidationCodeSeparator,
-            SpacerValidationExpectedSegmentCount = expectedSegmentCount
+            SpacerValidationExpectedSegmentCount = expectedSegmentCount,
+            EnableCutterMesValidation = EnableCutterMesValidation,
+            CutterMesWsdl = CutterMesWsdl,
+            CutterMesUser = CutterMesUser,
+            CutterMesPassword = CutterMesPassword,
+            CutterMesSite = CutterMesSite
         };
     }
 
@@ -605,6 +686,11 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             SpacerValidationIgnoreServerCertificateErrors = config.SpacerValidationIgnoreServerCertificateErrors;
             SpacerValidationCodeSeparator = config.SpacerValidationCodeSeparator;
             SpacerValidationExpectedSegmentCount = config.SpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture);
+            EnableCutterMesValidation = config.EnableCutterMesValidation;
+            CutterMesWsdl = config.CutterMesWsdl;
+            CutterMesUser = config.CutterMesUser;
+            CutterMesPassword = config.CutterMesPassword;
+            CutterMesSite = config.CutterMesSite;
             SelectedLanguage = string.IsNullOrWhiteSpace(config.Language)
                 ? _localizationService.CurrentCulture.Name
                 : config.Language;
@@ -648,7 +734,61 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             SpacerValidationIgnoreServerCertificateErrors,
             SpacerValidationCodeSeparator?.Trim() ?? string.Empty,
             SpacerValidationExpectedSegmentCount?.Trim() ?? string.Empty,
+            EnableCutterMesValidation,
+            CutterMesWsdl?.Trim() ?? string.Empty,
+            CutterMesUser?.Trim() ?? string.Empty,
+            CutterMesPassword?.Trim() ?? string.Empty,
+            CutterMesSite?.Trim() ?? string.Empty,
             SelectedLanguage?.Trim() ?? string.Empty);
+    }
+
+    private static UserConfig MergeCutterMesConfig(UserConfig config, ClientAppInfoModel clientAppInfo)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+        ArgumentNullException.ThrowIfNull(clientAppInfo);
+
+        var hasUserConfig = config.EnableCutterMesValidation
+            || !string.IsNullOrWhiteSpace(config.CutterMesWsdl)
+            || !string.IsNullOrWhiteSpace(config.CutterMesUser)
+            || !string.IsNullOrWhiteSpace(config.CutterMesPassword)
+            || !string.IsNullOrWhiteSpace(config.CutterMesSite);
+
+        if (hasUserConfig)
+        {
+            return config;
+        }
+
+        return new UserConfig
+        {
+            MeResponsibleWorkId = config.MeResponsibleWorkId,
+            MeResponsibleName = config.MeResponsibleName,
+            PrdResponsibleWorkId = config.PrdResponsibleWorkId,
+            PrdResponsibleName = config.PrdResponsibleName,
+            ReplacementOperatorName = config.ReplacementOperatorName,
+            Language = config.Language,
+            ComAccessToken = config.ComAccessToken,
+            ComSecret = config.ComSecret,
+            ComNotificationEnabled = config.ComNotificationEnabled,
+            ComPushUrl = config.ComPushUrl,
+            ComDeIpaasKeyAuth = config.ComDeIpaasKeyAuth,
+            ComAgentId = config.ComAgentId,
+            ComGroupTemplateId = config.ComGroupTemplateId,
+            ComWorkTemplateId = config.ComWorkTemplateId,
+            ComUserType = config.ComUserType,
+            ComTimeoutMilliseconds = config.ComTimeoutMilliseconds,
+            SpacerValidationEnabled = config.SpacerValidationEnabled,
+            SpacerValidationUrl = config.SpacerValidationUrl,
+            SpacerValidationUrlRelease = config.SpacerValidationUrlRelease,
+            SpacerValidationTimeoutMilliseconds = config.SpacerValidationTimeoutMilliseconds,
+            SpacerValidationIgnoreServerCertificateErrors = config.SpacerValidationIgnoreServerCertificateErrors,
+            SpacerValidationCodeSeparator = config.SpacerValidationCodeSeparator,
+            SpacerValidationExpectedSegmentCount = config.SpacerValidationExpectedSegmentCount,
+            EnableCutterMesValidation = clientAppInfo.EnableCutterMesValidation,
+            CutterMesWsdl = clientAppInfo.CutterMesWsdl,
+            CutterMesUser = clientAppInfo.CutterMesUser,
+            CutterMesPassword = clientAppInfo.CutterMesPassword,
+            CutterMesSite = clientAppInfo.CutterMesSite
+        };
     }
 
     private async Task ExecuteBusyAsync(Func<Task> action, string errorPrefix, string busyMessage, CancellationToken cancellationToken = default)
@@ -732,6 +872,11 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         bool SpacerValidationIgnoreServerCertificateErrors,
         string SpacerValidationCodeSeparator,
         string SpacerValidationExpectedSegmentCount,
+        bool EnableCutterMesValidation,
+        string CutterMesWsdl,
+        string CutterMesUser,
+        string CutterMesPassword,
+        string CutterMesSite,
         string SelectedLanguage)
     {
         public static UserConfigSnapshot Empty { get; } = new(
@@ -755,6 +900,11 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             true,
             UserConfig.DefaultSpacerValidationCodeSeparator,
             UserConfig.DefaultSpacerValidationExpectedSegmentCount.ToString(CultureInfo.InvariantCulture),
+            false,
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            string.Empty,
             "zh-CN");
     }
 }

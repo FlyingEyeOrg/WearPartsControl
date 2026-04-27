@@ -78,4 +78,14 @@ public sealed class UserConfig
     public string SpacerValidationCodeSeparator { get; set; } = DefaultSpacerValidationCodeSeparator;
 
     public int SpacerValidationExpectedSegmentCount { get; set; } = DefaultSpacerValidationExpectedSegmentCount;
+
+    public bool EnableCutterMesValidation { get; set; }
+
+    public string CutterMesWsdl { get; set; } = string.Empty;
+
+    public string CutterMesUser { get; set; } = string.Empty;
+
+    public string CutterMesPassword { get; set; } = string.Empty;
+
+    public string CutterMesSite { get; set; } = string.Empty;
 }
