@@ -1,0 +1,13 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .github/hooks/dotnet-format-after-edit.ps1",
+        "windows": "pwsh -NoProfile -ExecutionPolicy Bypass -File .github/hooks/dotnet-format-after-edit.ps1",
+        "cwd": ".",
+        "timeout": 120
+      }
+    ]
+  }
+}
