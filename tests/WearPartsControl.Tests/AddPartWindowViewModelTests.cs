@@ -18,15 +18,16 @@ public sealed class AddPartWindowViewModelTests
         await viewModel.InitializeForCreateAsync(Guid.NewGuid(), "RES-001");
 
         Assert.Equal("Manual", viewModel.InputMode);
+        Assert.Equal(new[] { "Manual", "Scanner" }, viewModel.InputModes.Select(x => x.Code).ToArray());
         Assert.Equal("FLOAT", viewModel.CurrentValueDataType);
         Assert.Equal("FLOAT", viewModel.WarningValueDataType);
         Assert.Equal("FLOAT", viewModel.ShutdownValueDataType);
-        Assert.Equal("Count", viewModel.LifetimeType);
+        Assert.Equal("Time", viewModel.LifetimeType);
         Assert.Equal(
-            LocalizedText.Get("ViewModels.WearPartEditorVm.LifetimeTypeCount"),
-            Assert.Single(viewModel.LifetimeTypes, option => option.Code == "Count").DisplayName);
-        Assert.Equal("0", viewModel.CodeMinLength);
-        Assert.Equal("0", viewModel.CodeMaxLength);
+            LocalizedText.Get("ViewModels.WearPartEditorVm.LifetimeTypeTime"),
+            Assert.Single(viewModel.LifetimeTypes, option => option.Code == "Time").DisplayName);
+        Assert.Equal("1", viewModel.CodeMinLength);
+        Assert.Equal("128", viewModel.CodeMaxLength);
         Assert.False(viewModel.IsShutdown);
         Assert.Equal(string.Empty, viewModel.PlcZeroClearAddress);
         Assert.Equal(string.Empty, viewModel.BarcodeWriteAddress);
@@ -44,7 +45,7 @@ public sealed class AddPartWindowViewModelTests
             ClientAppConfigurationId = Guid.NewGuid(),
             ResourceNumber = "RES-002",
             PartName = "刀具A",
-            InputMode = "Barcode",
+            InputMode = "Scanner",
             CurrentValueAddress = "DB1.0",
             CurrentValueDataType = "INT32",
             WarningValueAddress = "DB1.1",
@@ -63,7 +64,7 @@ public sealed class AddPartWindowViewModelTests
 
         await viewModel.InitializeForEditAsync(definition);
 
-        Assert.Equal("Barcode", viewModel.InputMode);
+        Assert.Equal("Scanner", viewModel.InputMode);
         Assert.Equal("INT32", viewModel.CurrentValueDataType);
         Assert.Equal("BOOL", viewModel.WarningValueDataType);
         Assert.Equal("STRING", viewModel.ShutdownValueDataType);
@@ -140,14 +141,14 @@ public sealed class AddPartWindowViewModelTests
 
         await viewModel.InitializeForCreateAsync(Guid.NewGuid(), "RES-001");
 
-        Assert.Equal("Count", viewModel.LifetimeType);
-        Assert.Equal("计次", Assert.Single(viewModel.LifetimeTypes, option => option.Code == "Count").DisplayName);
+        Assert.Equal("Time", viewModel.LifetimeType);
+        Assert.Equal("计时", Assert.Single(viewModel.LifetimeTypes, option => option.Code == "Time").DisplayName);
 
         using var _ = new TestCultureScope("en-US");
         LocalizationBindingSource.Instance.Refresh();
 
-        Assert.Equal("Count", viewModel.LifetimeType);
-        Assert.Equal("Count", Assert.Single(viewModel.LifetimeTypes, option => option.Code == "Count").DisplayName);
+        Assert.Equal("Time", viewModel.LifetimeType);
+        Assert.Equal("Time", Assert.Single(viewModel.LifetimeTypes, option => option.Code == "Time").DisplayName);
     }
 
     private sealed class StubWearPartManagementService : IWearPartManagementService

@@ -538,6 +538,8 @@
     },
     "WearPartEditorVm": {
       "ResourceNumberMissing": "No resource number is configured, so the wear part cannot be saved.",
+      "InputModeManual": "Manual",
+      "InputModeScanner": "Scanner / keyboard barcode reader / card reader",
       "LifetimeTypeMeter": "Meter",
       "LifetimeTypeCount": "Count",
       "LifetimeTypeTime": "Time",

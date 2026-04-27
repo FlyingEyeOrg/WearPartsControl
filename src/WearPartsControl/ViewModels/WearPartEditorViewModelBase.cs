@@ -24,12 +24,14 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
 
     private const string DefaultCreateInputMode = "Manual";
     private const string DefaultCreateDataType = "FLOAT";
+    private const string InputModeManualCode = "Manual";
+    private const string InputModeScannerCode = "Scanner";
     private const string LifetimeTypeMeterCode = "Meter";
     private const string LifetimeTypeCountCode = "Count";
     private const string LifetimeTypeTimeCode = "Time";
-    private const string DefaultCreateLifetimeType = LifetimeTypeCountCode;
-    private const string DefaultCreateCodeMinLength = "0";
-    private const string DefaultCreateCodeMaxLength = "0";
+    private const string DefaultCreateLifetimeType = LifetimeTypeTimeCode;
+    private const string DefaultCreateCodeMinLength = "1";
+    private const string DefaultCreateCodeMaxLength = "128";
 
     private readonly IWearPartManagementService _wearPartManagementService;
     private readonly IWearPartTypeService _wearPartTypeService;
@@ -65,10 +67,7 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
         _wearPartTypeService = wearPartTypeService;
         _uiBusyService = uiBusyService;
 
-        foreach (var item in new[] { "Manual", "Scanner", "Barcode" })
-        {
-            InputModes.Add(item);
-        }
+        RefreshInputModeOptions();
 
         RefreshLifetimeTypeOptions();
 
@@ -83,7 +82,7 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
 
     public event EventHandler<bool?>? RequestClose;
 
-    public ObservableCollection<string> InputModes { get; } = new();
+    public ObservableCollection<InputModeOption> InputModes { get; } = new();
 
     public ObservableCollection<LifetimeTypeOption> LifetimeTypes { get; } = new();
     public ObservableCollection<WearPartTypeDefinition> WearPartTypes { get; } = new();
@@ -142,7 +141,7 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
     public string InputMode
     {
         get => _inputMode;
-        set => SetEditorProperty(ref _inputMode, value);
+        set => SetEditorProperty(ref _inputMode, value?.Trim() ?? string.Empty);
     }
 
     public string CurrentValueAddress
@@ -288,7 +287,7 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
             && ClientAppConfigurationId != Guid.Empty
             && !string.IsNullOrWhiteSpace(ResourceNumber)
             && !string.IsNullOrWhiteSpace(PartName)
-            && !string.IsNullOrWhiteSpace(InputMode)
+            && IsSupportedInputMode(InputMode)
             && !string.IsNullOrWhiteSpace(CurrentValueAddress)
             && !string.IsNullOrWhiteSpace(CurrentValueDataType)
             && !string.IsNullOrWhiteSpace(WarningValueAddress)
@@ -346,7 +345,7 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
             ClientAppConfigurationId = ClientAppConfigurationId,
             ResourceNumber = ResourceNumber,
             PartName = PartName,
-            InputMode = InputMode,
+            InputMode = InputMode.Trim(),
             CurrentValueAddress = CurrentValueAddress,
             CurrentValueDataType = CurrentValueDataType,
             WarningValueAddress = WarningValueAddress,
@@ -428,14 +427,41 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
             : normalized;
     }
 
+    private static bool IsSupportedInputMode(string? value)
+    {
+        var normalized = value?.Trim() ?? string.Empty;
+        return string.Equals(normalized, InputModeManualCode, StringComparison.Ordinal)
+            || string.Equals(normalized, InputModeScannerCode, StringComparison.Ordinal);
+    }
+
     protected override void OnLocalizationRefreshed()
     {
+        RefreshInputModeOptions();
         RefreshLifetimeTypeOptions();
 
         if (_statusMessageFactory is not null)
         {
             StatusMessage = _statusMessageFactory();
         }
+    }
+
+    private void RefreshInputModeOptions()
+    {
+        UpdateInputModeOptionDisplayName(InputModeManualCode, LocalizedText.Get("ViewModels.WearPartEditorVm.InputModeManual"));
+        UpdateInputModeOptionDisplayName(InputModeScannerCode, LocalizedText.Get("ViewModels.WearPartEditorVm.InputModeScanner"));
+    }
+
+    private void UpdateInputModeOptionDisplayName(string code, string displayName)
+    {
+        var option = InputModes.FirstOrDefault(existing => string.Equals(existing.Code, code, StringComparison.Ordinal));
+
+        if (option is null)
+        {
+            InputModes.Add(new InputModeOption(code, displayName));
+            return;
+        }
+
+        option.DisplayName = displayName;
     }
 
     private void RefreshLifetimeTypeOptions()
@@ -475,6 +501,25 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
         private string _displayName;
 
         public LifetimeTypeOption(string code, string displayName)
+        {
+            Code = code;
+            _displayName = displayName;
+        }
+
+        public string Code { get; }
+
+        public string DisplayName
+        {
+            get => _displayName;
+            set => SetProperty(ref _displayName, value);
+        }
+    }
+
+    public sealed class InputModeOption : ObservableObject
+    {
+        private string _displayName;
+
+        public InputModeOption(string code, string displayName)
         {
             Code = code;
             _displayName = displayName;

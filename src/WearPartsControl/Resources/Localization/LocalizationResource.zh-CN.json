@@ -538,6 +538,8 @@
     },
     "WearPartEditorVm": {
       "ResourceNumberMissing": "当前未配置资源号，无法保存易损件。",
+      "InputModeManual": "手动",
+      "InputModeScanner": "扫码枪/刷卡器（键盘输入）",
       "LifetimeTypeMeter": "记米",
       "LifetimeTypeCount": "计次",
       "LifetimeTypeTime": "计时",

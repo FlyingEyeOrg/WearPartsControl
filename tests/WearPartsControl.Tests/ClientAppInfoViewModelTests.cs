@@ -38,7 +38,7 @@ public sealed class ClientAppInfoViewModelTests : IDisposable
   ]
 }
 """);
-                File.WriteAllText(_selectionOptionsPath, """
+        File.WriteAllText(_selectionOptionsPath, """
 {
     "AreaOptions": ["阳极", "阴极"],
     "ProcedureOptions": ["凹版", "热压/冷压", "X-ray"]

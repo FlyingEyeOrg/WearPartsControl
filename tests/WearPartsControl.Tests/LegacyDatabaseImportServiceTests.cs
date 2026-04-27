@@ -88,6 +88,7 @@ public sealed class LegacyDatabaseImportServiceTests : IDisposable
         var definition = await verifyContext.WearPartDefinitions.SingleAsync(x => x.ClientAppConfigurationId == configuration.Id);
         Assert.Equal(configuration.ResourceNumber, definition.ResourceNumber);
         Assert.Equal("刀具A", definition.PartName);
+        Assert.Equal("Scanner", definition.InputMode);
         Assert.Equal("DB1.0", definition.CurrentValueAddress);
     }
 

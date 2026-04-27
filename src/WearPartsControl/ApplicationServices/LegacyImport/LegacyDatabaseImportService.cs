@@ -358,7 +358,7 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
     {
         target.ResourceNumber = NormalizeOrEmpty(resourceNumber);
         target.PartName = NormalizeOrEmpty(source.Name);
-        target.InputMode = NormalizeOrEmpty(source.InputMode, "Barcode");
+        target.InputMode = NormalizeLegacyInputMode(source.InputMode);
         target.CurrentValueAddress = NormalizeOrEmpty(source.CurrentValueAddress, "######");
         target.CurrentValueDataType = NormalizeOrEmpty(source.CurrentValueDataType, "String");
         target.WarningValueAddress = NormalizeOrEmpty(source.WarningValueAddress, "######");
@@ -371,6 +371,14 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
         target.LifetimeType = NormalizeLifetimeType(source.LifetimeType);
         target.PlcZeroClearAddress = NormalizeOrEmpty(source.PlcZeroClearAddress);
         target.BarcodeWriteAddress = NormalizeOrEmpty(source.BarcodeWriteAddress, "######");
+    }
+
+    private static string NormalizeLegacyInputMode(string? inputMode)
+    {
+        var normalized = NormalizeOrEmpty(inputMode, "Scanner");
+        return string.Equals(normalized, "Barcode", StringComparison.OrdinalIgnoreCase)
+            ? "Scanner"
+            : normalized;
     }
 
     private static string ValidateLegacyDatabasePath(string legacyDatabasePath)

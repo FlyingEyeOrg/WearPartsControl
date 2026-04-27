@@ -238,8 +238,9 @@
                                    Text="{loc:Loc PartInfoControl.InputModeLabel}" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding InputModes}"
-                                  Text="{Binding InputMode, UpdateSourceTrigger=PropertyChanged}"
-                                  IsEditable="True"
+                                  DisplayMemberPath="DisplayName"
+                                  SelectedValuePath="Code"
+                                  SelectedValue="{Binding InputMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   Style="{StaticResource ComboBoxExtend}"
                                   hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.InputModePlaceholder}" />
                     </Grid>
