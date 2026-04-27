@@ -10,18 +10,18 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-            <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <Style x:Key="FormLabelTextBlockStyle"
-               TargetType="TextBlock">
-            <Setter Property="VerticalAlignment"
-                Value="Center" />
-            <Setter Property="Margin"
-                Value="0 0 12 0" />
-            <Setter Property="TextWrapping"
-                Value="Wrap" />
-            <Setter Property="MaxWidth"
-                Value="220" />
+                   TargetType="TextBlock">
+                <Setter Property="VerticalAlignment"
+                        Value="Center" />
+                <Setter Property="Margin"
+                        Value="0 0 12 0" />
+                <Setter Property="TextWrapping"
+                        Value="Wrap" />
+                <Setter Property="MaxWidth"
+                        Value="220" />
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -30,408 +30,415 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Border Margin="0"
-                Style="{StaticResource ShellSectionHeaderBorderStyle}">
+
+        <Border Style="{StaticResource ShellSectionHeaderBorderStyle}">
             <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
                        Text="{loc:Loc UserConfigControl.Title}" />
         </Border>
-    <ScrollViewer Grid.Row="1"
-                  VerticalScrollBarVisibility="Auto">
-        <StackPanel Grid.IsSharedSizeScope="True"
-                Style="{StaticResource ShellPageContentStackPanelStyle}">
 
-                <Border Margin="0"
-                    Style="{StaticResource ShellStatusCardBorderStyle}">
-                <TextBlock FontWeight="SemiBold"
-                           Foreground="{StaticResource InfoBrush}"
-                           TextWrapping="Wrap"
-                           Text="{Binding StatusMessage, Mode=OneWay}" />
-            </Border>
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel Grid.IsSharedSizeScope="True"
+                        Style="{StaticResource ShellPageContentStackPanelStyle}">
+                <Border Style="{StaticResource ShellStatusCardBorderStyle}">
+                    <TextBlock FontWeight="SemiBold"
+                               Foreground="{StaticResource InfoBrush}"
+                               TextWrapping="Wrap"
+                               Text="{Binding StatusMessage, Mode=OneWay}" />
+                </Border>
 
-            <Border Margin="0 12 0 0"
-                    Style="{StaticResource ShellFormSectionCardBorderStyle}">
-                <StackPanel>
-                    <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
-                               Text="{loc:Loc UserConfigControl.LanguageSection}" />
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"
-                                              SharedSizeGroup="UserConfigLabelColumn" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                                   Text="{loc:Loc UserConfigControl.LanguageLabel}" />
-                        <ComboBox Grid.Column="1"
-                                  Style="{StaticResource ComboBoxExtend}"
-                                  ItemsSource="{Binding LanguageOptions, Mode=OneWay}"
-                                  SelectedItem="{Binding SelectedLanguageOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                  DisplayMemberPath="DisplayName"
-                                  hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.LanguagePlaceholder}" />
-                    </Grid>
-                </StackPanel>
-            </Border>
+                <Border Margin="0 12 0 0"
+                        Style="{StaticResource ShellFormSectionCardBorderStyle}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
+                                   Text="{loc:Loc UserConfigControl.LanguageSection}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.LanguageLabel}" />
+                            <ComboBox Grid.Column="1"
+                                      Style="{StaticResource ComboBoxExtend}"
+                                      ItemsSource="{Binding LanguageOptions, Mode=OneWay}"
+                                      SelectedItem="{Binding SelectedLanguageOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      DisplayMemberPath="DisplayName"
+                                      hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.LanguagePlaceholder}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
 
-            <Border Margin="0 12 0 0"
-                    Style="{StaticResource ShellFormSectionCardBorderStyle}">
-                <StackPanel>
-                    <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
-                               Text="{loc:Loc UserConfigControl.NotificationSection}" />
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"
-                                              SharedSizeGroup="UserConfigLabelColumn" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                                   Text="{loc:Loc UserConfigControl.MeResponsibleWorkIdLabel}" />
-                        <TextBox Grid.Column="1"
-                                 Style="{StaticResource TextBoxExtend}"
-                                 Text="{Binding MeResponsibleWorkId, UpdateSourceTrigger=PropertyChanged}"
-                                 hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.MeResponsibleWorkIdPlaceholder}" />
-                    </Grid>
-                    <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.MeResponsibleNameLabel}" />
-                <TextBox Grid.Column="1"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding MeResponsibleName, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.MeResponsibleNamePlaceholder}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.PrdResponsibleWorkIdLabel}" />
-                <TextBox Grid.Column="1"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding PrdResponsibleWorkId, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.PrdResponsibleWorkIdPlaceholder}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.PrdResponsibleNameLabel}" />
-                <TextBox Grid.Column="1"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding PrdResponsibleName, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.PrdResponsibleNamePlaceholder}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.ReplacementOperatorNameLabel}" />
-                <TextBox Grid.Column="1"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding ReplacementOperatorName, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.ReplacementOperatorNamePlaceholder}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.ComNotificationEnabledLabel}" />
-                <CheckBox Grid.Column="1"
-                          VerticalAlignment="Center"
-                          IsChecked="{Binding ComNotificationEnabled}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.ComPushUrlLabel}" />
-                <TextBox Grid.Column="1"
-                         IsReadOnly="True"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding ComPushUrl, Mode=OneWay}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.ComDeIpaasKeyAuthLabel}" />
-                <TextBox Grid.Column="1"
-                         IsReadOnly="True"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding ComDeIpaasKeyAuth, Mode=OneWay}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.ComAgentIdLabel}" />
-                <TextBox Grid.Column="1"
-                         IsReadOnly="True"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding ComAgentId, Mode=OneWay}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.ComGroupTemplateIdLabel}" />
-                <TextBox Grid.Column="1"
-                         IsReadOnly="True"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding ComGroupTemplateId, Mode=OneWay}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.ComWorkTemplateIdLabel}" />
-                <TextBox Grid.Column="1"
-                         IsReadOnly="True"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding ComWorkTemplateId, Mode=OneWay}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.ComUserTypeLabel}" />
-                <TextBox Grid.Column="1"
-                         IsReadOnly="True"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding ComUserType, Mode=OneWay}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.ComAccessTokenLabel}" />
-                <TextBox Grid.Column="1"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding ComAccessToken, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.ComAccessTokenPlaceholder}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.ComSecretLabel}" />
-                <TextBox Grid.Column="1"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding ComSecret, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.ComSecretPlaceholder}" />
-            </Grid>
-                    <Grid Margin="0 16 0 0">
-                        <StackPanel Orientation="Horizontal"
-                                    HorizontalAlignment="Right">
+                <Border Margin="0 12 0 0"
+                        Style="{StaticResource ShellFormSectionCardBorderStyle}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
+                                   Text="{loc:Loc UserConfigControl.NotificationSection}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.MeResponsibleWorkIdLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding MeResponsibleWorkId, UpdateSourceTrigger=PropertyChanged}"
+                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.MeResponsibleWorkIdPlaceholder}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.MeResponsibleNameLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding MeResponsibleName, UpdateSourceTrigger=PropertyChanged}"
+                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.MeResponsibleNamePlaceholder}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.PrdResponsibleWorkIdLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding PrdResponsibleWorkId, UpdateSourceTrigger=PropertyChanged}"
+                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.PrdResponsibleWorkIdPlaceholder}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.PrdResponsibleNameLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding PrdResponsibleName, UpdateSourceTrigger=PropertyChanged}"
+                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.PrdResponsibleNamePlaceholder}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.ReplacementOperatorNameLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding ReplacementOperatorName, UpdateSourceTrigger=PropertyChanged}"
+                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.ReplacementOperatorNamePlaceholder}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.ComNotificationEnabledLabel}" />
+                            <CheckBox Grid.Column="1"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding ComNotificationEnabled}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.ComPushUrlLabel}" />
+                            <TextBox Grid.Column="1"
+                                     IsReadOnly="True"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding ComPushUrl, Mode=OneWay}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.ComDeIpaasKeyAuthLabel}" />
+                            <TextBox Grid.Column="1"
+                                     IsReadOnly="True"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding ComDeIpaasKeyAuth, Mode=OneWay}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.ComAgentIdLabel}" />
+                            <TextBox Grid.Column="1"
+                                     IsReadOnly="True"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding ComAgentId, Mode=OneWay}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.ComGroupTemplateIdLabel}" />
+                            <TextBox Grid.Column="1"
+                                     IsReadOnly="True"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding ComGroupTemplateId, Mode=OneWay}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.ComWorkTemplateIdLabel}" />
+                            <TextBox Grid.Column="1"
+                                     IsReadOnly="True"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding ComWorkTemplateId, Mode=OneWay}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.ComUserTypeLabel}" />
+                            <TextBox Grid.Column="1"
+                                     IsReadOnly="True"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding ComUserType, Mode=OneWay}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.ComAccessTokenLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding ComAccessToken, UpdateSourceTrigger=PropertyChanged}"
+                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.ComAccessTokenPlaceholder}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.ComSecretLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding ComSecret, UpdateSourceTrigger=PropertyChanged}"
+                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.ComSecretPlaceholder}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <StackPanel Orientation="Horizontal"
+                                        HorizontalAlignment="Right">
                                 <Button MinWidth="80"
-                                    Margin="0 0 10 0"
-                                    Click="OnPreviewComNotificationClicked"
-                                    Content="{loc:Loc UserConfigControl.PreviewComNotificationButton}" />
+                                        Margin="0 0 12 0"
+                                        Click="OnPreviewComNotificationClicked"
+                                        Content="{loc:Loc UserConfigControl.PreviewComNotificationButton}" />
                                 <Button MinWidth="80"
-                                    Command="{Binding TestComNotificationCommand}"
-                                    Content="{loc:Loc UserConfigControl.TestComNotificationButton}" />
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-            </Border>
+                                        Command="{Binding TestComNotificationCommand}"
+                                        Content="{loc:Loc UserConfigControl.TestComNotificationButton}" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
 
-            <Border Margin="0 12 0 0"
-                    Style="{StaticResource ShellFormSectionCardBorderStyle}">
-            <StackPanel>
-            <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
-                       Text="{loc:Loc UserConfigControl.SpacerValidationSection}" />
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.SpacerValidationEnabledLabel}" />
-                <CheckBox Grid.Column="1"
-                          VerticalAlignment="Center"
-                          IsChecked="{Binding SpacerValidationEnabled}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.SpacerValidationUrlLabel}" />
-                <TextBox Grid.Column="1"
-                         IsReadOnly="True"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding SpacerValidationUrl, Mode=OneWay}"
-                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationUrlPlaceholder}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.SpacerValidationTimeoutLabel}" />
-                <TextBox Grid.Column="1"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding SpacerValidationTimeoutMilliseconds, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationTimeoutPlaceholder}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.SpacerValidationIgnoreCertificateLabel}" />
-                <CheckBox Grid.Column="1"
-                          VerticalAlignment="Center"
-                          IsChecked="{Binding SpacerValidationIgnoreServerCertificateErrors}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.SpacerValidationCodeSeparatorLabel}" />
-                <TextBox Grid.Column="1"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding SpacerValidationCodeSeparator, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationCodeSeparatorPlaceholder}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.SpacerValidationExpectedSegmentCountLabel}" />
-                <TextBox Grid.Column="1"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding SpacerValidationExpectedSegmentCount, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationExpectedSegmentCountPlaceholder}" />
-            </Grid>
+                <Border Margin="0 12 0 0"
+                        Style="{StaticResource ShellFormSectionCardBorderStyle}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
+                                   Text="{loc:Loc UserConfigControl.SpacerValidationSection}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.SpacerValidationEnabledLabel}" />
+                            <CheckBox Grid.Column="1"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding SpacerValidationEnabled}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.SpacerValidationUrlLabel}" />
+                            <TextBox Grid.Column="1"
+                                     IsReadOnly="True"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding SpacerValidationUrl, Mode=OneWay}"
+                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationUrlPlaceholder}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.SpacerValidationTimeoutLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding SpacerValidationTimeoutMilliseconds, UpdateSourceTrigger=PropertyChanged}"
+                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationTimeoutPlaceholder}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.SpacerValidationIgnoreCertificateLabel}" />
+                            <CheckBox Grid.Column="1"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding SpacerValidationIgnoreServerCertificateErrors}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.SpacerValidationCodeSeparatorLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding SpacerValidationCodeSeparator, UpdateSourceTrigger=PropertyChanged}"
+                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationCodeSeparatorPlaceholder}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.SpacerValidationExpectedSegmentCountLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding SpacerValidationExpectedSegmentCount, UpdateSourceTrigger=PropertyChanged}"
+                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.SpacerValidationExpectedSegmentCountPlaceholder}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
 
-            <TextBlock Margin="0 16 0 0"
-                       Style="{StaticResource ShellFormSectionTitleTextStyle}"
-                       Text="{loc:Loc UserConfigControl.CutterMesValidationSection}" />
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.EnableCutterMesValidationLabel}" />
-                <CheckBox Grid.Column="1"
-                          VerticalAlignment="Center"
-                          IsChecked="{Binding EnableCutterMesValidation}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.CutterMesSiteLabel}" />
-                <TextBox Grid.Column="1"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding CutterMesSite, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.CutterMesSitePlaceholder}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.CutterMesWsdlLabel}" />
-                <TextBox Grid.Column="1"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding CutterMesWsdl, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.CutterMesWsdlPlaceholder}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.CutterMesUserLabel}" />
-                <TextBox Grid.Column="1"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding CutterMesUser, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.CutterMesUserPlaceholder}" />
-            </Grid>
-            <Grid Style="{StaticResource ShellFormRowGridStyle}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"
-                                      SharedSizeGroup="UserConfigLabelColumn" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
-                           Text="{loc:Loc UserConfigControl.CutterMesPasswordLabel}" />
-                <TextBox Grid.Column="1"
-                         Style="{StaticResource TextBoxExtend}"
-                         Text="{Binding CutterMesPassword, UpdateSourceTrigger=PropertyChanged}"
-                         hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.CutterMesPasswordPlaceholder}" />
-            </Grid>
+                <Border Margin="0 12 0 0"
+                        Style="{StaticResource ShellFormSectionCardBorderStyle}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
+                                   Text="{loc:Loc UserConfigControl.CutterMesValidationSection}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.EnableCutterMesValidationLabel}" />
+                            <CheckBox Grid.Column="1"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding EnableCutterMesValidation}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.CutterMesSiteLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding CutterMesSite, UpdateSourceTrigger=PropertyChanged}"
+                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.CutterMesSitePlaceholder}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.CutterMesWsdlLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding CutterMesWsdl, UpdateSourceTrigger=PropertyChanged}"
+                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.CutterMesWsdlPlaceholder}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.CutterMesUserLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding CutterMesUser, UpdateSourceTrigger=PropertyChanged}"
+                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.CutterMesUserPlaceholder}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.CutterMesPasswordLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     Text="{Binding CutterMesPassword, UpdateSourceTrigger=PropertyChanged}"
+                                     hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.CutterMesPasswordPlaceholder}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
 
-                    <Grid Margin="0 16 0 0">
-                <Button MinWidth="80"
-                        Style="{StaticResource ButtonPrimary}"
-                        Command="{Binding SaveCommand}"
-                        Content="{loc:Loc UserConfigControl.SaveButton}" />
-            </Grid>
+                <Border Margin="0 12 0 0"
+                        Style="{StaticResource ShellActionCardBorderStyle}">
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right">
+                        <Button MinWidth="80"
+                                Style="{StaticResource ButtonPrimary}"
+                                Command="{Binding SaveCommand}"
+                                Content="{loc:Loc UserConfigControl.SaveButton}" />
+                    </StackPanel>
+                </Border>
             </StackPanel>
-            </Border>
-        </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
     </Grid>
 </UserControl>
