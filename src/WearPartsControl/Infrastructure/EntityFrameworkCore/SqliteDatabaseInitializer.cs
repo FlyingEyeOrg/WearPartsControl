@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.Sqlite;
 using System.Threading;
 using System.Threading.Tasks;
+using WearPartsControl.Domain.Entities;
 
 namespace WearPartsControl.Infrastructure.EntityFrameworkCore;
 

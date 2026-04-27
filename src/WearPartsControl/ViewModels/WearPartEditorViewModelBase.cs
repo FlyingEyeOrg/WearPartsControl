@@ -361,26 +361,27 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
             ToolChangeId = null,
             PlcZeroClearAddress = PlcZeroClearAddress,
             BarcodeWriteAddress = BarcodeWriteAddress
-            private async Task LoadWearPartTypesAsync(Guid? selectedWearPartTypeId, CancellationToken cancellationToken)
-            {
-                var wearPartTypes = await _wearPartTypeService.GetAllAsync(cancellationToken).ConfigureAwait(true);
-                WearPartTypes.Clear();
-                foreach (var wearPartType in wearPartTypes)
-                {
-                    WearPartTypes.Add(wearPartType);
-                }
-
-                SelectedWearPartTypeId = selectedWearPartTypeId.HasValue && WearPartTypes.Any(x => x.Id == selectedWearPartTypeId.Value)
-                    ? selectedWearPartTypeId
-                    : ResolveDefaultWearPartTypeId();
-            }
-
-            private Guid? ResolveDefaultWearPartTypeId()
-            {
-                return WearPartTypes.FirstOrDefault(x => string.Equals(x.Code, WearPartTypeCodes.Uncategorized, StringComparison.OrdinalIgnoreCase))?.Id
-                    ?? WearPartTypes.FirstOrDefault()?.Id;
-            }
         };
+    }
+
+    private async Task LoadWearPartTypesAsync(Guid? selectedWearPartTypeId, CancellationToken cancellationToken)
+    {
+        var wearPartTypes = await _wearPartTypeService.GetAllAsync(cancellationToken).ConfigureAwait(true);
+        WearPartTypes.Clear();
+        foreach (var wearPartType in wearPartTypes)
+        {
+            WearPartTypes.Add(wearPartType);
+        }
+
+        SelectedWearPartTypeId = selectedWearPartTypeId.HasValue && WearPartTypes.Any(x => x.Id == selectedWearPartTypeId.Value)
+            ? selectedWearPartTypeId
+            : ResolveDefaultWearPartTypeId();
+    }
+
+    private Guid? ResolveDefaultWearPartTypeId()
+    {
+        return WearPartTypes.FirstOrDefault(x => string.Equals(x.Code, WearPartTypeCodes.Uncategorized, StringComparison.OrdinalIgnoreCase))?.Id
+            ?? WearPartTypes.FirstOrDefault()?.Id;
     }
 
     private void Cancel()
