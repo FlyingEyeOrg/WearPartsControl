@@ -1,0 +1,10 @@
+<WixLocalization xmlns="http://wixtoolset.org/schemas/v4/wxl" Culture="zh-CN">
+  <String Id="ProductName" Value="Wear Parts Control" />
+  <String Id="PackageDescription" Value="Wear Parts Control 安装程序" />
+  <String Id="DowngradeErrorMessage" Value="已安装更新版本的 Wear Parts Control。" />
+  <String Id="DesktopShortcutDescription" Value="启动 Wear Parts Control" />
+  <String Id="MainFeatureTitle" Value="Wear Parts Control 主程序" />
+  <String Id="MainFeatureDescription" Value="安装 Wear Parts Control 应用程序。" />
+  <String Id="DesktopShortcutFeatureTitle" Value="创建桌面快捷方式" />
+  <String Id="DesktopShortcutFeatureDescription" Value="在桌面创建 Wear Parts Control 快捷方式。" />
+</WixLocalization>

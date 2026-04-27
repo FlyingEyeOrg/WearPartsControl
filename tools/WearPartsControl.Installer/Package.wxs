@@ -1,18 +1,18 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
-  xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
      xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
   <Package Id="CATL.WearPartsControl"
-           Name="Wear Parts Control"
+           Name="!(loc.ProductName)"
            Manufacturer="CATL"
            Version="$(PackageVersion)"
            UpgradeCode="{6B42E167-7D64-4EE6-9F99-44CE9410A14C}"
            Scope="perMachine">
-    <SummaryInformation Description="Wear Parts Control installer" Manufacturer="CATL" />
-    <MajorUpgrade DowngradeErrorMessage="A newer version of Wear Parts Control is already installed." Schedule="afterInstallInitialize" />
+    <SummaryInformation Description="!(loc.PackageDescription)" Manufacturer="CATL" />
+    <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeErrorMessage)" Schedule="afterInstallInitialize" />
     <MediaTemplate EmbedCab="yes" />
     <Icon Id="AppIcon.ico" SourceFile="$(PublishDir)WearPartsControl.exe" />
     <Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
-    <ui:WixUI Id="WixUI_Mondo" InstallDirectory="INSTALLFOLDER" />
+    <ui:WixUI Id="WixUI_FeatureTree" InstallDirectory="INSTALLFOLDER" />
 
     <StandardDirectory Id="$(ProgramFilesFolderId)">
       <Directory Id="INSTALLFOLDER" Name="Wear Parts Control">
@@ -25,8 +25,8 @@
     <StandardDirectory Id="DesktopFolder">
       <Component Id="DesktopShortcutComponent" Guid="{D97589DB-6818-42C2-A5E6-3992C0164B38}">
         <Shortcut Id="DesktopShortcut"
-                  Name="Wear Parts Control"
-                  Description="Launch Wear Parts Control"
+                  Name="!(loc.ProductName)"
+                  Description="!(loc.DesktopShortcutDescription)"
                   Target="[INSTALLFOLDER]WearPartsControl.exe"
                   WorkingDirectory="INSTALLFOLDER"
                   Icon="AppIcon.ico"
@@ -40,7 +40,7 @@
       </Component>
     </StandardDirectory>
 
-    <Feature Id="MainFeature" Title="Wear Parts Control" Level="1">
+    <Feature Id="MainFeature" Title="!(loc.MainFeatureTitle)" Description="!(loc.MainFeatureDescription)" Level="1" AllowAbsent="no">
       <Files Include="$(PublishDir)**" Directory="INSTALLFOLDER">
         <Exclude Files="$(PublishDir)**\*.pdb" />
         <Exclude Files="$(PublishDir)**\*.xml" />
@@ -56,7 +56,7 @@
       <ComponentRef Id="SiteFactoryConfigComponent" />
     </Feature>
 
-    <Feature Id="DesktopShortcutFeature" Title="Create desktop shortcut" Description="Create a Wear Parts Control shortcut on the desktop." Level="1">
+    <Feature Id="DesktopShortcutFeature" Title="!(loc.DesktopShortcutFeatureTitle)" Description="!(loc.DesktopShortcutFeatureDescription)" Level="1">
       <ComponentRef Id="DesktopShortcutComponent" />
     </Feature>
 

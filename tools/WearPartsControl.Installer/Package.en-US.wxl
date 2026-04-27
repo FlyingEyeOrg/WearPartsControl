@@ -1,0 +1,10 @@
+<WixLocalization xmlns="http://wixtoolset.org/schemas/v4/wxl" Culture="en-US">
+  <String Id="ProductName" Value="Wear Parts Control" />
+  <String Id="PackageDescription" Value="Wear Parts Control installer" />
+  <String Id="DowngradeErrorMessage" Value="A newer version of Wear Parts Control is already installed." />
+  <String Id="DesktopShortcutDescription" Value="Launch Wear Parts Control" />
+  <String Id="MainFeatureTitle" Value="Wear Parts Control" />
+  <String Id="MainFeatureDescription" Value="Install the Wear Parts Control application." />
+  <String Id="DesktopShortcutFeatureTitle" Value="Create desktop shortcut" />
+  <String Id="DesktopShortcutFeatureDescription" Value="Create a Wear Parts Control shortcut on the desktop." />
+</WixLocalization>

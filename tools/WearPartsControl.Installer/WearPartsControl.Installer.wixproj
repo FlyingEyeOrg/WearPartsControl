@@ -2,12 +2,14 @@
 	<PropertyGroup>
 		<OutputType>Package</OutputType>
 		<InstallerPlatform Condition="'$(InstallerPlatform)'==''">x64</InstallerPlatform>
+		<InstallerCulture Condition="'$(InstallerCulture)'==''">zh-CN</InstallerCulture>
+		<Cultures Condition="'$(Cultures)'==''">$(InstallerCulture)</Cultures>
 		<ProgramFilesFolderId Condition="'$(ProgramFilesFolderId)'=='' and '$(InstallerPlatform)'=='x64'">ProgramFiles64Folder</ProgramFilesFolderId>
 		<ProgramFilesFolderId Condition="'$(ProgramFilesFolderId)'==''">ProgramFilesFolder</ProgramFilesFolderId>
 		<PackageVersion Condition="'$(PackageVersion)'==''">1.0.0</PackageVersion>
-		<PublishDir Condition="'$(PublishDir)'==''">$(MSBuildThisFileDirectory)..\..\..\artifacts\publish\WearPartsControl\</PublishDir>
+		<PublishDir Condition="'$(PublishDir)'==''">$(MSBuildThisFileDirectory)..\..\artifacts\publish\WearPartsControl\</PublishDir>
 		<DefineConstants>PublishDir=$(PublishDir);PackageVersion=$(PackageVersion);ProgramFilesFolderId=$(ProgramFilesFolderId)</DefineConstants>
-		<OutputName>WearPartsControl-$(PackageVersion)-$(InstallerPlatform)</OutputName>
+		<OutputName>WearPartsControl-$(PackageVersion)-$(InstallerPlatform)-$(InstallerCulture)</OutputName>
 		<NuGetAudit>false</NuGetAudit>
 		<SuppressValidation>false</SuppressValidation>
 	</PropertyGroup>

@@ -3,6 +3,7 @@ param(
     [string]$Configuration = "Release",
     [Alias("RuntimeIdentifier")]
     [string[]]$RuntimeIdentifiers = @("win-x64", "win-x86"),
+    [string[]]$InstallerCultures = @("zh-CN", "en-US"),
     [string[]]$TestConfigurations = @("Debug", "Release"),
     [string[]]$TestRuntimeIdentifiers = @("win-x64", "win-x86"),
     [string]$Version = "1.0.0",
@@ -40,7 +41,7 @@ function Get-InstallerPlatform {
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $appProject = Join-Path $repoRoot "src/WearPartsControl/WearPartsControl.csproj"
 $testProject = Join-Path $repoRoot "tests/WearPartsControl.Tests/WearPartsControl.Tests.csproj"
-$installerProject = Join-Path $repoRoot "installer/WearPartsControl.Installer/WearPartsControl.Installer.wixproj"
+$installerProject = Join-Path $repoRoot "tools/WearPartsControl.Installer/WearPartsControl.Installer.wixproj"
 $artifactsRoot = Join-Path $repoRoot "artifacts"
 $publishRoot = Join-Path $artifactsRoot "publish/WearPartsControl"
 $installerOutputDir = Join-Path $artifactsRoot "installer"
@@ -101,29 +102,33 @@ foreach ($runtimeIdentifier in $RuntimeIdentifiers) {
 
     $publishDirForWix = if ($publishDir.EndsWith([IO.Path]::DirectorySeparatorChar)) { $publishDir } else { "$publishDir$([IO.Path]::DirectorySeparatorChar)" }
     $programFilesFolderId = if ($installerPlatform -eq "x64") { "ProgramFiles64Folder" } else { "ProgramFilesFolder" }
-    $wixIntermediateOutputPath = Join-Path $artifactsRoot "obj/installer/$installerPlatform/"
+    foreach ($installerCulture in $InstallerCultures) {
+        $wixIntermediateOutputPath = Join-Path $artifactsRoot "obj/installer/$installerPlatform/$installerCulture/"
 
-    Invoke-DotNet @(
-        "build", $installerProject,
-        "--no-incremental",
-        "--configuration", $Configuration,
-        "-p:PackageVersion=$Version",
-        "-p:PublishDir=$publishDirForWix",
-        "-p:OutputPath=$installerOutputDir",
-        "-p:IntermediateOutputPath=$wixIntermediateOutputPath",
-        "-p:InstallerPlatform=$installerPlatform",
-        "-p:ProgramFilesFolderId=$programFilesFolderId",
-        "-p:NuGetAudit=false")
+        Invoke-DotNet @(
+            "build", $installerProject,
+            "--no-incremental",
+            "--configuration", $Configuration,
+            "-p:PackageVersion=$Version",
+            "-p:PublishDir=$publishDirForWix",
+            "-p:OutputPath=$installerOutputDir",
+            "-p:IntermediateOutputPath=$wixIntermediateOutputPath",
+            "-p:InstallerPlatform=$installerPlatform",
+            "-p:InstallerCulture=$installerCulture",
+            "-p:Cultures=$installerCulture",
+            "-p:ProgramFilesFolderId=$programFilesFolderId",
+            "-p:NuGetAudit=false")
 
-    $msiPath = Get-ChildItem -Path $installerOutputDir -Filter "WearPartsControl-$Version-$installerPlatform.msi" -Recurse |
-        Sort-Object LastWriteTime -Descending |
-        Select-Object -First 1
+        $msiPath = Get-ChildItem -Path $installerOutputDir -Filter "WearPartsControl-$Version-$installerPlatform-$installerCulture.msi" -Recurse |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
 
-    if (-not $msiPath) {
-        throw "MSI package for '$runtimeIdentifier' was not generated in '$installerOutputDir'."
+        if (-not $msiPath) {
+            throw "MSI package for '$runtimeIdentifier' culture '$installerCulture' was not generated in '$installerOutputDir'."
+        }
+
+        $createdPackages += $msiPath.FullName
     }
-
-    $createdPackages += $msiPath.FullName
 }
 
 Write-Host "MSI packages created:"
