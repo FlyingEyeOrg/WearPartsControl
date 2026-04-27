@@ -1,0 +1,88 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+  <Package Id="CATL.WearPartsControl"
+           Name="Wear Parts Control"
+           Manufacturer="CATL"
+           Version="$(PackageVersion)"
+           UpgradeCode="{6B42E167-7D64-4EE6-9F99-44CE9410A14C}"
+           Scope="perMachine">
+    <SummaryInformation Description="Wear Parts Control installer" Manufacturer="CATL" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Wear Parts Control is already installed." Schedule="afterInstallInitialize" />
+    <MediaTemplate EmbedCab="yes" />
+    <Icon Id="AppIcon.ico" SourceFile="$(PublishDir)WearPartsControl.exe" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Wear Parts Control">
+        <Directory Id="PrivateDataFolder" Name="PrivateData">
+          <Directory Id="SettingsFolder" Name="Settings" />
+          <Directory Id="LocalDatabaseFolder" Name="LocalDB" />
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <Feature Id="MainFeature" Title="Wear Parts Control" Level="1">
+      <Files Include="$(PublishDir)**" Directory="INSTALLFOLDER">
+        <Exclude Files="$(PublishDir)**\*.pdb" />
+        <Exclude Files="$(PublishDir)**\*.xml" />
+        <Exclude Files="$(PublishDir)PrivateData\**" />
+      </Files>
+      <ComponentRef Id="PrivateDataPermissionsComponent" />
+      <ComponentRef Id="LocalDatabaseFolderComponent" />
+      <ComponentRef Id="AppSettingsConfigComponent" />
+      <ComponentRef Id="UserConfigComponent" />
+      <ComponentRef Id="ClientAppInfoZhCnComponent" />
+      <ComponentRef Id="ClientAppInfoEnUsComponent" />
+      <ComponentRef Id="MhrInfoConfigComponent" />
+      <ComponentRef Id="SiteFactoryConfigComponent" />
+    </Feature>
+
+    <DirectoryRef Id="PrivateDataFolder">
+      <Component Id="PrivateDataPermissionsComponent" Guid="{A96DE6F8-2B8E-4F3A-B032-543A5C44B807}" Permanent="yes" KeyPath="yes">
+        <CreateFolder>
+          <util:PermissionEx User="Users"
+                             GenericRead="yes"
+                             GenericWrite="yes"
+                             GenericExecute="yes"
+                             Delete="yes"
+                             DeleteChild="yes" />
+        </CreateFolder>
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="LocalDatabaseFolder">
+      <Component Id="LocalDatabaseFolderComponent" Guid="{51F38548-DC7B-4E45-81E4-B0355E8E3B64}" Permanent="yes" KeyPath="yes">
+        <CreateFolder>
+          <util:PermissionEx User="Users"
+                             GenericRead="yes"
+                             GenericWrite="yes"
+                             GenericExecute="yes"
+                             Delete="yes"
+                             DeleteChild="yes" />
+        </CreateFolder>
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="SettingsFolder">
+      <Component Id="AppSettingsConfigComponent" Guid="{82F22D86-84C3-4547-8EAF-22F9010D1B12}" Permanent="yes" NeverOverwrite="yes">
+        <File Id="AppSettingsConfigFile" Source="$(PublishDir)PrivateData\Settings\app-settings.json" KeyPath="yes" />
+      </Component>
+      <Component Id="UserConfigComponent" Guid="{14BC89F1-1422-4683-A371-92D5CE6F0C97}" Permanent="yes" NeverOverwrite="yes">
+        <File Id="UserConfigFile" Source="$(PublishDir)PrivateData\Settings\user-config.json" KeyPath="yes" />
+      </Component>
+      <Component Id="ClientAppInfoZhCnComponent" Guid="{C5E4825D-BEC6-4CB0-B091-A34066B2847A}" Permanent="yes" NeverOverwrite="yes">
+        <File Id="ClientAppInfoZhCnFile" Source="$(PublishDir)PrivateData\Settings\client-app-info.zh-CN.json" KeyPath="yes" />
+      </Component>
+      <Component Id="ClientAppInfoEnUsComponent" Guid="{2A13672B-4691-4C27-B68D-13A06CB9AF07}" Permanent="yes" NeverOverwrite="yes">
+        <File Id="ClientAppInfoEnUsFile" Source="$(PublishDir)PrivateData\Settings\client-app-info.en-US.json" KeyPath="yes" />
+      </Component>
+      <Component Id="MhrInfoConfigComponent" Guid="{07F49B88-5196-4A39-88F1-DC1E56F258F4}" Permanent="yes" NeverOverwrite="yes">
+        <File Id="MhrInfoConfigFile" Source="$(PublishDir)PrivateData\Settings\mhrinfo.json" KeyPath="yes" />
+      </Component>
+      <Component Id="SiteFactoryConfigComponent" Guid="{E42F4D07-BF0A-4B06-AC5B-102F96456303}" Permanent="yes" NeverOverwrite="yes">
+        <File Id="SiteFactoryConfigFile" Source="$(PublishDir)PrivateData\Settings\site-factory.json" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+  </Package>
+</Wix>

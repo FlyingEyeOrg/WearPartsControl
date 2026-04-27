@@ -1,0 +1,16 @@
+<Project Sdk="WixToolset.Sdk/6.0.0">
+	<PropertyGroup>
+		<OutputType>Package</OutputType>
+		<InstallerPlatform Condition="'$(InstallerPlatform)'==''">x64</InstallerPlatform>
+		<PackageVersion Condition="'$(PackageVersion)'==''">1.0.0</PackageVersion>
+		<PublishDir Condition="'$(PublishDir)'==''">$(MSBuildThisFileDirectory)..\..\..\artifacts\publish\WearPartsControl\</PublishDir>
+		<DefineConstants>PublishDir=$(PublishDir);PackageVersion=$(PackageVersion)</DefineConstants>
+		<OutputName>WearPartsControl-$(PackageVersion)-$(InstallerPlatform)</OutputName>
+		<NuGetAudit>false</NuGetAudit>
+		<SuppressValidation>false</SuppressValidation>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="WixToolset.Util.wixext" Version="6.0.0" />
+	</ItemGroup>
+</Project>
