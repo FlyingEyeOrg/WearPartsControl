@@ -7,4 +7,10 @@
   <String Id="MainFeatureDescription" Value="Install the Wear Parts Control application." />
   <String Id="DesktopShortcutFeatureTitle" Value="Create desktop shortcut" />
   <String Id="DesktopShortcutFeatureDescription" Value="Create a Wear Parts Control shortcut on the desktop." />
+  <String Id="InstallOptionsDlgTitle" Value="User environment options" />
+  <String Id="InstallOptionsDlgDescription" Value="Choose user environment options after installation." />
+  <String Id="InstallOptionsDlgBody" Value="These options can be changed later on the User Environment Settings page." />
+  <String Id="CreateDesktopShortcutCheckBox" Value="Create desktop shortcut" />
+  <String Id="StartOnLoginCheckBox" Value="Start with Windows" />
+  <String Id="StartOnLoginHint" Value="After installation, the app reads this state and synchronizes it to user settings." />
 </WixLocalization>

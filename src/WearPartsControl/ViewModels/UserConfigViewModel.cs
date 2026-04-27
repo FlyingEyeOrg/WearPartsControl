@@ -3,6 +3,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.AutoStart;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.Localization;
@@ -17,13 +18,16 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
 
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly IUserConfigService _userConfigService;
+    private readonly IAutoStartService _autoStartService;
     private readonly IComNotificationService _comNotificationService;
     private readonly ILocalizationService _localizationService;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly IUiBusyService _uiBusyService;
     private UserConfigSnapshot _originalSnapshot = UserConfigSnapshot.Empty;
     private ObservableCollection<LanguageOption> _languageOptions = new();
+    private ObservableCollection<AutoStartOption> _autoStartOptions = new();
     private LanguageOption? _selectedLanguageOption;
+    private AutoStartOption? _selectedAutoStartOption;
     private bool _isBusy;
     private bool _isDirty;
     private bool _isInitialized;
@@ -55,13 +59,15 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
     private string _cutterMesPassword = string.Empty;
     private string _cutterMesSite = string.Empty;
     private string _selectedLanguage = "zh-CN";
+    private bool _autoStartEnabled;
     private string _statusMessage = LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain");
     private Func<string>? _statusMessageFactory;
 
-    public UserConfigViewModel(IClientAppInfoService clientAppInfoService, IUserConfigService userConfigService, IComNotificationService comNotificationService, ILocalizationService localizationService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService)
+    public UserConfigViewModel(IClientAppInfoService clientAppInfoService, IUserConfigService userConfigService, IAutoStartService autoStartService, IComNotificationService comNotificationService, ILocalizationService localizationService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService)
     {
         _clientAppInfoService = clientAppInfoService;
         _userConfigService = userConfigService;
+        _autoStartService = autoStartService;
         _comNotificationService = comNotificationService;
         _localizationService = localizationService;
         _uiDispatcher = uiDispatcher;
@@ -70,6 +76,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         TestComNotificationCommand = new AsyncRelayCommand(TestComNotificationAsync, CanTestComNotification);
         _selectedLanguage = _localizationService.CurrentCulture.Name;
         RefreshLanguageOptions();
+        RefreshAutoStartOptions();
         SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain"));
     }
 
@@ -77,6 +84,12 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
     {
         get => _languageOptions;
         private set => SetProperty(ref _languageOptions, value);
+    }
+
+    public ObservableCollection<AutoStartOption> AutoStartOptions
+    {
+        get => _autoStartOptions;
+        private set => SetProperty(ref _autoStartOptions, value);
     }
 
     public IAsyncRelayCommand SaveCommand { get; }
@@ -165,6 +178,47 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
 
             var nextLanguage = value?.Code ?? string.Empty;
             if (SetProperty(ref _selectedLanguage, nextLanguage, nameof(SelectedLanguage)))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public bool AutoStartEnabled
+    {
+        get => _autoStartEnabled;
+        set
+        {
+            if (SetProperty(ref _autoStartEnabled, value))
+            {
+                SyncSelectedAutoStartOption();
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public AutoStartOption? SelectedAutoStartOption
+    {
+        get => _selectedAutoStartOption;
+        set
+        {
+            if (!SetProperty(ref _selectedAutoStartOption, value))
+            {
+                return;
+            }
+
+            if (_isUpdatingState)
+            {
+                return;
+            }
+
+            if (value is null)
+            {
+                RestoreSelectedAutoStartOption();
+                return;
+            }
+
+            if (SetProperty(ref _autoStartEnabled, value.IsEnabled, nameof(AutoStartEnabled)))
             {
                 UpdateDirtyState();
             }
@@ -448,6 +502,9 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         await ExecuteBusyAsync(async () =>
         {
             var config = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
+            var registeredAutoStartEnabled = await _autoStartService.IsEnabledAsync(cancellationToken).ConfigureAwait(false);
+            config.AutoStartEnabled = registeredAutoStartEnabled;
+            await _userConfigService.SaveAsync(config, cancellationToken).ConfigureAwait(false);
             var clientAppInfo = await _clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(false);
             var effectiveConfig = MergeCutterMesConfig(config, clientAppInfo);
             await _uiDispatcher.RunAsync(() =>
@@ -470,11 +527,13 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         await ExecuteBusyAsync(async () =>
         {
             var config = BuildConfig();
+            await _autoStartService.SetEnabledAsync(config.AutoStartEnabled).ConfigureAwait(false);
             await _userConfigService.SaveAsync(config).ConfigureAwait(false);
             await _localizationService.SetCultureAsync(SelectedLanguage).ConfigureAwait(false);
             await _uiDispatcher.RunAsync(() =>
             {
                 RefreshLanguageOptions();
+                RefreshAutoStartOptions();
                 _originalSnapshot = CaptureSnapshot();
                 IsDirty = false;
                 SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.UserConfigVm.Saved"));
@@ -489,7 +548,9 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         {
             if (IsDirty)
             {
-                await _userConfigService.SaveAsync(BuildConfig()).ConfigureAwait(false);
+                var config = BuildConfig();
+                await _autoStartService.SetEnabledAsync(config.AutoStartEnabled).ConfigureAwait(false);
+                await _userConfigService.SaveAsync(config).ConfigureAwait(false);
                 await _uiDispatcher.RunAsync(() =>
                 {
                     _originalSnapshot = CaptureSnapshot();
@@ -548,6 +609,14 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         SyncSelectedLanguageOption();
     }
 
+    private void RefreshAutoStartOptions()
+    {
+        UpdateAutoStartOptionDisplayName(false, LocalizedText.Get("ViewModels.UserConfigVm.AutoStartDisabled"));
+        UpdateAutoStartOptionDisplayName(true, LocalizedText.Get("ViewModels.UserConfigVm.AutoStartEnabled"));
+
+        SyncSelectedAutoStartOption();
+    }
+
     private void UpdateLanguageOptionDisplayName(string code, string displayName)
     {
         var option = LanguageOptions.FirstOrDefault(existing => string.Equals(existing.Code, code, StringComparison.Ordinal));
@@ -572,6 +641,19 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
 
             LanguageOptions.RemoveAt(index);
         }
+    }
+
+    private void UpdateAutoStartOptionDisplayName(bool isEnabled, string displayName)
+    {
+        var option = AutoStartOptions.FirstOrDefault(existing => existing.IsEnabled == isEnabled);
+
+        if (option is null)
+        {
+            AutoStartOptions.Add(new AutoStartOption(isEnabled, displayName));
+            return;
+        }
+
+        option.DisplayName = displayName;
     }
 
     private void SyncSelectedLanguageOption()
@@ -601,6 +683,40 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         try
         {
             SelectedLanguageOption = selectedOption;
+        }
+        finally
+        {
+            _isUpdatingState = false;
+        }
+    }
+
+    private void SyncSelectedAutoStartOption()
+    {
+        var selectedOption = AutoStartOptions.FirstOrDefault(option => option.IsEnabled == _autoStartEnabled);
+
+        _isUpdatingState = true;
+        try
+        {
+            SelectedAutoStartOption = selectedOption;
+        }
+        finally
+        {
+            _isUpdatingState = false;
+        }
+    }
+
+    private void RestoreSelectedAutoStartOption()
+    {
+        var selectedOption = AutoStartOptions.FirstOrDefault(option => option.IsEnabled == _autoStartEnabled);
+        if (selectedOption is null)
+        {
+            return;
+        }
+
+        _isUpdatingState = true;
+        try
+        {
+            SelectedAutoStartOption = selectedOption;
         }
         finally
         {
@@ -639,6 +755,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             PrdResponsibleName = PrdResponsibleName,
             ReplacementOperatorName = ReplacementOperatorName,
             Language = SelectedLanguage,
+            AutoStartEnabled = AutoStartEnabled,
             ComAccessToken = ComAccessToken,
             ComSecret = ComSecret,
             ComNotificationEnabled = ComNotificationEnabled,
@@ -674,6 +791,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             PrdResponsibleWorkId = config.PrdResponsibleWorkId;
             PrdResponsibleName = config.PrdResponsibleName;
             ReplacementOperatorName = config.ReplacementOperatorName;
+            AutoStartEnabled = config.AutoStartEnabled;
             ComAccessToken = config.ComAccessToken;
             ComSecret = config.ComSecret;
             ComNotificationEnabled = config.ComNotificationEnabled;
@@ -723,6 +841,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             PrdResponsibleWorkId?.Trim() ?? string.Empty,
             PrdResponsibleName?.Trim() ?? string.Empty,
             ReplacementOperatorName?.Trim() ?? string.Empty,
+            AutoStartEnabled,
             ComAccessToken?.Trim() ?? string.Empty,
             ComSecret?.Trim() ?? string.Empty,
             ComNotificationEnabled,
@@ -770,6 +889,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             PrdResponsibleName = config.PrdResponsibleName,
             ReplacementOperatorName = config.ReplacementOperatorName,
             Language = config.Language,
+            AutoStartEnabled = config.AutoStartEnabled,
             ComAccessToken = config.ComAccessToken,
             ComSecret = config.ComSecret,
             ComNotificationEnabled = config.ComNotificationEnabled,
@@ -817,6 +937,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
     protected override void OnLocalizationRefreshed()
     {
         RefreshLanguageOptions();
+        RefreshAutoStartOptions();
 
         if (_statusMessageFactory is not null)
         {
@@ -866,6 +987,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         string PrdResponsibleWorkId,
         string PrdResponsibleName,
         string ReplacementOperatorName,
+        bool AutoStartEnabled,
         string ComAccessToken,
         string ComSecret,
         bool ComNotificationEnabled,
@@ -894,6 +1016,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             string.Empty,
             string.Empty,
             string.Empty,
+            UserConfig.DefaultAutoStartEnabled,
             string.Empty,
             string.Empty,
             UserConfig.DefaultComNotificationEnabled,

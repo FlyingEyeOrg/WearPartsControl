@@ -31,6 +31,7 @@ public sealed class UserConfigServiceTests
                 Language = " en-US ",
                 ComAccessToken = " token ",
                 ComSecret = " secret ",
+                AutoStartEnabled = true,
                 SpacerValidationEnabled = false,
                 SpacerValidationUrl = " https://spacer/save ",
                 SpacerValidationTimeoutMilliseconds = 7000,
@@ -56,6 +57,7 @@ public sealed class UserConfigServiceTests
             Assert.Equal("en-US", config.Language);
             Assert.Equal("token", config.ComAccessToken);
             Assert.Equal("secret", config.ComSecret);
+            Assert.True(config.AutoStartEnabled);
             Assert.True(config.ComNotificationEnabled);
             Assert.Equal(UserConfig.DefaultComPushUrl, config.ComPushUrl);
             Assert.Equal(UserConfig.DefaultComDeIpaasKeyAuth, config.ComDeIpaasKeyAuth);
@@ -80,6 +82,7 @@ public sealed class UserConfigServiceTests
             Assert.Equal("ME001", persisted!.MeResponsibleWorkId);
             Assert.Equal("张三", persisted.MeResponsibleName);
             Assert.Equal("en-US", persisted.Language);
+            Assert.True(persisted.AutoStartEnabled);
         }
         finally
         {
@@ -155,6 +158,7 @@ public sealed class UserConfigServiceTests
             Assert.Equal(UserConfig.DefaultComGroupTemplateId, config.ComGroupTemplateId);
             Assert.Equal(UserConfig.DefaultComWorkTemplateId, config.ComWorkTemplateId);
             Assert.Equal(UserConfig.DefaultComUserType, config.ComUserType);
+            Assert.False(config.AutoStartEnabled);
             Assert.Equal(UserConfig.DefaultSpacerValidationUrl, config.SpacerValidationUrl);
             Assert.Equal(UserConfig.DefaultSpacerValidationUrlRelease, config.SpacerValidationUrlRelease);
         }

@@ -58,7 +58,7 @@
                 <Border Style="{StaticResource ShellFormSectionCardBorderStyle}">
                     <StackPanel>
                         <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
-                                   Text="{loc:Loc UserConfigControl.LanguageSection}" />
+                                   Text="{loc:Loc UserConfigControl.UserEnvironmentSection}" />
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"
@@ -73,6 +73,21 @@
                                       SelectedItem="{Binding SelectedLanguageOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                       DisplayMemberPath="DisplayName"
                                       hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.LanguagePlaceholder}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.AutoStartLabel}" />
+                            <ComboBox Grid.Column="1"
+                                      Style="{StaticResource ComboBoxExtend}"
+                                      ItemsSource="{Binding AutoStartOptions, Mode=OneWay}"
+                                      SelectedItem="{Binding SelectedAutoStartOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      DisplayMemberPath="DisplayName"
+                                      hc:InfoElement.Placeholder="{loc:Loc UserConfigControl.AutoStartPlaceholder}" />
                         </Grid>
                     </StackPanel>
                 </Border>

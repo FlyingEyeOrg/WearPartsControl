@@ -7,6 +7,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Threading;
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.AutoStart;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.Localization;
@@ -45,7 +46,7 @@ public sealed class UserConfigUserControlTests
             Assert.Equal("en-US", ((LanguageOption)host.LanguageComboBox.SelectedItem!).Code);
             Assert.Equal(new[] { "zh-CN", "en-US" }, host.ViewModel.LanguageOptions.Select(static option => option.Code).ToArray());
             Assert.Equal(new[] { "Simplified Chinese", "English" }, host.ViewModel.LanguageOptions.Select(static option => option.DisplayName).ToArray());
-            Assert.Equal("Language Settings", host.GetSectionHeaders()[0]);
+            Assert.Equal("User Environment Settings", host.GetSectionHeaders()[0]);
             Assert.Equal("Notification Settings", host.GetSectionHeaders()[1]);
         }, ensureApplicationResources: true);
     }
@@ -75,6 +76,7 @@ public sealed class UserConfigUserControlTests
         return new UserConfigViewModel(
             new StubClientAppInfoService(),
             new StubUserConfigService(),
+            new StubAutoStartService(),
             new StubComNotificationService(),
             new MutableLocalizationService("zh-CN"),
             new StubUiDispatcher(),
@@ -234,6 +236,19 @@ public sealed class UserConfigUserControlTests
         }
 
         public ValueTask SaveAsync(UserConfig config, CancellationToken cancellationToken = default)
+        {
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class StubAutoStartService : IAutoStartService
+    {
+        public ValueTask<bool> IsEnabledAsync(CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(false);
+        }
+
+        public ValueTask SetEnabledAsync(bool enabled, CancellationToken cancellationToken = default)
         {
             return ValueTask.CompletedTask;
         }

@@ -1,6 +1,7 @@
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.AutoStart;
 using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ViewModels;
@@ -48,7 +49,8 @@ public sealed class UserConfigViewModelTests
             }
         };
         var localizationService = new StubLocalizationService();
-        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), service, new StubComNotificationService(), localizationService, new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        var autoStartService = new StubAutoStartService { IsEnabled = true };
+        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), service, autoStartService, new StubComNotificationService(), localizationService, new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
 
@@ -78,6 +80,11 @@ public sealed class UserConfigViewModelTests
         Assert.Equal("mes-user", viewModel.CutterMesUser);
         Assert.Equal("mes-pass", viewModel.CutterMesPassword);
         Assert.Equal("en-US", viewModel.SelectedLanguage);
+        Assert.True(viewModel.AutoStartEnabled);
+        Assert.NotNull(viewModel.SelectedAutoStartOption);
+        Assert.True(viewModel.SelectedAutoStartOption!.IsEnabled);
+        Assert.NotNull(service.LastSaved);
+        Assert.True(service.LastSaved!.AutoStartEnabled);
         Assert.False(viewModel.IsDirty);
         Assert.Equal(LocalizedText.Get("ViewModels.UserConfigVm.Loaded"), viewModel.StatusMessage);
         Assert.False(viewModel.IsBusy);
@@ -89,7 +96,8 @@ public sealed class UserConfigViewModelTests
         var service = new StubUserConfigService();
         var dispatcher = new StubUiDispatcher();
         var localizationService = new StubLocalizationService();
-        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), service, new StubComNotificationService(), localizationService, dispatcher, new UiBusyService(TimeSpan.Zero));
+        var autoStartService = new StubAutoStartService();
+        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), service, autoStartService, new StubComNotificationService(), localizationService, dispatcher, new UiBusyService(TimeSpan.Zero));
         await viewModel.InitializeAsync();
 
         viewModel.MeResponsibleWorkId = "ME002";
@@ -111,6 +119,7 @@ public sealed class UserConfigViewModelTests
         viewModel.CutterMesUser = "mes-user-2";
         viewModel.CutterMesPassword = "mes-pass-2";
         viewModel.SelectedLanguage = "en-US";
+        viewModel.AutoStartEnabled = true;
 
         Assert.True(viewModel.IsDirty);
         Assert.True(viewModel.SaveCommand.CanExecute(null));
@@ -139,6 +148,8 @@ public sealed class UserConfigViewModelTests
         Assert.Equal("http://ndmes.catlbattery.com:8103/atlmeswebservice/GetParametricValueServiceService?wsdl", service.LastSaved.CutterMesWsdl);
         Assert.Equal("mes-user-2", service.LastSaved.CutterMesUser);
         Assert.Equal("mes-pass-2", service.LastSaved.CutterMesPassword);
+        Assert.True(service.LastSaved.AutoStartEnabled);
+        Assert.True(autoStartService.LastSetEnabled);
         Assert.Equal("en-US", localizationService.LastCultureName);
         Assert.True(dispatcher.RenderCount >= 1);
     }
@@ -158,7 +169,7 @@ public sealed class UserConfigViewModelTests
                 CutterMesPassword = "mes-pass-3"
             }
         };
-        var viewModel = new UserConfigViewModel(clientAppInfoService, service, new StubComNotificationService(), new StubLocalizationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        var viewModel = new UserConfigViewModel(clientAppInfoService, service, new StubAutoStartService(), new StubComNotificationService(), new StubLocalizationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
 
@@ -172,7 +183,7 @@ public sealed class UserConfigViewModelTests
     [Fact]
     public async Task InitializeAsync_WithoutSavedValue_ShouldUseComNotificationDefaultTrue()
     {
-        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubComNotificationService(), new StubLocalizationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubAutoStartService(), new StubComNotificationService(), new StubLocalizationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
 
         await viewModel.InitializeAsync();
 
@@ -197,7 +208,7 @@ public sealed class UserConfigViewModelTests
                 ResourceNumber = "RES-TEST"
             }
         };
-        var viewModel = new UserConfigViewModel(clientAppInfoService, service, notificationService, new StubLocalizationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        var viewModel = new UserConfigViewModel(clientAppInfoService, service, new StubAutoStartService(), notificationService, new StubLocalizationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
         await viewModel.InitializeAsync();
 
         viewModel.MeResponsibleWorkId = "ME003";
@@ -249,7 +260,7 @@ public sealed class UserConfigViewModelTests
                 ResourceNumber = "RES-TEST"
             }
         };
-        var viewModel = new UserConfigViewModel(clientAppInfoService, new StubUserConfigService(), new StubComNotificationService(), new StubLocalizationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        var viewModel = new UserConfigViewModel(clientAppInfoService, new StubUserConfigService(), new StubAutoStartService(), new StubComNotificationService(), new StubLocalizationService(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
         await viewModel.InitializeAsync();
 
         viewModel.MeResponsibleWorkId = "ME003";
@@ -322,6 +333,7 @@ public sealed class UserConfigViewModelTests
                 PrdResponsibleName = Current.PrdResponsibleName,
                 ReplacementOperatorName = Current.ReplacementOperatorName,
                 Language = Current.Language,
+                AutoStartEnabled = Current.AutoStartEnabled,
                 ComAccessToken = Current.ComAccessToken,
                 ComSecret = Current.ComSecret,
                 ComNotificationEnabled = Current.ComNotificationEnabled,
@@ -357,6 +369,7 @@ public sealed class UserConfigViewModelTests
                 PrdResponsibleName = config.PrdResponsibleName,
                 ReplacementOperatorName = config.ReplacementOperatorName,
                 Language = config.Language,
+                AutoStartEnabled = config.AutoStartEnabled,
                 ComAccessToken = config.ComAccessToken,
                 ComSecret = config.ComSecret,
                 ComNotificationEnabled = config.ComNotificationEnabled,
@@ -381,6 +394,25 @@ public sealed class UserConfigViewModelTests
                 CutterMesPassword = config.CutterMesPassword
             };
             Current = LastSaved;
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class StubAutoStartService : IAutoStartService
+    {
+        public bool IsEnabled { get; set; }
+
+        public bool? LastSetEnabled { get; private set; }
+
+        public ValueTask<bool> IsEnabledAsync(CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(IsEnabled);
+        }
+
+        public ValueTask SetEnabledAsync(bool enabled, CancellationToken cancellationToken = default)
+        {
+            LastSetEnabled = enabled;
+            IsEnabled = enabled;
             return ValueTask.CompletedTask;
         }
     }

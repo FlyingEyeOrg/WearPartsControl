@@ -7,4 +7,10 @@
   <String Id="MainFeatureDescription" Value="安装 Wear Parts Control 应用程序。" />
   <String Id="DesktopShortcutFeatureTitle" Value="创建桌面快捷方式" />
   <String Id="DesktopShortcutFeatureDescription" Value="在桌面创建 Wear Parts Control 快捷方式。" />
+  <String Id="InstallOptionsDlgTitle" Value="用户环境选项" />
+  <String Id="InstallOptionsDlgDescription" Value="选择安装完成后的用户环境选项。" />
+  <String Id="InstallOptionsDlgBody" Value="这些选项可以在软件的用户环境配置页面中继续调整。" />
+  <String Id="CreateDesktopShortcutCheckBox" Value="创建桌面快捷方式" />
+  <String Id="StartOnLoginCheckBox" Value="开机自启动" />
+  <String Id="StartOnLoginHint" Value="安装后软件会读取此状态，并同步到用户配置页面。" />
 </WixLocalization>

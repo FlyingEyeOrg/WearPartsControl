@@ -84,6 +84,7 @@ public sealed class UserConfigService : IUserConfigService
             PrdResponsibleName = config.PrdResponsibleName?.Trim() ?? string.Empty,
             ReplacementOperatorName = config.ReplacementOperatorName?.Trim() ?? string.Empty,
             Language = NormalizeLanguage(config.Language),
+            AutoStartEnabled = config.AutoStartEnabled,
             ComAccessToken = config.ComAccessToken?.Trim() ?? string.Empty,
             ComSecret = config.ComSecret?.Trim() ?? string.Empty,
             ComNotificationEnabled = config.ComNotificationEnabled,
@@ -177,6 +178,7 @@ public sealed class UserConfigService : IUserConfigService
             PrdResponsibleName = config.PrdResponsibleName,
             ReplacementOperatorName = config.ReplacementOperatorName,
             Language = config.Language,
+            AutoStartEnabled = config.AutoStartEnabled,
             ComAccessToken = string.IsNullOrWhiteSpace(config.ComAccessToken)
                 ? legacyConfig.AccessToken
                 : config.ComAccessToken,
@@ -218,6 +220,7 @@ public sealed class UserConfigService : IUserConfigService
             PrdResponsibleName = config.PrdResponsibleName,
             ReplacementOperatorName = config.ReplacementOperatorName,
             Language = config.Language,
+            AutoStartEnabled = config.AutoStartEnabled,
             ComAccessToken = config.ComAccessToken,
             ComSecret = config.ComSecret,
             ComNotificationEnabled = config.ComNotificationEnabled,
@@ -255,6 +258,7 @@ public sealed class UserConfigService : IUserConfigService
             PrdResponsibleName = config.PrdResponsibleName,
             ReplacementOperatorName = config.ReplacementOperatorName,
             Language = legacyConfig.CultureName,
+            AutoStartEnabled = config.AutoStartEnabled,
             ComAccessToken = config.ComAccessToken,
             ComSecret = config.ComSecret,
             ComNotificationEnabled = config.ComNotificationEnabled,

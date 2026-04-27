@@ -1,4 +1,5 @@
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.AutoStart;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.Localization;
@@ -39,7 +40,7 @@ public sealed class UserConfigViewModelLocalizationTests
         using var cultureScope = new TestCultureScope("zh-CN");
 
         var localizationService = new MutableLocalizationService("zh-CN");
-        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubComNotificationService(), localizationService, new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubAutoStartService(), new StubComNotificationService(), localizationService, new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
 
         viewModel.SelectedLanguage = "en-US";
         var selectedOption = viewModel.SelectedLanguageOption;
@@ -63,6 +64,10 @@ public sealed class UserConfigViewModelLocalizationTests
         Assert.NotNull(viewModel.SelectedLanguageOption);
         Assert.Equal("en-US", viewModel.SelectedLanguageOption!.Code);
         Assert.Same(selectedOption, viewModel.SelectedLanguageOption);
+        Assert.Collection(
+            viewModel.AutoStartOptions,
+            option => Assert.Equal("Do not start with Windows", option.DisplayName),
+            option => Assert.Equal("Start with Windows", option.DisplayName));
     }
 
     [Fact]
@@ -79,11 +84,15 @@ public sealed class UserConfigViewModelLocalizationTests
             viewModel.LanguageOptions,
             option => Assert.Equal("Simplified Chinese", option.DisplayName),
             option => Assert.Equal("English", option.DisplayName));
+        Assert.Collection(
+            viewModel.AutoStartOptions,
+            option => Assert.Equal("Do not start with Windows", option.DisplayName),
+            option => Assert.Equal("Start with Windows", option.DisplayName));
     }
 
     private static UserConfigViewModel CreateViewModel(string cultureName)
     {
-        return new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubComNotificationService(), new MutableLocalizationService(cultureName), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        return new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubAutoStartService(), new StubComNotificationService(), new MutableLocalizationService(cultureName), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
     }
 
     private sealed class MutableLocalizationService : ILocalizationService
@@ -140,6 +149,19 @@ public sealed class UserConfigViewModelLocalizationTests
         }
 
         public ValueTask SaveAsync(UserConfig config, CancellationToken cancellationToken = default)
+        {
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class StubAutoStartService : IAutoStartService
+    {
+        public ValueTask<bool> IsEnabledAsync(CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(false);
+        }
+
+        public ValueTask SetEnabledAsync(bool enabled, CancellationToken cancellationToken = default)
         {
             return ValueTask.CompletedTask;
         }

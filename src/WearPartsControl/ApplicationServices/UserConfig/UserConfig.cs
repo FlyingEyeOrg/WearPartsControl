@@ -9,6 +9,8 @@ public sealed class UserConfig
 
     public const bool DefaultComNotificationEnabled = true;
 
+    public const bool DefaultAutoStartEnabled = false;
+
     public const string DefaultComPushUrl = "https://ipaas.catl.com/gateway/office/ipaas/MSG/office_MSG_push";
 
     public const string DefaultComDeIpaasKeyAuth = "659JOPEldYL55Mi3sqb38H9Txd1q9EYw";
@@ -44,6 +46,8 @@ public sealed class UserConfig
     public string ReplacementOperatorName { get; set; } = string.Empty;
 
     public string Language { get; set; } = string.Empty;
+
+    public bool AutoStartEnabled { get; set; } = DefaultAutoStartEnabled;
 
     public string ComAccessToken { get; set; } = string.Empty;
 

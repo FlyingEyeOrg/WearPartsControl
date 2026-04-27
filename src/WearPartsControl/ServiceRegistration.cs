@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.ApplicationServices.AutoStart;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.HttpService;
@@ -93,6 +94,7 @@ public static class ServiceRegistration
         builder.RegisterType<LoginService>().As<ILoginService>().SingleInstance();
         builder.RegisterType<LoginSessionStateMachine>().As<ILoginSessionStateMachine>().SingleInstance();
         builder.RegisterType<UserConfigService>().As<IUserConfigService>().SingleInstance();
+        builder.RegisterType<WindowsAutoStartService>().As<IAutoStartService>().SingleInstance();
         builder.RegisterType<ComNotificationService>().As<IComNotificationService>().SingleInstance();
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<AppSettingsService>().As<IAppSettingsService>().SingleInstance();
