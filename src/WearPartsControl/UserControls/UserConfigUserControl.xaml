@@ -38,23 +38,24 @@
         </Border>
 
         <Border Grid.Row="1"
-            Margin="0 12 0 0"
-            Style="{StaticResource ShellStatusCardBorderStyle}">
+                Margin="0 12 0 0"
+                Style="{StaticResource ShellStatusCardBorderStyle}">
             <StackPanel>
-            <TextBlock FontWeight="SemiBold"
-                   Foreground="{StaticResource InfoBrush}"
-                   Text="{loc:Loc UserConfigControl.StatusBannerTitle}" />
-            <TextBlock Margin="0 6 0 0"
-                   TextWrapping="Wrap"
-                   Text="{Binding StatusMessage, Mode=OneWay}" />
+                <TextBlock FontWeight="SemiBold"
+                           Foreground="{StaticResource InfoBrush}"
+                           Text="{loc:Loc UserConfigControl.StatusBannerTitle}" />
+                <TextBlock Margin="0 6 0 0"
+                           TextWrapping="Wrap"
+                           Text="{Binding StatusMessage, Mode=OneWay}" />
             </StackPanel>
         </Border>
 
         <ScrollViewer Grid.Row="2"
+                      Margin="0 12 0 0"
                       VerticalScrollBarVisibility="Auto">
             <StackPanel Grid.IsSharedSizeScope="True"
                         Style="{StaticResource ShellPageContentStackPanelStyle}">
-            <Border Style="{StaticResource ShellFormSectionCardBorderStyle}">
+                <Border Style="{StaticResource ShellFormSectionCardBorderStyle}">
                     <StackPanel>
                         <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
                                    Text="{loc:Loc UserConfigControl.LanguageSection}" />
