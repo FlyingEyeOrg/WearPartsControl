@@ -2,6 +2,11 @@ namespace WearPartsControl.ApplicationServices.PartServices;
 
 public static class CutterReplacementValidationPolicy
 {
+    public static bool RequiresRollValidation(string? procedureCode, string? wearPartTypeCode)
+    {
+        return RequiresCutterValidation(procedureCode, wearPartTypeCode);
+    }
+
     public static bool RequiresCutterValidation(string? procedureCode, string? wearPartTypeCode)
     {
         var normalizedProcedure = procedureCode?.Trim() ?? string.Empty;

@@ -327,20 +327,20 @@
                                            Style="{StaticResource ShellFormLabelTextStyle}"
                                            Margin="0 12 0 0"
                                            Text="{loc:Loc ReplacePartControl.RollNumberLabel}"
-                                           Visibility="{Binding IsCutterValidationRequired, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                           Visibility="{Binding IsCutterRollValidationRequired, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 <TextBox Grid.Row="2"
                                          Grid.Column="1"
                                          Height="38"
                                          Margin="0 12 0 0"
                                          Style="{StaticResource TextBoxExtend}"
                                          Text="{Binding RollNumber, UpdateSourceTrigger=PropertyChanged}"
-                                         Visibility="{Binding IsCutterValidationRequired, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                         Visibility="{Binding IsCutterRollValidationRequired, Converter={StaticResource BooleanToVisibilityConverter}}"
                                          hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.RollNumberPlaceholder}" />
                                 <TextBlock Grid.Row="3"
                                            Style="{StaticResource ShellFormLabelTextStyle}"
                                            Margin="0 12 0 0"
                                            Text="{loc:Loc ReplacePartControl.BurrResultLabel}"
-                                           Visibility="{Binding IsCutterValidationRequired, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                           Visibility="{Binding IsCutterRollValidationRequired, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 <ComboBox Grid.Row="3"
                                           Grid.Column="1"
                                           Height="38"
@@ -348,7 +348,7 @@
                                           ItemsSource="{Binding BurrResultOptions}"
                                           SelectedItem="{Binding SelectedBurrResult, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                           Style="{StaticResource ComboBoxExtend}"
-                                          Visibility="{Binding IsCutterValidationRequired, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                          Visibility="{Binding IsCutterRollValidationRequired, Converter={StaticResource BooleanToVisibilityConverter}}"
                                           hc:InfoElement.Placeholder="{loc:Loc ReplacePartControl.BurrResultPlaceholder}" />
                                 <TextBlock Grid.Row="4"
                                            Style="{StaticResource ShellFormLabelTextStyle}"

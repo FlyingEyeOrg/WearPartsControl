@@ -9,7 +9,7 @@ public sealed class CutterRollValidationReplacementGuard : IWearPartReplacementG
 
     public Task ValidateAsync(WearPartReplacementGuardContext context, CancellationToken cancellationToken = default)
     {
-        if (!CutterReplacementValidationPolicy.RequiresCutterValidation(context.ClientAppConfiguration.ProcedureCode, context.Definition.WearPartType?.Code))
+        if (!CutterReplacementValidationPolicy.RequiresRollValidation(context.ClientAppConfiguration.ProcedureCode, context.Definition.WearPartType?.Code))
         {
             return Task.CompletedTask;
         }

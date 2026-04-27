@@ -158,6 +158,7 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
             if (SetProperty(ref _selectedDefinition, value))
             {
                 ApplySelectedDefinition(value);
+                OnPropertyChanged(nameof(IsCutterRollValidationRequired));
                 OnPropertyChanged(nameof(IsCutterValidationRequired));
                 OnPropertyChanged(nameof(IsCutterMesValidationEnabled));
                 NotifyReplaceStateChanged();
@@ -250,7 +251,9 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
 
     public bool IsToolValidationEnabled => ToolCodeReplacementGuard.RequiresToolCodeValidation(_procedureCode);
 
-    public bool IsCutterValidationRequired => CutterReplacementValidationPolicy.RequiresCutterValidation(_procedureCode, SelectedDefinition?.WearPartTypeCode);
+    public bool IsCutterRollValidationRequired => CutterReplacementValidationPolicy.RequiresRollValidation(_procedureCode, SelectedDefinition?.WearPartTypeCode);
+
+    public bool IsCutterValidationRequired => IsCutterRollValidationRequired;
 
     public bool IsCutterMesValidationEnabled => IsCutterValidationRequired && _enableCutterMesValidation;
 
@@ -380,6 +383,7 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
             _procedureCode = clientInfo.ProcedureCode?.Trim() ?? string.Empty;
             _enableCutterMesValidation = clientInfo.EnableCutterMesValidation;
             OnPropertyChanged(nameof(IsToolValidationEnabled));
+            OnPropertyChanged(nameof(IsCutterRollValidationRequired));
             OnPropertyChanged(nameof(IsCutterValidationRequired));
             OnPropertyChanged(nameof(IsCutterMesValidationEnabled));
             OnPropertyChanged(nameof(IsCoatingValidationEnabled));
@@ -515,7 +519,7 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
             && string.IsNullOrWhiteSpace(GetLifetimeValidationError())
             && !string.IsNullOrWhiteSpace(NewBarcode)
             && (!IsToolValidationEnabled || !string.IsNullOrWhiteSpace(SelectedToolCode))
-            && (!IsCutterValidationRequired || (!string.IsNullOrWhiteSpace(RollNumber) && !string.IsNullOrWhiteSpace(SelectedBurrResult)))
+            && (!IsCutterRollValidationRequired || (!string.IsNullOrWhiteSpace(RollNumber) && !string.IsNullOrWhiteSpace(SelectedBurrResult)))
             && (!IsCoatingValidationEnabled || !string.IsNullOrWhiteSpace(SelectedAbSide))
             && !string.IsNullOrWhiteSpace(SelectedReplacementReason);
     }
@@ -581,7 +585,7 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
             return;
         }
 
-        if (!CutterReplacementValidationPolicy.RequiresCutterValidation(_procedureCode, definition.WearPartTypeCode))
+        if (!CutterReplacementValidationPolicy.RequiresRollValidation(_procedureCode, definition.WearPartTypeCode))
         {
             RollNumber = string.Empty;
             SelectedBurrResult = string.Empty;

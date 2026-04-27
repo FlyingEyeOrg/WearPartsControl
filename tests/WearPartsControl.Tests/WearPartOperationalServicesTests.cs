@@ -946,6 +946,59 @@ public sealed class WearPartOperationalServicesTests : IDisposable
     }
 
     [Fact]
+    public async Task ReplaceByScanAsync_WhenDieCutSlittingCutterAndBurrResultMissing_ShouldThrowUserFriendlyException()
+    {
+        var seeded = await SeedAsync("R-OPS-08C", "M0.8C", procedureCode: "模切分条", wearPartTypeCode: WearPartTypeCodes.Cutter);
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 30);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService);
+
+        var exception = await Assert.ThrowsAsync<UserFriendlyException>(() => service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "BARCODE-TL-01-0008C",
+            ToolCode = "TL-01",
+            RollNumber = "1234567890123456",
+            ReplacementReason = WearPartReplacementReason.Normal
+        }));
+
+        Assert.Equal(LocalizedText.Get("Services.WearPartReplacement.CutterBurrResultRequired"), exception.Message);
+        Assert.DoesNotContain(plcService.Writes, x => x.Address == "DB1.4");
+    }
+
+    [Fact]
+    public async Task ReplaceByScanAsync_WhenDieCutSlittingCutterAndRollValidationFieldsValid_ShouldAllowReplacement()
+    {
+        var seeded = await SeedAsync("R-OPS-08D", "M0.8D", procedureCode: "模切分条", wearPartTypeCode: WearPartTypeCodes.Cutter);
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 30);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateReplacementService(dbContext, currentUserAccessor, plcService);
+
+        var result = await service.ReplaceByScanAsync(new WearPartReplacementRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            NewBarcode = "BARCODE-TL-01-0008D",
+            ToolCode = "TL-01",
+            RollNumber = "1234567890123456",
+            BurrResult = "OK",
+            ReplacementReason = WearPartReplacementReason.Normal
+        });
+
+        Assert.Equal("BARCODE-TL-01-0008D", result.NewBarcode);
+        Assert.Contains(plcService.Writes, x => x.Address == "DB1.4" && Equals(x.Value, "BARCODE-TL-01-0008D"));
+    }
+
+    [Fact]
     public async Task ReplaceByScanAsync_WhenCoatingAbSideMissing_ShouldThrowUserFriendlyException()
     {
         var seeded = await SeedAsync("R-OPS-09", "M0.9", procedureCode: "涂布");
@@ -1119,12 +1172,24 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         string procedureCode = "P01",
         string currentValueDataType = "Int32",
         string warningValueDataType = "Int32",
-        string shutdownValueDataType = "Int32")
+        string shutdownValueDataType = "Int32",
+        string? wearPartTypeCode = null)
     {
         var basicConfigurationId = Guid.NewGuid();
         var definitionId = Guid.NewGuid();
+        var wearPartTypeId = wearPartTypeCode is null ? (Guid?)null : Guid.NewGuid();
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        if (!string.IsNullOrWhiteSpace(wearPartTypeCode))
+        {
+            dbContext.WearPartTypes.Add(new WearPartTypeEntity
+            {
+                Id = wearPartTypeId!.Value,
+                Code = wearPartTypeCode,
+                Name = string.Equals(wearPartTypeCode, WearPartTypeCodes.Cutter, StringComparison.OrdinalIgnoreCase) ? "切刀" : wearPartTypeCode
+            });
+        }
+
         dbContext.ClientAppConfigurations.Add(new ClientAppConfigurationEntity
         {
             Id = basicConfigurationId,
@@ -1159,6 +1224,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             CodeMinLength = 8,
             CodeMaxLength = 32,
             LifetimeType = "Count",
+            WearPartTypeId = wearPartTypeId,
             PlcZeroClearAddress = plcZeroClearAddress,
             BarcodeWriteAddress = "DB1.4"
         });
@@ -1197,6 +1263,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             new FakeUserConfigService(),
             [
                 new BarcodeLengthReplacementGuard(),
+                new CutterRollValidationReplacementGuard(),
                 new ToolCodeReplacementGuard(),
                 new BarcodeReuseReplacementGuard(new WearPartReplacementRecordRepository(dbContext)),
                 new LifetimeReachedReplacementGuard(),

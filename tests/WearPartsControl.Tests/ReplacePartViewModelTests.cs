@@ -679,6 +679,59 @@ public sealed class ReplacePartViewModelTests
     }
 
     [Fact]
+    public async Task IsReplaceEnabled_WhenDieCutSlittingCutterRollNumberSetButBurrResultMissing_ShouldRemainFalse()
+    {
+        var definition = new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            PartName = "上刀A",
+            InputMode = "Scanner",
+            CodeMinLength = 8,
+            CodeMaxLength = 32,
+            CurrentValueDataType = "FLOAT",
+            CurrentValueAddress = "DB1.0",
+            WarningValueDataType = "FLOAT",
+            WarningValueAddress = "DB1.2",
+            ShutdownValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB1.4",
+            WearPartTypeCode = WearPartTypeCodes.Cutter
+        };
+        var toolChangeManagementService = new StubToolChangeManagementService();
+        toolChangeManagementService.Definitions.Add(new ToolChangeDefinition { Name = "刀型一", Code = "TL-01" });
+        var viewModel = new ReplacePartViewModel(
+            new StubAppSettingsService { Current = new AppSettings { ResourceNumber = "RES-01", IsWearPartMonitoringEnabled = true } },
+            new StubClientAppInfoService { Model = new ClientAppInfoModel { ResourceNumber = "RES-01", ProcedureCode = "模切分条" } },
+            new StubWearPartManagementService([definition]),
+            new StubWearPartReplacementService
+            {
+                Preview = new WearPartReplacementPreview
+                {
+                    WearPartDefinitionId = definition.Id,
+                    ClientAppConfigurationId = Guid.NewGuid(),
+                    CurrentValue = "10",
+                    WarningValue = "20",
+                    ShutdownValue = "30"
+                }
+            },
+            toolChangeManagementService,
+            new StubToolChangeSelectionService(),
+            new UiDispatcher(),
+            new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeAsync();
+        viewModel.NewBarcode = "BARCODE-TL-01-0001";
+        viewModel.RollNumber = "1234567890123456";
+
+        Assert.True(viewModel.IsCutterRollValidationRequired);
+        Assert.True(viewModel.IsCutterValidationRequired);
+        Assert.False(viewModel.IsReplaceEnabled);
+
+        viewModel.SelectedBurrResult = "OK";
+
+        Assert.True(viewModel.IsReplaceEnabled);
+    }
+
+    [Fact]
     public async Task GetReplacementConfirmationContext_WhenBarcodeIsOldPart_ShouldMarkAsReturningOldPart()
     {
         var definition = new WearPartDefinition
