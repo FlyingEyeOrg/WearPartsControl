@@ -53,10 +53,10 @@ public sealed class UserConfigViewModelTests
         await viewModel.InitializeAsync();
 
         Assert.Equal("ME001", viewModel.MeResponsibleWorkId);
-    Assert.Equal("张三", viewModel.MeResponsibleName);
+        Assert.Equal("张三", viewModel.MeResponsibleName);
         Assert.Equal("PRD001", viewModel.PrdResponsibleWorkId);
-    Assert.Equal("李四", viewModel.PrdResponsibleName);
-    Assert.Equal("王五", viewModel.ReplacementOperatorName);
+        Assert.Equal("李四", viewModel.PrdResponsibleName);
+        Assert.Equal("王五", viewModel.ReplacementOperatorName);
         Assert.Equal("token", viewModel.ComAccessToken);
         Assert.Equal("secret", viewModel.ComSecret);
         Assert.True(viewModel.ComNotificationEnabled);
@@ -77,7 +77,7 @@ public sealed class UserConfigViewModelTests
         Assert.Equal("https://mes/wsdl", viewModel.CutterMesWsdl);
         Assert.Equal("mes-user", viewModel.CutterMesUser);
         Assert.Equal("mes-pass", viewModel.CutterMesPassword);
-    Assert.Equal("en-US", viewModel.SelectedLanguage);
+        Assert.Equal("en-US", viewModel.SelectedLanguage);
         Assert.False(viewModel.IsDirty);
         Assert.Equal(LocalizedText.Get("ViewModels.UserConfigVm.Loaded"), viewModel.StatusMessage);
         Assert.False(viewModel.IsBusy);

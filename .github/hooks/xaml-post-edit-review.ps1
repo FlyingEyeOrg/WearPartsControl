@@ -97,10 +97,8 @@ if ([string]::IsNullOrWhiteSpace($workspaceRoot)) {
     $workspaceRoot = (Get-Location).Path
 }
 
-$supportedExtensions = @('.cs')
-$solutionPath = Join-Path $workspaceRoot 'WearPartsControl.sln'
-
-$filesToFormat = $editedPaths |
+$projectPath = Join-Path $workspaceRoot 'src/WearPartsControl/WearPartsControl.csproj'
+$xamlFiles = $editedPaths |
     Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
     ForEach-Object {
         if ([IO.Path]::IsPathRooted($_)) {
@@ -111,7 +109,7 @@ $filesToFormat = $editedPaths |
         }
     } |
     Where-Object {
-        (Test-Path $_) -and ($supportedExtensions -contains [IO.Path]::GetExtension($_).ToLowerInvariant())
+        (Test-Path $_) -and ([IO.Path]::GetExtension($_).ToLowerInvariant() -eq '.xaml')
     } |
     ForEach-Object {
         try {
@@ -122,25 +120,25 @@ $filesToFormat = $editedPaths |
     } |
     Sort-Object -Unique
 
-if (-not $filesToFormat -or $filesToFormat.Count -eq 0) {
+if (-not $xamlFiles -or $xamlFiles.Count -eq 0) {
     Write-HookResult
     exit 0
 }
 
-if (-not (Test-Path $solutionPath)) {
-    Write-HookResult -SystemMessage 'dotnet format hook skipped: solution file WearPartsControl.sln was not found.'
+if (-not (Test-Path $projectPath)) {
+    Write-HookResult -SystemMessage 'XAML review hook skipped: project file src/WearPartsControl/WearPartsControl.csproj was not found.'
     exit 0
 }
 
-$relativeFiles = foreach ($path in $filesToFormat) {
+$relativeFiles = foreach ($path in $xamlFiles) {
     [IO.Path]::GetRelativePath($workspaceRoot, $path)
 }
 
 $arguments = @(
-    'format'
-    $solutionPath
-    '--include'
-) + $relativeFiles
+    'build'
+    $projectPath
+    '/property:GenerateFullPaths=true'
+)
 
 Push-Location $workspaceRoot
 try {
@@ -152,7 +150,7 @@ finally {
 }
 
 if ($exitCode -ne 0) {
-    $message = 'dotnet format hook failed for: ' + ($relativeFiles -join ', ')
+    $message = 'XAML validation failed after editing: ' + ($relativeFiles -join ', ')
     if ($output) {
         $message += "`n" + (($output | Out-String).Trim())
     }
@@ -161,6 +159,12 @@ if ($exitCode -ne 0) {
     exit 0
 }
 
-$summary = 'dotnet format completed for: ' + ($relativeFiles -join ', ')
-Write-HookResult -SystemMessage $summary -AdditionalContext $summary
+$guidance = @(
+    'XAML files changed: ' + ($relativeFiles -join ', ')
+    'dotnet format does not format XAML in this workspace.'
+    'Manually review indentation, attribute wrapping, Grid spacing, and localization-friendly layout after XAML edits.'
+    'If a Window or UserControl was added or materially changed, ensure the corresponding InitializeComponent/XAML load test is updated or added.'
+) -join ' '
+
+Write-HookResult -SystemMessage ('XAML review required for: ' + ($relativeFiles -join ', ')) -AdditionalContext $guidance
 exit 0
