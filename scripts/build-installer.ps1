@@ -3,6 +3,8 @@ param(
     [string]$Configuration = "Release",
     [Alias("RuntimeIdentifier")]
     [string[]]$RuntimeIdentifiers = @("win-x64", "win-x86"),
+    [string[]]$TestConfigurations = @("Debug", "Release"),
+    [string[]]$TestRuntimeIdentifiers = @("win-x64", "win-x86"),
     [string]$Version = "1.0.0",
     [switch]$SelfContained,
     [switch]$FrameworkDependent,
@@ -55,9 +57,23 @@ New-Item -ItemType Directory -Path $publishRoot -Force | Out-Null
 New-Item -ItemType Directory -Path $installerOutputDir -Force | Out-Null
 
 Invoke-DotNet @("restore", $appProject, "-p:NuGetAudit=false")
+Invoke-DotNet @("restore", $testProject, "-p:NuGetAudit=false")
 
 if (-not $SkipTests) {
-    Invoke-DotNet @("test", $testProject, "--configuration", $Configuration, "--no-restore", "-p:NuGetAudit=false")
+    foreach ($testConfiguration in $TestConfigurations) {
+        foreach ($testRuntimeIdentifier in $TestRuntimeIdentifiers) {
+            Get-InstallerPlatform -RuntimeIdentifier $testRuntimeIdentifier | Out-Null
+            Invoke-DotNet @(
+                "restore", $testProject,
+                "--runtime", $testRuntimeIdentifier,
+                "-p:NuGetAudit=false")
+            Invoke-DotNet @(
+                "test", $testProject,
+                "--configuration", $testConfiguration,
+                "--runtime", $testRuntimeIdentifier,
+                "-p:NuGetAudit=false")
+        }
+    }
 }
 
 $selfContainedValue = if ($FrameworkDependent) { "false" } else { "true" }

@@ -6,7 +6,8 @@
     <GeneratedLocalizationResxDir>$(GeneratedLocalizationDir)\Resources</GeneratedLocalizationResxDir>
     <GeneratedLocalizationCodeFile>$(GeneratedLocalizationDir)\LocalizationCatalog.g.cs</GeneratedLocalizationCodeFile>
     <GeneratedLocalizationStampFile>$(GeneratedLocalizationDir)\LocalizationResourceGenerator.stamp</GeneratedLocalizationStampFile>
-    <GeneratedLocalizationOutputsExist>$([System.IO.File]::Exists('$(GeneratedLocalizationCodeFile)'))</GeneratedLocalizationOutputsExist>
+    <GeneratedLocalizationOutputsExist>false</GeneratedLocalizationOutputsExist>
+    <GeneratedLocalizationOutputsExist Condition="Exists('$(GeneratedLocalizationCodeFile)') and Exists('$(GeneratedLocalizationResxDir)\LocalizationResource.resx') and Exists('$(GeneratedLocalizationResxDir)\LocalizationResource.en-US.resx') and Exists('$(GeneratedLocalizationResxDir)\LocalizationResource.zh-CN.resx')">true</GeneratedLocalizationOutputsExist>
     <LocalizationSourceDir>$(MSBuildProjectDirectory)\Resources\Localization</LocalizationSourceDir>
     <LocalizationGeneratorProject>$(MSBuildProjectDirectory)\..\..\tools\LocalizationResourceGenerator\LocalizationResourceGenerator.csproj</LocalizationGeneratorProject>
   </PropertyGroup>
@@ -30,7 +31,7 @@
 
   <Target Name="GenerateLocalizationArtifacts" BeforeTargets="PrepareResourceNames;CoreCompile"
           Inputs="@(LocalizationJsonFiles);@(LocalizationGeneratorInputs);$(MSBuildProjectFullPath)"
-          Outputs="$(GeneratedLocalizationStampFile)">
+      Outputs="$(GeneratedLocalizationStampFile);$(GeneratedLocalizationCodeFile);$(GeneratedLocalizationResxDir)\LocalizationResource.resx;$(GeneratedLocalizationResxDir)\LocalizationResource.en-US.resx;$(GeneratedLocalizationResxDir)\LocalizationResource.zh-CN.resx">
     <MakeDir Directories="$(GeneratedLocalizationDir);$(GeneratedLocalizationResxDir)" />
     <Exec Command="dotnet run --project &quot;$(LocalizationGeneratorProject)&quot; -- &quot;$(LocalizationSourceDir)&quot; &quot;$(GeneratedLocalizationResxDir)&quot; &quot;$(GeneratedLocalizationCodeFile)&quot;" />
     <WriteLinesToFile File="$(GeneratedLocalizationStampFile)" Lines="$([System.DateTime]::UtcNow.ToString('O'))" Overwrite="true" />
