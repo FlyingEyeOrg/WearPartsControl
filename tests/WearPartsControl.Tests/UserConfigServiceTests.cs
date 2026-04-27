@@ -176,7 +176,7 @@ public sealed class UserConfigServiceTests
         try
         {
             var store = new TypeJsonSaveInfoStore(settingsDirectory);
-            await store.WriteAsync(new ComNotificationOptionsSaveInfo
+            await store.WriteAsync(new LegacyComNotificationOptionsSaveInfo
             {
                 Enabled = true,
                 PushUrl = "https://legacy/com",
@@ -206,7 +206,7 @@ public sealed class UserConfigServiceTests
             Assert.Equal("secret", config.ComSecret);
             Assert.Equal("ME001", config.MeResponsibleWorkId);
             Assert.Equal(12000, config.ComTimeoutMilliseconds);
-            Assert.False(store.Exists<ComNotificationOptionsSaveInfo>());
+            Assert.False(store.Exists<LegacyComNotificationOptionsSaveInfo>());
 
             var persistedJson = await File.ReadAllTextAsync(Path.Combine(settingsDirectory, "user-config.json"));
             var persisted = JsonSerializer.Deserialize<UserConfig>(persistedJson);

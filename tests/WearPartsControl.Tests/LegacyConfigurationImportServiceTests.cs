@@ -82,7 +82,7 @@ public sealed class LegacyConfigurationImportServiceTests
             Assert.False(userConfig.SpacerValidationIgnoreServerCertificateErrors);
             Assert.Equal("-", userConfig.SpacerValidationCodeSeparator);
             Assert.Equal(10, userConfig.SpacerValidationExpectedSegmentCount);
-            Assert.False(saveInfoStore.Exists<ComNotificationOptionsSaveInfo>());
+            Assert.False(saveInfoStore.Exists<LegacyComNotificationOptionsSaveInfo>());
 
             var mhrConfig = await saveInfoStore.ReadAsync<MhrConfig>();
             Assert.Equal("mhr-user", mhrConfig.LoginName);

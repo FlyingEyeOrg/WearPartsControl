@@ -3,7 +3,7 @@ using WearPartsControl.ApplicationServices.SaveInfoService;
 namespace WearPartsControl.ApplicationServices.ComNotification;
 
 [SaveInfoFile("com-notification")]
-public sealed class ComNotificationOptionsSaveInfo
+public sealed class LegacyComNotificationOptionsSaveInfo
 {
     public bool Enabled { get; set; }
 

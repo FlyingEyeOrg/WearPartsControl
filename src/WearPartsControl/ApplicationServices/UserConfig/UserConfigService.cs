@@ -19,16 +19,16 @@ public sealed class UserConfigService : IUserConfigService
         var config = await _saveInfoStore.ReadAsync<UserConfig>(cancellationToken).ConfigureAwait(false);
         var normalized = Normalize(config);
 
-        if (_saveInfoStore is TypeJsonSaveInfoStore comFileStore && comFileStore.Exists<ComNotificationOptionsSaveInfo>())
+        if (_saveInfoStore is TypeJsonSaveInfoStore comFileStore && comFileStore.Exists<LegacyComNotificationOptionsSaveInfo>())
         {
             if (ShouldMigrateLegacyComNotification(normalized))
             {
-                var legacyComNotification = await _saveInfoStore.ReadAsync<ComNotificationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
+                var legacyComNotification = await _saveInfoStore.ReadAsync<LegacyComNotificationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
                 normalized = ApplyLegacyComNotification(normalized, legacyComNotification);
                 await _saveInfoStore.WriteAsync(normalized, cancellationToken).ConfigureAwait(false);
             }
 
-            await comFileStore.DeleteAsync<ComNotificationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
+            await comFileStore.DeleteAsync<LegacyComNotificationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
         }
 
         if (_saveInfoStore is TypeJsonSaveInfoStore fileStore && fileStore.Exists<SpacerValidationOptionsSaveInfo>())
@@ -63,9 +63,9 @@ public sealed class UserConfigService : IUserConfigService
         ArgumentNullException.ThrowIfNull(config);
         await _saveInfoStore.WriteAsync(Normalize(config), cancellationToken).ConfigureAwait(false);
 
-        if (_saveInfoStore is TypeJsonSaveInfoStore comFileStore && comFileStore.Exists<ComNotificationOptionsSaveInfo>())
+        if (_saveInfoStore is TypeJsonSaveInfoStore comFileStore && comFileStore.Exists<LegacyComNotificationOptionsSaveInfo>())
         {
-            await comFileStore.DeleteAsync<ComNotificationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
+            await comFileStore.DeleteAsync<LegacyComNotificationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
         }
 
         if (_saveInfoStore is TypeJsonSaveInfoStore fileStore && fileStore.Exists<SpacerValidationOptionsSaveInfo>())
@@ -163,7 +163,7 @@ public sealed class UserConfigService : IUserConfigService
             && !string.IsNullOrWhiteSpace(legacyConfig.CultureName);
     }
 
-    private static UserConfig ApplyLegacyComNotification(UserConfig config, ComNotificationOptionsSaveInfo legacyConfig)
+    private static UserConfig ApplyLegacyComNotification(UserConfig config, LegacyComNotificationOptionsSaveInfo legacyConfig)
     {
         ArgumentNullException.ThrowIfNull(legacyConfig);
 
