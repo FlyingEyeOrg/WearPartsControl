@@ -6,9 +6,6 @@ using WearPartsControl.Domain.Entities;
 
 namespace WearPartsControl.ApplicationServices.ComNotification;
 
-public sealed record ComNotificationMessage(string Title, string Markdown);
-public sealed record ComNotificationPreview(ComNotificationMessage Warning, ComNotificationMessage Shutdown);
-
 public static class ComNotificationMessageFactory
 {
     private const string PlaceholderValue = "###";

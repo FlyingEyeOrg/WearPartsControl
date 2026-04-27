@@ -6,10 +6,3 @@ public interface IToolChangeSelectionService
 
     ValueTask SaveSelectionAsync(Guid wearPartDefinitionId, string toolCode, CancellationToken cancellationToken = default);
 }
-
-public sealed class ToolChangeSelectionState
-{
-    public string SelectedToolCode { get; init; } = string.Empty;
-
-    public IReadOnlyList<string> RecentToolCodes { get; init; } = Array.Empty<string>();
-}

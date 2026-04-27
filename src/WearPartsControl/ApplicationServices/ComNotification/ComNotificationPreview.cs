@@ -1,0 +1,3 @@
+namespace WearPartsControl.ApplicationServices.ComNotification;
+
+public sealed record ComNotificationPreview(ComNotificationMessage Warning, ComNotificationMessage Shutdown);

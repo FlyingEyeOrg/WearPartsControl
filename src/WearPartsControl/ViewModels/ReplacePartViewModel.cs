@@ -835,16 +835,4 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
         _statusMessageFactory = null;
         StatusMessage = message;
     }
-
-    public sealed record ReplacePartConfirmationContext(
-        string PartName,
-        string Barcode,
-        bool IsReturningOldPart,
-        bool HasReachedWarningLifetime,
-        string CurrentValueText,
-        string WarningValueText,
-        string ShutdownValueText)
-    {
-        public static ReplacePartConfirmationContext Empty { get; } = new(string.Empty, string.Empty, false, false, string.Empty, string.Empty, string.Empty);
-    }
 }

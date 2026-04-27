@@ -2,15 +2,6 @@ using WearPartsControl.ApplicationServices.Localization;
 
 namespace WearPartsControl.ApplicationServices.PlcService;
 
-public enum PlcStartupConnectionStatus
-{
-    Uninitialized,
-    Connecting,
-    NotConfigured,
-    Connected,
-    Failed
-}
-
 public sealed record PlcStartupConnectionResult(
     PlcStartupConnectionStatus Status,
     string Message)

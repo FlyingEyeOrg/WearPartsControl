@@ -1022,13 +1022,6 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
         public static ClientAppInfoSnapshot Empty { get; } = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true);
     }
 
-    public sealed class SiteOption
-    {
-        public string Code { get; set; } = string.Empty;
-
-        public string DisplayName { get; set; } = string.Empty;
-    }
-
     private sealed class SiteFactoryDocument
     {
         public List<SiteFactoryOption> Factories { get; set; } = new();

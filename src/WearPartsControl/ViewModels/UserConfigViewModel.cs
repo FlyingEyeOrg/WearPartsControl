@@ -832,25 +832,6 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         StatusMessage = message;
     }
 
-    public sealed class LanguageOption : ObservableObject
-    {
-        private string _displayName;
-
-        public LanguageOption(string code, string displayName)
-        {
-            Code = code;
-            _displayName = displayName;
-        }
-
-        public string Code { get; }
-
-        public string DisplayName
-        {
-            get => _displayName;
-            set => SetProperty(ref _displayName, value);
-        }
-    }
-
     private sealed record UserConfigSnapshot(
         string MeResponsibleWorkId,
         string MeResponsibleName,

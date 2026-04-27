@@ -10,7 +10,7 @@ namespace WearPartsControl.Infrastructure.EntityFrameworkCore.Repositories;
 
 public abstract class EfRepositoryBase<TDbContext, TEntity, TId> : IRepository<TEntity, TId>
     where TDbContext : DbContextBase
-    where TEntity : class, IEntity<TId>
+    where TEntity : class, IEntityWithId<TId>
     where TId : notnull
 {
     protected EfRepositoryBase(TDbContext dbContext)

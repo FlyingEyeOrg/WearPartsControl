@@ -77,18 +77,3 @@ public sealed class ToolChangeSelectionService : IToolChangeSelectionService
         return toolCode?.Trim() ?? string.Empty;
     }
 }
-
-[SaveInfoFile("tool-change-selection")]
-public sealed class ToolChangeSelectionSaveInfo
-{
-    public List<ToolChangeSelectionItem> Items { get; set; } = [];
-
-    public List<string> RecentToolCodes { get; set; } = [];
-}
-
-public sealed class ToolChangeSelectionItem
-{
-    public Guid WearPartDefinitionId { get; set; }
-
-    public string SelectedToolCode { get; set; } = string.Empty;
-}

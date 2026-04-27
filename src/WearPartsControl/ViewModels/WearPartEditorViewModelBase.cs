@@ -495,42 +495,4 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
         _statusMessageFactory = null;
         StatusMessage = message;
     }
-
-    public sealed class LifetimeTypeOption : ObservableObject
-    {
-        private string _displayName;
-
-        public LifetimeTypeOption(string code, string displayName)
-        {
-            Code = code;
-            _displayName = displayName;
-        }
-
-        public string Code { get; }
-
-        public string DisplayName
-        {
-            get => _displayName;
-            set => SetProperty(ref _displayName, value);
-        }
-    }
-
-    public sealed class InputModeOption : ObservableObject
-    {
-        private string _displayName;
-
-        public InputModeOption(string code, string displayName)
-        {
-            Code = code;
-            _displayName = displayName;
-        }
-
-        public string Code { get; }
-
-        public string DisplayName
-        {
-            get => _displayName;
-            set => SetProperty(ref _displayName, value);
-        }
-    }
 }

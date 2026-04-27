@@ -74,18 +74,3 @@ public static class WearPartReplacementReason
         return option?.DisplayName ?? replacementReason;
     }
 }
-
-public sealed class WearPartReplacementReasonOption
-{
-    public WearPartReplacementReasonOption(string code, string localizationKey)
-    {
-        Code = code;
-        LocalizationKey = localizationKey;
-    }
-
-    public string Code { get; }
-
-    public string LocalizationKey { get; }
-
-    public string DisplayName => LocalizedText.Get(LocalizationKey);
-}

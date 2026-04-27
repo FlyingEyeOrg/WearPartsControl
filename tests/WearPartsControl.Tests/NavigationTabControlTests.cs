@@ -141,9 +141,3 @@ public sealed class NavigationTabControlTests
         }
     }
 }
-
-[CollectionDefinition(Name, DisableParallelization = true)]
-public sealed class NavigationTabControlTestCollection
-{
-    public const string Name = "NavigationTabControl.Wpf";
-}
