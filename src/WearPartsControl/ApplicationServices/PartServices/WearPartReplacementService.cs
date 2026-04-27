@@ -7,7 +7,7 @@ using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices.PartServices;
 
-public sealed class WearPartReplacementService : ApplicationService, IWearPartReplacementService
+public sealed class WearPartReplacementService : ApplicationServiceBase, IWearPartReplacementService
 {
     private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
     private readonly IWearPartRepository _wearPartRepository;

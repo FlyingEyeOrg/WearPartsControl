@@ -8,7 +8,7 @@ using Xunit;
 namespace WearPartsControl.Tests;
 
 [Collection(LocalizationSensitiveTestCollection.Name)]
-public sealed class PartUpdateRecordViewModelTests
+public sealed class PartReplacementHistoryViewModelTests
 {
     [Fact]
     public async Task InitializeAsync_ShouldLoadRecordsAndPartDefinitions()
@@ -129,7 +129,7 @@ public sealed class PartUpdateRecordViewModelTests
         var viewModel = CreateViewModel(
             [definition],
             [new WearPartReplacementRecord { WearPartDefinitionId = definition.Id, PartName = definition.PartName, NewBarcode = "NB-1", ReasonCode = WearPartReplacementReason.ProcessDamage, ReasonDisplayName = "过程损坏" }]);
-        PartUpdateRecordExportRequestedEventArgs? raised = null;
+        PartReplacementHistoryExportRequestedEventArgs? raised = null;
         viewModel.ExportRequested += (_, args) => raised = args;
 
         await viewModel.InitializeAsync();
@@ -193,7 +193,7 @@ public sealed class PartUpdateRecordViewModelTests
             }
         ]);
         var uiDispatcher = new StubUiDispatcher();
-        var viewModel = new PartUpdateRecordViewModel(
+        var viewModel = new PartReplacementHistoryViewModel(
             new StubClientAppInfoService(),
             new StubWearPartManagementService([definition]),
             replacementService,
@@ -242,11 +242,11 @@ public sealed class PartUpdateRecordViewModelTests
         Assert.Equal(WearPartReplacementReason.GetDisplayName(WearPartReplacementReason.ProcessDamage), viewModel.Records[0].ReasonDisplayName);
     }
 
-    private static PartUpdateRecordViewModel CreateViewModel(
+    private static PartReplacementHistoryViewModel CreateViewModel(
         IReadOnlyList<WearPartDefinition> definitions,
         IReadOnlyList<WearPartReplacementRecord> records)
     {
-        return new PartUpdateRecordViewModel(
+        return new PartReplacementHistoryViewModel(
             new StubClientAppInfoService(),
             new StubWearPartManagementService(definitions),
             new StubWearPartReplacementService(records),

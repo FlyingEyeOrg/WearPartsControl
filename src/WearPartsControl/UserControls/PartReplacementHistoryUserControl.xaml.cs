@@ -10,16 +10,16 @@ using WearPartsControl.ViewModels;
 namespace WearPartsControl.UserControls;
 
 /// <summary>
-/// PartUpdateRecordUserControl.xaml 的交互逻辑
+/// PartReplacementHistoryUserControl.xaml 的交互逻辑
 /// </summary>
-public partial class PartUpdateRecordUserControl : UserControl
+public partial class PartReplacementHistoryUserControl : UserControl
 {
-    private readonly PartUpdateRecordViewModel _viewModel;
+    private readonly PartReplacementHistoryViewModel _viewModel;
     private readonly IAutoLogoutInteractionService _autoLogoutInteractionService;
     private readonly IFileDialogService _fileDialogService;
     private bool _isInitialized;
 
-    public PartUpdateRecordUserControl(PartUpdateRecordViewModel viewModel, IAutoLogoutInteractionService autoLogoutInteractionService, IFileDialogService? fileDialogService = null)
+    public PartReplacementHistoryUserControl(PartReplacementHistoryViewModel viewModel, IAutoLogoutInteractionService autoLogoutInteractionService, IFileDialogService? fileDialogService = null)
     {
         _viewModel = viewModel;
         _autoLogoutInteractionService = autoLogoutInteractionService;
@@ -50,7 +50,7 @@ public partial class PartUpdateRecordUserControl : UserControl
         _viewModel.ExportRequested -= OnExportRequested;
     }
 
-    private async void OnExportRequested(object? sender, PartUpdateRecordExportRequestedEventArgs e)
+    private async void OnExportRequested(object? sender, PartReplacementHistoryExportRequestedEventArgs e)
     {
         try
         {

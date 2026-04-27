@@ -9,7 +9,7 @@ using WearPartsControl.ApplicationServices.PartServices;
 
 namespace WearPartsControl.ViewModels;
 
-public sealed class PartUpdateRecordViewModel : LocalizedViewModelBase
+public sealed class PartReplacementHistoryViewModel : LocalizedViewModelBase
 {
     private const int DefaultPageSize = 20;
     private static readonly int[] SupportedPageSizes = [10, 20, 50, 100];
@@ -34,7 +34,7 @@ public sealed class PartUpdateRecordViewModel : LocalizedViewModelBase
     private string _statusMessage = LocalizedText.Get("ViewModels.PartUpdateRecordVm.PromptLoadCurrent");
     private Func<string>? _statusMessageFactory;
 
-    public PartUpdateRecordViewModel(
+    public PartReplacementHistoryViewModel(
         IClientAppInfoService clientAppInfoService,
         IWearPartManagementService wearPartManagementService,
         IWearPartReplacementService wearPartReplacementService,
@@ -62,7 +62,7 @@ public sealed class PartUpdateRecordViewModel : LocalizedViewModelBase
         SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.PartUpdateRecordVm.PromptLoadCurrent"));
     }
 
-    public event EventHandler<PartUpdateRecordExportRequestedEventArgs>? ExportRequested;
+    public event EventHandler<PartReplacementHistoryExportRequestedEventArgs>? ExportRequested;
 
     public ObservableCollection<WearPartDefinition> Definitions { get; } = new();
 
@@ -367,7 +367,7 @@ public sealed class PartUpdateRecordViewModel : LocalizedViewModelBase
     {
         var content = BuildCsvContent(_filteredRecords);
         var fileName = LocalizedText.Format("ViewModels.PartUpdateRecordVm.ExportFileName", ResourceNumber, DateTime.Now);
-        ExportRequested?.Invoke(this, new PartUpdateRecordExportRequestedEventArgs(fileName, content));
+        ExportRequested?.Invoke(this, new PartReplacementHistoryExportRequestedEventArgs(fileName, content));
     }
 
     private static string BuildCsvContent(IEnumerable<WearPartReplacementRecord> records)
@@ -433,9 +433,9 @@ public sealed class PartUpdateRecordViewModel : LocalizedViewModelBase
     }
 }
 
-public sealed class PartUpdateRecordExportRequestedEventArgs : EventArgs
+public sealed class PartReplacementHistoryExportRequestedEventArgs : EventArgs
 {
-    public PartUpdateRecordExportRequestedEventArgs(string suggestedFileName, string content)
+    public PartReplacementHistoryExportRequestedEventArgs(string suggestedFileName, string content)
     {
         SuggestedFileName = suggestedFileName;
         Content = content;

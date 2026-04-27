@@ -2,5 +2,5 @@ namespace WearPartsControl.ApplicationServices.PlcService;
 
 public interface IPlcClientConfigurationResolver
 {
-    Task<PlcClientConfigurationResolution> ResolveAsync(CancellationToken cancellationToken = default);
+    Task<PlcClientConfigurationResult> ResolveAsync(CancellationToken cancellationToken = default);
 }

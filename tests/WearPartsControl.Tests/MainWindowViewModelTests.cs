@@ -151,8 +151,8 @@ public sealed class MainWindowViewModelTests : IDisposable
         viewModel.TabChangedCommand.Execute(3);
 
         Assert.Equal(0, serviceProvider.GetResolveCount<ToolChangeManagementUserControl>());
-        Assert.Equal(1, serviceProvider.GetResolveCount<PartUpdateRecordUserControl>());
-        Assert.IsType<PartUpdateRecordUserControl>(viewModel.SelectedContent);
+        Assert.Equal(1, serviceProvider.GetResolveCount<PartReplacementHistoryUserControl>());
+        Assert.IsType<PartReplacementHistoryUserControl>(viewModel.SelectedContent);
     }
 
     [Fact]
@@ -323,7 +323,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             AccessLevel = 3
         });
 
-        Assert.IsType<PartUpdateRecordUserControl>(viewModel.SelectedContent);
+        Assert.IsType<PartReplacementHistoryUserControl>(viewModel.SelectedContent);
     }
 
     [Fact]
@@ -416,13 +416,13 @@ public sealed class MainWindowViewModelTests : IDisposable
 
         viewModel.TabChangedCommand.Execute(4);
         var selectedContent = viewModel.SelectedContent;
-        var partUpdateRecordResolveCountBeforeTick = serviceProvider.GetResolveCount<PartUpdateRecordUserControl>();
+        var partReplacementHistoryResolveCountBeforeTick = serviceProvider.GetResolveCount<PartReplacementHistoryUserControl>();
 
         delaySignals.Dequeue().SetResult(true);
         await WaitUntilAsync(() => viewModel.CurrentUserAccessLevelText == LocalizedText.Format("ViewModels.MainWindowVm.CurrentUserAccessLevelCountdown", 3, "00:02"));
 
         Assert.Same(selectedContent, viewModel.SelectedContent);
-        Assert.Equal(partUpdateRecordResolveCountBeforeTick, serviceProvider.GetResolveCount<PartUpdateRecordUserControl>());
+        Assert.Equal(partReplacementHistoryResolveCountBeforeTick, serviceProvider.GetResolveCount<PartReplacementHistoryUserControl>());
     }
 
     [Fact]
@@ -850,7 +850,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             typeof(NeedLoginUserControl),
             typeof(PartManagementUserControl),
             typeof(ToolChangeManagementUserControl),
-            typeof(PartUpdateRecordUserControl),
+            typeof(PartReplacementHistoryUserControl),
             typeof(UserConfigUserControl)
         ];
 

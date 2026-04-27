@@ -10,7 +10,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
         MainWindowTabKey.ClientAppInfo,
         MainWindowTabKey.PartManagement,
         MainWindowTabKey.ToolChangeManagement,
-        MainWindowTabKey.PartUpdateRecord,
+        MainWindowTabKey.PartReplacementHistory,
         MainWindowTabKey.UserConfig
     ];
 
@@ -19,7 +19,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
         MainWindowTabKey.ReplacePart,
         MainWindowTabKey.ClientAppInfo,
         MainWindowTabKey.PartManagement,
-        MainWindowTabKey.PartUpdateRecord,
+        MainWindowTabKey.PartReplacementHistory,
         MainWindowTabKey.UserConfig
     ];
 
@@ -72,7 +72,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
             MainWindowTabKey.ClientAppInfo => typeof(ClientAppInfoUserControl),
             MainWindowTabKey.PartManagement => typeof(PartManagementUserControl),
             MainWindowTabKey.ToolChangeManagement => typeof(ToolChangeManagementUserControl),
-            MainWindowTabKey.PartUpdateRecord => typeof(PartUpdateRecordUserControl),
+            MainWindowTabKey.PartReplacementHistory => typeof(PartReplacementHistoryUserControl),
             MainWindowTabKey.UserConfig => typeof(UserConfigUserControl),
             _ => typeof(ReplacePartUserControl)
         };

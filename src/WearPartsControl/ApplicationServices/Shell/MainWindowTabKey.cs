@@ -6,6 +6,6 @@ public enum MainWindowTabKey
     ClientAppInfo = 1,
     PartManagement = 2,
     ToolChangeManagement = 3,
-    PartUpdateRecord = 4,
+    PartReplacementHistory = 4,
     UserConfig = 5
 }

@@ -4,9 +4,9 @@ using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices;
 
-public abstract class ApplicationService
+public abstract class ApplicationServiceBase
 {
-    protected ApplicationService(ICurrentUserAccessor currentUserAccessor)
+    protected ApplicationServiceBase(ICurrentUserAccessor currentUserAccessor)
     {
         CurrentUserAccessor = currentUserAccessor;
     }

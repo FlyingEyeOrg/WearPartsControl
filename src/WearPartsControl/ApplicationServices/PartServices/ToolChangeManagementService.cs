@@ -5,7 +5,7 @@ using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices.PartServices;
 
-public sealed class ToolChangeManagementService : ApplicationService, IToolChangeManagementService
+public sealed class ToolChangeManagementService : ApplicationServiceBase, IToolChangeManagementService
 {
     private readonly IToolChangeRepository _toolChangeRepository;
 

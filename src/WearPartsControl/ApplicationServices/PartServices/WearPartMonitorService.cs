@@ -9,7 +9,7 @@ using UserConfigModel = WearPartsControl.ApplicationServices.UserConfig.UserConf
 
 namespace WearPartsControl.ApplicationServices.PartServices;
 
-public sealed class WearPartMonitorService : ApplicationService, IWearPartMonitorService
+public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMonitorService
 {
     private const string WarningSeverity = "Warning";
     private const string ShutdownSeverity = "Shutdown";

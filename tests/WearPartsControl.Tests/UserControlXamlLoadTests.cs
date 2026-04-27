@@ -42,12 +42,12 @@ public sealed class UserControlXamlLoadTests
     }
 
     [Fact]
-    public void PartUpdateRecordUserControl_ShouldLoadWithoutXamlParseException()
+    public void PartReplacementHistoryUserControl_ShouldLoadWithoutXamlParseException()
     {
         RunWithEnglishCulture(() =>
         {
-            var control = new PartUpdateRecordUserControl(
-                CreateUninitialized<PartUpdateRecordViewModel>(),
+            var control = new PartReplacementHistoryUserControl(
+                CreateUninitialized<PartReplacementHistoryViewModel>(),
                 new StubAutoLogoutInteractionService());
 
             Assert.NotNull(control);

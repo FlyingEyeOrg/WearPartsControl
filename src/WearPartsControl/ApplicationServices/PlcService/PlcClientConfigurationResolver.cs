@@ -15,13 +15,13 @@ public sealed class PlcClientConfigurationResolver : IPlcClientConfigurationReso
         _serviceScopeFactory = serviceScopeFactory;
     }
 
-    public async Task<PlcClientConfigurationResolution> ResolveAsync(CancellationToken cancellationToken = default)
+    public async Task<PlcClientConfigurationResult> ResolveAsync(CancellationToken cancellationToken = default)
     {
         var settings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
         var resourceNumber = settings.ResourceNumber?.Trim() ?? string.Empty;
         if (!settings.IsSetClientAppInfo || string.IsNullOrWhiteSpace(resourceNumber))
         {
-            return PlcClientConfigurationResolution.NotConfigured(resourceNumber);
+            return PlcClientConfigurationResult.NotConfigured(resourceNumber);
         }
 
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
@@ -31,9 +31,9 @@ public sealed class PlcClientConfigurationResolver : IPlcClientConfigurationReso
             || string.IsNullOrWhiteSpace(clientAppInfo.PlcProtocolType)
             || string.IsNullOrWhiteSpace(clientAppInfo.PlcIpAddress))
         {
-            return PlcClientConfigurationResolution.NotConfigured(resourceNumber);
+            return PlcClientConfigurationResult.NotConfigured(resourceNumber);
         }
 
-        return PlcClientConfigurationResolution.Configured(resourceNumber, clientAppInfo);
+        return PlcClientConfigurationResult.Configured(resourceNumber, clientAppInfo);
     }
 }

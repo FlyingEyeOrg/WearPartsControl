@@ -5,7 +5,7 @@ using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices.PartServices;
 
-public sealed class WearPartManagementService : ApplicationService, IWearPartManagementService
+public sealed class WearPartManagementService : ApplicationServiceBase, IWearPartManagementService
 {
     private static readonly IReadOnlyDictionary<string, string> LifetimeTypeAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {

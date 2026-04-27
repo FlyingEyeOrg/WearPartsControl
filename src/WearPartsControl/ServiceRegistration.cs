@@ -144,7 +144,7 @@ public static class ServiceRegistration
         builder.RegisterType<ClientAppInfoViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<ReplacePartViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<ToolChangeManagementViewModel>().AsSelf().InstancePerDependency();
-        builder.RegisterType<PartUpdateRecordViewModel>().AsSelf().InstancePerDependency();
+        builder.RegisterType<PartReplacementHistoryViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<NeedLoginViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<UserConfigViewModel>().AsSelf().InstancePerDependency();
     }
@@ -164,6 +164,6 @@ public static class ServiceRegistration
         builder.RegisterType<UserConfigUserControl>().AsSelf();
         builder.RegisterType<PartManagementUserControl>().AsSelf();
         builder.RegisterType<ToolChangeManagementUserControl>().AsSelf();
-        builder.RegisterType<PartUpdateRecordUserControl>().AsSelf();
+        builder.RegisterType<PartReplacementHistoryUserControl>().AsSelf();
     }
 }
