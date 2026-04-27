@@ -496,6 +496,37 @@ public sealed class MainWindowViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task InitializeAsync_WhenCalledConcurrently_ShouldAwaitSharedInitialization()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+        var startupCoordinator = new StubAppStartupCoordinator
+        {
+            PendingTaskSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)
+        };
+        var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(TimeSpan.Zero), new StubPlcStartupConnectionService(), appStartupCoordinator: startupCoordinator);
+
+        var firstInitializeTask = viewModel.InitializeAsync();
+        await WaitUntilAsync(() => startupCoordinator.CallCount == 1);
+        var secondInitializeTask = viewModel.InitializeAsync();
+
+        Assert.False(firstInitializeTask.IsCompleted);
+        Assert.False(secondInitializeTask.IsCompleted);
+        Assert.Equal(1, startupCoordinator.CallCount);
+
+        startupCoordinator.PendingTaskSource.SetResult();
+        await Task.WhenAll(firstInitializeTask, secondInitializeTask);
+
+        Assert.Equal(1, startupCoordinator.CallCount);
+    }
+
+    [Fact]
     public async Task Constructor_ShouldNotReadAppSettingsSynchronously()
     {
         var appSettingsService = new StubAppSettingsService

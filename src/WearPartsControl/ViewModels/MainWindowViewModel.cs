@@ -34,6 +34,8 @@ namespace WearPartsControl.ViewModels
         private readonly ILoginSessionStateMachine _loginSessionStateMachine;
         private readonly IUiDispatcher _uiDispatcher;
         private readonly IAppStartupCoordinator _appStartupCoordinator;
+        private readonly object _initializationSyncRoot = new();
+        private Task? _initializationTask;
         private IReadOnlyList<MainWindowTabItem> _visibleTabs;
         private string _brandTitle = string.Empty;
         private string _title = string.Empty;
@@ -46,7 +48,6 @@ namespace WearPartsControl.ViewModels
         private bool _isLoggedIn;
         private bool _isClientAppInfoConfigured;
         private int _selectedTabIndex;
-        private int _initializeStarted;
         private bool _defaultContentPending;
         private string _procedureCode = string.Empty;
 
@@ -193,11 +194,22 @@ namespace WearPartsControl.ViewModels
 
         public async Task InitializeAsync(CancellationToken cancellationToken = default)
         {
-            if (Interlocked.Exchange(ref _initializeStarted, 1) == 1)
+            Task initializationTask;
+            lock (_initializationSyncRoot)
             {
-                return;
+                if (_initializationTask is null || _initializationTask.IsFaulted || _initializationTask.IsCanceled)
+                {
+                    _initializationTask = InitializeCoreAsync(cancellationToken);
+                }
+
+                initializationTask = _initializationTask;
             }
 
+            await initializationTask.ConfigureAwait(false);
+        }
+
+        private async Task InitializeCoreAsync(CancellationToken cancellationToken)
+        {
             await Task.Yield();
             StartupPerformanceTracker.Mark("主窗口初始化开始");
             var appSettings = default(AppSettings);
@@ -399,7 +411,7 @@ namespace WearPartsControl.ViewModels
             var visibleTabs = BuildVisibleTabs();
             EnsureSelectedTabIndexIsValid(visibleTabs);
 
-            if (_isClientAppInfoConfigured && refreshSelectedContent && Volatile.Read(ref _initializeStarted) == 1)
+            if (_isClientAppInfoConfigured && refreshSelectedContent && IsInitializationStarted())
             {
                 UpdateSelectedContent(_selectedTabIndex);
             }
@@ -425,7 +437,7 @@ namespace WearPartsControl.ViewModels
                 else
                 {
                     _defaultContentPending = false;
-                    if (refreshSelectedContent && Volatile.Read(ref _initializeStarted) == 1)
+                    if (refreshSelectedContent && IsInitializationStarted())
                     {
                         UpdateSelectedContent(_selectedTabIndex);
                     }
@@ -460,7 +472,7 @@ namespace WearPartsControl.ViewModels
                 return;
             }
 
-            if (!IsClientAppInfoConfigured || Volatile.Read(ref _initializeStarted) == 0)
+            if (!IsClientAppInfoConfigured || !IsInitializationStarted())
             {
                 return;
             }
@@ -471,6 +483,14 @@ namespace WearPartsControl.ViewModels
             }
 
             UpdateSelectedContent(_selectedTabIndex);
+        }
+
+        private bool IsInitializationStarted()
+        {
+            lock (_initializationSyncRoot)
+            {
+                return _initializationTask is not null;
+            }
         }
 
         private void UpdateSelectedContent(int index)

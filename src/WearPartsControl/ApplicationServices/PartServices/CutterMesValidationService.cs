@@ -5,6 +5,7 @@ using System.Text;
 using System.Xml.Linq;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices.PartServices;
 
@@ -22,6 +23,7 @@ public sealed class CutterMesValidationService : ICutterMesValidationService
     public async Task<string> GetExpectedCutterCodeAsync(CutterMesValidationRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ValidateRequest(request);
 
         var endpoint = ResolveServiceEndpoint(request.Wsdl);
         var payload = BuildEnvelope(request);
@@ -72,6 +74,27 @@ public sealed class CutterMesValidationService : ICutterMesValidationService
   </soapenv:Body>
 </soapenv:Envelope>
 """;
+    }
+
+    private static void ValidateRequest(CutterMesValidationRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Wsdl)
+            || string.IsNullOrWhiteSpace(request.UserName)
+            || string.IsNullOrWhiteSpace(request.Password)
+            || string.IsNullOrWhiteSpace(request.Site))
+        {
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.CutterMesConfigurationMissing"));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.RollNumber))
+        {
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.CutterRollNumberInvalid"));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Parameter))
+        {
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.CutterMesPositionUnresolved"));
+        }
     }
 
     private static string ParseExpectedCutterCode(string xml, string requestedParameter)

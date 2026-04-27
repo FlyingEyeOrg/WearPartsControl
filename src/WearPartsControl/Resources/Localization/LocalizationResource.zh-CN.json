@@ -337,6 +337,8 @@
   "ComNotification": {
     "GroupMessageScene": "群消息",
     "WorkMessageScene": "工作消息",
+    "TitleEmpty": "COM 通知标题不能为空。",
+    "TextEmpty": "COM 通知内容不能为空。",
     "GroupTokenMissing": "COM 群消息配置缺少 AccessToken 或 Secret。",
     "PushUrlEmpty": "COM 推送地址不能为空。",
     "AuthKeyMissing": "COM 推送缺少 deipaaskeyauth 配置。",
@@ -351,6 +353,9 @@
   },
   "SpacerManagement": {
     "CodeEmpty": "垫片条码为空。",
+    "SiteEmpty": "垫片验证站点不能为空。",
+    "ResourceIdEmpty": "垫片验证资源号不能为空。",
+    "CardIdEmpty": "垫片验证操作人工号不能为空。",
     "CodeSegmentCountInvalid": "垫片条码数据段数量错误，期望={0}，实际={1}",
     "ValidationUrlEmpty": "垫片验证接口地址为空。",
     "TimeoutInvalid": "垫片验证超时时间必须大于 0。",

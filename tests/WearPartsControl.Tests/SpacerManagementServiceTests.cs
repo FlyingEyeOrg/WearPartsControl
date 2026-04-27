@@ -6,6 +6,7 @@ using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SpacerManagement;
 using WearPartsControl.ApplicationServices.UserConfig;
+using WearPartsControl.Exceptions;
 using Xunit;
 
 namespace WearPartsControl.Tests;
@@ -41,6 +42,16 @@ public sealed class SpacerManagementServiceTests
         Assert.Equal("AB", info.ABSite);
     }
 
+    [Fact]
+    public async Task ParseCodeAsync_WhenResourceIdEmpty_ShouldThrowBeforeReadingConfig()
+    {
+        var service = new SpacerManagementService(new StubLocalizationService(), new ThrowingUserConfigService(), new StubHttpRequestService(), NullLogger<SpacerManagementService>.Instance);
+
+        var exception = await Assert.ThrowsAsync<UserFriendlyException>(() => service.ParseCodeAsync("PN-20260421-0.20-0.10-0.05-AT11-1.50-AB", "SITE01", " ", "CARD01").AsTask());
+
+        Assert.Equal("SpacerManagement.ResourceIdEmpty", exception.Message);
+    }
+
     private sealed class StubSaveInfoStore : IUserConfigService
     {
         public UserConfig Config { get; set; } = new();
@@ -54,6 +65,19 @@ public sealed class SpacerManagementServiceTests
         {
             Config = config;
             return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class ThrowingUserConfigService : IUserConfigService
+    {
+        public ValueTask<UserConfig> GetAsync(CancellationToken cancellationToken = default)
+        {
+            throw new InvalidOperationException("Configuration should not be read when parse input is invalid.");
+        }
+
+        public ValueTask SaveAsync(UserConfig config, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
         }
     }
 

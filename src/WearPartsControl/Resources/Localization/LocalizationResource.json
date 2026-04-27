@@ -337,6 +337,8 @@
   "ComNotification": {
     "GroupMessageScene": "group message",
     "WorkMessageScene": "work message",
+    "TitleEmpty": "COM notification title cannot be empty.",
+    "TextEmpty": "COM notification content cannot be empty.",
     "GroupTokenMissing": "COM group notification requires AccessToken and Secret.",
     "PushUrlEmpty": "COM push URL cannot be empty.",
     "AuthKeyMissing": "COM push requires deipaaskeyauth.",
@@ -351,6 +353,9 @@
   },
   "SpacerManagement": {
     "CodeEmpty": "Spacer barcode is empty.",
+    "SiteEmpty": "Spacer validation site cannot be empty.",
+    "ResourceIdEmpty": "Spacer validation resource ID cannot be empty.",
+    "CardIdEmpty": "Spacer validation operator card ID cannot be empty.",
     "CodeSegmentCountInvalid": "Spacer barcode segment count is invalid, expected={0}, actual={1}",
     "ValidationUrlEmpty": "Spacer validation URL is empty.",
     "TimeoutInvalid": "Spacer validation timeout must be greater than 0.",

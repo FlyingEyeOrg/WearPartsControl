@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.Localization.Generated;
@@ -23,7 +24,7 @@ public sealed class HttpRequestServiceTests
                 Content = new StringContent("{}", Encoding.UTF8, "application/json")
             })));
 
-        var service = new HttpRequestService(httpClient, new StubLocalizationService());
+        var service = new HttpRequestService(httpClient, new StubLocalizationService(), NullLogger<HttpRequestService>.Instance);
 
         var exception = await Assert.ThrowsAsync<UserFriendlyException>(async () =>
         {

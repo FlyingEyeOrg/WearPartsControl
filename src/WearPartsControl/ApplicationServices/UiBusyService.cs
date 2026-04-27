@@ -27,13 +27,25 @@ public sealed class UiBusyService : ObservableObject, IUiBusyService
 
     public bool IsBusy
     {
-        get => _isBusy;
+        get
+        {
+            lock (_syncRoot)
+            {
+                return _isBusy;
+            }
+        }
         private set => SetProperty(ref _isBusy, value);
     }
 
     public string BusyMessage
     {
-        get => _busyMessage;
+        get
+        {
+            lock (_syncRoot)
+            {
+                return _busyMessage;
+            }
+        }
         private set => SetProperty(ref _busyMessage, value);
     }
 

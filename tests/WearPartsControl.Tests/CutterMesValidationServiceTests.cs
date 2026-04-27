@@ -5,6 +5,7 @@ using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.Localization.Generated;
 using WearPartsControl.ApplicationServices.PartServices;
+using WearPartsControl.Exceptions;
 using Xunit;
 
 namespace WearPartsControl.Tests;
@@ -76,6 +77,26 @@ public sealed class CutterMesValidationServiceTests
 
         Assert.Contains("调用离线校验接口错误", exception.Message);
     }
+
+  [Fact]
+  public async Task GetExpectedCutterCodeAsync_WhenMesConfigurationMissing_ShouldThrowUserFriendlyExceptionBeforeHttpCall()
+  {
+    var httpRequestService = new StubHttpRequestService();
+    var service = new CutterMesValidationService(httpRequestService);
+
+    var exception = await Assert.ThrowsAsync<UserFriendlyException>(() => service.GetExpectedCutterCodeAsync(new CutterMesValidationRequest
+    {
+      Wsdl = " ",
+      UserName = "mes-user",
+      Password = "mes-pass",
+      Site = "MES-S01",
+      RollNumber = "ROLL-001",
+      Parameter = "QDBH-UP"
+    }));
+
+    Assert.Equal(LocalizedText.Get("Services.WearPartReplacement.CutterMesConfigurationMissing"), exception.Message);
+    Assert.Null(httpRequestService.LastRequestUri);
+  }
 
     private sealed class StubHttpRequestService : IHttpRequestService
     {

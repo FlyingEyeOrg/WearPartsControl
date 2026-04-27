@@ -7,6 +7,7 @@ using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.UserConfig;
+using WearPartsControl.Exceptions;
 using Xunit;
 
 namespace WearPartsControl.Tests;
@@ -58,6 +59,17 @@ public sealed class ComNotificationServiceTests
         }
     }
 
+    [Fact]
+    public async Task NotifyGroupAsync_WhenTitleEmpty_ShouldThrowBeforeReadingConfig()
+    {
+        var userConfigService = new ThrowingUserConfigService();
+        var service = new ComNotificationService(new StubLocalizationService(), new StubHttpRequestService(), userConfigService, NullLogger<ComNotificationService>.Instance);
+
+        var exception = await Assert.ThrowsAsync<UserFriendlyException>(() => service.NotifyGroupAsync(" ", "text").AsTask());
+
+        Assert.Equal("ComNotification.TitleEmpty", exception.Message);
+    }
+
     private sealed class StubHttpRequestService : IHttpRequestService
     {
         public string? LastRequestBody { get; private set; }
@@ -79,6 +91,19 @@ public sealed class ComNotificationServiceTests
                     messageId = "msg-001"
                 }
             }));
+        }
+    }
+
+    private sealed class ThrowingUserConfigService : IUserConfigService
+    {
+        public ValueTask<UserConfig> GetAsync(CancellationToken cancellationToken = default)
+        {
+            throw new InvalidOperationException("Configuration should not be read when message content is invalid.");
+        }
+
+        public ValueTask SaveAsync(UserConfig config, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
         }
     }
 

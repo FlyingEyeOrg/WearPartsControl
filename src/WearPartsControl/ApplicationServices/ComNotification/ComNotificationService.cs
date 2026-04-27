@@ -42,6 +42,8 @@ public sealed class ComNotificationService : IComNotificationService
 
     public async ValueTask NotifyGroupAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default)
     {
+        ValidateMessageContent(title, text);
+
         var userConfig = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
         if (!userConfig.ComNotificationEnabled)
         {
@@ -83,6 +85,8 @@ public sealed class ComNotificationService : IComNotificationService
 
     public async ValueTask NotifyWorkAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default)
     {
+        ValidateMessageContent(title, text);
+
         var userConfig = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
         if (!userConfig.ComNotificationEnabled)
         {
@@ -169,6 +173,19 @@ public sealed class ComNotificationService : IComNotificationService
         if (userConfig.ComTimeoutMilliseconds <= 0)
         {
             throw new UserFriendlyException(L("ComNotification.TimeoutInvalid"));
+        }
+    }
+
+    private void ValidateMessageContent(string title, string text)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            throw new UserFriendlyException(L("ComNotification.TitleEmpty"));
+        }
+
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            throw new UserFriendlyException(L("ComNotification.TextEmpty"));
         }
     }
 

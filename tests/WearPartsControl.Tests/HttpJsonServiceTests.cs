@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.Localization.Generated;
@@ -18,7 +19,8 @@ public sealed class HttpJsonServiceTests
     {
         var service = new HttpJsonService(
             new StubHttpRequestService(new HttpRawResponse(400, "Bad Request", "Bad Request Payload")),
-            new StubLocalizationService());
+            new StubLocalizationService(),
+            NullLogger<HttpJsonService>.Instance);
 
         await Assert.ThrowsAsync<UserFriendlyException>(async () =>
         {
@@ -32,7 +34,8 @@ public sealed class HttpJsonServiceTests
     {
         var service = new HttpJsonService(
             new StubHttpRequestService(new HttpRawResponse(200, "OK", "{\"name\":\"demo\"}")),
-            new StubLocalizationService());
+            new StubLocalizationService(),
+            NullLogger<HttpJsonService>.Instance);
 
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://example.com/test");
         var result = await service.SendAsync<TestDto>(request);

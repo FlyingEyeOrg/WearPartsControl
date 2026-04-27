@@ -44,6 +44,21 @@ public sealed class SpacerManagementService : ISpacerManagementService
             throw new UserFriendlyException(L("SpacerManagement.CodeEmpty"));
         }
 
+        if (string.IsNullOrWhiteSpace(site))
+        {
+            throw new UserFriendlyException(L("SpacerManagement.SiteEmpty"));
+        }
+
+        if (string.IsNullOrWhiteSpace(resourceId))
+        {
+            throw new UserFriendlyException(L("SpacerManagement.ResourceIdEmpty"));
+        }
+
+        if (string.IsNullOrWhiteSpace(cardId))
+        {
+            throw new UserFriendlyException(L("SpacerManagement.CardIdEmpty"));
+        }
+
         var userConfig = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
         var separator = string.IsNullOrWhiteSpace(userConfig.SpacerValidationCodeSeparator)
             ? UserConfigModel.DefaultSpacerValidationCodeSeparator
