@@ -16,12 +16,12 @@ public sealed class HttpJsonService : IHttpJsonService
         PropertyNameCaseInsensitive = true
     };
 
-    private readonly HttpClient _httpClient;
+    private readonly IHttpRequestService _httpRequestService;
     private readonly ILocalizationService _localizationService;
 
-    public HttpJsonService(HttpClient httpClient, ILocalizationService localizationService)
+    public HttpJsonService(IHttpRequestService httpRequestService, ILocalizationService localizationService)
     {
-        _httpClient = httpClient;
+        _httpRequestService = httpRequestService;
         _localizationService = localizationService;
     }
 
@@ -43,25 +43,21 @@ public sealed class HttpJsonService : IHttpJsonService
 
     public async ValueTask<TResponse> SendAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        var response = await _httpRequestService.SendAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
         {
-            var body = response.Content is null
-                ? string.Empty
-                : await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
-            var message = string.IsNullOrWhiteSpace(body)
+            var message = string.IsNullOrWhiteSpace(response.Body)
                 ? string.Format(
                     L("HttpService.HttpRequestFailed"),
-                    (int)response.StatusCode,
+                    response.StatusCode,
                     response.ReasonPhrase ?? string.Empty)
-                : body;
+                : response.Body;
 
-            throw new UserFriendlyException(message, code: $"Http:{(int)response.StatusCode}");
+            throw new UserFriendlyException(message, code: $"Http:{response.StatusCode}");
         }
 
-        var payload = await response.Content.ReadFromJsonAsync<TResponse>(JsonOptions, cancellationToken).ConfigureAwait(false);
+        var payload = JsonSerializer.Deserialize<TResponse>(response.Body, JsonOptions);
         if (payload is null)
         {
             throw new UserFriendlyException(L("HttpService.EmptyPayload"), code: "Http:EmptyPayload");

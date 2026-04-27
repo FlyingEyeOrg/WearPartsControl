@@ -1,7 +1,5 @@
 using System;
-using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,13 +16,9 @@ public sealed class HttpJsonServiceTests
     [Fact]
     public async Task SendAsync_WhenHttpFailed_ShouldThrowUserFriendlyException()
     {
-        using var httpClient = new HttpClient(new StubHandler(_ =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
-            {
-                Content = new StringContent("Bad Request Payload", Encoding.UTF8, "application/json")
-            })));
-
-        var service = new HttpJsonService(httpClient, new StubLocalizationService());
+        var service = new HttpJsonService(
+            new StubHttpRequestService(new HttpRawResponse(400, "Bad Request", "Bad Request Payload")),
+            new StubLocalizationService());
 
         await Assert.ThrowsAsync<UserFriendlyException>(async () =>
         {
@@ -33,23 +27,36 @@ public sealed class HttpJsonServiceTests
         });
     }
 
+    [Fact]
+    public async Task SendAsync_WhenHttpSucceeded_ShouldDeserializeJsonBody()
+    {
+        var service = new HttpJsonService(
+            new StubHttpRequestService(new HttpRawResponse(200, "OK", "{\"name\":\"demo\"}")),
+            new StubLocalizationService());
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "https://example.com/test");
+        var result = await service.SendAsync<TestDto>(request);
+
+        Assert.Equal("demo", result.Name);
+    }
+
     private sealed class TestDto
     {
         public string Name { get; set; } = string.Empty;
     }
 
-    private sealed class StubHandler : HttpMessageHandler
+    private sealed class StubHttpRequestService : IHttpRequestService
     {
-        private readonly Func<HttpRequestMessage, Task<HttpResponseMessage>> _handler;
+        private readonly HttpRawResponse _response;
 
-        public StubHandler(Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
+        public StubHttpRequestService(HttpRawResponse response)
         {
-            _handler = handler;
+            _response = response;
         }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        public ValueTask<HttpRawResponse> SendAsync(HttpRequestMessage request, HttpRequestExecutionOptions? options = null, CancellationToken cancellationToken = default)
         {
-            return _handler(request);
+            return ValueTask.FromResult(_response);
         }
     }
 
