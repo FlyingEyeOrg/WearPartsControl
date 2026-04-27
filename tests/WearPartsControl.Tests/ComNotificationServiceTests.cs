@@ -38,16 +38,16 @@ public sealed class ComNotificationServiceTests
                 ComSecret = "user-secret"
             });
 
-            var httpJsonService = new StubHttpJsonService();
-            var service = new ComNotificationService(new StubLocalizationService(), httpJsonService, userConfigService, NullLogger<ComNotificationService>.Instance);
+            var httpRequestService = new StubHttpRequestService();
+            var service = new ComNotificationService(new StubLocalizationService(), httpRequestService, userConfigService, NullLogger<ComNotificationService>.Instance);
 
             await service.NotifyGroupAsync("title", "text");
 
-            Assert.NotNull(httpJsonService.LastRequestBody);
-            Assert.Contains("ME1001", httpJsonService.LastRequestBody!);
-            Assert.Contains("PRD1001", httpJsonService.LastRequestBody!);
-            Assert.Contains("user-token", httpJsonService.LastRequestBody!);
-            Assert.Contains("user-secret", httpJsonService.LastRequestBody!);
+            Assert.NotNull(httpRequestService.LastRequestBody);
+            Assert.Contains("ME1001", httpRequestService.LastRequestBody!);
+            Assert.Contains("PRD1001", httpRequestService.LastRequestBody!);
+            Assert.Contains("user-token", httpRequestService.LastRequestBody!);
+            Assert.Contains("user-secret", httpRequestService.LastRequestBody!);
         }
         finally
         {
@@ -58,20 +58,11 @@ public sealed class ComNotificationServiceTests
         }
     }
 
-    private sealed class StubHttpJsonService : IHttpJsonService
+    private sealed class StubHttpRequestService : IHttpRequestService
     {
         public string? LastRequestBody { get; private set; }
 
-        public ValueTask<TResponse> GetAsync<TResponse>(string requestUri, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
-
-        public ValueTask<TResponse> PostAsync<TRequest, TResponse>(string requestUri, TRequest requestBody, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
-
-        public ValueTask<TResponse> SendAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
-
-        public async ValueTask<HttpRawResponse> SendRawAsync(HttpRequestMessage request, HttpRequestExecutionOptions? options = null, CancellationToken cancellationToken = default)
+        public async ValueTask<HttpRawResponse> SendAsync(HttpRequestMessage request, HttpRequestExecutionOptions? options = null, CancellationToken cancellationToken = default)
         {
             LastRequestBody = request.Content is null
                 ? null

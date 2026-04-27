@@ -78,6 +78,7 @@ public static class ServiceRegistration
                 return client;
             })
             .SingleInstance();
+        builder.RegisterType<HttpRequestService>().As<IHttpRequestService>().SingleInstance();
         builder.RegisterType<HttpJsonService>().As<IHttpJsonService>().SingleInstance();
         EntityFrameworkCoreServiceRegistration.RegisterServices(builder);
     }

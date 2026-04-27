@@ -24,7 +24,7 @@ public sealed class SpacerManagementServiceTests
             }
         };
 
-        var service = new SpacerManagementService(new StubLocalizationService(), store, new StubHttpJsonService(), NullLogger<SpacerManagementService>.Instance);
+        var service = new SpacerManagementService(new StubLocalizationService(), store, new StubHttpRequestService(), NullLogger<SpacerManagementService>.Instance);
 
         var info = await service.ParseCodeAsync("PN-20260421-0.20-0.10-0.05-AT11-1.50-AB", "SITE01", "RES01", "CARD01");
 
@@ -70,24 +70,9 @@ public sealed class SpacerManagementServiceTests
         public System.Globalization.CultureInfo CurrentCulture { get; } = System.Globalization.CultureInfo.GetCultureInfo("zh-CN");
     }
 
-    private sealed class StubHttpJsonService : IHttpJsonService
+    private sealed class StubHttpRequestService : IHttpRequestService
     {
-        public ValueTask<TResponse> GetAsync<TResponse>(string requestUri, CancellationToken cancellationToken = default)
-        {
-            throw new NotSupportedException();
-        }
-
-        public ValueTask<TResponse> PostAsync<TRequest, TResponse>(string requestUri, TRequest requestBody, CancellationToken cancellationToken = default)
-        {
-            throw new NotSupportedException();
-        }
-
-        public ValueTask<TResponse> SendAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken = default)
-        {
-            throw new NotSupportedException();
-        }
-
-        public ValueTask<HttpRawResponse> SendRawAsync(HttpRequestMessage request, HttpRequestExecutionOptions? options = null, CancellationToken cancellationToken = default)
+        public ValueTask<HttpRawResponse> SendAsync(HttpRequestMessage request, HttpRequestExecutionOptions? options = null, CancellationToken cancellationToken = default)
         {
             return ValueTask.FromResult(new HttpRawResponse((int)HttpStatusCode.OK, string.Empty, string.Empty));
         }

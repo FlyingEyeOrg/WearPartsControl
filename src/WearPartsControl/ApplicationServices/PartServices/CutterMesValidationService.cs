@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Security;
 using System.Text;
 using System.Xml.Linq;
+using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
 
 namespace WearPartsControl.ApplicationServices.PartServices;
@@ -11,11 +12,11 @@ public sealed class CutterMesValidationService : ICutterMesValidationService
 {
     private static readonly XNamespace SoapEnvelopeNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
     private static readonly XNamespace AtlMesNamespace = "http://machineintegration.ws.atlmes.com/";
-    private readonly HttpClient _httpClient;
+    private readonly IHttpRequestService _httpRequestService;
 
-    public CutterMesValidationService(HttpClient httpClient)
+    public CutterMesValidationService(IHttpRequestService httpRequestService)
     {
-        _httpClient = httpClient;
+        _httpRequestService = httpRequestService;
     }
 
     public async Task<string> GetExpectedCutterCodeAsync(CutterMesValidationRequest request, CancellationToken cancellationToken = default)
@@ -34,10 +35,9 @@ public sealed class CutterMesValidationService : ICutterMesValidationService
 
         try
         {
-            using var response = await _httpClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
-            var xml = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            return ParseExpectedCutterCode(xml, request.Parameter);
+            var response = await _httpRequestService.SendAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
+            EnsureSuccessStatusCode(response);
+            return ParseExpectedCutterCode(response.Body, request.Parameter);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -111,6 +111,16 @@ public sealed class CutterMesValidationService : ICutterMesValidationService
         }
 
         return expectedCode;
+    }
+
+    private static void EnsureSuccessStatusCode(HttpRawResponse response)
+    {
+        if (response.StatusCode is >= 200 and <= 299)
+        {
+            return;
+        }
+
+        throw new HttpRequestException($"Response status code does not indicate success: {response.StatusCode} ({response.ReasonPhrase ?? string.Empty}).".Trim());
     }
 
     private static string ResolveServiceEndpoint(string wsdl)

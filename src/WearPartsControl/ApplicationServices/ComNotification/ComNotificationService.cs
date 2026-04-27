@@ -24,18 +24,18 @@ public sealed class ComNotificationService : IComNotificationService
     };
 
     private readonly ILocalizationService _localizationService;
-    private readonly IHttpJsonService _httpJsonService;
+    private readonly IHttpRequestService _httpRequestService;
     private readonly IUserConfigService _userConfigService;
     private readonly ILogger<ComNotificationService> _logger;
 
     public ComNotificationService(
         ILocalizationService localizationService,
-        IHttpJsonService httpJsonService,
+        IHttpRequestService httpRequestService,
         IUserConfigService userConfigService,
         ILogger<ComNotificationService> logger)
     {
         _localizationService = localizationService;
-        _httpJsonService = httpJsonService;
+        _httpRequestService = httpRequestService;
         _userConfigService = userConfigService;
         _logger = logger;
     }
@@ -184,7 +184,7 @@ public sealed class ComNotificationService : IComNotificationService
 
         try
         {
-            var response = await _httpJsonService.SendRawAsync(
+            var response = await _httpRequestService.SendAsync(
                 httpRequest,
                 new HttpRequestExecutionOptions
                 {

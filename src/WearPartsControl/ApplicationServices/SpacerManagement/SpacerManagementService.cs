@@ -21,19 +21,19 @@ public sealed class SpacerManagementService : ISpacerManagementService
     };
 
     private readonly ILocalizationService _localizationService;
-    private readonly IHttpJsonService _httpJsonService;
+    private readonly IHttpRequestService _httpRequestService;
     private readonly IUserConfigService _userConfigService;
     private readonly ILogger<SpacerManagementService> _logger;
 
     public SpacerManagementService(
         ILocalizationService localizationService,
         IUserConfigService userConfigService,
-        IHttpJsonService httpJsonService,
+        IHttpRequestService httpRequestService,
         ILogger<SpacerManagementService> logger)
     {
         _localizationService = localizationService;
         _userConfigService = userConfigService;
-        _httpJsonService = httpJsonService;
+        _httpRequestService = httpRequestService;
         _logger = logger;
     }
 
@@ -102,7 +102,7 @@ public sealed class SpacerManagementService : ISpacerManagementService
 
         try
         {
-            var response = await _httpJsonService.SendRawAsync(
+            var response = await _httpRequestService.SendAsync(
                 request,
                 new HttpRequestExecutionOptions
                 {
