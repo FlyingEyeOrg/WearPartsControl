@@ -20,6 +20,7 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
     private readonly IExceedLimitRecordRepository _exceedLimitRecordRepository;
     private readonly IPlcOperationPipeline _plcOperationPipeline;
     private readonly IComNotificationService _notificationService;
+    private readonly IWearPartAlertPopupService _wearPartAlertPopupService;
     private readonly IUserConfigService _userConfigService;
 
     public WearPartMonitorService(
@@ -30,6 +31,7 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
         IExceedLimitRecordRepository exceedLimitRecordRepository,
         IPlcOperationPipeline plcOperationPipeline,
         IComNotificationService notificationService,
+        IWearPartAlertPopupService wearPartAlertPopupService,
         IUserConfigService userConfigService)
         : base(currentUserAccessor)
     {
@@ -39,6 +41,7 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
         _exceedLimitRecordRepository = exceedLimitRecordRepository;
         _plcOperationPipeline = plcOperationPipeline;
         _notificationService = notificationService;
+        _wearPartAlertPopupService = wearPartAlertPopupService;
         _userConfigService = userConfigService;
     }
 
@@ -177,6 +180,8 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
         {
             await _notificationService.NotifyGroupAsync(message.Title, message.Markdown, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
+
+        await _wearPartAlertPopupService.ShowIfNeededAsync(message.Title, message.Markdown, occurredAt, cancellationToken).ConfigureAwait(false);
 
         return true;
     }

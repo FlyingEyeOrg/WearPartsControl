@@ -1,0 +1,59 @@
+<views:AppDialogWindow x:Class="WearPartsControl.Views.WearPartAlertWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
+        xmlns:views="clr-namespace:WearPartsControl.Views"
+        mc:Ignorable="d"
+        Width="860"
+        Height="700"
+        MinWidth="760"
+        MinHeight="620"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Topmost="True">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Border Margin="10"
+            Style="{StaticResource ShellSurfaceBorderStyle}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Style="{StaticResource ShellCardBorderStyle}">
+                <Border Padding="14"
+                        Background="White"
+                        BorderBrush="#E4EDF5"
+                        BorderThickness="1"
+                        CornerRadius="14">
+                    <FlowDocumentScrollViewer x:Name="AlertViewer"
+                                              VerticalScrollBarVisibility="Auto"
+                                              IsToolBarVisible="False"
+                                              BorderThickness="0"
+                                              Background="Transparent"
+                                              Foreground="#1F3348" />
+                </Border>
+            </Border>
+
+            <Border Grid.Row="1"
+                    Margin="0 12 0 0"
+                    Style="{StaticResource ShellActionCardBorderStyle}">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <Button MinWidth="80"
+                            Style="{StaticResource ButtonPrimary}"
+                            Content="{loc:Loc UserConfigControl.NotificationPreviewCloseButton}"
+                            Click="OnCloseClicked" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</views:AppDialogWindow>

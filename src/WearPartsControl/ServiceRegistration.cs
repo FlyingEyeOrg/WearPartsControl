@@ -133,6 +133,8 @@ public static class ServiceRegistration
     {
         builder.RegisterType<PlcConfigurationMonitorService>().AsSelf().SingleInstance().AutoActivate();
         builder.RegisterType<WearPartMonitorService>().As<IWearPartMonitorService>().InstancePerDependency();
+        builder.RegisterType<WearPartAlertPresenter>().As<IWearPartAlertPresenter>().SingleInstance();
+        builder.RegisterType<WearPartAlertPopupService>().As<IWearPartAlertPopupService>().SingleInstance();
         builder.RegisterType<WearPartMonitoringHostedService>().AsSelf().As<IHostedService>().SingleInstance();
         builder.RegisterType<WearPartMonitoringControlService>().As<IWearPartMonitoringControlService>().SingleInstance();
     }

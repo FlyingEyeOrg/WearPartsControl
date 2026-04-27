@@ -1,7 +1,11 @@
 using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.PartServices;
+using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Exceptions;
 using WearPartsControl.Infrastructure.EntityFrameworkCore;
@@ -10,6 +14,13 @@ namespace WearPartsControl.ApplicationServices.LegacyImport;
 
 public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+        AllowTrailingCommas = true
+    };
+
     private static readonly IReadOnlyDictionary<string, string> LifetimeTypeAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
         ["Meter"] = "记米",
@@ -21,12 +32,15 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
     };
 
     private const string ShutdownSeverity = "Shutdown";
+    private const int MaxRecentToolCodes = 20;
 
     private readonly IDbContextFactory<WearPartsControlDbContext> _dbContextFactory;
+    private readonly ISaveInfoStore _saveInfoStore;
 
-    public LegacyDatabaseImportService(IDbContextFactory<WearPartsControlDbContext> dbContextFactory)
+    public LegacyDatabaseImportService(IDbContextFactory<WearPartsControlDbContext> dbContextFactory, ISaveInfoStore saveInfoStore)
     {
         _dbContextFactory = dbContextFactory;
+        _saveInfoStore = saveInfoStore;
     }
 
     public async Task<LegacyDatabaseImportResult> ImportAsync(string legacyDatabasePath, CancellationToken cancellationToken = default)
@@ -259,6 +273,7 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
         }
 
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await ImportToolChangeSelectionsAsync(fullPath, legacyDefinitionIdMap, cancellationToken).ConfigureAwait(false);
         return result;
     }
 
@@ -303,6 +318,8 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
             x => x,
             StringComparer.OrdinalIgnoreCase);
 
+        var legacyDefinitionIdMap = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var legacyDefinition in legacyDefinitions)
         {
             if (string.IsNullOrWhiteSpace(legacyDefinition.Name))
@@ -331,10 +348,77 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
                 ApplyWearPartDefinition(definition, legacyDefinition, resourceNumber);
                 result.UpdatedWearPartDefinitions++;
             }
+
+            legacyDefinitionIdMap[legacyDefinition.Id] = definition.Id;
         }
 
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await ImportToolChangeSelectionsAsync(fullPath, legacyDefinitionIdMap, cancellationToken).ConfigureAwait(false);
         return result;
+    }
+
+    private async Task ImportToolChangeSelectionsAsync(string legacyDatabasePath, IReadOnlyDictionary<string, Guid> legacyDefinitionIdMap, CancellationToken cancellationToken)
+    {
+        if (legacyDefinitionIdMap.Count == 0)
+        {
+            return;
+        }
+
+        var selections = await ReadLegacyToolChangeSelectionsAsync(legacyDatabasePath, cancellationToken).ConfigureAwait(false);
+        if (selections.Count == 0)
+        {
+            return;
+        }
+
+        var saveInfo = await _saveInfoStore.ReadAsync<ToolChangeSelectionSaveInfo>(cancellationToken).ConfigureAwait(false);
+        var hasChanges = false;
+
+        foreach (var selection in selections)
+        {
+            if (string.IsNullOrWhiteSpace(selection.PartId)
+                || !legacyDefinitionIdMap.TryGetValue(selection.PartId, out var wearPartDefinitionId))
+            {
+                continue;
+            }
+
+            var toolCode = NormalizeOrEmpty(selection.SelectedToolCode);
+            if (string.IsNullOrWhiteSpace(toolCode))
+            {
+                continue;
+            }
+
+            var item = saveInfo.Items.FirstOrDefault(x => x.WearPartDefinitionId == wearPartDefinitionId);
+            if (item is null)
+            {
+                saveInfo.Items.Add(new ToolChangeSelectionItem
+                {
+                    WearPartDefinitionId = wearPartDefinitionId,
+                    SelectedToolCode = toolCode
+                });
+                hasChanges = true;
+            }
+            else if (!string.Equals(item.SelectedToolCode, toolCode, StringComparison.OrdinalIgnoreCase))
+            {
+                item.SelectedToolCode = toolCode;
+                hasChanges = true;
+            }
+
+            saveInfo.RecentToolCodes.RemoveAll(x => string.Equals(x, toolCode, StringComparison.OrdinalIgnoreCase));
+            saveInfo.RecentToolCodes.Insert(0, toolCode);
+            hasChanges = true;
+        }
+
+        if (!hasChanges)
+        {
+            return;
+        }
+
+        if (saveInfo.RecentToolCodes.Count > MaxRecentToolCodes)
+        {
+            saveInfo.RecentToolCodes.RemoveRange(MaxRecentToolCodes, saveInfo.RecentToolCodes.Count - MaxRecentToolCodes);
+        }
+
+        await _saveInfoStore.WriteAsync(saveInfo, cancellationToken).ConfigureAwait(false);
     }
 
     private static void ApplyClientConfiguration(ClientAppConfigurationEntity target, LegacyClientConfiguration source)
@@ -410,6 +494,49 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
     private static string BuildExceedKey(Guid definitionId, DateTime occurredAt, double currentValue, double shutdownValue, string severity)
     {
         return $"{definitionId:N}|{occurredAt:O}|{currentValue}|{shutdownValue}|{severity}";
+    }
+
+    private static async Task<List<LegacyToolChangeSelection>> ReadLegacyToolChangeSelectionsAsync(string legacyDatabasePath, CancellationToken cancellationToken)
+    {
+        var legacyRootDirectory = ResolveLegacyRootDirectory(legacyDatabasePath);
+
+        foreach (var path in new[]
+                 {
+                     Path.Combine(legacyRootDirectory, "Json", "ToolChangeSaveInfo.json"),
+                     Path.Combine(legacyRootDirectory, "ToolChangeSaveInfo.json"),
+                     Path.Combine(legacyRootDirectory, "PrivateData", "Settings", "ToolChangeSaveInfo.json")
+                 })
+        {
+            var saveInfo = await ReadJsonAsync<LegacyToolChangeSaveInfo>(path, cancellationToken).ConfigureAwait(false);
+            if (saveInfo?.ToolChangeItems is { Count: > 0 })
+            {
+                return saveInfo.ToolChangeItems;
+            }
+        }
+
+        return [];
+    }
+
+    private static string ResolveLegacyRootDirectory(string legacyDatabasePath)
+    {
+        var databaseDirectory = Path.GetDirectoryName(legacyDatabasePath) ?? string.Empty;
+        if (string.Equals(Path.GetFileName(databaseDirectory), "db", StringComparison.OrdinalIgnoreCase))
+        {
+            return Directory.GetParent(databaseDirectory)?.FullName ?? databaseDirectory;
+        }
+
+        return databaseDirectory;
+    }
+
+    private static async Task<T?> ReadJsonAsync<T>(string path, CancellationToken cancellationToken) where T : class
+    {
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 16 * 1024, FileOptions.SequentialScan);
+        return await JsonSerializer.DeserializeAsync<T>(stream, SerializerOptions, cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task<List<LegacyClientConfiguration>> ReadClientConfigurationsAsync(SqliteConnection connection, CancellationToken cancellationToken)
@@ -628,5 +755,18 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
         public double CurrentValue { get; set; }
         public double ShutdownValue { get; set; }
         public DateTime OccurredAt { get; set; }
+    }
+
+    private sealed class LegacyToolChangeSaveInfo
+    {
+        public List<LegacyToolChangeSelection> ToolChangeItems { get; set; } = [];
+    }
+
+    private sealed class LegacyToolChangeSelection
+    {
+        public string PartId { get; set; } = string.Empty;
+
+        [JsonPropertyName("SelectedValue")]
+        public string SelectedToolCode { get; set; } = string.Empty;
     }
 }

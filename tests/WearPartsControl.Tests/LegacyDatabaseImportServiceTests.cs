@@ -2,6 +2,8 @@ using System.IO;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using WearPartsControl.ApplicationServices.LegacyImport;
+using WearPartsControl.ApplicationServices.PartServices;
+using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.Infrastructure.EntityFrameworkCore;
 using Xunit;
 
@@ -9,14 +11,22 @@ namespace WearPartsControl.Tests;
 
 public sealed class LegacyDatabaseImportServiceTests : IDisposable
 {
+    private readonly string _workspace;
+    private readonly string _legacyRoot;
     private readonly string _legacyDbPath;
     private readonly string _targetDbPath;
+    private readonly TypeJsonSaveInfoStore _saveInfoStore;
     private readonly WearPartsControlDbContextFactory _dbContextFactory;
 
     public LegacyDatabaseImportServiceTests()
     {
-        _legacyDbPath = Path.Combine(Path.GetTempPath(), $"legacy-wearparts-{Guid.NewGuid():N}.db");
+        _workspace = Path.Combine(Path.GetTempPath(), $"wearparts-import-tests-{Guid.NewGuid():N}");
+        _legacyRoot = Path.Combine(_workspace, "legacy");
+        Directory.CreateDirectory(Path.Combine(_legacyRoot, "db"));
+        Directory.CreateDirectory(Path.Combine(_legacyRoot, "Json"));
+        _legacyDbPath = Path.Combine(_legacyRoot, "db", "Data.db");
         _targetDbPath = Path.Combine(Path.GetTempPath(), $"wearparts-import-{Guid.NewGuid():N}.db");
+        _saveInfoStore = new TypeJsonSaveInfoStore(Path.Combine(_workspace, "settings"));
         _dbContextFactory = new WearPartsControlDbContextFactory($"Data Source={_targetDbPath}");
 
         using var dbContext = _dbContextFactory.CreateDbContext();
@@ -29,7 +39,11 @@ public sealed class LegacyDatabaseImportServiceTests : IDisposable
     [Fact]
     public async Task ImportAsync_ShouldMapLegacySqliteData()
     {
-        var service = new LegacyDatabaseImportService(_dbContextFactory);
+        await File.WriteAllTextAsync(Path.Combine(_legacyRoot, "Json", "ToolChangeSaveInfo.json"), """
+    {"ToolChangeItems":[{"PartId":"part-01","SelectedValue":"TOOL-05"}]}
+    """);
+
+        var service = new LegacyDatabaseImportService(_dbContextFactory, _saveInfoStore);
 
         var result = await service.ImportAsync(_legacyDbPath);
 
@@ -51,6 +65,12 @@ public sealed class LegacyDatabaseImportServiceTests : IDisposable
         Assert.Equal("BARCODE-NEW", replacement.NewBarcode);
         Assert.Equal("12", replacement.CurrentValue);
         Assert.Equal("Shutdown", exceed.Severity);
+
+        var toolSelection = await _saveInfoStore.ReadAsync<ToolChangeSelectionSaveInfo>();
+        Assert.Single(toolSelection.Items);
+        Assert.Equal(definition.Id, toolSelection.Items[0].WearPartDefinitionId);
+        Assert.Equal("TOOL-05", toolSelection.Items[0].SelectedToolCode);
+        Assert.Equal(["TOOL-05"], toolSelection.RecentToolCodes);
     }
 
     [Fact]
@@ -77,7 +97,7 @@ public sealed class LegacyDatabaseImportServiceTests : IDisposable
         dbContext.ClientAppConfigurations.Add(configuration);
         await dbContext.SaveChangesAsync();
 
-        var service = new LegacyDatabaseImportService(_dbContextFactory);
+        var service = new LegacyDatabaseImportService(_dbContextFactory, _saveInfoStore);
 
         var result = await service.ImportWearPartDefinitionsAsync(_legacyDbPath, configuration.Id, configuration.ResourceNumber);
 
@@ -94,6 +114,7 @@ public sealed class LegacyDatabaseImportServiceTests : IDisposable
 
     public void Dispose()
     {
+        TryDeleteDirectory(_workspace);
         TryDelete(_legacyDbPath);
         TryDelete(_targetDbPath);
     }
@@ -177,6 +198,20 @@ INSERT INTO v_exceedlimitinfo VALUES ('basic-01', '刀具A', 30, 30, '2025-01-02
             if (File.Exists(path))
             {
                 File.Delete(path);
+            }
+        }
+        catch (IOException)
+        {
+        }
+    }
+
+    private static void TryDeleteDirectory(string path)
+    {
+        try
+        {
+            if (Directory.Exists(path))
+            {
+                Directory.Delete(path, true);
             }
         }
         catch (IOException)

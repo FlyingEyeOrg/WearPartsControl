@@ -1060,6 +1060,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         plcService.SetValue("DB1.1", 10);
         plcService.SetValue("DB1.2", 20);
         var notificationService = new FakeComNotificationService();
+        var popupService = new FakeWearPartAlertPopupService();
 
         await using (var seedContext = await _dbContextFactory.CreateDbContextAsync())
         {
@@ -1084,7 +1085,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         }
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        var service = CreateMonitorService(dbContext, plcService, notificationService);
+        var service = CreateMonitorService(dbContext, plcService, notificationService, popupService);
 
         var results = await service.MonitorByResourceNumberAsync("R-OPS-03");
 
@@ -1103,6 +1104,8 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         Assert.Contains("计次", notificationService.GroupNotifications[0]);
         Assert.Contains("ME1001", notificationService.GroupNotifications[0]);
         Assert.Contains("PRD1001", notificationService.GroupNotifications[0]);
+        Assert.Single(popupService.Notifications);
+        Assert.Contains(LocalizedText.Get("ViewModels.ComNotificationTemplate.WarningHeading"), popupService.Notifications[0]);
 
         await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
         var repository = new ExceedLimitRecordRepository(verifyContext);
@@ -1123,6 +1126,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         plcService.SetValue("DB1.1", 10);
         plcService.SetValue("DB1.2", 20);
         var notificationService = new FakeComNotificationService();
+        var popupService = new FakeWearPartAlertPopupService();
 
         await using (var seedContext = await _dbContextFactory.CreateDbContextAsync())
         {
@@ -1147,7 +1151,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         }
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        var service = CreateMonitorService(dbContext, plcService, notificationService);
+        var service = CreateMonitorService(dbContext, plcService, notificationService, popupService);
 
         var results = await service.MonitorByResourceNumberAsync("R-OPS-04");
 
@@ -1163,6 +1167,8 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         Assert.Contains("更换员甲(WORK-OPS)", notificationService.WorkNotifications[0]);
         Assert.Contains("ME1001", notificationService.WorkNotifications[0]);
         Assert.Contains("PRD1001", notificationService.WorkNotifications[0]);
+        Assert.Single(popupService.Notifications);
+        Assert.Contains(LocalizedText.Get("ViewModels.ComNotificationTemplate.ShutdownHeading"), popupService.Notifications[0]);
     }
 
     private async Task<(Guid BasicConfigurationId, Guid DefinitionId)> SeedAsync(
@@ -1272,7 +1278,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             ]);
     }
 
-    private static WearPartMonitorService CreateMonitorService(WearPartsControlDbContext dbContext, IPlcService plcService, IComNotificationService notificationService)
+    private static WearPartMonitorService CreateMonitorService(WearPartsControlDbContext dbContext, IPlcService plcService, IComNotificationService notificationService, IWearPartAlertPopupService? popupService = null)
     {
         var plcOperationPipeline = new PlcOperationPipeline(plcService, Microsoft.Extensions.Logging.Abstractions.NullLogger<PlcOperationPipeline>.Instance);
 
@@ -1284,6 +1290,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             new ExceedLimitRecordRepository(dbContext),
             plcOperationPipeline,
             notificationService,
+                popupService ?? new FakeWearPartAlertPopupService(),
             new FakeUserConfigService());
     }
 
@@ -1392,6 +1399,17 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         public ValueTask SaveAsync(UserConfig config, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
+        }
+    }
+
+    private sealed class FakeWearPartAlertPopupService : IWearPartAlertPopupService
+    {
+        public List<string> Notifications { get; } = new();
+
+        public ValueTask ShowIfNeededAsync(string title, string markdown, DateTime occurredAt, CancellationToken cancellationToken = default)
+        {
+            Notifications.Add($"{title}:{markdown}");
+            return ValueTask.CompletedTask;
         }
     }
 
