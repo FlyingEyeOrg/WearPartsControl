@@ -202,6 +202,19 @@ namespace WearPartsControl.Views
 
         private async Task ExitFromTrayAsync()
         {
+            if (!_viewModel.IsClientAppInfoConfigured)
+            {
+                if (Application.Current is not App missingClientInfoApp)
+                {
+                    _isExitRequested = true;
+                    Close();
+                    return;
+                }
+
+                await RequestApplicationShutdownAsync(missingClientInfoApp, "未配置设备客户端信息时从托盘退出程序").ConfigureAwait(true);
+                return;
+            }
+
             if (!_viewModel.IsLoggedIn)
             {
                 if (!PromptLoginForTrayExit())
@@ -247,7 +260,7 @@ namespace WearPartsControl.Views
 
         private bool EnsureUserCanExit()
         {
-            if (_viewModel.IsLoggedIn)
+            if (_viewModel.IsLoggedIn || !_viewModel.IsClientAppInfoConfigured)
             {
                 return true;
             }

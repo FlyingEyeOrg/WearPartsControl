@@ -263,6 +263,30 @@ public sealed class MainWindowTests
     }
 
     [Fact]
+    public void EnsureUserCanExit_WhenClientAppInfoMissing_ShouldReturnTrueWithoutWarning()
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+
+        WpfTestHost.Run(() =>
+        {
+            var autoLogoutInteractionService = new RecordingAutoLogoutInteractionService(MessageBoxResult.OK);
+            var window = CreateWindow(autoLogoutInteractionService, isClientAppInfoConfigured: false);
+
+            try
+            {
+                var canExit = InvokePrivate<bool>(window, "EnsureUserCanExit");
+
+                Assert.True(canExit);
+                Assert.Equal(0, autoLogoutInteractionService.RunModalCallCount);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }, ensureApplicationResources: true);
+    }
+
+    [Fact]
     public void ConfirmTrayExit_WhenUserCancels_ShouldReturnFalse()
     {
         using var cultureScope = new TestCultureScope("en-US");
@@ -333,6 +357,45 @@ public sealed class MainWindowTests
                 InvokePrivate<Task>(window, "ExitFromTrayAsync").GetAwaiter().GetResult();
 
                 Assert.True(GetPrivateField<bool>(window, "_isExitRequested"));
+            }
+            finally
+            {
+                if (window.IsLoaded)
+                {
+                    window.Close();
+                }
+            }
+        }, ensureApplicationResources: true);
+    }
+
+    [Fact]
+    public void ExitFromTrayAsync_WhenClientAppInfoMissing_ShouldExitWithoutLogin()
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+
+        WpfTestHost.Run(() =>
+        {
+            var autoLogoutInteractionService = new RecordingAutoLogoutInteractionService();
+            var loginPromptCount = 0;
+            var window = CreateWindow(
+                autoLogoutInteractionService,
+                isClientAppInfoConfigured: false,
+                showLoginDialog: () =>
+                {
+                    loginPromptCount++;
+                    return false;
+                });
+
+            try
+            {
+                window.Show();
+                InvokePrivate(window, "SendToTray", true, false);
+
+                InvokePrivate<Task>(window, "ExitFromTrayAsync").GetAwaiter().GetResult();
+
+                Assert.True(GetPrivateField<bool>(window, "_isExitRequested"));
+                Assert.Equal(0, loginPromptCount);
+                Assert.Equal(0, autoLogoutInteractionService.RunModalCallCount);
             }
             finally
             {
@@ -452,6 +515,7 @@ public sealed class MainWindowTests
     private static MainWindow CreateWindow(
         RecordingAutoLogoutInteractionService autoLogoutInteractionService,
         bool isLoggedIn = false,
+        bool isClientAppInfoConfigured = true,
         Func<bool>? showLoginDialog = null,
         IServiceProvider? serviceProvider = null)
     {
@@ -481,6 +545,7 @@ public sealed class MainWindowTests
             new LoginSessionStateMachine(currentUserAccessor, loginService),
             new StubUiDispatcher(),
             new StubAppStartupCoordinator());
+        SetPrivateProperty(viewModel, nameof(MainWindowViewModel.IsClientAppInfoConfigured), isClientAppInfoConfigured);
 
         return new MainWindow(viewModel, serviceProvider ?? new StubServiceProvider(), autoLogoutInteractionService, showLoginDialog);
     }
@@ -512,6 +577,13 @@ public sealed class MainWindowTests
         var field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.NotNull(field);
         return (T)field!.GetValue(target)!;
+    }
+
+    private static void SetPrivateProperty<T>(object target, string propertyName, T value)
+    {
+        var property = target.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        Assert.NotNull(property);
+        property!.SetValue(target, value);
     }
 
     private sealed class StubLocalizationService : ILocalizationService

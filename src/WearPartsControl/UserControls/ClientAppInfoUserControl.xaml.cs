@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
@@ -71,7 +72,7 @@ namespace WearPartsControl.UserControls
                 new OpenFileDialogRequest(
                     LocalizedText.Get("ViewModels.ClientAppInfoVm.ImportDialogTitle"),
                     LocalizedText.Get("Dialogs.SQLiteDatabaseFilter")),
-                System.Windows.Window.GetWindow(this));
+                ResolveDialogOwner());
             if (string.IsNullOrWhiteSpace(fileName))
             {
                 _viewModel.NotifyLegacyConfigurationImportCanceled();
@@ -84,7 +85,7 @@ namespace WearPartsControl.UserControls
             }
             catch (Exception ex)
             {
-                _dialogService.ShowMessage(ex.Message, LocalizedText.Get("FriendlyErrorTitle"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning, System.Windows.Window.GetWindow(this));
+                _dialogService.ShowMessage(ex.Message, LocalizedText.Get("FriendlyErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Warning, ResolveDialogOwner());
             }
         }
 
@@ -162,8 +163,19 @@ namespace WearPartsControl.UserControls
             }
 
             var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
-            var dialogResult = _dialogService.ShowDialog(loginWindow, System.Windows.Window.GetWindow(this));
+            var dialogResult = _dialogService.ShowDialog(loginWindow, ResolveDialogOwner());
             return dialogResult && _currentUserAccessor.CurrentUser is not null;
+        }
+
+        private Window? ResolveDialogOwner()
+        {
+            var owner = Window.GetWindow(this);
+            if (owner is null || !owner.IsVisible || owner.WindowState == WindowState.Minimized)
+            {
+                return null;
+            }
+
+            return owner;
         }
     }
 }
