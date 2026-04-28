@@ -73,6 +73,53 @@ public sealed class LocalizationServiceTests : IDisposable
         var store = new FakeSaveInfoStore();
         await store.WriteAsync(new UserConfig { Language = "en-US" });
         await store.WriteAsync(new LocalizationOptionsSaveInfo { CultureName = "zh-CN" });
+        await store.WriteAsync(new InstallationOptionsSaveInfo { CultureName = "zh-CN" });
+
+        var service = CreateService(store);
+        await service.InitializeAsync();
+
+        Assert.Equal("en-US", service.CurrentCulture.Name);
+        var persistedUserConfig = await store.ReadAsync<UserConfig>();
+        Assert.Equal("en-US", persistedUserConfig.Language);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WhenInstallerCultureExists_ShouldUseInstallerCultureOnFirstRun()
+    {
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+        var store = new FakeSaveInfoStore();
+        await store.WriteAsync(new InstallationOptionsSaveInfo { CultureName = "zh-CN" });
+
+        var service = CreateService(store);
+        await service.InitializeAsync();
+
+        Assert.Equal("zh-CN", service.CurrentCulture.Name);
+        var persistedUserConfig = await store.ReadAsync<UserConfig>();
+        Assert.Equal("zh-CN", persistedUserConfig.Language);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WhenInstallerCultureMissing_ShouldUseSupportedSystemCultureOnFirstRun()
+    {
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("zh-CN");
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("zh-CN");
+        var store = new FakeSaveInfoStore();
+
+        var service = CreateService(store);
+        await service.InitializeAsync();
+
+        Assert.Equal("zh-CN", service.CurrentCulture.Name);
+        var persistedUserConfig = await store.ReadAsync<UserConfig>();
+        Assert.Equal("zh-CN", persistedUserConfig.Language);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WhenSystemCultureUnsupported_ShouldFallbackToEnglishOnFirstRun()
+    {
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("fr-FR");
+        var store = new FakeSaveInfoStore();
 
         var service = CreateService(store);
         await service.InitializeAsync();

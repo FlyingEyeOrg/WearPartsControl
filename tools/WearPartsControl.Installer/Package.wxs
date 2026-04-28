@@ -62,6 +62,7 @@
       <ComponentRef Id="UserConfigComponent" />
       <ComponentRef Id="ClientAppInfoZhCnComponent" />
       <ComponentRef Id="ClientAppInfoEnUsComponent" />
+      <ComponentRef Id="InstallationOptionsComponent" />
       <ComponentRef Id="MhrInfoConfigComponent" />
       <ComponentRef Id="SiteFactoryConfigComponent" />
       <ComponentRef Id="DesktopShortcutComponent" />
@@ -106,6 +107,9 @@
       </Component>
       <Component Id="ClientAppInfoEnUsComponent" Guid="{2A13672B-4691-4C27-B68D-13A06CB9AF07}" Permanent="yes" NeverOverwrite="yes">
         <File Id="ClientAppInfoEnUsFile" Source="$(PublishDir)PrivateData\Settings\client-app-info.en-US.json" KeyPath="yes" />
+      </Component>
+      <Component Id="InstallationOptionsComponent" Guid="{5F4B0FE0-7C79-42D6-BEE6-C0D7F8715B01}">
+        <File Id="InstallationOptionsFile" Source="$(PublishDir)PrivateData\Settings\installation-options.json" KeyPath="yes" />
       </Component>
       <Component Id="MhrInfoConfigComponent" Guid="{07F49B88-5196-4A39-88F1-DC1E56F258F4}" Permanent="yes" NeverOverwrite="yes">
         <File Id="MhrInfoConfigFile" Source="$(PublishDir)PrivateData\Settings\mhrinfo.json" KeyPath="yes" />

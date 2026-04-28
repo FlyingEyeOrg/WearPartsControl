@@ -18,4 +18,12 @@
 		<PackageReference Include="WixToolset.UI.wixext" Version="6.0.0" />
 		<PackageReference Include="WixToolset.Util.wixext" Version="6.0.0" />
 	</ItemGroup>
+
+	<Target Name="WriteInstallationOptions" BeforeTargets="BeforeBuild">
+		<PropertyGroup>
+			<InstallationOptionsPath>$(PublishDir)PrivateData\Settings\installation-options.json</InstallationOptionsPath>
+		</PropertyGroup>
+		<MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(InstallationOptionsPath)'))" />
+		<WriteLinesToFile File="$(InstallationOptionsPath)" Lines="{&quot;CultureName&quot;:&quot;$(InstallerCulture)&quot;}" Overwrite="true" />
+	</Target>
 </Project>

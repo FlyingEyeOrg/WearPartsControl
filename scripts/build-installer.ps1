@@ -38,6 +38,34 @@ function Get-InstallerPlatform {
     }
 }
 
+function Get-InstallerCultureMarkerPath {
+    param([string]$PublishDirectory)
+
+    return Join-Path $PublishDirectory "PrivateData/Settings/installation-options.json"
+}
+
+function Remove-InstallerCultureMarker {
+    param([string]$PublishDirectory)
+
+    $markerPath = Get-InstallerCultureMarkerPath -PublishDirectory $PublishDirectory
+    if (Test-Path $markerPath) {
+        Remove-Item $markerPath -Force
+    }
+}
+
+function Write-InstallerCultureMarker {
+    param(
+        [string]$PublishDirectory,
+        [string]$InstallerCulture
+    )
+
+    $markerPath = Get-InstallerCultureMarkerPath -PublishDirectory $PublishDirectory
+    New-Item -ItemType Directory -Path (Split-Path -Parent $markerPath) -Force | Out-Null
+    [ordered]@{ CultureName = $InstallerCulture } |
+        ConvertTo-Json -Compress |
+        Set-Content -Path $markerPath -Encoding UTF8
+}
+
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $appProject = Join-Path $repoRoot "src/WearPartsControl/WearPartsControl.csproj"
 $testProject = Join-Path $repoRoot "tests/WearPartsControl.Tests/WearPartsControl.Tests.csproj"
@@ -45,6 +73,7 @@ $installerProject = Join-Path $repoRoot "tools/WearPartsControl.Installer/WearPa
 $artifactsRoot = Join-Path $repoRoot "artifacts"
 $publishRoot = Join-Path $artifactsRoot "publish/WearPartsControl"
 $installerOutputDir = Join-Path $artifactsRoot "installer"
+$zipOutputDir = Join-Path $artifactsRoot "zip"
 
 if ($SelfContained -and $FrameworkDependent) {
     throw "Specify either -SelfContained or -FrameworkDependent, not both. The default is self-contained."
@@ -56,6 +85,7 @@ if ($Clean -and (Test-Path $artifactsRoot)) {
 
 New-Item -ItemType Directory -Path $publishRoot -Force | Out-Null
 New-Item -ItemType Directory -Path $installerOutputDir -Force | Out-Null
+New-Item -ItemType Directory -Path $zipOutputDir -Force | Out-Null
 
 Invoke-DotNet @("restore", $appProject, "-p:NuGetAudit=false")
 Invoke-DotNet @("restore", $testProject, "-p:NuGetAudit=false")
@@ -79,6 +109,7 @@ if (-not $SkipTests) {
 
 $selfContainedValue = if ($FrameworkDependent) { "false" } else { "true" }
 $createdPackages = @()
+$createdZipPackages = @()
 
 foreach ($runtimeIdentifier in $RuntimeIdentifiers) {
     $installerPlatform = Get-InstallerPlatform -RuntimeIdentifier $runtimeIdentifier
@@ -100,10 +131,22 @@ foreach ($runtimeIdentifier in $RuntimeIdentifiers) {
         "-p:NuGetAudit=false",
         "--output", $publishDir)
 
+    Remove-InstallerCultureMarker -PublishDirectory $publishDir
+
+    $zipPath = Join-Path $zipOutputDir "WearPartsControl-$Version-$installerPlatform.zip"
+    if (Test-Path $zipPath) {
+        Remove-Item $zipPath -Force
+    }
+
+    Compress-Archive -Path (Join-Path $publishDir "*") -DestinationPath $zipPath -Force
+    $createdZipPackages += $zipPath
+
     $publishDirForWix = if ($publishDir.EndsWith([IO.Path]::DirectorySeparatorChar)) { $publishDir } else { "$publishDir$([IO.Path]::DirectorySeparatorChar)" }
     $programFilesFolderId = if ($installerPlatform -eq "x64") { "ProgramFiles64Folder" } else { "ProgramFilesFolder" }
     foreach ($installerCulture in $InstallerCultures) {
         $wixIntermediateOutputPath = Join-Path $artifactsRoot "obj/installer/$installerPlatform/$installerCulture/"
+
+        Write-InstallerCultureMarker -PublishDirectory $publishDir -InstallerCulture $installerCulture
 
         Invoke-DotNet @(
             "build", $installerProject,
@@ -129,7 +172,12 @@ foreach ($runtimeIdentifier in $RuntimeIdentifiers) {
 
         $createdPackages += $msiPath.FullName
     }
+
+    Remove-InstallerCultureMarker -PublishDirectory $publishDir
 }
+
+Write-Host "ZIP packages created:"
+$createdZipPackages | ForEach-Object { Write-Host "  $_" }
 
 Write-Host "MSI packages created:"
 $createdPackages | ForEach-Object { Write-Host "  $_" }

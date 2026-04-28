@@ -1,6 +1,6 @@
 # MSI 安装包控制台使用说明
 
-本文档说明如何通过控制台命令安装、更新、修复和卸载以下安装包：
+本文档说明如何通过控制台命令安装、更新、修复和卸载以下安装包，并说明 zip 包首次启动语言规则：
 
 - `E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearPartsControl-1.0.0-x64-zh-CN.msi`
 - `E:\Projects\DotNet\WearPartsControl\artifacts\installer\en-US\WearPartsControl-1.0.0-x64-en-US.msi`
@@ -18,7 +18,13 @@
 
 > 建议在目标系统架构与安装包架构一致时安装。64 位系统优先使用 x64 安装包。
 
-## 2. 图形界面安装
+## 2. 首次运行语言规则
+
+- MSI 安装模式：软件首次运行时优先使用安装包语言。`zh-CN.msi` 首次启动为中文，`en-US.msi` 首次启动为英文。
+- zip 解压模式：软件首次运行时根据当前 Windows 系统语言文化选择语言；如果系统语言不是软件支持的语言，则默认使用英文。
+- 用户在“用户环境配置”页面手动修改语言后，后续启动以用户配置为准，不再重新按安装包或系统语言切换。
+
+## 3. 图形界面安装
 
 在 PowerShell 或 CMD 中执行：
 
@@ -32,9 +38,9 @@ msiexec /i "E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearPa
 - 是否创建桌面快捷方式
 - 是否开机自启动
 
-## 3. 静默安装
+## 4. 静默安装
 
-### 3.1 默认静默安装
+### 4.1 默认静默安装
 
 ```powershell
 msiexec /i "E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearPartsControl-1.0.0-x64-zh-CN.msi" /qn /norestart /L*v "%TEMP%\WearPartsControl-install.log"
@@ -48,7 +54,7 @@ msiexec /i "E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearPa
 - 创建桌面快捷方式
 - 不开启开机自启动
 
-### 3.2 指定安装目录
+### 4.2 指定安装目录
 
 ```powershell
 msiexec /i "E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearPartsControl-1.0.0-x64-zh-CN.msi" INSTALLFOLDER="D:\Apps\Wear Parts Control\" /qn /norestart /L*v "%TEMP%\WearPartsControl-install.log"
@@ -56,13 +62,13 @@ msiexec /i "E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearPa
 
 注意：安装目录建议以反斜杠结尾。
 
-### 3.3 不创建桌面快捷方式
+### 4.3 不创建桌面快捷方式
 
 ```powershell
 msiexec /i "E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearPartsControl-1.0.0-x64-zh-CN.msi" CREATE_DESKTOP_SHORTCUT="0" /qn /norestart /L*v "%TEMP%\WearPartsControl-install.log"
 ```
 
-### 3.4 开启开机自启动
+### 4.4 开启开机自启动
 
 ```powershell
 msiexec /i "E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearPartsControl-1.0.0-x64-zh-CN.msi" START_ON_LOGIN="1" /qn /norestart /L*v "C:\Temp\WearPartsControl-install.log"
@@ -70,13 +76,13 @@ msiexec /i "E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearPa
 
 安装器会写入当前执行安装命令用户的 `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` 注册表项。该配置只影响当前用户，多用户设备需要分别在对应用户上下文中配置。软件首次启动后，会读取该状态并同步到“用户环境配置”页面中的“开启自启动”选项。
 
-### 3.5 组合静默安装示例
+### 4.5 组合静默安装示例
 
 ```powershell
 msiexec /i "E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearPartsControl-1.0.0-x64-zh-CN.msi" INSTALLFOLDER="D:\Apps\Wear Parts Control\" CREATE_DESKTOP_SHORTCUT="0" START_ON_LOGIN="1" /qn /norestart /L*v "%TEMP%\WearPartsControl-install.log"
 ```
 
-## 4. 更新安装
+## 5. 更新安装
 
 当后续生成更高版本 MSI 时，直接使用新版本安装包执行安装命令即可触发升级：
 
@@ -90,7 +96,7 @@ msiexec /i "E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearPa
 - `PrivateData` 下的用户配置、客户端信息和本地数据库目录会保留。
 - 升级时建议使用与原安装相同架构的安装包，例如 x64 升级 x64。
 
-## 5. 修复安装
+## 6. 修复安装
 
 如果程序文件损坏，可以执行修复：
 
@@ -103,19 +109,28 @@ msiexec /fa "E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearP
 - `/fa`：强制重新安装所有文件。
 - `/fomus`：按需修复缺失/旧版本文件、快捷方式和注册表项。
 
-## 6. 卸载
+## 7. 卸载
 
-### 6.1 使用 MSI 文件卸载
+### 7.1 使用 MSI 文件卸载
 
 ```powershell
 msiexec /x "E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearPartsControl-1.0.0-x64-zh-CN.msi" /qn /norestart /L*v "%TEMP%\WearPartsControl-uninstall.log"
 ```
 
-### 6.2 使用“应用和功能”卸载
+### 7.2 使用“应用和功能”卸载
 
 也可以在 Windows “设置” → “应用” → “已安装的应用”中找到 Wear Parts Control 后卸载。
 
-## 7. 常用参数说明
+## 8. zip 包使用
+
+CI/CD 打包脚本会同时生成 x64 和 x86 的 zip 包：
+
+- `artifacts\zip\WearPartsControl-1.0.0-x64.zip`
+- `artifacts\zip\WearPartsControl-1.0.0-x86.zip`
+
+zip 包无需安装，解压到目标目录后运行 `WearPartsControl.exe` 即可。首次启动语言按当前 Windows 系统语言自动选择；如果系统语言不受支持，则默认使用英文。
+
+## 9. 常用参数说明
 
 | 参数 | 说明 |
 | --- | --- |
@@ -129,7 +144,7 @@ msiexec /x "E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearPa
 | `CREATE_DESKTOP_SHORTCUT` | `1` 创建桌面快捷方式，`0` 不创建 |
 | `START_ON_LOGIN` | `1` 开机自启动，空值或 `0` 不自启动 |
 
-## 8. 故障排查
+## 10. 故障排查
 
 1. 如果安装失败，先查看 `/L*v` 指定的日志文件。
 2. 如果安装目录无权限，请以管理员身份打开 PowerShell 或 CMD。

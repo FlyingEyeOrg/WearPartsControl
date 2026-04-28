@@ -158,6 +158,7 @@ public sealed class UserConfigServiceTests
             Assert.Equal(UserConfig.DefaultComGroupTemplateId, config.ComGroupTemplateId);
             Assert.Equal(UserConfig.DefaultComWorkTemplateId, config.ComWorkTemplateId);
             Assert.Equal(UserConfig.DefaultComUserType, config.ComUserType);
+            Assert.Equal(string.Empty, config.Language);
             Assert.False(config.AutoStartEnabled);
             Assert.Equal(UserConfig.DefaultSpacerValidationUrl, config.SpacerValidationUrl);
             Assert.Equal(UserConfig.DefaultSpacerValidationUrlRelease, config.SpacerValidationUrlRelease);

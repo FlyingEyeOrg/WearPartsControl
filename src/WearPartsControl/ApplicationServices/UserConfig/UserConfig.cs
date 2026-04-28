@@ -5,7 +5,7 @@ namespace WearPartsControl.ApplicationServices.UserConfig;
 [SaveInfoFile("user-config")]
 public sealed class UserConfig
 {
-    public const string DefaultLanguage = "zh-CN";
+    public const string DefaultLanguage = "en-US";
 
     public const bool DefaultComNotificationEnabled = true;
 

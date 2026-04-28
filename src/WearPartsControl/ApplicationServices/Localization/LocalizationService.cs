@@ -39,7 +39,10 @@ public sealed class LocalizationService : ILocalizationService
     public async ValueTask InitializeAsync(CancellationToken cancellationToken = default)
     {
         var userConfig = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
-        await SetCultureAsync(userConfig.Language, cancellationToken).ConfigureAwait(false);
+        var cultureName = string.IsNullOrWhiteSpace(userConfig.Language)
+            ? await ResolveFirstRunCultureNameAsync(cancellationToken).ConfigureAwait(false)
+            : userConfig.Language;
+        await SetCultureAsync(cultureName, cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask SetCultureAsync(string cultureName, CancellationToken cancellationToken = default)
@@ -71,6 +74,24 @@ public sealed class LocalizationService : ILocalizationService
         return SupportedCultures.Contains(cultureName ?? string.Empty, StringComparer.OrdinalIgnoreCase)
             ? CultureInfo.GetCultureInfo(cultureName!).Name
                 : UserConfigModel.DefaultLanguage;
+    }
+
+    private async ValueTask<string> ResolveFirstRunCultureNameAsync(CancellationToken cancellationToken)
+    {
+        var installationOptions = await _saveInfoStore.ReadAsync<InstallationOptionsSaveInfo>(cancellationToken).ConfigureAwait(false);
+        if (!string.IsNullOrWhiteSpace(installationOptions.CultureName))
+        {
+            return installationOptions.CultureName;
+        }
+
+        return ResolveSystemCultureName(CultureInfo.CurrentUICulture);
+    }
+
+    private static string ResolveSystemCultureName(CultureInfo systemCulture)
+    {
+        return SupportedCultures.Contains(systemCulture.Name, StringComparer.OrdinalIgnoreCase)
+            ? CultureInfo.GetCultureInfo(systemCulture.Name).Name
+            : UserConfigModel.DefaultLanguage;
     }
 
     private string GetString(string name)
