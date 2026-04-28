@@ -93,7 +93,7 @@ msiexec /i "E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearPa
 说明：
 
 - 安装器配置了 Major Upgrade，会阻止安装低版本覆盖高版本。
-- `PrivateData` 下的用户配置、客户端信息和本地数据库目录会保留。
+- 升级安装会保留 `logs`、`PrivateData`、本地数据库、用户配置和客户端信息，避免用户配置丢失。
 - 升级时建议使用与原安装相同架构的安装包，例如 x64 升级 x64。
 
 ## 6. 修复安装
@@ -120,6 +120,13 @@ msiexec /x "E:\Projects\DotNet\WearPartsControl\artifacts\installer\zh-CN\WearPa
 ### 7.2 使用“应用和功能”卸载
 
 也可以在 Windows “设置” → “应用” → “已安装的应用”中找到 Wear Parts Control 后卸载。
+
+卸载说明：
+
+- 卸载 MSI 时，安装器会删除整个 Wear Parts Control 安装根目录。
+- `logs`、`PrivateData`、本地数据库、用户配置和客户端信息都会被删除。
+- 该清理只在真实卸载时执行；通过新版本 MSI 执行 Major Upgrade 时不会清理这些数据。
+- 卸载前请先退出软件，避免正在占用的日志或数据库文件导致清理失败。
 
 ## 8. zip 包使用
 

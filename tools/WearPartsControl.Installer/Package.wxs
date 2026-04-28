@@ -15,6 +15,15 @@
     <Property Id="CREATE_DESKTOP_SHORTCUT" Value="1" />
     <Property Id="START_ON_LOGIN" Secure="yes" />
     <ui:WixUI Id="WearPartsControl_InstallDirOptions" InstallDirectory="INSTALLFOLDER" />
+    <CustomAction Id="RemoveInstallFolderTree"
+                  Directory="SystemFolder"
+                  Execute="deferred"
+                  Impersonate="no"
+                  ExeCommand='cmd.exe /C if exist &quot;[INSTALLFOLDER]&quot; rmdir /S /Q &quot;[INSTALLFOLDER]&quot;'
+                  Return="check" />
+    <InstallExecuteSequence>
+      <Custom Action="RemoveInstallFolderTree" After="RemoveFolders" Condition='REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE' />
+    </InstallExecuteSequence>
 
     <StandardDirectory Id="$(ProgramFilesFolderId)">
       <Directory Id="INSTALLFOLDER" Name="Wear Parts Control">
