@@ -7,9 +7,10 @@
 		<ProgramFilesFolderId Condition="'$(ProgramFilesFolderId)'=='' and '$(InstallerPlatform)'=='x64'">ProgramFiles64Folder</ProgramFilesFolderId>
 		<ProgramFilesFolderId Condition="'$(ProgramFilesFolderId)'==''">ProgramFilesFolder</ProgramFilesFolderId>
 		<PackageVersion Condition="'$(PackageVersion)'==''">1.0.0</PackageVersion>
+		<InstallerOutputVersion Condition="'$(InstallerOutputVersion)'==''">$(PackageVersion)</InstallerOutputVersion>
 		<PublishDir Condition="'$(PublishDir)'==''">$(MSBuildThisFileDirectory)..\..\artifacts\publish\WearPartsControl\</PublishDir>
 		<DefineConstants>PublishDir=$(PublishDir);PackageVersion=$(PackageVersion);ProgramFilesFolderId=$(ProgramFilesFolderId)</DefineConstants>
-		<OutputName>WearPartsControl-$(PackageVersion)-$(InstallerPlatform)-$(InstallerCulture)</OutputName>
+		<OutputName>WearPartsControl-$(InstallerOutputVersion)-$(InstallerPlatform)-$(InstallerCulture)</OutputName>
 		<NuGetAudit>false</NuGetAudit>
 		<SuppressValidation>false</SuppressValidation>
 	</PropertyGroup>

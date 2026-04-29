@@ -6,7 +6,7 @@ param(
     [string[]]$InstallerCultures = @("zh-CN", "en-US"),
     [string[]]$TestConfigurations = @("Debug", "Release"),
     [string[]]$TestRuntimeIdentifiers = @("win-x64", "win-x86"),
-    [string]$Version = "1.0.0",
+    [string]$Version,
     [switch]$SelfContained,
     [switch]$FrameworkDependent,
     [switch]$SkipTests,
@@ -44,6 +44,44 @@ function Get-InstallerCultureMarkerPath {
     return Join-Path $PublishDirectory "PrivateData/Settings/installation-options.json"
 }
 
+function Get-ProjectVersion {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ProjectPath,
+        [string]$Fallback = "1.0.0"
+    )
+
+    [xml]$projectXml = Get-Content -Path $ProjectPath -Raw
+    $versionNode = $projectXml.SelectSingleNode("/*[local-name()='Project']/*[local-name()='PropertyGroup']/*[local-name()='Version']")
+    if ($null -ne $versionNode -and -not [string]::IsNullOrWhiteSpace($versionNode.InnerText)) {
+        return $versionNode.InnerText.Trim()
+    }
+
+    return $Fallback
+}
+
+function ConvertTo-NumericVersion {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Version,
+        [int]$FieldCount = 3
+    )
+
+    $match = [regex]::Match($Version.Trim(), '^(?<major>\d+)(?:\.(?<minor>\d+))?(?:\.(?<patch>\d+))?(?:\.(?<revision>\d+))?')
+    if (-not $match.Success) {
+        throw "Version '$Version' must start with a numeric version such as '1.0.1' or '1.0.1-rc'."
+    }
+
+    $parts = @(
+        $match.Groups['major'].Value,
+        $(if ($match.Groups['minor'].Success) { $match.Groups['minor'].Value } else { '0' }),
+        $(if ($match.Groups['patch'].Success) { $match.Groups['patch'].Value } else { '0' }),
+        $(if ($match.Groups['revision'].Success) { $match.Groups['revision'].Value } else { '0' })
+    )
+
+    return ($parts | Select-Object -First $FieldCount) -join '.'
+}
+
 function Remove-InstallerCultureMarker {
     param([string]$PublishDirectory)
 
@@ -74,6 +112,20 @@ $artifactsRoot = Join-Path $repoRoot "artifacts"
 $publishRoot = Join-Path $artifactsRoot "publish/WearPartsControl"
 $installerOutputDir = Join-Path $artifactsRoot "installer"
 $zipOutputDir = Join-Path $artifactsRoot "zip"
+
+if ([string]::IsNullOrWhiteSpace($Version)) {
+    $Version = Get-ProjectVersion -ProjectPath $appProject
+}
+else {
+    $Version = $Version.Trim()
+}
+
+$assemblyVersion = ConvertTo-NumericVersion -Version $Version -FieldCount 3
+$msiProductVersion = ConvertTo-NumericVersion -Version $Version -FieldCount 3
+
+Write-Host "Using application version: $Version"
+Write-Host "Using assembly/file version: $assemblyVersion"
+Write-Host "Using MSI product version: $msiProductVersion"
 
 if ($SelfContained -and $FrameworkDependent) {
     throw "Specify either -SelfContained or -FrameworkDependent, not both. The default is self-contained."
@@ -123,8 +175,10 @@ foreach ($runtimeIdentifier in $RuntimeIdentifiers) {
         "--runtime", $runtimeIdentifier,
         "--self-contained:$selfContainedValue",
         "-p:Version=$Version",
-        "-p:AssemblyVersion=$Version",
-        "-p:FileVersion=$Version",
+        "-p:PackageVersion=$Version",
+        "-p:InformationalVersion=$Version",
+        "-p:AssemblyVersion=$assemblyVersion",
+        "-p:FileVersion=$assemblyVersion",
         "-p:PublishSingleFile=false",
         "-p:DebugType=none",
         "-p:DebugSymbols=false",
@@ -152,7 +206,8 @@ foreach ($runtimeIdentifier in $RuntimeIdentifiers) {
             "build", $installerProject,
             "--no-incremental",
             "--configuration", $Configuration,
-            "-p:PackageVersion=$Version",
+            "-p:PackageVersion=$msiProductVersion",
+            "-p:InstallerOutputVersion=$Version",
             "-p:PublishDir=$publishDirForWix",
             "-p:OutputPath=$installerOutputDir",
             "-p:IntermediateOutputPath=$wixIntermediateOutputPath",
