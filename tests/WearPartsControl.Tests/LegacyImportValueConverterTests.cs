@@ -81,6 +81,19 @@ public sealed class LegacyImportValueConverterTests
     }
 
     [Theory]
+    [InlineData("寿命到期，正常更换", WearPartReplacementReason.Normal)]
+    [InlineData("过程损坏", WearPartReplacementReason.ProcessDamage)]
+    [InlineData("切拉换型", WearPartReplacementReason.Cutover)]
+    [InlineData("寿命到期，更换位置", WearPartReplacementReason.ChangePosition)]
+    [InlineData("寿命到期维保", WearPartReplacementReason.Maintenance)]
+    public void NormalizeReplacementReason_ShouldMapLegacyMessages(string legacyValue, string expectedValue)
+    {
+        var normalized = LegacyImportValueConverter.NormalizeReplacementReason(legacyValue);
+
+        Assert.Equal(expectedValue, normalized);
+    }
+
+    [Theory]
     [InlineData("LReal", PartDataType.Double)]
     [InlineData("Real", PartDataType.Float)]
     [InlineData("Int", PartDataType.Int16)]
