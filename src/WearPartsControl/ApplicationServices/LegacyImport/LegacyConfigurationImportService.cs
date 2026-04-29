@@ -62,7 +62,7 @@ public sealed class LegacyConfigurationImportService : ILegacyConfigurationImpor
             ProcedureCode = Normalize(legacyClientConfiguration.Procedure),
             EquipmentCode = Normalize(legacyClientConfiguration.EquipmentNum, "000"),
             ResourceNumber = Normalize(legacyClientConfiguration.ResourceNumber, expectedResourceNumber),
-            PlcProtocolType = Normalize(legacyClientConfiguration.PlcType, "S7"),
+            PlcProtocolType = LegacyImportValueConverter.NormalizePlcProtocolType(legacyClientConfiguration.PlcType),
             PlcIpAddress = Normalize(legacyClientConfiguration.PlcIp, "127.0.0.1"),
             PlcPort = legacyClientConfiguration.Port > 0 ? legacyClientConfiguration.Port : 102,
             ShutdownPointAddress = Normalize(legacyClientConfiguration.ShutdownPoint, "######"),

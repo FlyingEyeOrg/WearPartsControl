@@ -56,6 +56,7 @@ public sealed class LegacyConfigurationImportServiceTests
             Assert.NotNull(clientAppInfoService.LastRequest);
             Assert.Equal("SITE-01", clientAppInfoService.LastRequest!.SiteCode);
             Assert.Equal("RES-LEGACY", clientAppInfoService.LastRequest.ResourceNumber);
+            Assert.Equal("SiemensS1500", clientAppInfoService.LastRequest.PlcProtocolType);
             Assert.Equal("192.168.1.100", clientAppInfoService.LastRequest.PlcIpAddress);
             Assert.True(clientAppInfoService.LastRequest.IsStringReverse);
 
@@ -128,7 +129,7 @@ CREATE TABLE v_Basic (
     IsStringReverse INTEGER
 );
 INSERT INTO v_Basic (Id, Site, Factory, Area, Procedure, EquipmentNum, ResourceNum, PlcType, PlcIp, Port, ShutdownPoint, SiemensSlot, IsStringReverse)
-VALUES ('1', 'SITE-01', 'FACTORY-01', 'AREA-01', 'PROC-01', 'EQ-01', 'RES-LEGACY', 'ModbusTcp', '192.168.1.100', 502, 'M100.0', 0, 1);
+VALUES ('1', 'SITE-01', 'FACTORY-01', 'AREA-01', 'PROC-01', 'EQ-01', 'RES-LEGACY', '西门子S1500', '192.168.1.100', 502, 'M100.0', 0, 1);
 """;
         await command.ExecuteNonQueryAsync();
     }

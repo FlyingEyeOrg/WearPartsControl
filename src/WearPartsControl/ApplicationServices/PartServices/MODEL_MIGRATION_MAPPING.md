@@ -92,6 +92,19 @@
 | `DateTime` | `OccurredAt` | `DateTime` -> `DateTime` |
 | `BasicId` | `ClientAppConfigurationId` | `string` -> `Guid` |
 
+### 2.5 旧值标准化
+
+导入旧库时，以下字段不再原样落库，而是转换为当前项目支持的值：
+
+| 旧项目字段 | 旧值示例 | 新项目值 |
+| --- | --- | --- |
+| `PlcType` | `西门子S1500`、`汇川EIP`、`倍福` | `SiemensS1500`、`InovanceEip`、`Beckhoff` 等 `PlcProtocolType` 枚举名 |
+| `Input` | `键盘`、`扫码枪`、`Barcode` | `Manual`、`Scanner` |
+| `LifeType` | `计米`、`计次`、`时间` | `记米`、`计次`、`计时` |
+| `CurrentValueDataType` / `WarnValueDataType` / `ShutdownValueDataType` | `Real`、`LReal`、`Int`、`DInt`、`UDInt`、`Bool` | `FLOAT`、`DOUBLE`、`INT16`、`INT32`、`UINT32`、`BOOL` |
+| `ReplaceRecordModel.DataType` | `0`-`4` 或 `Json`、`String`、`Int`、`Float`、`Double` | `JSON`、`STRING`、`INT32`、`FLOAT`、`DOUBLE` |
+| `ReplaceMessage` 作为更换原因 | `寿命到期，正常更换`、`过程损坏`、`切拉换型` | `normal`、`process-damage`、`cutover` 等当前原因编码 |
+
 ## 3. 迁移注意事项
 
 - 旧库中保存为字符串的 Guid 字段，在迁移脚本中建议先做合法性校验，再转换为数据库 `uniqueidentifier`。

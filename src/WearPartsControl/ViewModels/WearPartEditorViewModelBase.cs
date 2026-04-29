@@ -71,7 +71,7 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
 
         RefreshLifetimeTypeOptions();
 
-        foreach (var item in new[] { "FLOAT", "DOUBLE", "INT32", "BOOL", "STRING", "JSON" })
+        foreach (var item in WearPartPlcDataTypes.EditorOptions)
         {
             DataTypes.Add(item);
         }

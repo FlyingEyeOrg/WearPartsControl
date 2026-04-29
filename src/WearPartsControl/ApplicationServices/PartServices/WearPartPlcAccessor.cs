@@ -23,10 +23,12 @@ internal static class WearPartPlcAccessor
 
         return NormalizeDataType(dataType) switch
         {
-            "INT" or "INT32" => (await pipeline.ReadAsync<int>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false)).ToString(),
-            "FLOAT" or "SINGLE" => (await pipeline.ReadAsync<float>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false)).ToString(System.Globalization.CultureInfo.InvariantCulture),
-            "DOUBLE" or "DECIMAL" => (await pipeline.ReadAsync<double>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false)).ToString(System.Globalization.CultureInfo.InvariantCulture),
-            "BOOL" or "BOOLEAN" => await pipeline.ReadAsync<bool>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false) ? "1" : "0",
+            WearPartPlcDataTypes.Int16 => (await pipeline.ReadAsync<short>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false)).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            WearPartPlcDataTypes.Int32 => (await pipeline.ReadAsync<int>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false)).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            WearPartPlcDataTypes.UInt32 => (await pipeline.ReadAsync<uint>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false)).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            WearPartPlcDataTypes.Float => (await pipeline.ReadAsync<float>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false)).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            WearPartPlcDataTypes.Double => (await pipeline.ReadAsync<double>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false)).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            WearPartPlcDataTypes.Bool => await pipeline.ReadAsync<bool>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false) ? "1" : "0",
             _ => await pipeline.ReadAsync<string>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false)
         };
     }
@@ -40,10 +42,12 @@ internal static class WearPartPlcAccessor
 
         return NormalizeDataType(dataType) switch
         {
-            "INT" or "INT32" => await pipeline.ReadAsync<int>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false),
-            "FLOAT" or "SINGLE" => await pipeline.ReadAsync<float>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false),
-            "DOUBLE" or "DECIMAL" => await pipeline.ReadAsync<double>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false),
-            "BOOL" or "BOOLEAN" => await pipeline.ReadAsync<bool>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false) ? 1d : 0d,
+            WearPartPlcDataTypes.Int16 => await pipeline.ReadAsync<short>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false),
+            WearPartPlcDataTypes.Int32 => await pipeline.ReadAsync<int>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false),
+            WearPartPlcDataTypes.UInt32 => await pipeline.ReadAsync<uint>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false),
+            WearPartPlcDataTypes.Float => await pipeline.ReadAsync<float>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false),
+            WearPartPlcDataTypes.Double => await pipeline.ReadAsync<double>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false),
+            WearPartPlcDataTypes.Bool => await pipeline.ReadAsync<bool>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false) ? 1d : 0d,
             _ => ParseDouble(await pipeline.ReadAsync<string>(operationName, address, cancellationToken: cancellationToken).ConfigureAwait(false), address)
         };
     }
@@ -78,17 +82,17 @@ internal static class WearPartPlcAccessor
 
         switch (NormalizeDataType(dataType))
         {
-            case "INT":
-            case "INT32":
+            case WearPartPlcDataTypes.Int16:
+                return pipeline.WriteAsync(address: address, operationName: operationName, value: Convert.ToInt16(Math.Round(value, MidpointRounding.AwayFromZero), System.Globalization.CultureInfo.InvariantCulture), cancellationToken: cancellationToken);
+            case WearPartPlcDataTypes.Int32:
                 return pipeline.WriteAsync(address: address, operationName: operationName, value: Convert.ToInt32(Math.Round(value, MidpointRounding.AwayFromZero), System.Globalization.CultureInfo.InvariantCulture), cancellationToken: cancellationToken);
-            case "FLOAT":
-            case "SINGLE":
+            case WearPartPlcDataTypes.UInt32:
+                return pipeline.WriteAsync(address: address, operationName: operationName, value: Convert.ToUInt32(Math.Round(value, MidpointRounding.AwayFromZero), System.Globalization.CultureInfo.InvariantCulture), cancellationToken: cancellationToken);
+            case WearPartPlcDataTypes.Float:
                 return pipeline.WriteAsync(address: address, operationName: operationName, value: Convert.ToSingle(value, System.Globalization.CultureInfo.InvariantCulture), cancellationToken: cancellationToken);
-            case "DOUBLE":
-            case "DECIMAL":
+            case WearPartPlcDataTypes.Double:
                 return pipeline.WriteAsync(address: address, operationName: operationName, value: value, cancellationToken: cancellationToken);
-            case "BOOL":
-            case "BOOLEAN":
+            case WearPartPlcDataTypes.Bool:
                 return pipeline.WriteAsync(address: address, operationName: operationName, value: value > 0d, cancellationToken: cancellationToken);
             default:
                 return pipeline.WriteAsync(address: address, operationName: operationName, value: value.ToString(System.Globalization.CultureInfo.InvariantCulture), cancellationToken: cancellationToken);
@@ -122,11 +126,14 @@ internal static class WearPartPlcAccessor
     {
         return NormalizeDataType(dataType) switch
         {
-            "JSON" => PartDataType.Json,
-            "STRING" => PartDataType.String,
-            "INT" or "INT32" => PartDataType.Int,
-            "FLOAT" or "SINGLE" => PartDataType.Float,
-            "DOUBLE" or "DECIMAL" => PartDataType.Double,
+            WearPartPlcDataTypes.Json => PartDataType.Json,
+            WearPartPlcDataTypes.String => PartDataType.String,
+            WearPartPlcDataTypes.Int16 => PartDataType.Int16,
+            WearPartPlcDataTypes.Int32 => PartDataType.Int,
+            WearPartPlcDataTypes.UInt32 => PartDataType.UInt32,
+            WearPartPlcDataTypes.Float => PartDataType.Float,
+            WearPartPlcDataTypes.Double => PartDataType.Double,
+            WearPartPlcDataTypes.Bool => PartDataType.Bool,
             _ => null
         };
     }
@@ -138,7 +145,7 @@ internal static class WearPartPlcAccessor
 
     private static string NormalizeDataType(string? dataType)
     {
-        return string.IsNullOrWhiteSpace(dataType) ? string.Empty : dataType.Trim().ToUpperInvariant();
+        return WearPartPlcDataTypes.Normalize(dataType, string.Empty);
     }
 
     private static double ParseDouble(string rawValue, string address)

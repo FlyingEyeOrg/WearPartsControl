@@ -59,11 +59,19 @@ public sealed class LegacyDatabaseImportServiceTests : IDisposable
         var exceed = await dbContext.ExceedLimitRecords.SingleAsync();
 
         Assert.Equal("RES-IMPORT-01", configuration.ResourceNumber);
+        Assert.Equal("SiemensS1500", configuration.PlcProtocolType);
         Assert.Equal("刀具A", definition.PartName);
+        Assert.Equal("Scanner", definition.InputMode);
+        Assert.Equal("DOUBLE", definition.CurrentValueDataType);
+        Assert.Equal("FLOAT", definition.WarningValueDataType);
+        Assert.Equal("INT32", definition.ShutdownValueDataType);
+        Assert.Equal("记米", definition.LifetimeType);
         Assert.Null(definition.ToolChangeId);
         Assert.Equal("BARCODE-OLD", replacement.CurrentBarcode);
         Assert.Equal("BARCODE-NEW", replacement.NewBarcode);
         Assert.Equal("12", replacement.CurrentValue);
+        Assert.Equal(WearPartReplacementReason.Normal, replacement.ReplacementReason);
+        Assert.Equal("FLOAT", replacement.DataType);
         Assert.Equal("Shutdown", exceed.Severity);
 
         var toolSelection = await _saveInfoStore.ReadAsync<ToolChangeSelectionSaveInfo>();
@@ -110,6 +118,10 @@ public sealed class LegacyDatabaseImportServiceTests : IDisposable
         Assert.Equal("刀具A", definition.PartName);
         Assert.Equal("Scanner", definition.InputMode);
         Assert.Equal("DB1.0", definition.CurrentValueAddress);
+        Assert.Equal("DOUBLE", definition.CurrentValueDataType);
+        Assert.Equal("FLOAT", definition.WarningValueDataType);
+        Assert.Equal("INT32", definition.ShutdownValueDataType);
+        Assert.Equal("记米", definition.LifetimeType);
     }
 
     public void Dispose()
@@ -183,9 +195,9 @@ CREATE TABLE v_exceedlimitinfo (
     ShutdownValue REAL,
     DateTime TEXT
 );
-INSERT INTO v_Basic VALUES ('basic-01', 'S01', 'F01', 'A01', 'P01', 'E01', 'RES-IMPORT-01', 'S7', '127.0.0.1', 102, '!M0.0', 0, 0, 1);
-INSERT INTO v_VulnerableParts VALUES ('part-01', 'basic-01', '刀具A', 'Barcode', 'DB1.0', 'Int32', 'DB1.1', 'Int32', 'DB1.2', 'Int32', 1, 8, 32, 'Count', '', 'DB1.4');
-INSERT INTO v_ReplaceRecord VALUES ('basic-01', 'S01', '刀具A', 'BARCODE-OLD', 'BARCODE-NEW', '12', '20', '30', 'WORK-01', '张三', '寿命到期', '2025-01-01 08:00:00', 'Int32', '12');
+INSERT INTO v_Basic VALUES ('basic-01', 'S01', 'F01', 'A01', 'P01', 'E01', 'RES-IMPORT-01', '西门子S1500', '127.0.0.1', 102, '!M0.0', 0, 0, 1);
+INSERT INTO v_VulnerableParts VALUES ('part-01', 'basic-01', '刀具A', '扫码枪', 'DB1.0', 'LReal', 'DB1.1', 'Real', 'DB1.2', 'DInt', 1, 8, 32, '计米', '', 'DB1.4');
+INSERT INTO v_ReplaceRecord VALUES ('basic-01', 'S01', '刀具A', 'BARCODE-OLD', 'BARCODE-NEW', '12', '20', '30', 'WORK-01', '张三', '寿命到期，正常更换', '2025-01-01 08:00:00', '3', '12');
 INSERT INTO v_exceedlimitinfo VALUES ('basic-01', '刀具A', 30, 30, '2025-01-02 08:00:00');
 """;
         command.ExecuteNonQuery();

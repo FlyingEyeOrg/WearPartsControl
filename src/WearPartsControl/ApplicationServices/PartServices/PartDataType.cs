@@ -8,25 +8,40 @@ public enum PartDataType
     /// <summary>
     /// JSON。
     /// </summary>
-    Json,
+    Json = 0,
 
     /// <summary>
     /// 字符串。
     /// </summary>
-    String,
+    String = 1,
+
+    /// <summary>
+    /// 16 位整型。
+    /// </summary>
+    Int16 = 5,
 
     /// <summary>
     /// 整型。
     /// </summary>
-    Int,
+    Int = 2,
+
+    /// <summary>
+    /// 无符号 32 位整型。
+    /// </summary>
+    UInt32 = 6,
 
     /// <summary>
     /// 浮点型。
     /// </summary>
-    Float,
+    Float = 3,
 
     /// <summary>
     /// 双精度浮点型。
     /// </summary>
-    Double
+    Double = 4,
+
+    /// <summary>
+    /// 布尔型。
+    /// </summary>
+    Bool = 7
 }

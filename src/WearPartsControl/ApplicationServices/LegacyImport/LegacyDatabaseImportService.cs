@@ -21,16 +21,6 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
         AllowTrailingCommas = true
     };
 
-    private static readonly IReadOnlyDictionary<string, string> LifetimeTypeAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-    {
-        ["Meter"] = "记米",
-        ["Count"] = "计次",
-        ["Time"] = "计时",
-        ["记米"] = "记米",
-        ["计次"] = "计次",
-        ["计时"] = "计时"
-    };
-
     private const string ShutdownSeverity = "Shutdown";
     private const int MaxRecentToolCodes = 20;
 
@@ -207,10 +197,10 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
                 ShutdownValue = NormalizeOrEmpty(legacyReplacementRecord.ShutdownValue),
                 OperatorWorkNumber = NormalizeOrEmpty(legacyReplacementRecord.OperatorWorkNumber),
                 OperatorUserName = NormalizeOrEmpty(legacyReplacementRecord.OperatorUserName),
-                ReplacementReason = NormalizeOrEmpty(legacyReplacementRecord.ReplacementReason),
+                ReplacementReason = LegacyImportValueConverter.NormalizeReplacementReason(legacyReplacementRecord.ReplacementReason),
                 ReplacementMessage = NormalizeOrEmpty(legacyReplacementRecord.ReplacementMessage),
                 ReplacedAt = legacyReplacementRecord.ReplacedAt,
-                DataType = NormalizeNullable(legacyReplacementRecord.DataType),
+                DataType = LegacyImportValueConverter.NormalizeReplacementDataType(legacyReplacementRecord.DataType),
                 DataValue = NormalizeNullable(legacyReplacementRecord.DataValue),
                 CreatedAt = legacyReplacementRecord.ReplacedAt,
                 UpdatedAt = legacyReplacementRecord.ReplacedAt
@@ -429,12 +419,12 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
         target.ProcedureCode = NormalizeOrEmpty(source.Procedure);
         target.EquipmentCode = NormalizeOrEmpty(source.EquipmentNum, "000");
         target.ResourceNumber = NormalizeOrEmpty(source.ResourceNumber);
-        target.PlcProtocolType = NormalizeOrEmpty(source.PlcType, "S7");
+        target.PlcProtocolType = LegacyImportValueConverter.NormalizePlcProtocolType(source.PlcType);
         target.PlcIpAddress = NormalizeOrEmpty(source.PlcIp, "127.0.0.1");
         target.PlcPort = source.Port > 0 ? source.Port : 102;
         target.ShutdownPointAddress = NormalizeOrEmpty(source.ShutdownPoint, "######");
         target.SiemensRack = 0;
-        target.SiemensSlot = source.SiemensSlot;
+        target.SiemensSlot = source.SiemensSlot >= 0 ? source.SiemensSlot : 0;
         target.IsStringReverse = source.IsStringReverse;
     }
 
@@ -442,27 +432,19 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
     {
         target.ResourceNumber = NormalizeOrEmpty(resourceNumber);
         target.PartName = NormalizeOrEmpty(source.Name);
-        target.InputMode = NormalizeLegacyInputMode(source.InputMode);
+        target.InputMode = LegacyImportValueConverter.NormalizeInputMode(source.InputMode);
         target.CurrentValueAddress = NormalizeOrEmpty(source.CurrentValueAddress, "######");
-        target.CurrentValueDataType = NormalizeOrEmpty(source.CurrentValueDataType, "String");
+        target.CurrentValueDataType = LegacyImportValueConverter.NormalizeWearPartDataType(source.CurrentValueDataType);
         target.WarningValueAddress = NormalizeOrEmpty(source.WarningValueAddress, "######");
-        target.WarningValueDataType = NormalizeOrEmpty(source.WarningValueDataType, "String");
+        target.WarningValueDataType = LegacyImportValueConverter.NormalizeWearPartDataType(source.WarningValueDataType);
         target.ShutdownValueAddress = NormalizeOrEmpty(source.ShutdownValueAddress, "######");
-        target.ShutdownValueDataType = NormalizeOrEmpty(source.ShutdownValueDataType, "String");
+        target.ShutdownValueDataType = LegacyImportValueConverter.NormalizeWearPartDataType(source.ShutdownValueDataType);
         target.IsShutdown = source.IsShutdown;
         target.CodeMinLength = source.CodeMinLength > 0 ? source.CodeMinLength : 1;
         target.CodeMaxLength = source.CodeMaxLength >= target.CodeMinLength ? source.CodeMaxLength : Math.Max(target.CodeMinLength, 128);
-        target.LifetimeType = NormalizeLifetimeType(source.LifetimeType);
+        target.LifetimeType = LegacyImportValueConverter.NormalizeLifetimeType(source.LifetimeType);
         target.PlcZeroClearAddress = NormalizeOrEmpty(source.PlcZeroClearAddress);
         target.BarcodeWriteAddress = NormalizeOrEmpty(source.BarcodeWriteAddress, "######");
-    }
-
-    private static string NormalizeLegacyInputMode(string? inputMode)
-    {
-        var normalized = NormalizeOrEmpty(inputMode, "Scanner");
-        return string.Equals(normalized, "Barcode", StringComparison.OrdinalIgnoreCase)
-            ? "Scanner"
-            : normalized;
     }
 
     private static string ValidateLegacyDatabasePath(string legacyDatabasePath)
@@ -677,14 +659,6 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
     private static string NormalizeOrEmpty(string? value, string fallback = "")
     {
         return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
-    }
-
-    private static string NormalizeLifetimeType(string? value)
-    {
-        var normalized = NormalizeOrEmpty(value, "计次");
-        return LifetimeTypeAliases.TryGetValue(normalized, out var alias)
-            ? alias
-            : normalized;
     }
 
     private static string? NormalizeNullable(string? value)
