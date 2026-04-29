@@ -5,6 +5,7 @@
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<UseWPF>true</UseWPF>
 		<ApplicationIcon>Assets\app.ico</ApplicationIcon>
+		<Version>1.0.1-rc</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -55,7 +56,8 @@
 	</ItemGroup>
 
 	<!-- Localization generation target moved to build/Localization.targets -->
-	<Import Project="$(MSBuildThisFileDirectory)..\..\build\Localization.targets" Condition="Exists('$(MSBuildThisFileDirectory)..\..\build\Localization.targets')" />
+	<Import Project="$(MSBuildThisFileDirectory)..\..\build\Localization.targets"
+		Condition="Exists('$(MSBuildThisFileDirectory)..\..\build\Localization.targets')" />
 
 	<!-- Release symbol settings moved to root Directory.Build.props -->
 
