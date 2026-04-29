@@ -39,6 +39,23 @@ public sealed class WearPartAlertPopupServiceTests : IDisposable
         Assert.Equal(2, presenter.ShowCount);
     }
 
+    [Fact]
+    public async Task ShowIfNeededAsync_WhenUiDispatcherDoesNotComplete_ShouldReturnAfterQueueingPopup()
+    {
+        var store = new TypeJsonSaveInfoStore(_settingsDirectory);
+        var presenter = new FakeWearPartAlertPresenter();
+        var dispatcher = new NonCompletingUiDispatcher();
+        var service = new WearPartAlertPopupService(store, dispatcher, presenter);
+
+        var showTask = service.ShowIfNeededAsync("预警通知", "# 通知\n\n- **易损件**：刀具A", new DateTime(2026, 4, 27, 8, 0, 0, DateTimeKind.Local)).AsTask();
+        var completedTask = await Task.WhenAny(showTask, Task.Delay(TimeSpan.FromSeconds(1)));
+
+        Assert.Same(showTask, completedTask);
+        Assert.True(showTask.IsCompletedSuccessfully);
+        Assert.Equal(1, dispatcher.RunAsyncCallCount);
+        Assert.Equal(1, presenter.ShowCount);
+    }
+
     public void Dispose()
     {
         try
@@ -74,6 +91,30 @@ public sealed class WearPartAlertPopupServiceTests : IDisposable
         {
             action();
             return Task.CompletedTask;
+        }
+
+        public Task RenderAsync()
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class NonCompletingUiDispatcher : IUiDispatcher
+    {
+        private readonly TaskCompletionSource _completionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public int RunAsyncCallCount { get; private set; }
+
+        public void Run(Action action)
+        {
+            action();
+        }
+
+        public Task RunAsync(Action action, System.Windows.Threading.DispatcherPriority priority = System.Windows.Threading.DispatcherPriority.Normal)
+        {
+            RunAsyncCallCount++;
+            action();
+            return _completionSource.Task;
         }
 
         public Task RenderAsync()
