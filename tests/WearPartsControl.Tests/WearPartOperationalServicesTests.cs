@@ -1118,6 +1118,52 @@ public sealed class WearPartOperationalServicesTests : IDisposable
     }
 
     [Fact]
+    public async Task MonitorByResourceNumberAsync_WhenReplacementRecordWorkNumberMissing_ShouldUseCurrentReplacementUserWorkId()
+    {
+        var seeded = await SeedAsync("R-OPS-03B", "M0.2B");
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 15);
+        plcService.SetValue("DB1.1", 10);
+        plcService.SetValue("DB1.2", 20);
+        var notificationService = new FakeComNotificationService();
+        var popupService = new FakeWearPartAlertPopupService();
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1, workId: "60218718");
+
+        await using (var seedContext = await _dbContextFactory.CreateDbContextAsync())
+        {
+            seedContext.WearPartReplacementRecords.Add(new WearPartReplacementRecordEntity
+            {
+                ClientAppConfigurationId = seeded.BasicConfigurationId,
+                WearPartDefinitionId = seeded.DefinitionId,
+                SiteCode = "S01",
+                PartName = "刀具A",
+                CurrentBarcode = "BARCODE-WARN-0000",
+                NewBarcode = "BARCODE-WARN-0001",
+                CurrentValue = "8",
+                WarningValue = "10",
+                ShutdownValue = "20",
+                OperatorWorkNumber = string.Empty,
+                OperatorUserName = "60218718",
+                ReplacementReason = WearPartReplacementReason.Normal,
+                ReplacementMessage = string.Empty,
+                ReplacedAt = DateTime.UtcNow.AddMinutes(-10)
+            });
+            await seedContext.SaveChangesAsync();
+        }
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateMonitorService(dbContext, plcService, notificationService, popupService, currentUserAccessor);
+
+        var results = await service.MonitorByResourceNumberAsync("R-OPS-03B");
+
+        Assert.Single(results);
+        Assert.Equal(WearPartMonitorStatus.Warning, results[0].Status);
+        var notification = Assert.Single(notificationService.GroupNotifications);
+        Assert.Contains("60218718(60218718)", notification);
+        Assert.DoesNotContain("60218718(未配置)", notification);
+    }
+
+    [Fact]
     public async Task MonitorByResourceNumberAsync_WhenShutdownExceeded_ShouldWriteShutdownSignal()
     {
         var seeded = await SeedAsync("R-OPS-04", "!M0.3");
@@ -1239,13 +1285,13 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         return (basicConfigurationId, definitionId);
     }
 
-    private static CurrentUserAccessor CreateCurrentUserAccessor(int accessLevel)
+    private static CurrentUserAccessor CreateCurrentUserAccessor(int accessLevel, string workId = "WORK-OPS")
     {
         var accessor = new CurrentUserAccessor();
         accessor.SetCurrentUser(new WearPartsControl.ApplicationServices.LoginService.MhrUser
         {
             CardId = "CARD-OPS",
-            WorkId = "WORK-OPS",
+            WorkId = workId,
             AccessLevel = accessLevel
         });
         return accessor;
@@ -1278,19 +1324,24 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             ]);
     }
 
-    private static WearPartMonitorService CreateMonitorService(WearPartsControlDbContext dbContext, IPlcService plcService, IComNotificationService notificationService, IWearPartAlertPopupService? popupService = null)
+    private static WearPartMonitorService CreateMonitorService(
+        WearPartsControlDbContext dbContext,
+        IPlcService plcService,
+        IComNotificationService notificationService,
+        IWearPartAlertPopupService? popupService = null,
+        ICurrentUserAccessor? currentUserAccessor = null)
     {
         var plcOperationPipeline = new PlcOperationPipeline(plcService, Microsoft.Extensions.Logging.Abstractions.NullLogger<PlcOperationPipeline>.Instance);
 
         return new WearPartMonitorService(
-            new CurrentUserAccessor(),
+            currentUserAccessor ?? new CurrentUserAccessor(),
             new ClientAppConfigurationRepository(dbContext),
             new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
             new WearPartReplacementRecordRepository(dbContext),
             new ExceedLimitRecordRepository(dbContext),
             plcOperationPipeline,
             notificationService,
-                popupService ?? new FakeWearPartAlertPopupService(),
+            popupService ?? new FakeWearPartAlertPopupService(),
             new FakeUserConfigService());
     }
 

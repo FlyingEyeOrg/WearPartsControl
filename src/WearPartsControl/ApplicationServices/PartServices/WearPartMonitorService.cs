@@ -156,6 +156,7 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
         }
 
         var latestReplacementRecord = await _replacementRecordRepository.GetLatestByDefinitionAsync(definition.Id, cancellationToken).ConfigureAwait(false);
+        var replacementOperator = ResolveReplacementOperator(latestReplacementRecord, userConfig, CurrentUser?.WorkId);
 
         var message = ComNotificationMessageFactory.CreateWearPartAlertMessage(
             clientAppConfiguration,
@@ -170,8 +171,8 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
             userConfig.MeResponsibleWorkId,
             userConfig.PrdResponsibleName,
             userConfig.PrdResponsibleWorkId,
-            latestReplacementRecord?.OperatorUserName ?? userConfig.ReplacementOperatorName,
-            latestReplacementRecord?.OperatorWorkNumber,
+            replacementOperator.Name,
+            replacementOperator.WorkNumber,
             occurredAt);
         var entity = new ExceedLimitRecordEntity
         {
@@ -202,6 +203,48 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
         PublishServiceLog(WearPartMonitoringLogLevel.Warning, LocalizedText.Format("Services.WearPartMonitoringLog.MonitorNotificationTriggered", definition.PartName, severity), clientAppConfiguration.ResourceNumber);
 
         return true;
+    }
+
+    private static ReplacementOperator ResolveReplacementOperator(WearPartReplacementRecordEntity? latestReplacementRecord, UserConfigModel userConfig, string? currentUserWorkId)
+    {
+        var recordName = NormalizeOptional(latestReplacementRecord?.OperatorUserName);
+        var recordWorkNumber = NormalizeOptional(latestReplacementRecord?.OperatorWorkNumber);
+        var configuredName = NormalizeOptional(userConfig.ReplacementOperatorName);
+        var normalizedCurrentUserWorkId = NormalizeOptional(currentUserWorkId);
+
+        var name = recordName ?? configuredName ?? normalizedCurrentUserWorkId;
+        var workNumber = recordWorkNumber
+            ?? ResolveReplacementOperatorWorkNumberFallback(recordName, configuredName, normalizedCurrentUserWorkId);
+
+        return new ReplacementOperator(name, workNumber);
+    }
+
+    private static string? ResolveReplacementOperatorWorkNumberFallback(string? recordName, string? configuredName, string? currentUserWorkId)
+    {
+        if (!string.IsNullOrWhiteSpace(currentUserWorkId)
+            && (string.Equals(recordName, currentUserWorkId, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(configuredName, currentUserWorkId, StringComparison.OrdinalIgnoreCase)
+                || (string.IsNullOrWhiteSpace(recordName) && string.IsNullOrWhiteSpace(configuredName))))
+        {
+            return currentUserWorkId;
+        }
+
+        if (LooksLikeWorkNumber(recordName))
+        {
+            return recordName;
+        }
+
+        return LooksLikeWorkNumber(configuredName)
+            ? configuredName
+            : null;
+    }
+
+    private static bool LooksLikeWorkNumber(string? value)
+    {
+        var normalized = NormalizeOptional(value);
+        return normalized is not null
+            && normalized.Any(char.IsDigit)
+            && normalized.All(static ch => char.IsLetterOrDigit(ch) || ch is '-' or '_');
     }
 
     private void PublishServiceLog(
@@ -264,10 +307,17 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
         return value.Trim();
     }
 
+    private static string? NormalizeOptional(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
     private sealed record MonitorSnapshot(
         WearPartDefinitionEntity Definition,
         double CurrentValue,
         double WarningValue,
         double ShutdownValue,
         WearPartMonitorStatus Status);
+
+    private sealed record ReplacementOperator(string? Name, string? WorkNumber);
 }
