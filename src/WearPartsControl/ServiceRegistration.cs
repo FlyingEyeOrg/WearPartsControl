@@ -17,6 +17,7 @@ using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.Shell;
 using WearPartsControl.ApplicationServices.LoginService;
+using WearPartsControl.ApplicationServices.MonitoringLogs;
 using WearPartsControl.ApplicationServices.Startup;
 using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.Domain.Services;
@@ -98,6 +99,7 @@ public static class ServiceRegistration
         builder.RegisterType<ComNotificationService>().As<IComNotificationService>().SingleInstance();
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<AppSettingsService>().As<IAppSettingsService>().SingleInstance();
+        builder.RegisterType<WearPartMonitoringLogPipeline>().As<IWearPartMonitoringLogPipeline>().SingleInstance();
         builder.RegisterType<MonitoringRuntimeStateProvider>().As<IMonitoringRuntimeStateProvider>().SingleInstance();
         builder.RegisterType<PlcService>().AsSelf().SingleInstance();
         builder.RegisterType<PlcClientConfigurationResolver>().As<IPlcClientConfigurationResolver>().SingleInstance();
@@ -105,7 +107,8 @@ public static class ServiceRegistration
         builder.Register(_ => new PlcOperationPipeline(
                 _.Resolve<PlcService>(),
             _.Resolve<Microsoft.Extensions.Logging.ILogger<PlcOperationPipeline>>(),
-            _.Resolve<IAppSettingsService>()))
+                _.Resolve<IAppSettingsService>(),
+                _.Resolve<IWearPartMonitoringLogPipeline>()))
             .As<IPlcOperationPipeline>()
             .SingleInstance();
         builder.RegisterType<PlcConnectionStatusService>().As<IPlcConnectionStatusService>().SingleInstance();
@@ -152,6 +155,7 @@ public static class ServiceRegistration
         builder.RegisterType<PartReplacementHistoryViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<NeedLoginViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<UserConfigViewModel>().AsSelf().InstancePerDependency();
+        builder.RegisterType<WearPartMonitoringLogViewModel>().AsSelf().InstancePerDependency();
     }
 
     private static void RegisterViews(ContainerBuilder builder)
@@ -170,5 +174,6 @@ public static class ServiceRegistration
         builder.RegisterType<PartManagementUserControl>().AsSelf();
         builder.RegisterType<ToolChangeManagementUserControl>().AsSelf();
         builder.RegisterType<PartReplacementHistoryUserControl>().AsSelf();
+        builder.RegisterType<WearPartMonitoringLogUserControl>().AsSelf();
     }
 }

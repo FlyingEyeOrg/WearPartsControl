@@ -7,5 +7,6 @@ public enum MainWindowTabKey
     PartManagement = 2,
     ToolChangeManagement = 3,
     PartReplacementHistory = 4,
-    UserConfig = 5
+    WearPartMonitoringLog = 5,
+    UserConfig = 6
 }

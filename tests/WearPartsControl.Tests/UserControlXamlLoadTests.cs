@@ -4,6 +4,7 @@ using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.LoginService;
+using WearPartsControl.ApplicationServices.MonitoringLogs;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.UserControls;
 using WearPartsControl.ViewModels;
@@ -49,6 +50,21 @@ public sealed class UserControlXamlLoadTests
             var control = new PartReplacementHistoryUserControl(
                 CreateUninitialized<PartReplacementHistoryViewModel>(),
                 new StubAutoLogoutInteractionService());
+
+            Assert.NotNull(control);
+        });
+    }
+
+    [Fact]
+    public void WearPartMonitoringLogUserControl_ShouldLoadWithoutXamlParseException()
+    {
+        RunWithEnglishCulture(() =>
+        {
+            var control = new WearPartMonitoringLogUserControl(
+                new WearPartMonitoringLogViewModel(
+                    new WearPartMonitoringLogPipeline(),
+                    new StubUiDispatcher()),
+                new StubFileDialogService());
 
             Assert.NotNull(control);
         });
@@ -174,6 +190,19 @@ public sealed class UserControlXamlLoadTests
         public System.Windows.MessageBoxResult ShowMessage(string message, string title, System.Windows.MessageBoxButton buttons = System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage image = System.Windows.MessageBoxImage.None, System.Windows.Window? owner = null, System.Windows.MessageBoxResult defaultResult = System.Windows.MessageBoxResult.None)
         {
             return System.Windows.MessageBoxResult.OK;
+        }
+    }
+
+    private sealed class StubFileDialogService : IFileDialogService
+    {
+        public string? ShowOpenFileDialog(OpenFileDialogRequest request, System.Windows.Window? owner = null)
+        {
+            return null;
+        }
+
+        public string? ShowSaveFileDialog(SaveFileDialogRequest request, System.Windows.Window? owner = null)
+        {
+            return null;
         }
     }
 

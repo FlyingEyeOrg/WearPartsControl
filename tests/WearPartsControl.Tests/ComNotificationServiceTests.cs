@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.MonitoringLogs;
 using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.Exceptions;
@@ -40,7 +41,8 @@ public sealed class ComNotificationServiceTests
             });
 
             var httpRequestService = new StubHttpRequestService();
-            var service = new ComNotificationService(new StubLocalizationService(), httpRequestService, userConfigService, NullLogger<ComNotificationService>.Instance);
+            var monitoringLogPipeline = new WearPartMonitoringLogPipeline();
+            var service = new ComNotificationService(new StubLocalizationService(), httpRequestService, userConfigService, NullLogger<ComNotificationService>.Instance, monitoringLogPipeline);
 
             await service.NotifyGroupAsync("title", "text");
 
@@ -49,6 +51,9 @@ public sealed class ComNotificationServiceTests
             Assert.Contains("PRD1001", httpRequestService.LastRequestBody!);
             Assert.Contains("user-token", httpRequestService.LastRequestBody!);
             Assert.Contains("user-secret", httpRequestService.LastRequestBody!);
+            Assert.Contains(monitoringLogPipeline.Snapshot(), entry =>
+                entry.Category == WearPartMonitoringLogCategory.Com
+                && entry.Level == WearPartMonitoringLogLevel.Information);
         }
         finally
         {

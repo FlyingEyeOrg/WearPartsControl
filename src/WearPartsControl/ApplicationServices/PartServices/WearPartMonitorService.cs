@@ -1,5 +1,6 @@
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.MonitoringLogs;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.Domain.Entities;
@@ -22,6 +23,7 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
     private readonly IComNotificationService _notificationService;
     private readonly IWearPartAlertPopupService _wearPartAlertPopupService;
     private readonly IUserConfigService _userConfigService;
+    private readonly IWearPartMonitoringLogPipeline? _monitoringLogPipeline;
 
     public WearPartMonitorService(
         ICurrentUserAccessor currentUserAccessor,
@@ -32,7 +34,8 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
         IPlcOperationPipeline plcOperationPipeline,
         IComNotificationService notificationService,
         IWearPartAlertPopupService wearPartAlertPopupService,
-        IUserConfigService userConfigService)
+        IUserConfigService userConfigService,
+        IWearPartMonitoringLogPipeline? monitoringLogPipeline = null)
         : base(currentUserAccessor)
     {
         _clientAppConfigurationRepository = clientAppConfigurationRepository;
@@ -43,6 +46,7 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
         _notificationService = notificationService;
         _wearPartAlertPopupService = wearPartAlertPopupService;
         _userConfigService = userConfigService;
+        _monitoringLogPipeline = monitoringLogPipeline;
     }
 
     public async Task<IReadOnlyList<WearPartMonitorResult>> MonitorByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
@@ -54,8 +58,11 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
         var definitions = await _wearPartRepository.ListByClientAppConfigurationAsync(clientAppConfiguration.Id, cancellationToken).ConfigureAwait(false);
         if (definitions.Count == 0)
         {
+            PublishServiceLog(WearPartMonitoringLogLevel.Information, LocalizedText.Format("Services.WearPartMonitoringLog.MonitorDefinitionsEmpty", normalizedResourceNumber), normalizedResourceNumber);
             return [];
         }
+
+        PublishServiceLog(WearPartMonitoringLogLevel.Information, LocalizedText.Format("Services.WearPartMonitoringLog.MonitorDefinitionsLoaded", normalizedResourceNumber, definitions.Count), normalizedResourceNumber);
 
         var connectionOptions = WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration);
         await _plcOperationPipeline.ConnectAsync(PlcMonitoringPipelineOperations.Connect, connectionOptions, cancellationToken).ConfigureAwait(false);
@@ -74,7 +81,15 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
             if (status == WearPartMonitorStatus.Shutdown)
             {
                 await WearPartPlcAccessor.WriteShutdownSignalAsync(_plcOperationPipeline, PlcMonitoringPipelineOperations.WriteShutdownSignal, clientAppConfiguration.ShutdownPointAddress, shutdown: definition.IsShutdown, cancellationToken).ConfigureAwait(false);
+                PublishServiceLog(WearPartMonitoringLogLevel.Warning, LocalizedText.Format("Services.WearPartMonitoringLog.MonitorShutdownSignalWritten", definition.PartName), normalizedResourceNumber);
             }
+
+            PublishServiceLog(
+                status == WearPartMonitorStatus.Normal ? WearPartMonitoringLogLevel.Information : WearPartMonitoringLogLevel.Warning,
+                LocalizedText.Format("Services.WearPartMonitoringLog.MonitorItemRead", definition.PartName, currentValue, warningValue, shutdownValue, status),
+                normalizedResourceNumber,
+                operationName: PlcMonitoringPipelineOperations.ReadCurrentValue,
+                address: definition.CurrentValueAddress);
 
             plcResults.Add(new MonitorSnapshot(definition, currentValue, warningValue, shutdownValue, status));
         }
@@ -136,6 +151,7 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
     {
         if (await _exceedLimitRecordRepository.ExistsForDayAsync(definition.Id, severity, occurredAt, cancellationToken).ConfigureAwait(false))
         {
+            PublishServiceLog(WearPartMonitoringLogLevel.Information, LocalizedText.Format("Services.WearPartMonitoringLog.MonitorNotificationSkippedDaily", definition.PartName, severity), clientAppConfiguration.ResourceNumber);
             return false;
         }
 
@@ -183,7 +199,28 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
 
         await _wearPartAlertPopupService.ShowIfNeededAsync(message.Title, message.Markdown, occurredAt, cancellationToken).ConfigureAwait(false);
 
+        PublishServiceLog(WearPartMonitoringLogLevel.Warning, LocalizedText.Format("Services.WearPartMonitoringLog.MonitorNotificationTriggered", definition.PartName, severity), clientAppConfiguration.ResourceNumber);
+
         return true;
+    }
+
+    private void PublishServiceLog(
+        WearPartMonitoringLogLevel level,
+        string message,
+        string? resourceNumber = null,
+        string? operationName = null,
+        string? address = null,
+        Exception? exception = null)
+    {
+        _monitoringLogPipeline?.Publish(
+            level,
+            WearPartMonitoringLogCategory.Service,
+            message,
+            operationName: operationName ?? nameof(WearPartMonitorService),
+            resourceNumber: resourceNumber,
+            address: address,
+            details: exception?.Message,
+            exception: exception);
     }
 
     private static WearPartMonitorStatus ResolveStatus(double currentValue, double warningValue, double shutdownValue)

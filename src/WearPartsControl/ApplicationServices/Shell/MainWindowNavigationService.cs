@@ -11,6 +11,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
         MainWindowTabKey.PartManagement,
         MainWindowTabKey.ToolChangeManagement,
         MainWindowTabKey.PartReplacementHistory,
+        MainWindowTabKey.WearPartMonitoringLog,
         MainWindowTabKey.UserConfig
     ];
 
@@ -20,6 +21,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
         MainWindowTabKey.ClientAppInfo,
         MainWindowTabKey.PartManagement,
         MainWindowTabKey.PartReplacementHistory,
+        MainWindowTabKey.WearPartMonitoringLog,
         MainWindowTabKey.UserConfig
     ];
 
@@ -27,7 +29,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
     {
         ArgumentNullException.ThrowIfNull(localizedTabHeaders);
 
-        if (localizedTabHeaders.Count < 6)
+        if (localizedTabHeaders.Count < 7)
         {
             throw new InvalidOperationException("Main window tab headers are incomplete.");
         }
@@ -73,6 +75,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
             MainWindowTabKey.PartManagement => typeof(PartManagementUserControl),
             MainWindowTabKey.ToolChangeManagement => typeof(ToolChangeManagementUserControl),
             MainWindowTabKey.PartReplacementHistory => typeof(PartReplacementHistoryUserControl),
+            MainWindowTabKey.WearPartMonitoringLog => typeof(WearPartMonitoringLogUserControl),
             MainWindowTabKey.UserConfig => typeof(UserConfigUserControl),
             _ => typeof(ReplacePartUserControl)
         };

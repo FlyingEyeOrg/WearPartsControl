@@ -30,6 +30,7 @@ public sealed class LocalizationServiceTests : IDisposable
             "Wear Part Management",
             "Tool Change Management",
             "Replacement History",
+            "Monitoring Log",
             "User Settings"
         }, service.Catalog.MainWindow.Tabs);
     }
@@ -50,6 +51,7 @@ public sealed class LocalizationServiceTests : IDisposable
             "易损件管理",
             "换刀类型管理",
             "易损件更换历史",
+            "易损件监控日志",
             "用户配置"
         }, service.Catalog.MainWindow.Tabs);
     }

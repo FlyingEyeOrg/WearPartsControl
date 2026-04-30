@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.ApplicationServices.MonitoringLogs;
 using WearPartsControl.ApplicationServices.PlcService;
 using Xunit;
 
@@ -118,6 +119,48 @@ public sealed class PlcOperationPipelineTests
         _ = await pipeline.ReadAsync<int>("Test/BackgroundRead", "ADDR-1");
 
         Assert.NotEqual(callerThreadId, operationThreadId);
+    }
+
+    [Fact]
+    public async Task ReadAsync_WhenMonitoringOperationSucceeds_ShouldPublishUiLogEntry()
+    {
+        var plcService = new PipelineTestPlcService();
+        var logger = new TestLogger<PlcOperationPipeline>();
+        var monitoringLogPipeline = new WearPartMonitoringLogPipeline();
+        var pipeline = new PlcOperationPipeline(plcService, logger, monitoringLogPipeline: monitoringLogPipeline);
+
+        plcService.OnRead = _ => 42;
+
+        _ = await pipeline.ReadAsync<int>(PlcMonitoringPipelineOperations.ReadCurrentValue, "DB1.0");
+        _ = await pipeline.ReadAsync<int>(PlcReplacementPipelineOperations.ReadCurrentValue, "DB1.1");
+
+        var snapshot = monitoringLogPipeline.Snapshot();
+
+        Assert.Single(snapshot);
+        Assert.Equal(WearPartMonitoringLogCategory.Plc, snapshot[0].Category);
+        Assert.Equal(WearPartMonitoringLogLevel.Information, snapshot[0].Level);
+        Assert.Equal(PlcMonitoringPipelineOperations.ReadCurrentValue, snapshot[0].OperationName);
+        Assert.Equal("DB1.0", snapshot[0].Address);
+    }
+
+    [Fact]
+    public async Task ReadAsync_WhenMonitoringOperationFails_ShouldPublishUiErrorLogEntry()
+    {
+        var plcService = new PipelineTestPlcService();
+        var logger = new TestLogger<PlcOperationPipeline>();
+        var monitoringLogPipeline = new WearPartMonitoringLogPipeline();
+        var pipeline = new PlcOperationPipeline(plcService, logger, monitoringLogPipeline: monitoringLogPipeline);
+
+        plcService.OnRead = _ => throw new InvalidOperationException("read failed");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => pipeline.ReadAsync<int>(PlcMonitoringPipelineOperations.ReadCurrentValue, "DB1.0"));
+
+        var entry = Assert.Single(monitoringLogPipeline.Snapshot());
+        Assert.Equal(WearPartMonitoringLogLevel.Error, entry.Level);
+        Assert.Equal(WearPartMonitoringLogCategory.Plc, entry.Category);
+        Assert.Equal("DB1.0", entry.Address);
+        Assert.Contains("read failed", entry.Message, StringComparison.Ordinal);
+        Assert.Contains("InvalidOperationException", entry.Details, StringComparison.Ordinal);
     }
 
     private sealed class PipelineTestPlcService : IPlcService

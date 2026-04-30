@@ -1,0 +1,193 @@
+<UserControl x:Class="WearPartsControl.UserControls.WearPartMonitoringLogUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
+             xmlns:vm="clr-namespace:WearPartsControl.ViewModels"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             mc:Ignorable="d"
+             d:DesignHeight="450"
+             d:DesignWidth="900"
+             d:DataContext="{d:DesignInstance Type=vm:WearPartMonitoringLogViewModel}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Grid.IsSharedSizeScope="True"
+          Background="{StaticResource ShellPanelBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel>
+            <Border Style="{StaticResource ShellSectionHeaderBorderStyle}">
+                <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
+                           Text="{loc:Loc MonitoringLogControl.Title}" />
+            </Border>
+            <Border Margin="0 12 0 0"
+                    Style="{StaticResource ShellStatusCardBorderStyle}">
+                <TextBlock FontWeight="SemiBold"
+                           Foreground="{StaticResource InfoBrush}"
+                           TextWrapping="Wrap"
+                           Text="{Binding StatusMessage, Mode=OneWay}" />
+            </Border>
+            <Border Margin="0 12 0 0"
+                    Style="{StaticResource ShellCardBorderStyle}">
+                <WrapPanel Style="{StaticResource ShellToolbarWrapPanelStyle}">
+                    <Grid Style="{StaticResource ShellToolbarFieldGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="MonitoringLogToolbarLabelColumn" />
+                            <ColumnDefinition Width="150" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
+                                   Text="{loc:Loc MonitoringLogControl.LevelLabel}" />
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding LevelFilters}"
+                                  SelectedItem="{Binding SelectedLevelFilter, Mode=TwoWay}"
+                                  DisplayMemberPath="DisplayName"
+                                  Style="{StaticResource ComboBoxExtend}" />
+                    </Grid>
+                    <Grid Style="{StaticResource ShellToolbarFieldGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="MonitoringLogToolbarLabelColumn" />
+                            <ColumnDefinition Width="150" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
+                                   Text="{loc:Loc MonitoringLogControl.CategoryLabel}" />
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding CategoryFilters}"
+                                  SelectedItem="{Binding SelectedCategoryFilter, Mode=TwoWay}"
+                                  DisplayMemberPath="DisplayName"
+                                  Style="{StaticResource ComboBoxExtend}" />
+                    </Grid>
+                    <Grid Style="{StaticResource ShellToolbarFieldGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="MonitoringLogToolbarLabelColumn" />
+                            <ColumnDefinition Width="240" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
+                                   Text="{loc:Loc MonitoringLogControl.KeywordLabel}" />
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding Keyword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 hc:InfoElement.Placeholder="{loc:Loc MonitoringLogControl.KeywordPlaceholder}" />
+                    </Grid>
+                    <CheckBox Margin="0 10 12 0"
+                              VerticalAlignment="Center"
+                              IsChecked="{Binding IsAutoScrollEnabled, Mode=TwoWay}"
+                              Content="{loc:Loc MonitoringLogControl.AutoScrollLabel}" />
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                            Command="{Binding RefreshCommand}"
+                            hc:IconElement.Geometry="{StaticResource SearchGeometry}"
+                            Content="{loc:Loc MonitoringLogControl.RefreshButton}" />
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                            Command="{Binding NewerPageCommand}"
+                            hc:IconElement.Geometry="{StaticResource RightGeometry}"
+                            Content="{loc:Loc MonitoringLogControl.NewerPageButton}" />
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                            Command="{Binding OlderPageCommand}"
+                            hc:IconElement.Geometry="{StaticResource LeftGeometry}"
+                            Content="{loc:Loc MonitoringLogControl.OlderPageButton}" />
+                    <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                            Command="{Binding PauseResumeCommand}"
+                            Content="{Binding PauseResumeButtonText, Mode=OneWay}" />
+                    <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                            Command="{Binding ClearCommand}"
+                            hc:IconElement.Geometry="{StaticResource DeleteGeometry}"
+                            Content="{loc:Loc MonitoringLogControl.ClearButton}" />
+                    <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                            Command="{Binding CopySelectedCommand}"
+                            Content="{loc:Loc MonitoringLogControl.CopyButton}" />
+                    <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                            Command="{Binding ExportCommand}"
+                            hc:IconElement.Geometry="{StaticResource SaveGeometry}"
+                            Content="{loc:Loc MonitoringLogControl.ExportButton}" />
+                </WrapPanel>
+            </Border>
+        </StackPanel>
+        <Border Grid.Row="1"
+                Margin="0 12 0 0"
+                Style="{StaticResource ShellCardBorderStyle}">
+            <DataGrid x:Name="LogDataGrid"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      EnableColumnVirtualization="True"
+                      EnableRowVirtualization="True"
+                      IsReadOnly="True"
+                      ItemsSource="{Binding Entries}"
+                      ScrollViewer.CanContentScroll="True"
+                      SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"
+                      Style="{StaticResource DataGridBaseStyle}"
+                      VirtualizingPanel.IsVirtualizing="True"
+                      VirtualizingPanel.VirtualizationMode="Recycling">
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Level, Mode=OneWay}"
+                                         Value="Warning">
+                                <Setter Property="Foreground"
+                                        Value="#A86700" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Level, Mode=OneWay}"
+                                         Value="Error">
+                                <Setter Property="Foreground"
+                                        Value="#B42318" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="{loc:Loc MonitoringLogControl.TimeHeader}"
+                                        Binding="{Binding TimestampText, Mode=OneWay}"
+                                        Width="170" />
+                    <DataGridTextColumn Header="{loc:Loc MonitoringLogControl.LevelHeader}"
+                                        Binding="{Binding LevelDisplayName, Mode=OneWay}"
+                                        Width="110" />
+                    <DataGridTextColumn Header="{loc:Loc MonitoringLogControl.CategoryHeader}"
+                                        Binding="{Binding CategoryDisplayName, Mode=OneWay}"
+                                        Width="120" />
+                    <DataGridTextColumn Header="{loc:Loc MonitoringLogControl.OperationHeader}"
+                                        Binding="{Binding OperationName, Mode=OneWay}"
+                                        Width="180" />
+                    <DataGridTextColumn Header="{loc:Loc MonitoringLogControl.ResourceHeader}"
+                                        Binding="{Binding ResourceNumber, Mode=OneWay}"
+                                        Width="150" />
+                    <DataGridTextColumn Header="{loc:Loc MonitoringLogControl.AddressHeader}"
+                                        Binding="{Binding Address, Mode=OneWay}"
+                                        Width="140" />
+                    <DataGridTextColumn Header="{loc:Loc MonitoringLogControl.MessageHeader}"
+                                        Binding="{Binding Message, Mode=OneWay}"
+                                        Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+        <Border Grid.Row="2"
+                Margin="0 12 0 0"
+                Style="{StaticResource ShellCardBorderStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Style="{StaticResource ShellSectionLabelTextStyle}"
+                           Text="{loc:Loc MonitoringLogControl.DetailsLabel}" />
+                <TextBox Grid.Row="1"
+                         MinHeight="86"
+                         MaxHeight="130"
+                         IsReadOnly="True"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"
+                         Text="{Binding SelectedEntry.Details, Mode=OneWay}" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

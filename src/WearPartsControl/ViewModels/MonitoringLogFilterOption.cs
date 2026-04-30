@@ -1,0 +1,5 @@
+namespace WearPartsControl.ViewModels;
+
+public sealed record MonitoringLogLevelFilterOption(string DisplayName, WearPartsControl.ApplicationServices.MonitoringLogs.WearPartMonitoringLogLevel? Level);
+
+public sealed record MonitoringLogCategoryFilterOption(string DisplayName, WearPartsControl.ApplicationServices.MonitoringLogs.WearPartMonitoringLogCategory? Category);

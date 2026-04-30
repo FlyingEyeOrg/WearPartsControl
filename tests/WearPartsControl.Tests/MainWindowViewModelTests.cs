@@ -111,7 +111,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             ResourceNumber = "RES-01"
         });
 
-        Assert.Equal(6, viewModel.Tabs.Count());
+        Assert.Equal(7, viewModel.Tabs.Count());
         Assert.True(viewModel.IsClientAppInfoConfigured);
     }
 
@@ -146,7 +146,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             AccessLevel = 3
         });
 
-        Assert.Equal(5, viewModel.Tabs.Count());
+        Assert.Equal(6, viewModel.Tabs.Count());
 
         viewModel.TabChangedCommand.Execute(3);
 
@@ -186,7 +186,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             AccessLevel = 3
         });
 
-        Assert.Equal(6, viewModel.Tabs.Count());
+        Assert.Equal(7, viewModel.Tabs.Count());
 
         viewModel.TabChangedCommand.Execute(3);
 
@@ -626,7 +626,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             AccessLevel = 3
         });
 
-        viewModel.TabChangedCommand.Execute(5);
+        viewModel.TabChangedCommand.Execute(6);
         var selectedContent = viewModel.SelectedContent;
         var resolveCount = serviceProvider.GetResolveCount<UserConfigUserControl>();
 
@@ -882,6 +882,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             typeof(PartManagementUserControl),
             typeof(ToolChangeManagementUserControl),
             typeof(PartReplacementHistoryUserControl),
+            typeof(WearPartMonitoringLogUserControl),
             typeof(UserConfigUserControl)
         ];
 

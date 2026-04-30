@@ -1,4 +1,6 @@
 using WearPartsControl.ApplicationServices.AppSettings;
+using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.MonitoringLogs;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.Exceptions;
 
@@ -10,17 +12,20 @@ public sealed class WearPartMonitoringControlService : IWearPartMonitoringContro
     private readonly IAppSettingsService _appSettingsService;
     private readonly IPlcStartupConnectionService _plcStartupConnectionService;
     private readonly WearPartMonitoringHostedService _wearPartMonitoringHostedService;
+    private readonly IWearPartMonitoringLogPipeline? _monitoringLogPipeline;
 
     public WearPartMonitoringControlService(
         IMonitoringRuntimeStateProvider monitoringRuntimeStateProvider,
         IAppSettingsService appSettingsService,
         IPlcStartupConnectionService plcStartupConnectionService,
-        WearPartMonitoringHostedService wearPartMonitoringHostedService)
+        WearPartMonitoringHostedService wearPartMonitoringHostedService,
+        IWearPartMonitoringLogPipeline? monitoringLogPipeline = null)
     {
         _monitoringRuntimeStateProvider = monitoringRuntimeStateProvider;
         _appSettingsService = appSettingsService;
         _plcStartupConnectionService = plcStartupConnectionService;
         _wearPartMonitoringHostedService = wearPartMonitoringHostedService;
+        _monitoringLogPipeline = monitoringLogPipeline;
     }
 
     public async Task<bool> GetIsEnabledAsync(CancellationToken cancellationToken = default)
@@ -34,6 +39,7 @@ public sealed class WearPartMonitoringControlService : IWearPartMonitoringContro
         var plcConnectionResult = await _plcStartupConnectionService.EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
         if (plcConnectionResult.Status != PlcStartupConnectionStatus.Connected)
         {
+            PublishControlLog(WearPartMonitoringLogLevel.Warning, LocalizedText.Format("Services.WearPartMonitoringLog.MonitorEnableFailed", plcConnectionResult.Message));
             throw new UserFriendlyException(plcConnectionResult.Message);
         }
 
@@ -43,6 +49,8 @@ public sealed class WearPartMonitoringControlService : IWearPartMonitoringContro
             settings.IsWearPartMonitoringEnabled = true;
             await _appSettingsService.SaveAsync(settings, cancellationToken).ConfigureAwait(false);
         }
+
+        PublishControlLog(WearPartMonitoringLogLevel.Information, LocalizedText.Get("Services.WearPartMonitoringLog.MonitorEnabled"), settings.ResourceNumber);
 
         await _wearPartMonitoringHostedService.RunOnceAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -57,5 +65,16 @@ public sealed class WearPartMonitoringControlService : IWearPartMonitoringContro
 
         settings.IsWearPartMonitoringEnabled = false;
         await _appSettingsService.SaveAsync(settings, cancellationToken).ConfigureAwait(false);
+        PublishControlLog(WearPartMonitoringLogLevel.Information, LocalizedText.Get("Services.WearPartMonitoringLog.MonitorDisabled"), settings.ResourceNumber);
+    }
+
+    private void PublishControlLog(WearPartMonitoringLogLevel level, string message, string? resourceNumber = null)
+    {
+        _monitoringLogPipeline?.Publish(
+            level,
+            WearPartMonitoringLogCategory.Service,
+            message,
+            operationName: nameof(WearPartMonitoringControlService),
+            resourceNumber: resourceNumber);
     }
 }

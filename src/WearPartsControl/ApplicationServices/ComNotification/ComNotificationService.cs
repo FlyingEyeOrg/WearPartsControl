@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.MonitoringLogs;
 using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.Exceptions;
 using UserConfigModel = WearPartsControl.ApplicationServices.UserConfig.UserConfig;
@@ -27,17 +28,20 @@ public sealed class ComNotificationService : IComNotificationService
     private readonly IHttpRequestService _httpRequestService;
     private readonly IUserConfigService _userConfigService;
     private readonly ILogger<ComNotificationService> _logger;
+    private readonly IWearPartMonitoringLogPipeline? _monitoringLogPipeline;
 
     public ComNotificationService(
         ILocalizationService localizationService,
         IHttpRequestService httpRequestService,
         IUserConfigService userConfigService,
-        ILogger<ComNotificationService> logger)
+        ILogger<ComNotificationService> logger,
+        IWearPartMonitoringLogPipeline? monitoringLogPipeline = null)
     {
         _localizationService = localizationService;
         _httpRequestService = httpRequestService;
         _userConfigService = userConfigService;
         _logger = logger;
+        _monitoringLogPipeline = monitoringLogPipeline;
     }
 
     public async ValueTask NotifyGroupAsync(string title, string text, IReadOnlyCollection<string>? toUsers = null, CancellationToken cancellationToken = default)
@@ -47,6 +51,7 @@ public sealed class ComNotificationService : IComNotificationService
         var userConfig = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
         if (!userConfig.ComNotificationEnabled)
         {
+            PublishComLog(WearPartMonitoringLogLevel.Information, L("Services.WearPartMonitoringLog.ComNotificationDisabled"), L("ComNotification.GroupMessageScene"));
             return;
         }
 
@@ -54,6 +59,7 @@ public sealed class ComNotificationService : IComNotificationService
         var users = ResolveUsers(userConfig, toUsers);
         if (users.Count == 0)
         {
+            PublishComLog(WearPartMonitoringLogLevel.Warning, L("Services.WearPartMonitoringLog.ComNoRecipients"), L("ComNotification.GroupMessageScene"));
             return;
         }
 
@@ -90,6 +96,7 @@ public sealed class ComNotificationService : IComNotificationService
         var userConfig = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
         if (!userConfig.ComNotificationEnabled)
         {
+            PublishComLog(WearPartMonitoringLogLevel.Information, L("Services.WearPartMonitoringLog.ComNotificationDisabled"), L("ComNotification.WorkMessageScene"));
             return;
         }
 
@@ -97,6 +104,7 @@ public sealed class ComNotificationService : IComNotificationService
         var users = ResolveUsers(userConfig, toUsers);
         if (users.Count == 0)
         {
+            PublishComLog(WearPartMonitoringLogLevel.Warning, L("Services.WearPartMonitoringLog.ComNoRecipients"), L("ComNotification.WorkMessageScene"));
             return;
         }
 
@@ -191,6 +199,8 @@ public sealed class ComNotificationService : IComNotificationService
 
     private async ValueTask SendAsync(ComPushRequest request, UserConfigModel userConfig, string scene, CancellationToken cancellationToken)
     {
+        PublishComLog(WearPartMonitoringLogLevel.Information, string.Format(L("Services.WearPartMonitoringLog.ComSending"), scene), scene);
+
         using var httpRequest = new HttpRequestMessage(HttpMethod.Post, userConfig.ComPushUrl)
         {
             Content = JsonContent.Create(request)
@@ -239,22 +249,38 @@ public sealed class ComNotificationService : IComNotificationService
 
                 throw new UserFriendlyException(message);
             }
+
+            PublishComLog(WearPartMonitoringLogLevel.Information, string.Format(L("Services.WearPartMonitoringLog.ComSucceeded"), scene), scene);
         }
-        catch (UserFriendlyException)
+        catch (UserFriendlyException ex)
         {
+            PublishComLog(WearPartMonitoringLogLevel.Error, string.Format(L("Services.WearPartMonitoringLog.ComFailed"), scene, ex.Message), scene, exception: ex);
             throw;
         }
         catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
             _logger.LogError(ex, "COM {Scene}发送超时", scene);
+            PublishComLog(WearPartMonitoringLogLevel.Error, string.Format(L("Services.WearPartMonitoringLog.ComFailed"), scene, ex.Message), scene, exception: ex);
             throw new UserFriendlyException(string.Format(L("ComNotification.Timeout"), scene));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "COM {Scene}发送异常", scene);
+            PublishComLog(WearPartMonitoringLogLevel.Error, string.Format(L("Services.WearPartMonitoringLog.ComFailed"), scene, ex.Message), scene, exception: ex);
             throw new UserFriendlyException(string.Format(L("ComNotification.Unhandled"), scene, ex.Message));
         }
     }
 
     private string L(string key) => _localizationService[key];
+
+    private void PublishComLog(WearPartMonitoringLogLevel level, string message, string scene, Exception? exception = null)
+    {
+        _monitoringLogPipeline?.Publish(
+            level,
+            WearPartMonitoringLogCategory.Com,
+            message,
+            operationName: scene,
+            details: exception?.Message,
+            exception: exception);
+    }
 }
