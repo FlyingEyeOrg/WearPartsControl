@@ -1,4 +1,5 @@
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.AutoStart;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.ComNotification;
@@ -40,7 +41,7 @@ public sealed class UserConfigViewModelLocalizationTests
         using var cultureScope = new TestCultureScope("zh-CN");
 
         var localizationService = new MutableLocalizationService("zh-CN");
-        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubAutoStartService(), new StubComNotificationService(), localizationService, new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubAppSettingsService(), new StubAutoStartService(), new StubComNotificationService(), localizationService, new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
 
         viewModel.SelectedLanguage = "en-US";
         var selectedOption = viewModel.SelectedLanguageOption;
@@ -92,7 +93,7 @@ public sealed class UserConfigViewModelLocalizationTests
 
     private static UserConfigViewModel CreateViewModel(string cultureName)
     {
-        return new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubAutoStartService(), new StubComNotificationService(), new MutableLocalizationService(cultureName), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        return new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubAppSettingsService(), new StubAutoStartService(), new StubComNotificationService(), new MutableLocalizationService(cultureName), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
     }
 
     private sealed class MutableLocalizationService : ILocalizationService
@@ -150,6 +151,22 @@ public sealed class UserConfigViewModelLocalizationTests
 
         public ValueTask SaveAsync(UserConfig config, CancellationToken cancellationToken = default)
         {
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class StubAppSettingsService : IAppSettingsService
+    {
+        public event EventHandler<AppSettings>? SettingsSaved;
+
+        public ValueTask<AppSettings> GetAsync(CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(new AppSettings());
+        }
+
+        public ValueTask SaveAsync(AppSettings settings, CancellationToken cancellationToken = default)
+        {
+            SettingsSaved?.Invoke(this, settings);
             return ValueTask.CompletedTask;
         }
     }

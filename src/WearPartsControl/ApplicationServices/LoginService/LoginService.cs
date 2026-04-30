@@ -14,6 +14,10 @@ namespace WearPartsControl.ApplicationServices.LoginService;
 
 public sealed class LoginService : ILoginService
 {
+#if DEBUG
+    private const string DebugTestLoginId = "60218718";
+#endif
+
     private readonly IHttpJsonService _httpJsonService;
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly ILocalizationService _localizationService;
@@ -36,7 +40,6 @@ public sealed class LoginService : ILoginService
 
     public async Task<MhrUser?> LoginAsync(string authId, string factory, string resourceId, bool isIdCard, CancellationToken cancellationToken = default)
     {
-        var config = await LoadConfigAsync(cancellationToken);
         var normalizedFactory = factory?.Trim() ?? string.Empty;
         var normalizedResourceId = resourceId?.Trim() ?? string.Empty;
         var normalizedAuthId = authId?.Trim() ?? string.Empty;
@@ -55,6 +58,22 @@ public sealed class LoginService : ILoginService
         {
             throw new UserFriendlyException(L("LoginService.AuthIdEmpty"));
         }
+
+#if DEBUG
+        if (string.Equals(normalizedAuthId, DebugTestLoginId, StringComparison.Ordinal))
+        {
+            var debugUser = new MhrUser
+            {
+                CardId = DebugTestLoginId,
+                WorkId = DebugTestLoginId,
+                AccessLevel = 999
+            };
+            _currentUserAccessor.SetCurrentUser(debugUser);
+            return debugUser;
+        }
+#endif
+
+        var config = await LoadConfigAsync(cancellationToken);
 
         var loginInfo = config.LoginInfos.FirstOrDefault(x => x.Site.Equals(normalizedFactory, StringComparison.OrdinalIgnoreCase));
         if (loginInfo == null)

@@ -183,6 +183,35 @@ public sealed class LoginServiceTests : IDisposable
         Assert.Equal("http://ddm.catl.com/LeanManHour/ClinkGetPermissions", httpJsonService.LastRequestUri);
     }
 
+#if DEBUG
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task LoginAsync_WhenDebugTestLoginId_ShouldAuthenticateWithoutRemoteCall(bool isIdCard)
+    {
+        var currentUserAccessor = new CurrentUserAccessor();
+        var httpJsonService = new RecordingHttpJsonService();
+        var service = new LoginService(
+            httpJsonService,
+            new StubLocalizationService(),
+            currentUserAccessor,
+            new MhrUserDirectoryCache(Path.Combine(_settingsDirectory, $"cache-{isIdCard}.json")),
+            Path.Combine(_settingsDirectory, $"missing-{isIdCard}.json"));
+
+        var user = await service.LoginAsync("60218718", "S01", "RES-DEBUG", isIdCard);
+
+        Assert.NotNull(user);
+        Assert.Equal("60218718", user!.WorkId);
+        Assert.Equal("60218718", user.CardId);
+        Assert.Equal(999, user.AccessLevel);
+        Assert.NotNull(currentUserAccessor.CurrentUser);
+        Assert.Equal("60218718", currentUserAccessor.CurrentUser!.WorkId);
+        Assert.Equal(999, currentUserAccessor.CurrentUser.AccessLevel);
+        Assert.Equal(0, httpJsonService.PostCallCount);
+        Assert.Equal(0, httpJsonService.SendCallCount);
+    }
+#endif
+
     public void Dispose()
     {
         if (Directory.Exists(_settingsDirectory))

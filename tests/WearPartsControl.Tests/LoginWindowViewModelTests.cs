@@ -62,6 +62,24 @@ public sealed class LoginWindowViewModelTests
     }
 
     [Fact]
+    public async Task InitializeAsync_ShouldUseBuildSpecificLoginInputInterval()
+    {
+        var viewModel = new LoginWindowViewModel(
+            new StubLoginService(),
+            new StubClientAppConfigurationRepository(),
+            new StubAppSettingsService(),
+            new StubUiDispatcher());
+
+        await viewModel.InitializeAsync();
+
+#if DEBUG
+        Assert.Equal(2000, viewModel.LoginInputMaxIntervalMilliseconds);
+#else
+        Assert.Equal(88, viewModel.LoginInputMaxIntervalMilliseconds);
+#endif
+    }
+
+    [Fact]
     public async Task InitializeAsync_WhenClientSiteCodeMissing_ShouldShowPromptAndKeepSiteEmpty()
     {
         var loginService = new StubLoginService();

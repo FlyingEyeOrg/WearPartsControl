@@ -3,6 +3,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.AutoStart;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.ComNotification;
@@ -18,6 +19,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
 
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly IUserConfigService _userConfigService;
+    private readonly IAppSettingsService _appSettingsService;
     private readonly IAutoStartService _autoStartService;
     private readonly IComNotificationService _comNotificationService;
     private readonly ILocalizationService _localizationService;
@@ -37,6 +39,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
     private string _prdResponsibleWorkId = string.Empty;
     private string _prdResponsibleName = string.Empty;
     private string _replacementOperatorName = string.Empty;
+    private bool _useWorkNumberLogin;
     private string _comAccessToken = string.Empty;
     private string _comSecret = string.Empty;
     private bool _comNotificationEnabled;
@@ -63,10 +66,11 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
     private string _statusMessage = LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain");
     private Func<string>? _statusMessageFactory;
 
-    public UserConfigViewModel(IClientAppInfoService clientAppInfoService, IUserConfigService userConfigService, IAutoStartService autoStartService, IComNotificationService comNotificationService, ILocalizationService localizationService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService)
+    public UserConfigViewModel(IClientAppInfoService clientAppInfoService, IUserConfigService userConfigService, IAppSettingsService appSettingsService, IAutoStartService autoStartService, IComNotificationService comNotificationService, ILocalizationService localizationService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService)
     {
         _clientAppInfoService = clientAppInfoService;
         _userConfigService = userConfigService;
+        _appSettingsService = appSettingsService;
         _autoStartService = autoStartService;
         _comNotificationService = comNotificationService;
         _localizationService = localizationService;
@@ -279,6 +283,18 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         set
         {
             if (SetProperty(ref _replacementOperatorName, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public bool UseWorkNumberLogin
+    {
+        get => _useWorkNumberLogin;
+        set
+        {
+            if (SetProperty(ref _useWorkNumberLogin, value))
             {
                 UpdateDirtyState();
             }
@@ -502,6 +518,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         await ExecuteBusyAsync(async () =>
         {
             var config = await _userConfigService.GetAsync(cancellationToken).ConfigureAwait(false);
+            var appSettings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
             var registeredAutoStartEnabled = await _autoStartService.IsEnabledAsync(cancellationToken).ConfigureAwait(false);
             config.AutoStartEnabled = registeredAutoStartEnabled;
             await _userConfigService.SaveAsync(config, cancellationToken).ConfigureAwait(false);
@@ -509,7 +526,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             var effectiveConfig = MergeCutterMesConfig(config, clientAppInfo);
             await _uiDispatcher.RunAsync(() =>
             {
-                ApplyConfig(effectiveConfig);
+                ApplyConfig(effectiveConfig, appSettings.UseWorkNumberLogin);
                 _originalSnapshot = CaptureSnapshot();
                 IsDirty = false;
                 _isInitialized = true;
@@ -529,6 +546,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             var config = BuildConfig();
             await _autoStartService.SetEnabledAsync(config.AutoStartEnabled).ConfigureAwait(false);
             await _userConfigService.SaveAsync(config).ConfigureAwait(false);
+            await SaveLoginAuthModeAsync().ConfigureAwait(false);
             await _localizationService.SetCultureAsync(SelectedLanguage).ConfigureAwait(false);
             await _uiDispatcher.RunAsync(() =>
             {
@@ -551,6 +569,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
                 var config = BuildConfig();
                 await _autoStartService.SetEnabledAsync(config.AutoStartEnabled).ConfigureAwait(false);
                 await _userConfigService.SaveAsync(config).ConfigureAwait(false);
+                await SaveLoginAuthModeAsync().ConfigureAwait(false);
                 await _uiDispatcher.RunAsync(() =>
                 {
                     _originalSnapshot = CaptureSnapshot();
@@ -781,7 +800,19 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         };
     }
 
-    private void ApplyConfig(UserConfig config)
+    private async ValueTask SaveLoginAuthModeAsync(CancellationToken cancellationToken = default)
+    {
+        var appSettings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(false);
+        if (appSettings.UseWorkNumberLogin == UseWorkNumberLogin)
+        {
+            return;
+        }
+
+        appSettings.UseWorkNumberLogin = UseWorkNumberLogin;
+        await _appSettingsService.SaveAsync(appSettings, cancellationToken).ConfigureAwait(false);
+    }
+
+    private void ApplyConfig(UserConfig config, bool useWorkNumberLogin)
     {
         _isUpdatingState = true;
         try
@@ -791,6 +822,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             PrdResponsibleWorkId = config.PrdResponsibleWorkId;
             PrdResponsibleName = config.PrdResponsibleName;
             ReplacementOperatorName = config.ReplacementOperatorName;
+            UseWorkNumberLogin = useWorkNumberLogin;
             AutoStartEnabled = config.AutoStartEnabled;
             ComAccessToken = config.ComAccessToken;
             ComSecret = config.ComSecret;
@@ -841,6 +873,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             PrdResponsibleWorkId?.Trim() ?? string.Empty,
             PrdResponsibleName?.Trim() ?? string.Empty,
             ReplacementOperatorName?.Trim() ?? string.Empty,
+            UseWorkNumberLogin,
             AutoStartEnabled,
             ComAccessToken?.Trim() ?? string.Empty,
             ComSecret?.Trim() ?? string.Empty,
@@ -987,6 +1020,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         string PrdResponsibleWorkId,
         string PrdResponsibleName,
         string ReplacementOperatorName,
+        bool UseWorkNumberLogin,
         bool AutoStartEnabled,
         string ComAccessToken,
         string ComSecret,
@@ -1016,6 +1050,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
             string.Empty,
             string.Empty,
             string.Empty,
+            false,
             UserConfig.DefaultAutoStartEnabled,
             string.Empty,
             string.Empty,

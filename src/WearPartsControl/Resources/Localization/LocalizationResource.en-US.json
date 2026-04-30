@@ -73,6 +73,7 @@
     "NotificationSection": "Notification Settings",
     "LanguageLabel": "Language:",
     "LanguagePlaceholder": "Select language",
+    "UseWorkNumberLoginLabel": "Use work ID login:",
     "AutoStartLabel": "Start with Windows:",
     "AutoStartPlaceholder": "Select whether to start with Windows",
     "MeResponsibleWorkIdLabel": "ME owner work ID:",

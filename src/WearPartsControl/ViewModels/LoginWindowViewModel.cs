@@ -13,6 +13,9 @@ namespace WearPartsControl.ViewModels
 {
     public class LoginWindowViewModel : LocalizedViewModelBase
     {
+        private const int DefaultLoginInputMaxIntervalMilliseconds = 80;
+        private const int DebugLoginInputMaxIntervalMilliseconds = 2000;
+
         private readonly ILoginService _loginService;
         private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
         private readonly IAppSettingsService _appSettingsService;
@@ -22,7 +25,7 @@ namespace WearPartsControl.ViewModels
         private string _statusMessage = LocalizedText.Get("ViewModels.LoginWindowVm.PromptSwipeCard");
         private string _resourceNumber = string.Empty;
         private string _siteCode = string.Empty;
-        private int _loginInputMaxIntervalMilliseconds = 80;
+        private int _loginInputMaxIntervalMilliseconds = DefaultLoginInputMaxIntervalMilliseconds;
         private bool _useWorkNumberLogin;
         private bool _isBusy;
         private Func<string>? _statusMessageFactory;
@@ -136,9 +139,7 @@ namespace WearPartsControl.ViewModels
         {
             var settings = await _appSettingsService.GetAsync(cancellationToken);
             ResourceNumber = settings.ResourceNumber;
-            LoginInputMaxIntervalMilliseconds = settings.LoginInputMaxIntervalMilliseconds <= 0
-                ? 80
-                : settings.LoginInputMaxIntervalMilliseconds;
+            LoginInputMaxIntervalMilliseconds = ResolveLoginInputMaxIntervalMilliseconds(settings.LoginInputMaxIntervalMilliseconds);
             UseWorkNumberLogin = settings.UseWorkNumberLogin;
 
             if (string.IsNullOrWhiteSpace(ResourceNumber))
@@ -181,6 +182,17 @@ namespace WearPartsControl.ViewModels
         public void ClearInput()
         {
             AuthId = string.Empty;
+        }
+
+        private static int ResolveLoginInputMaxIntervalMilliseconds(int configuredMilliseconds)
+        {
+#if DEBUG
+            return DebugLoginInputMaxIntervalMilliseconds;
+#else
+            return configuredMilliseconds <= 0
+                ? DefaultLoginInputMaxIntervalMilliseconds
+                : configuredMilliseconds;
+#endif
         }
 
         private bool CanLogin()

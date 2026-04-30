@@ -73,6 +73,7 @@
     "NotificationSection": "通知配置",
     "LanguageLabel": "语言：",
     "LanguagePlaceholder": "请选择语言",
+    "UseWorkNumberLoginLabel": "使用工号认证：",
     "AutoStartLabel": "开启自启动：",
     "AutoStartPlaceholder": "请选择是否开机自启动",
     "MeResponsibleWorkIdLabel": "ME 负责人工号：",

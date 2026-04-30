@@ -81,6 +81,18 @@
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                       Text="{loc:Loc UserConfigControl.UseWorkNumberLoginLabel}" />
+                            <CheckBox Grid.Column="1"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding UseWorkNumberLogin, Mode=TwoWay}" />
+                        </Grid>
+                        <Grid Style="{StaticResource ShellFormRowGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="UserConfigLabelColumn" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                        Text="{loc:Loc UserConfigControl.AutoStartLabel}" />
                             <ComboBox Grid.Column="1"
                                       Style="{StaticResource ComboBoxExtend}"

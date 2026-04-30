@@ -7,6 +7,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Threading;
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.AutoStart;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.ComNotification;
@@ -76,6 +77,7 @@ public sealed class UserConfigUserControlTests
         return new UserConfigViewModel(
             new StubClientAppInfoService(),
             new StubUserConfigService(),
+            new StubAppSettingsService(),
             new StubAutoStartService(),
             new StubComNotificationService(),
             new MutableLocalizationService("zh-CN"),
@@ -237,6 +239,22 @@ public sealed class UserConfigUserControlTests
 
         public ValueTask SaveAsync(UserConfig config, CancellationToken cancellationToken = default)
         {
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class StubAppSettingsService : IAppSettingsService
+    {
+        public event EventHandler<AppSettings>? SettingsSaved;
+
+        public ValueTask<AppSettings> GetAsync(CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(new AppSettings());
+        }
+
+        public ValueTask SaveAsync(AppSettings settings, CancellationToken cancellationToken = default)
+        {
+            SettingsSaved?.Invoke(this, settings);
             return ValueTask.CompletedTask;
         }
     }
