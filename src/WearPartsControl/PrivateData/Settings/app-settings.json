@@ -1,6 +1,6 @@
 {
   "ResourceNumber": "",
-  "LoginInputMaxIntervalMilliseconds": 2000,
+  "LoginInputMaxIntervalMilliseconds": 80,
   "PlcPipeline": {
     "SlowQueueWaitThresholdMilliseconds": 100,
     "SlowExecutionThresholdMilliseconds": 500
