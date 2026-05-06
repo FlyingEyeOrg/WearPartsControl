@@ -57,6 +57,49 @@ public sealed class CutterMesValidationServiceTests
     }
 
     [Fact]
+    public async Task GetValidationSnapshotAsync_ShouldParseExpectedCodeAndKdl()
+    {
+        var httpRequestService = new StubHttpRequestService
+        {
+            Response = new HttpRawResponse(200, "OK", """
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Body>
+    <ns2:getParametricValueResponse xmlns:ns2="http://machineintegration.ws.atlmes.com/">
+      <return>
+        <code>0</code>
+        <message>success</message>
+        <parametricDataArray>
+          <parameter>QDBH-UP</parameter>
+          <value>CUTTER-002</value>
+        </parametricDataArray>
+        <parametricDataArray>
+          <parameter>KDL</parameter>
+          <value>0.235</value>
+        </parametricDataArray>
+      </return>
+    </ns2:getParametricValueResponse>
+  </soapenv:Body>
+</soapenv:Envelope>
+""")
+        };
+        var service = new CutterMesValidationService(httpRequestService);
+
+        var snapshot = await service.GetValidationSnapshotAsync(new CutterMesValidationRequest
+        {
+            Wsdl = "https://mes.example.com/service?wsdl",
+            UserName = "mes-user",
+            Password = "mes-pass",
+            Site = "MES-S01",
+            RollNumber = "ROLL-002",
+            Parameter = "QDBH-UP"
+        });
+
+        Assert.Equal("CUTTER-002", snapshot.ExpectedCutterCode);
+        Assert.Equal("0.235", snapshot.KdlText);
+        Assert.Equal(0.235, snapshot.KdlValue);
+    }
+
+    [Fact]
     public async Task GetExpectedCutterCodeAsync_WhenHttpFailed_ShouldWrapException()
     {
         var httpRequestService = new StubHttpRequestService
@@ -75,7 +118,7 @@ public sealed class CutterMesValidationServiceTests
             Parameter = "QDBH-UP"
         }));
 
-        Assert.Contains("调用离线校验接口错误", exception.Message);
+        Assert.StartsWith(LocalizedText.Format("Services.WearPartReplacement.CutterMesCallFailed", string.Empty), exception.Message);
     }
 
   [Fact]

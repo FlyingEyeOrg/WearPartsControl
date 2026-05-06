@@ -111,7 +111,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             ResourceNumber = "RES-01"
         });
 
-        Assert.Equal(7, viewModel.Tabs.Count());
+        Assert.Equal(8, viewModel.Tabs.Count());
         Assert.True(viewModel.IsClientAppInfoConfigured);
     }
 
@@ -186,12 +186,17 @@ public sealed class MainWindowViewModelTests : IDisposable
             AccessLevel = 3
         });
 
-        Assert.Equal(7, viewModel.Tabs.Count());
+        Assert.Equal(8, viewModel.Tabs.Count());
 
         viewModel.TabChangedCommand.Execute(3);
 
         Assert.Equal(1, serviceProvider.GetResolveCount<ToolChangeManagementUserControl>());
         Assert.IsType<ToolChangeManagementUserControl>(viewModel.SelectedContent);
+
+        viewModel.TabChangedCommand.Execute(4);
+
+        Assert.Equal(1, serviceProvider.GetResolveCount<KdlRecipeManagementUserControl>());
+        Assert.IsType<KdlRecipeManagementUserControl>(viewModel.SelectedContent);
     }
 
     [Fact]
@@ -313,7 +318,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         var viewModel = CreateViewModel(accessor, loginService, appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
 
         await viewModel.InitializeAsync();
-        viewModel.TabChangedCommand.Execute(4);
+        viewModel.TabChangedCommand.Execute(5);
         Assert.IsType<NeedLoginUserControl>(viewModel.SelectedContent);
 
         accessor.SetCurrentUser(new MhrUser
@@ -881,6 +886,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             typeof(NeedLoginUserControl),
             typeof(PartManagementUserControl),
             typeof(ToolChangeManagementUserControl),
+            typeof(KdlRecipeManagementUserControl),
             typeof(PartReplacementHistoryUserControl),
             typeof(WearPartMonitoringLogUserControl),
             typeof(UserConfigUserControl)

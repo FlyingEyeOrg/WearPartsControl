@@ -1,0 +1,202 @@
+<UserControl x:Class="WearPartsControl.UserControls.KdlRecipeManagementUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
+             mc:Ignorable="d"
+             d:DesignHeight="450"
+             d:DesignWidth="1000">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Grid.IsSharedSizeScope="True"
+          Background="{StaticResource ShellPanelBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <Border Margin="0"
+                    Style="{StaticResource ShellSectionHeaderBorderStyle}">
+                <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
+                           Text="{loc:Loc KdlRecipeManagementControl.Title}" />
+            </Border>
+
+            <Border Margin="0 12 0 0"
+                    Style="{StaticResource ShellStatusCardBorderStyle}">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock VerticalAlignment="Center"
+                               TextWrapping="WrapWithOverflow"
+                               Foreground="{StaticResource InfoBrush}"
+                               FontWeight="SemiBold"
+                               Text="{Binding StatusMessage, Mode=OneWay}" />
+
+                    <WrapPanel Grid.Row="1"
+                               Style="{StaticResource ShellToolbarWrapPanelStyle}">
+                        <Grid Style="{StaticResource ShellToolbarFieldGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="KdlRecipeLabelColumn" />
+                                <ColumnDefinition Width="220" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center"
+                                       Margin="0 0 8 0"
+                                       TextWrapping="Wrap"
+                                       Text="{loc:Loc KdlRecipeManagementControl.NameLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding RecipeName, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     hc:InfoElement.Placeholder="{loc:Loc KdlRecipeManagementControl.NamePlaceholder}" />
+                        </Grid>
+
+                        <Grid Style="{StaticResource ShellToolbarFieldGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="KdlRecipeLabelColumn" />
+                                <ColumnDefinition Width="160" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center"
+                                       Margin="0 0 8 0"
+                                       TextWrapping="Wrap"
+                                       Text="{loc:Loc KdlRecipeManagementControl.LowerLimitLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding LowerLimit, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     hc:InfoElement.Placeholder="{loc:Loc KdlRecipeManagementControl.LowerLimitPlaceholder}" />
+                        </Grid>
+
+                        <Grid Style="{StaticResource ShellToolbarFieldGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="KdlRecipeLabelColumn" />
+                                <ColumnDefinition Width="160" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center"
+                                       Margin="0 0 8 0"
+                                       TextWrapping="Wrap"
+                                       Text="{loc:Loc KdlRecipeManagementControl.UpperLimitLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding UpperLimit, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     hc:InfoElement.Placeholder="{loc:Loc KdlRecipeManagementControl.UpperLimitPlaceholder}" />
+                        </Grid>
+
+                        <Grid Style="{StaticResource ShellToolbarFieldGridStyle}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"
+                                                  SharedSizeGroup="KdlRecipeLabelColumn" />
+                                <ColumnDefinition Width="220" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center"
+                                       Margin="0 0 8 0"
+                                       TextWrapping="Wrap"
+                                       Text="{loc:Loc KdlRecipeManagementControl.KeywordLabel}" />
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource TextBoxExtend}"
+                                     hc:InfoElement.Placeholder="{loc:Loc KdlRecipeManagementControl.KeywordPlaceholder}" />
+                        </Grid>
+
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                                Command="{Binding SearchCommand}"
+                                Content="{loc:Loc KdlRecipeManagementControl.SearchButton}" />
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                                Command="{Binding RefreshCommand}"
+                                Content="{loc:Loc KdlRecipeManagementControl.RefreshButton}" />
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                                Command="{Binding NewCommand}"
+                                Content="{loc:Loc KdlRecipeManagementControl.NewButton}" />
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                                Command="{Binding EditCommand}"
+                                Content="{loc:Loc KdlRecipeManagementControl.EditButton}" />
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                                Command="{Binding SetCurrentCommand}"
+                                Content="{loc:Loc KdlRecipeManagementControl.SetCurrentButton}" />
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                                Command="{Binding DeleteCommand}"
+                                Content="{loc:Loc KdlRecipeManagementControl.DeleteButton}" />
+                    </WrapPanel>
+                </Grid>
+            </Border>
+        </StackPanel>
+
+        <Border Grid.Row="1"
+                Margin="0 12 0 0"
+                MinHeight="0"
+                MinWidth="0"
+                ClipToBounds="True"
+                Style="{StaticResource ShellCardBorderStyle}">
+            <DataGrid AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      IsReadOnly="False"
+                      ItemsSource="{Binding Recipes}"
+                      SelectedItem="{Binding SelectedRecipeRow, Mode=TwoWay}"
+                      EnableColumnVirtualization="True"
+                      EnableRowVirtualization="True">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Width="SizeToHeader">
+                        <DataGridTemplateColumn.HeaderTemplate>
+                            <DataTemplate>
+                                <CheckBox VerticalAlignment="Center"
+                                          IsChecked="{Binding DataContext.AreAllRecipesChecked, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Content="{loc:Loc KdlRecipeManagementControl.CheckedHeader}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.HeaderTemplate>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridCheckBoxColumn Header="{loc:Loc KdlRecipeManagementControl.CurrentHeader}"
+                                            Binding="{Binding Item.IsCurrent}"
+                                            IsReadOnly="True"
+                                            Width="SizeToHeader" />
+                    <DataGridTextColumn Header="{loc:Loc KdlRecipeManagementControl.NameHeader}"
+                                        Binding="{Binding Item.Name}"
+                                        IsReadOnly="True"
+                                        Width="SizeToHeader" />
+                    <DataGridTextColumn Header="{loc:Loc KdlRecipeManagementControl.LowerLimitHeader}"
+                                        Binding="{Binding Item.LowerLimit}"
+                                        IsReadOnly="True"
+                                        Width="SizeToHeader" />
+                    <DataGridTextColumn Header="{loc:Loc KdlRecipeManagementControl.UpperLimitHeader}"
+                                        Binding="{Binding Item.UpperLimit}"
+                                        IsReadOnly="True"
+                                        Width="SizeToHeader" />
+                    <DataGridTextColumn Header="{loc:Loc KdlRecipeManagementControl.CreatedAtHeader}"
+                                        Binding="{Binding Item.CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                        IsReadOnly="True"
+                                        Width="SizeToHeader" />
+                    <DataGridTextColumn Header="{loc:Loc KdlRecipeManagementControl.CreatedByHeader}"
+                                        Binding="{Binding Item.CreatedBy}"
+                                        IsReadOnly="True"
+                                        Width="SizeToHeader" />
+                    <DataGridTextColumn Header="{loc:Loc KdlRecipeManagementControl.UpdatedAtHeader}"
+                                        Binding="{Binding Item.UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                        IsReadOnly="True"
+                                        Width="SizeToHeader" />
+                    <DataGridTextColumn Header="{loc:Loc KdlRecipeManagementControl.UpdatedByHeader}"
+                                        Binding="{Binding Item.UpdatedBy}"
+                                        IsReadOnly="True"
+                                        Width="SizeToHeader" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>

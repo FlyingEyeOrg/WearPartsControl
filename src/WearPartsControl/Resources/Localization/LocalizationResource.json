@@ -16,6 +16,7 @@
       "Equipment Information",
       "Wear Part Management",
       "Tool Change Management",
+      "KDL Recipe Settings",
       "Replacement History",
       "Monitoring Log",
       "User Settings"
@@ -345,6 +346,32 @@
     "UpdatedAtHeader": "Updated at",
     "UpdatedByHeader": "Updated by"
   },
+  "KdlRecipeManagementControl": {
+    "Title": "KDL Recipe Settings",
+    "CheckedHeader": "Select",
+    "CurrentHeader": "Current",
+    "NameLabel": "Recipe:",
+    "NamePlaceholder": "Enter recipe name",
+    "LowerLimitLabel": "Lower:",
+    "LowerLimitPlaceholder": "Enter lower KDL limit",
+    "UpperLimitLabel": "Upper:",
+    "UpperLimitPlaceholder": "Enter upper KDL limit",
+    "KeywordLabel": "Filter:",
+    "KeywordPlaceholder": "Recipe name",
+    "SearchButton": "Search",
+    "RefreshButton": "Refresh",
+    "NewButton": "Add",
+    "EditButton": "Edit",
+    "SetCurrentButton": "Set Current",
+    "DeleteButton": "Delete",
+    "NameHeader": "Recipe",
+    "LowerLimitHeader": "Lower Limit",
+    "UpperLimitHeader": "Upper Limit",
+    "CreatedAtHeader": "Created at",
+    "CreatedByHeader": "Created by",
+    "UpdatedAtHeader": "Updated at",
+    "UpdatedByHeader": "Updated by"
+  },
   "PlcService": {
     "Errors": {
       "ReadAddressEmpty": "Read address cannot be empty.",
@@ -513,6 +540,30 @@
       "Deleting": "Deleting tool change type...",
       "Deleted": "Tool change type {0} deleted.",
       "DeletedMultiple": "Deleted {0} tool change types."
+    },
+    "KdlRecipeManagementVm": {
+      "PromptLoadCurrent": "Please load KDL recipes first.",
+      "Loading": "Loading KDL recipes...",
+      "Empty": "No KDL recipe is configured.",
+      "Loaded": "Loaded {0} KDL recipes. Current recipe: {1}.",
+      "LoadedWithoutCurrent": "Loaded {0} KDL recipes. No current recipe is selected.",
+      "Editing": "Editing KDL recipe {0}.",
+      "EditingCurrent": "Editing current KDL recipe {0}.",
+      "Creating": "Creating KDL recipe...",
+      "Created": "KDL recipe {0} created.",
+      "CreatedAndSelected": "KDL recipe {0} created and set as current.",
+      "Updating": "Updating KDL recipe...",
+      "Updated": "KDL recipe {0} updated.",
+      "SettingCurrent": "Setting current KDL recipe...",
+      "CurrentSet": "Current KDL recipe set to {0}.",
+      "DeleteConfirmationMessage": "Delete KDL recipe \"{0}\"?",
+      "DeleteMultipleConfirmationMessage": "Delete the {0} selected KDL recipes?",
+      "DeleteConfirmationTitle": "Delete Confirmation",
+      "Deleting": "Deleting KDL recipes...",
+      "Deleted": "KDL recipe {0} deleted.",
+      "DeletedMultiple": "Deleted {0} KDL recipes.",
+      "LowerLimitInvalid": "The lower KDL limit must be a valid number.",
+      "UpperLimitInvalid": "The upper KDL limit must be a valid number."
     },
     "PartUpdateRecordVm": {
       "PromptLoadCurrent": "Please load wear part replacement history for the current device first.",
@@ -710,6 +761,15 @@
       "IdRequired": "A valid primary key is required to update a tool change type.",
       "NotFoundById": "No tool change type found with ID {0}."
     },
+    "KdlRecipeManagement": {
+      "NameRequired": "KDL recipe name cannot be empty.",
+      "LowerLimitInvalid": "The lower KDL limit must be a valid number.",
+      "UpperLimitInvalid": "The upper KDL limit must be a valid number.",
+      "RangeInvalid": "The lower KDL limit {0} cannot exceed the upper limit {1}.",
+      "DuplicatedName": "A KDL recipe named {0} already exists.",
+      "IdRequired": "A valid KDL recipe ID is required.",
+      "NotFoundById": "No KDL recipe found with ID {0}."
+    },
     "WearPartReplacement": {
       "NewBarcodeRequired": "New barcode cannot be empty.",
       "ReasonRequired": "Replacement reason cannot be empty.",
@@ -738,6 +798,10 @@
       "CutterMesResponseInvalid": "The cutter MES response format is invalid.",
       "CutterMesBusinessFailed": "Cutter offline validation failed. Message:",
       "CutterMesCutterCodeMissing": "The cutter MES response did not include a cutter code.",
+      "CutterKdlRecipeNotConfigured": "Please select the current KDL recipe before replacing a cutter.",
+      "CutterMesKdlMissing": "The cutter MES response did not include KDL.",
+      "CutterMesKdlInvalid": "The cutter MES returned an invalid KDL value: {0}.",
+      "CutterKdlOutOfRange": "The current cutter KDL {0} is outside the selected recipe range {1} - {2} ({3}).",
       "CoatingAbSideRequired": "The current coating procedure requires selecting side A or B first.",
       "CoatingAbSideMismatch": "The selected coating side is {0}, but the parsed barcode side is {1}.",
       "SpacerValidationFailedAndShutdownApplied": "Spacer validation failed and the system applied shutdown protection: {0}",

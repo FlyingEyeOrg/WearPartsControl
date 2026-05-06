@@ -6,7 +6,8 @@ public enum MainWindowTabKey
     ClientAppInfo = 1,
     PartManagement = 2,
     ToolChangeManagement = 3,
-    PartReplacementHistory = 4,
-    WearPartMonitoringLog = 5,
-    UserConfig = 6
+    KdlRecipeManagement = 4,
+    PartReplacementHistory = 5,
+    WearPartMonitoringLog = 6,
+    UserConfig = 7
 }

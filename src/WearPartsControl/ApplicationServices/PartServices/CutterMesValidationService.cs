@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security;
 using System.Text;
+using System.Globalization;
 using System.Xml.Linq;
 using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.Localization;
@@ -20,7 +21,7 @@ public sealed class CutterMesValidationService : ICutterMesValidationService
         _httpRequestService = httpRequestService;
     }
 
-    public async Task<string> GetExpectedCutterCodeAsync(CutterMesValidationRequest request, CancellationToken cancellationToken = default)
+    public async Task<CutterMesValidationSnapshot> GetValidationSnapshotAsync(CutterMesValidationRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ValidateRequest(request);
@@ -39,12 +40,18 @@ public sealed class CutterMesValidationService : ICutterMesValidationService
         {
             var response = await _httpRequestService.SendAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
             EnsureSuccessStatusCode(response);
-            return ParseExpectedCutterCode(response.Body, request.Parameter);
+            return ParseValidationSnapshot(response.Body, request.Parameter);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             throw new InvalidOperationException(LocalizedText.Format("Services.WearPartReplacement.CutterMesCallFailed", ex.Message), ex);
         }
+    }
+
+    public async Task<string> GetExpectedCutterCodeAsync(CutterMesValidationRequest request, CancellationToken cancellationToken = default)
+    {
+        var snapshot = await GetValidationSnapshotAsync(request, cancellationToken).ConfigureAwait(false);
+        return snapshot.ExpectedCutterCode;
     }
 
     private static string BuildEnvelope(CutterMesValidationRequest request)
@@ -97,7 +104,7 @@ public sealed class CutterMesValidationService : ICutterMesValidationService
         }
     }
 
-    private static string ParseExpectedCutterCode(string xml, string requestedParameter)
+    private static CutterMesValidationSnapshot ParseValidationSnapshot(string xml, string requestedParameter)
     {
         var document = XDocument.Parse(xml);
         var body = document.Descendants(SoapEnvelopeNamespace + "Body").FirstOrDefault()
@@ -117,13 +124,16 @@ public sealed class CutterMesValidationService : ICutterMesValidationService
             throw new InvalidOperationException($"{LocalizedText.Get("Services.WearPartReplacement.CutterMesBusinessFailed")} {message}".Trim());
         }
 
-        var expectedCode = returnElement.Elements()
+        var parametricValues = returnElement.Elements()
             .Where(x => x.Name.LocalName == "parametricDataArray")
             .Select(x => new
             {
                 Parameter = x.Elements().FirstOrDefault(child => child.Name.LocalName == "parameter")?.Value ?? string.Empty,
                 Value = x.Elements().FirstOrDefault(child => child.Name.LocalName == "value")?.Value ?? string.Empty
             })
+            .ToArray();
+
+        var expectedCode = parametricValues
             .FirstOrDefault(x => string.Equals(x.Parameter, requestedParameter, StringComparison.OrdinalIgnoreCase))
             ?.Value
             ?.Trim();
@@ -133,7 +143,24 @@ public sealed class CutterMesValidationService : ICutterMesValidationService
             throw new InvalidOperationException(LocalizedText.Get("Services.WearPartReplacement.CutterMesCutterCodeMissing"));
         }
 
-        return expectedCode;
+        var kdlText = parametricValues
+            .FirstOrDefault(x => string.Equals(x.Parameter, "KDL", StringComparison.OrdinalIgnoreCase))
+            ?.Value
+            ?.Trim() ?? string.Empty;
+
+        return new CutterMesValidationSnapshot
+        {
+            ExpectedCutterCode = expectedCode,
+            KdlText = kdlText,
+            KdlValue = TryParseDouble(kdlText, out var kdlValue) ? kdlValue : null
+        };
+    }
+
+    private static bool TryParseDouble(string? text, out double value)
+    {
+        var normalized = text?.Trim() ?? string.Empty;
+        return double.TryParse(normalized, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out value)
+            || double.TryParse(normalized, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.CurrentCulture, out value);
     }
 
     private static void EnsureSuccessStatusCode(HttpRawResponse response)

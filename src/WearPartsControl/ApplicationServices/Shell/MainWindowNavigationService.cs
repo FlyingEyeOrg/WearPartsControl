@@ -10,6 +10,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
         MainWindowTabKey.ClientAppInfo,
         MainWindowTabKey.PartManagement,
         MainWindowTabKey.ToolChangeManagement,
+        MainWindowTabKey.KdlRecipeManagement,
         MainWindowTabKey.PartReplacementHistory,
         MainWindowTabKey.WearPartMonitoringLog,
         MainWindowTabKey.UserConfig
@@ -29,7 +30,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
     {
         ArgumentNullException.ThrowIfNull(localizedTabHeaders);
 
-        if (localizedTabHeaders.Count < 7)
+        if (localizedTabHeaders.Count < 8)
         {
             throw new InvalidOperationException("Main window tab headers are incomplete.");
         }
@@ -74,6 +75,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
             MainWindowTabKey.ClientAppInfo => typeof(ClientAppInfoUserControl),
             MainWindowTabKey.PartManagement => typeof(PartManagementUserControl),
             MainWindowTabKey.ToolChangeManagement => typeof(ToolChangeManagementUserControl),
+            MainWindowTabKey.KdlRecipeManagement => typeof(KdlRecipeManagementUserControl),
             MainWindowTabKey.PartReplacementHistory => typeof(PartReplacementHistoryUserControl),
             MainWindowTabKey.WearPartMonitoringLog => typeof(WearPartMonitoringLogUserControl),
             MainWindowTabKey.UserConfig => typeof(UserConfigUserControl),

@@ -12,7 +12,7 @@ using Xunit;
 
 namespace WearPartsControl.Tests;
 
-[Collection(NavigationTabControlTestCollection.Name)]
+[Collection(LocalizationSensitiveTestCollection.Name)]
 public sealed class UserControlXamlLoadTests
 {
     [Fact]
@@ -94,6 +94,22 @@ public sealed class UserControlXamlLoadTests
             var control = new ToolChangeManagementUserControl(
                 new ToolChangeManagementViewModel(
                     new StubToolChangeManagementService(),
+                    new StubUiDispatcher(),
+                    new UiBusyService(TimeSpan.Zero),
+                    new StubAppDialogService()));
+
+            Assert.NotNull(control);
+        });
+    }
+
+    [Fact]
+    public void KdlRecipeManagementUserControl_ShouldLoadWithoutXamlParseException()
+    {
+        RunWithEnglishCulture(() =>
+        {
+            var control = new KdlRecipeManagementUserControl(
+                new KdlRecipeManagementViewModel(
+                    new StubKdlRecipeManagementService(),
                     new StubUiDispatcher(),
                     new UiBusyService(TimeSpan.Zero),
                     new StubAppDialogService()));
@@ -251,10 +267,34 @@ public sealed class UserControlXamlLoadTests
 
     private sealed class StubUiDispatcher : IUiDispatcher
     {
-        public void Run(Action action) => action();
+        public void Run(Action action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+
+            if (System.Windows.Application.Current?.Dispatcher is { } dispatcher && !dispatcher.CheckAccess())
+            {
+                dispatcher.Invoke(action);
+                return;
+            }
+
+            action();
+        }
 
         public Task RunAsync(Action action, System.Windows.Threading.DispatcherPriority priority = System.Windows.Threading.DispatcherPriority.Normal)
         {
+            ArgumentNullException.ThrowIfNull(action);
+
+            if (System.Windows.Application.Current?.Dispatcher is { } dispatcher)
+            {
+                if (dispatcher.CheckAccess())
+                {
+                    action();
+                    return Task.CompletedTask;
+                }
+
+                return dispatcher.InvokeAsync(action, priority).Task;
+            }
+
             action();
             return Task.CompletedTask;
         }
@@ -282,6 +322,39 @@ public sealed class UserControlXamlLoadTests
         public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
+        }
+    }
+
+    private sealed class StubKdlRecipeManagementService : IKdlRecipeManagementService
+    {
+        public ValueTask<KdlRecipeSettingsState> GetAsync(CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(new KdlRecipeSettingsState());
+        }
+
+        public ValueTask<KdlRecipeDefinition?> GetCurrentRecipeAsync(CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult<KdlRecipeDefinition?>(null);
+        }
+
+        public ValueTask<KdlRecipeDefinition> CreateAsync(KdlRecipeDefinition definition, CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(definition);
+        }
+
+        public ValueTask<KdlRecipeDefinition> UpdateAsync(KdlRecipeDefinition definition, CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(definition);
+        }
+
+        public ValueTask SetCurrentAsync(Guid recipeId, CancellationToken cancellationToken = default)
+        {
+            return ValueTask.CompletedTask;
+        }
+
+        public ValueTask DeleteAsync(Guid recipeId, CancellationToken cancellationToken = default)
+        {
+            return ValueTask.CompletedTask;
         }
     }
 }

@@ -120,12 +120,14 @@ public static class ServiceRegistration
         builder.RegisterType<WearPartManagementService>().As<IWearPartManagementService>().InstancePerDependency();
         builder.RegisterType<WearPartTypeService>().As<IWearPartTypeService>().InstancePerDependency();
         builder.RegisterType<ToolChangeManagementService>().As<IToolChangeManagementService>().InstancePerDependency();
+        builder.RegisterType<KdlRecipeManagementService>().As<IKdlRecipeManagementService>().SingleInstance();
         builder.RegisterType<CutterMesValidationService>().As<ICutterMesValidationService>().InstancePerDependency();
         builder.RegisterType<WearPartReplacementService>().As<IWearPartReplacementService>().InstancePerDependency();
         builder.RegisterType<ToolChangeSelectionService>().As<IToolChangeSelectionService>().SingleInstance();
         builder.RegisterType<BarcodeLengthReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<CutterRollValidationReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<CutterMesConsistencyReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
+        builder.RegisterType<CutterKdlRangeReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<ToolCodeReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<CoatingSpacerReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<BarcodeReuseReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
@@ -152,6 +154,7 @@ public static class ServiceRegistration
         builder.RegisterType<ClientAppInfoViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<ReplacePartViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<ToolChangeManagementViewModel>().AsSelf().InstancePerDependency();
+        builder.RegisterType<KdlRecipeManagementViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<PartReplacementHistoryViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<NeedLoginViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<UserConfigViewModel>().AsSelf().InstancePerDependency();
@@ -173,6 +176,7 @@ public static class ServiceRegistration
         builder.RegisterType<UserConfigUserControl>().AsSelf();
         builder.RegisterType<PartManagementUserControl>().AsSelf();
         builder.RegisterType<ToolChangeManagementUserControl>().AsSelf();
+        builder.RegisterType<KdlRecipeManagementUserControl>().AsSelf();
         builder.RegisterType<PartReplacementHistoryUserControl>().AsSelf();
         builder.RegisterType<WearPartMonitoringLogUserControl>().AsSelf();
     }

@@ -16,6 +16,7 @@
       "设备基础信息",
       "易损件管理",
       "换刀类型管理",
+      "靠刀量上下限配置",
       "易损件更换历史",
       "易损件监控日志",
       "用户配置"
@@ -345,6 +346,32 @@
     "UpdatedAtHeader": "更新时间",
     "UpdatedByHeader": "更新人"
   },
+  "KdlRecipeManagementControl": {
+    "Title": "靠刀量上下限配置",
+    "CheckedHeader": "勾选",
+    "CurrentHeader": "当前",
+    "NameLabel": "配方名称：",
+    "NamePlaceholder": "请输入配方名称",
+    "LowerLimitLabel": "下限：",
+    "LowerLimitPlaceholder": "请输入靠刀量下限",
+    "UpperLimitLabel": "上限：",
+    "UpperLimitPlaceholder": "请输入靠刀量上限",
+    "KeywordLabel": "筛选：",
+    "KeywordPlaceholder": "配方名称",
+    "SearchButton": "查询",
+    "RefreshButton": "刷新",
+    "NewButton": "新增",
+    "EditButton": "编辑",
+    "SetCurrentButton": "设为当前",
+    "DeleteButton": "删除",
+    "NameHeader": "配方名称",
+    "LowerLimitHeader": "靠刀量下限",
+    "UpperLimitHeader": "靠刀量上限",
+    "CreatedAtHeader": "创建时间",
+    "CreatedByHeader": "创建人",
+    "UpdatedAtHeader": "更新时间",
+    "UpdatedByHeader": "更新人"
+  },
   "PlcService": {
     "Errors": {
       "ReadAddressEmpty": "读取地址不能为空。",
@@ -513,6 +540,30 @@
       "Deleting": "正在删除换刀类型...",
       "Deleted": "换刀类型 {0} 已删除。",
       "DeletedMultiple": "已删除 {0} 条换刀类型。"
+    },
+    "KdlRecipeManagementVm": {
+      "PromptLoadCurrent": "请先加载靠刀量配方。",
+      "Loading": "正在加载靠刀量配方...",
+      "Empty": "当前暂无靠刀量配方。",
+      "Loaded": "已加载 {0} 条靠刀量配方，当前配方：{1}。",
+      "LoadedWithoutCurrent": "已加载 {0} 条靠刀量配方，但尚未选择当前配方。",
+      "Editing": "正在编辑靠刀量配方 {0}。",
+      "EditingCurrent": "正在编辑当前靠刀量配方 {0}。",
+      "Creating": "正在新增靠刀量配方...",
+      "Created": "靠刀量配方 {0} 已新增。",
+      "CreatedAndSelected": "靠刀量配方 {0} 已新增并设为当前配方。",
+      "Updating": "正在编辑靠刀量配方...",
+      "Updated": "靠刀量配方 {0} 已修改。",
+      "SettingCurrent": "正在设置当前靠刀量配方...",
+      "CurrentSet": "当前靠刀量配方已切换为 {0}。",
+      "DeleteConfirmationMessage": "确认删除靠刀量配方“{0}”吗？",
+      "DeleteMultipleConfirmationMessage": "确认删除已勾选的 {0} 条靠刀量配方吗？",
+      "DeleteConfirmationTitle": "删除确认",
+      "Deleting": "正在删除靠刀量配方...",
+      "Deleted": "靠刀量配方 {0} 已删除。",
+      "DeletedMultiple": "已删除 {0} 条靠刀量配方。",
+      "LowerLimitInvalid": "靠刀量下限必须是有效数字。",
+      "UpperLimitInvalid": "靠刀量上限必须是有效数字。"
     },
     "PartUpdateRecordVm": {
       "PromptLoadCurrent": "请先加载当前设备的易损件更换记录。",
@@ -710,6 +761,15 @@
       "IdRequired": "更新换刀类型时必须提供有效主键。",
       "NotFoundById": "未找到主键为 {0} 的换刀类型。"
     },
+    "KdlRecipeManagement": {
+      "NameRequired": "靠刀量配方名称不能为空。",
+      "LowerLimitInvalid": "靠刀量下限必须是有效数字。",
+      "UpperLimitInvalid": "靠刀量上限必须是有效数字。",
+      "RangeInvalid": "靠刀量下限 {0} 不能大于上限 {1}。",
+      "DuplicatedName": "已存在名称为 {0} 的靠刀量配方。",
+      "IdRequired": "必须提供有效的靠刀量配方主键。",
+      "NotFoundById": "未找到主键为 {0} 的靠刀量配方。"
+    },
     "WearPartReplacement": {
       "NewBarcodeRequired": "新条码不能为空。",
       "ReasonRequired": "更换原因不能为空。",
@@ -738,6 +798,10 @@
       "CutterMesResponseInvalid": "切刀离线校验 MES 返回数据格式不正确。",
       "CutterMesBusinessFailed": "切刀离线校验失败，错误信息：",
       "CutterMesCutterCodeMissing": "切刀离线校验 MES 未返回刀模编号。",
+      "CutterKdlRecipeNotConfigured": "请先在靠刀量上下限配置中选择当前配方，再执行切刀更换。",
+      "CutterMesKdlMissing": "切刀离线校验 MES 未返回靠刀量。",
+      "CutterMesKdlInvalid": "切刀离线校验 MES 返回的靠刀量格式不正确：{0}。",
+      "CutterKdlOutOfRange": "当前刀模靠刀量 {0} 超出当前配方范围 {1} - {2}（{3}）。",
       "CoatingAbSideRequired": "当前涂布工序必须先选择 A/B 面。",
       "CoatingAbSideMismatch": "当前选择的 A/B 面为 {0}，但条码解析结果为 {1}，请确认。",
       "SpacerValidationFailedAndShutdownApplied": "垫片校验失败，系统已执行停机保护：{0}",

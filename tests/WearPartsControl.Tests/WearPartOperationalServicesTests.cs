@@ -6,6 +6,7 @@ using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.PlcService;
+using WearPartsControl.ApplicationServices.SaveInfoService;
 using WearPartsControl.ApplicationServices.SpacerManagement;
 using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.Domain.Entities;
@@ -999,6 +1000,171 @@ public sealed class WearPartOperationalServicesTests : IDisposable
     }
 
     [Fact]
+    public async Task ReplaceByScanAsync_WhenDieCutSlittingCutterAndCurrentKdlRecipeMissing_ShouldThrowUserFriendlyException()
+    {
+        var seeded = await SeedAsync("R-OPS-08E", "M0.8E", procedureCode: "模切分条", wearPartTypeCode: WearPartTypeCodes.Cutter);
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 30);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        var settingsDirectory = Path.Combine(Path.GetTempPath(), $"wearparts-kdl-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(settingsDirectory);
+
+        try
+        {
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+            var service = CreateReplacementServiceWithKdlValidation(
+                dbContext,
+                currentUserAccessor,
+                plcService,
+                new FakeCutterMesValidationService(),
+                new TypeJsonSaveInfoStore(settingsDirectory));
+
+            var exception = await Assert.ThrowsAsync<UserFriendlyException>(() => service.ReplaceByScanAsync(new WearPartReplacementRequest
+            {
+                WearPartDefinitionId = seeded.DefinitionId,
+                NewBarcode = "BARCODE-TL-01-0008E",
+                ToolCode = "TL-01",
+                RollNumber = "1234567890123456",
+                BurrResult = "OK",
+                ReplacementReason = WearPartReplacementReason.Normal
+            }));
+
+            Assert.Equal(LocalizedText.Get("Services.WearPartReplacement.CutterKdlRecipeNotConfigured"), exception.Message);
+        }
+        finally
+        {
+            if (Directory.Exists(settingsDirectory))
+            {
+                Directory.Delete(settingsDirectory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ReplaceByScanAsync_WhenDieCutSlittingCutterAndKdlOutOfRange_ShouldThrowUserFriendlyException()
+    {
+        var seeded = await SeedAsync("R-OPS-08F", "M0.8F", procedureCode: "模切分条", wearPartTypeCode: WearPartTypeCodes.Cutter);
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 30);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        var settingsDirectory = Path.Combine(Path.GetTempPath(), $"wearparts-kdl-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(settingsDirectory);
+
+        try
+        {
+            var recipeService = new KdlRecipeManagementService(currentUserAccessor, new TypeJsonSaveInfoStore(settingsDirectory));
+            await recipeService.CreateAsync(new KdlRecipeDefinition
+            {
+                Name = "PF-01",
+                LowerLimit = 0.10,
+                UpperLimit = 0.20
+            });
+
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+            var service = CreateReplacementServiceWithKdlValidation(
+                dbContext,
+                currentUserAccessor,
+                plcService,
+                new FakeCutterMesValidationService
+                {
+                    Snapshot = new CutterMesValidationSnapshot
+                    {
+                        ExpectedCutterCode = "BARCODE-TL-UP-01-0008F",
+                        KdlText = "0.25",
+                        KdlValue = 0.25
+                    }
+                },
+                new TypeJsonSaveInfoStore(settingsDirectory));
+
+            var exception = await Assert.ThrowsAsync<UserFriendlyException>(() => service.ReplaceByScanAsync(new WearPartReplacementRequest
+            {
+                WearPartDefinitionId = seeded.DefinitionId,
+                NewBarcode = "BARCODE-TL-UP-01-0008F",
+                ToolCode = "TL-UP-01",
+                RollNumber = "1234567890123456",
+                BurrResult = "OK",
+                ReplacementReason = WearPartReplacementReason.Normal
+            }));
+
+            Assert.Equal(LocalizedText.Format("Services.WearPartReplacement.CutterKdlOutOfRange", "0.25", "0.1", "0.2", "PF-01"), exception.Message);
+        }
+        finally
+        {
+            if (Directory.Exists(settingsDirectory))
+            {
+                Directory.Delete(settingsDirectory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ReplaceByScanAsync_WhenDieCutSlittingCutterAndKdlInRange_ShouldAllowReplacement()
+    {
+        var seeded = await SeedAsync("R-OPS-08G", "M0.8G", procedureCode: "模切分条", wearPartTypeCode: WearPartTypeCodes.Cutter);
+        var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 30);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        var settingsDirectory = Path.Combine(Path.GetTempPath(), $"wearparts-kdl-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(settingsDirectory);
+
+        try
+        {
+            var recipeService = new KdlRecipeManagementService(currentUserAccessor, new TypeJsonSaveInfoStore(settingsDirectory));
+            await recipeService.CreateAsync(new KdlRecipeDefinition
+            {
+                Name = "PF-01",
+                LowerLimit = 0.10,
+                UpperLimit = 0.20
+            });
+
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+            var service = CreateReplacementServiceWithKdlValidation(
+                dbContext,
+                currentUserAccessor,
+                plcService,
+                new FakeCutterMesValidationService
+                {
+                    Snapshot = new CutterMesValidationSnapshot
+                    {
+                        ExpectedCutterCode = "BARCODE-TL-UP-01-0008G",
+                        KdlText = "0.15",
+                        KdlValue = 0.15
+                    }
+                },
+                new TypeJsonSaveInfoStore(settingsDirectory));
+
+            var result = await service.ReplaceByScanAsync(new WearPartReplacementRequest
+            {
+                WearPartDefinitionId = seeded.DefinitionId,
+                NewBarcode = "BARCODE-TL-UP-01-0008G",
+                ToolCode = "TL-UP-01",
+                RollNumber = "1234567890123456",
+                BurrResult = "OK",
+                ReplacementReason = WearPartReplacementReason.Normal
+            });
+
+            Assert.Equal("BARCODE-TL-UP-01-0008G", result.NewBarcode);
+            Assert.Contains(plcService.Writes, x => x.Address == "DB1.4" && Equals(x.Value, "BARCODE-TL-UP-01-0008G"));
+        }
+        finally
+        {
+            if (Directory.Exists(settingsDirectory))
+            {
+                Directory.Delete(settingsDirectory, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task ReplaceByScanAsync_WhenCoatingAbSideMissing_ShouldThrowUserFriendlyException()
     {
         var seeded = await SeedAsync("R-OPS-09", "M0.9", procedureCode: "涂布");
@@ -1324,6 +1490,44 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             ]);
     }
 
+    private static WearPartReplacementService CreateReplacementServiceWithKdlValidation(
+        WearPartsControlDbContext dbContext,
+        ICurrentUserAccessor currentUserAccessor,
+        IPlcService plcService,
+        ICutterMesValidationService cutterMesValidationService,
+        ISaveInfoStore saveInfoStore,
+        ISpacerManagementService? spacerManagementService = null)
+    {
+        var plcOperationPipeline = new PlcOperationPipeline(plcService, Microsoft.Extensions.Logging.Abstractions.NullLogger<PlcOperationPipeline>.Instance);
+        spacerManagementService ??= new FakeSpacerManagementService();
+        var userConfigService = new FakeUserConfigService
+        {
+            CutterMesWsdl = "https://mes.example.com/service?wsdl",
+            CutterMesUser = "mes-user",
+            CutterMesPassword = "mes-pass",
+            CutterMesSite = "MES-S01"
+        };
+        var kdlRecipeManagementService = new KdlRecipeManagementService(currentUserAccessor, saveInfoStore);
+
+        return new WearPartReplacementService(
+            currentUserAccessor,
+            new ClientAppConfigurationRepository(dbContext),
+            new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
+            new WearPartReplacementRecordRepository(dbContext),
+            plcOperationPipeline,
+            userConfigService,
+            [
+                new BarcodeLengthReplacementGuard(),
+                new CutterRollValidationReplacementGuard(),
+                new ToolCodeReplacementGuard(),
+                new CutterKdlRangeReplacementGuard(cutterMesValidationService, kdlRecipeManagementService, userConfigService),
+                new BarcodeReuseReplacementGuard(new WearPartReplacementRecordRepository(dbContext)),
+                new LifetimeReachedReplacementGuard(),
+                new ChangePositionReplacementGuard(),
+                new CoatingSpacerReplacementGuard(spacerManagementService, plcOperationPipeline)
+            ]);
+    }
+
     private static WearPartMonitorService CreateMonitorService(
         WearPartsControlDbContext dbContext,
         IPlcService plcService,
@@ -1435,6 +1639,14 @@ public sealed class WearPartOperationalServicesTests : IDisposable
 
     private sealed class FakeUserConfigService : IUserConfigService
     {
+        public string CutterMesWsdl { get; set; } = string.Empty;
+
+        public string CutterMesUser { get; set; } = string.Empty;
+
+        public string CutterMesPassword { get; set; } = string.Empty;
+
+        public string CutterMesSite { get; set; } = string.Empty;
+
         public ValueTask<UserConfig> GetAsync(CancellationToken cancellationToken = default)
         {
             return ValueTask.FromResult(new UserConfig
@@ -1443,7 +1655,11 @@ public sealed class WearPartOperationalServicesTests : IDisposable
                 MeResponsibleWorkId = "ME1001",
                 PrdResponsibleName = "PRD负责人乙",
                 PrdResponsibleWorkId = "PRD1001",
-                ReplacementOperatorName = "更换员甲"
+                ReplacementOperatorName = "更换员甲",
+                CutterMesWsdl = CutterMesWsdl,
+                CutterMesUser = CutterMesUser,
+                CutterMesPassword = CutterMesPassword,
+                CutterMesSite = CutterMesSite
             });
         }
 
@@ -1483,6 +1699,26 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             }
 
             return ValueTask.FromException(VerifyException);
+        }
+    }
+
+    private sealed class FakeCutterMesValidationService : ICutterMesValidationService
+    {
+        public CutterMesValidationSnapshot Snapshot { get; set; } = new()
+        {
+            ExpectedCutterCode = string.Empty,
+            KdlText = string.Empty,
+            KdlValue = null
+        };
+
+        public Task<CutterMesValidationSnapshot> GetValidationSnapshotAsync(CutterMesValidationRequest request, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Snapshot);
+        }
+
+        public Task<string> GetExpectedCutterCodeAsync(CutterMesValidationRequest request, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Snapshot.ExpectedCutterCode);
         }
     }
 }

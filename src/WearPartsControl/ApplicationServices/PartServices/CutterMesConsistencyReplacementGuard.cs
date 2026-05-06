@@ -53,17 +53,22 @@ public sealed class CutterMesConsistencyReplacementGuard : IWearPartReplacementG
             throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.CutterMesPositionUnresolved"), code: "WearPartReplacement:CutterMesPositionUnresolved");
         }
 
-        var expectedCutterCode = await _cutterMesValidationService.GetExpectedCutterCodeAsync(new CutterMesValidationRequest
+        var snapshot = context.CutterMesValidationSnapshot;
+        if (snapshot is null)
         {
-            Wsdl = wsdl,
-            UserName = userName,
-            Password = password,
-            Site = site,
-            RollNumber = context.Request.RollNumber,
-            Parameter = parameter
-        }, cancellationToken).ConfigureAwait(false);
+            snapshot = await _cutterMesValidationService.GetValidationSnapshotAsync(new CutterMesValidationRequest
+            {
+                Wsdl = wsdl,
+                UserName = userName,
+                Password = password,
+                Site = site,
+                RollNumber = context.Request.RollNumber,
+                Parameter = parameter
+            }, cancellationToken).ConfigureAwait(false);
+            context.CutterMesValidationSnapshot = snapshot;
+        }
 
-        if (!string.Equals(expectedCutterCode, context.NormalizedBarcode, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(snapshot.ExpectedCutterCode, context.NormalizedBarcode, StringComparison.OrdinalIgnoreCase))
         {
             throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.CutterMesCodeMismatch"), code: "WearPartReplacement:CutterMesCodeMismatch");
         }

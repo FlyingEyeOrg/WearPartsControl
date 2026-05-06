@@ -195,12 +195,15 @@ public sealed class WearPartMonitoringLogViewModel : LocalizedViewModelBase, IDi
 
     protected override void OnLocalizationRefreshed()
     {
-        var level = SelectedLevelFilter?.Level;
-        var category = SelectedCategoryFilter?.Category;
-        RebuildFilterOptions(level, category);
-        LoadCurrentPage();
-        OnPropertyChanged(nameof(PauseResumeButtonText));
-        UpdateStatusMessage();
+        _uiDispatcher.Run(() =>
+        {
+            var level = SelectedLevelFilter?.Level;
+            var category = SelectedCategoryFilter?.Category;
+            RebuildFilterOptions(level, category);
+            LoadCurrentPage();
+            OnPropertyChanged(nameof(PauseResumeButtonText));
+            UpdateStatusMessage();
+        });
     }
 
     private void OnEntriesAdded(object? sender, WearPartMonitoringLogEntriesAddedEventArgs e)
