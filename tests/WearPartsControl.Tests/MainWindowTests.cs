@@ -170,6 +170,36 @@ public sealed class MainWindowTests
     }
 
     [Fact]
+    public void ActivateFromExternalRequest_WhenWindowInTray_ShouldRestoreWindow()
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+
+        WpfTestHost.Run(() =>
+        {
+            var autoLogoutInteractionService = new RecordingAutoLogoutInteractionService();
+            var window = CreateWindow(autoLogoutInteractionService);
+
+            try
+            {
+                window.Show();
+                InvokePrivate(window, "SendToTray", true, false);
+                window.ActivateFromExternalRequest();
+                WpfTestHost.DrainDispatcher();
+
+                var trayIcon = Assert.IsType<NotifyIcon>(window.FindName("TrayNotifyIcon"));
+                Assert.True(window.IsVisible);
+                Assert.True(window.ShowInTaskbar);
+                Assert.Equal(System.Windows.Visibility.Collapsed, trayIcon.Visibility);
+                Assert.False(GetPrivateField<bool>(window, "_isInTray"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        }, ensureApplicationResources: true);
+    }
+
+    [Fact]
     public void RestoreFromTray_ShouldRestoreNormalWindowBounds()
     {
         using var cultureScope = new TestCultureScope("en-US");

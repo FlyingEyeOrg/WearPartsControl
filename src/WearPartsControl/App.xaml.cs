@@ -29,6 +29,7 @@ public partial class App : Application
     private Task? _shutdownTask;
     private CancellationTokenSource? _startupCancellationTokenSource;
     private int _shutdownRequested;
+    private int _pendingActivationRequested;
 
     public App()
     {
@@ -79,19 +80,17 @@ public partial class App : Application
             StartupPerformanceTracker.Restart("应用启动入口");
             Authorization.SetAuthorizationCode("7525828d-68c9-4d31-b6db-e5162b91ef7b");
 
-            if (!AppSingleInstanceLease.TryAcquire(GetSingleInstanceMutexName(), out var singleInstanceLease))
+            var singleInstanceName = GetSingleInstanceName();
+            if (!AppSingleInstanceLease.TryAcquire(singleInstanceName, out var singleInstanceLease)
+                || singleInstanceLease is null)
             {
-                MessageDialogWindow.ShowMessage(
-                    owner: null,
-                    message: GetLocalizedText("App.SingleInstanceAlreadyRunning"),
-                    title: GetLocalizedText("FriendlyErrorTitle"),
-                    buttons: MessageBoxButton.OK,
-                    image: MessageBoxImage.Information);
+                AppSingleInstanceLease.SignalActivation(singleInstanceName);
                 Shutdown(0);
                 return;
             }
 
             _singleInstanceLease = singleInstanceLease;
+            singleInstanceLease.RegisterActivationCallback(OnSingleInstanceActivationRequested);
 
             _host = BuildHost();
             StartupPerformanceTracker.Mark("主机构建完成");
@@ -116,6 +115,7 @@ public partial class App : Application
             _startupCancellationTokenSource = new CancellationTokenSource();
             MainWindow = mainWindow;
             mainWindow.Show();
+            ActivateMainWindowIfPending();
             StartupPerformanceTracker.Mark("主窗口已显示（首屏）");
 
             await mainWindow.InitializeAsync(_startupCancellationTokenSource.Token).ConfigureAwait(true);
@@ -143,10 +143,60 @@ public partial class App : Application
             .Build();
     }
 
-    private static string GetSingleInstanceMutexName()
+    private static string GetSingleInstanceName()
     {
-        var appName = typeof(App).Assembly.GetName().Name ?? nameof(WearPartsControl);
-        return $@"Local\{appName}.SingleInstance";
+        return typeof(App).Assembly.GetName().Name ?? nameof(WearPartsControl);
+    }
+
+    private void OnSingleInstanceActivationRequested()
+    {
+        if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished)
+        {
+            return;
+        }
+
+        _ = Dispatcher.InvokeAsync(() =>
+        {
+            if (!TryActivateMainWindow())
+            {
+                Interlocked.Exchange(ref _pendingActivationRequested, 1);
+            }
+        });
+    }
+
+    private void ActivateMainWindowIfPending()
+    {
+        if (Interlocked.Exchange(ref _pendingActivationRequested, 0) == 1)
+        {
+            TryActivateMainWindow();
+        }
+    }
+
+    private bool TryActivateMainWindow()
+    {
+        if (MainWindow is MainWindow mainWindow)
+        {
+            mainWindow.ActivateFromExternalRequest();
+            return true;
+        }
+
+        if (MainWindow is not Window window)
+        {
+            return false;
+        }
+
+        if (!window.IsVisible)
+        {
+            window.Show();
+        }
+
+        if (window.WindowState == WindowState.Minimized)
+        {
+            window.WindowState = WindowState.Normal;
+        }
+
+        window.Activate();
+        return true;
     }
 
     private async Task RunLegacyImportAsync(string legacyDatabasePath)

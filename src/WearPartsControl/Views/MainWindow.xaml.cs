@@ -156,6 +156,17 @@ namespace WearPartsControl.Views
             RestoreFromTray();
         }
 
+        internal void ActivateFromExternalRequest()
+        {
+            if (_isInTray || !IsVisible || !ShowInTaskbar)
+            {
+                RestoreFromTray();
+                return;
+            }
+
+            BringWindowToFront();
+        }
+
         private void SendToTray(bool hideFromTaskbar, bool showFirstBalloonTip)
         {
             CaptureWindowPlacementForTray();
@@ -193,11 +204,21 @@ namespace WearPartsControl.Views
             }
 
             RestoreWindowPlacementFromTray();
+            BringWindowToFront();
+            HideTrayIcon();
+        }
+
+        private void BringWindowToFront()
+        {
+            if (WindowState == WindowState.Minimized)
+            {
+                WindowState = WindowState.Normal;
+            }
+
             Activate();
             Topmost = true;
             Topmost = false;
             Focus();
-            HideTrayIcon();
         }
 
         private async Task ExitFromTrayAsync()
