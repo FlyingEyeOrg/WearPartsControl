@@ -29,6 +29,7 @@ public sealed class LocalizationServiceTests : IDisposable
             "Equipment Information",
             "Wear Part Management",
             "Tool Change Management",
+            "KDL Recipe Settings",
             "Replacement History",
             "Monitoring Log",
             "User Settings"
@@ -50,6 +51,7 @@ public sealed class LocalizationServiceTests : IDisposable
             "设备基础信息",
             "易损件管理",
             "换刀类型管理",
+            "靠刀量上下限配置",
             "易损件更换历史",
             "易损件监控日志",
             "用户配置"
