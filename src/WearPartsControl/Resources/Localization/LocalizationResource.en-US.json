@@ -6,7 +6,8 @@
     "CsvFileFilter": "CSV files|*.csv|All files|*.*"
   },
   "App": {
-    "LegacyImportCompletedTitle": "Legacy import completed"
+    "LegacyImportCompletedTitle": "Legacy import completed",
+    "SingleInstanceAlreadyRunning": "WearPartsControl is already running. Please do not open it again."
   },
   "MainWindow": {
     "Title": "WearPartsControl",

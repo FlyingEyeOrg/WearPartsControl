@@ -21,6 +21,7 @@ namespace WearPartsControl;
 public partial class App : Application
 {
     private readonly object _shutdownSyncRoot = new();
+    private AppSingleInstanceLease? _singleInstanceLease;
     private IHost? _host;
     private ILocalizationService? _localizationService;
     private IAppStartupCoordinator? _appStartupCoordinator;
@@ -78,6 +79,20 @@ public partial class App : Application
             StartupPerformanceTracker.Restart("应用启动入口");
             Authorization.SetAuthorizationCode("7525828d-68c9-4d31-b6db-e5162b91ef7b");
 
+            if (!AppSingleInstanceLease.TryAcquire(GetSingleInstanceMutexName(), out var singleInstanceLease))
+            {
+                MessageDialogWindow.ShowMessage(
+                    owner: null,
+                    message: GetLocalizedText("App.SingleInstanceAlreadyRunning"),
+                    title: GetLocalizedText("FriendlyErrorTitle"),
+                    buttons: MessageBoxButton.OK,
+                    image: MessageBoxImage.Information);
+                Shutdown(0);
+                return;
+            }
+
+            _singleInstanceLease = singleInstanceLease;
+
             _host = BuildHost();
             StartupPerformanceTracker.Mark("主机构建完成");
 
@@ -126,6 +141,12 @@ public partial class App : Application
             })
             .UseSerilog(Log.Logger, dispose: false)
             .Build();
+    }
+
+    private static string GetSingleInstanceMutexName()
+    {
+        var appName = typeof(App).Assembly.GetName().Name ?? nameof(WearPartsControl);
+        return $@"Local\{appName}.SingleInstance";
     }
 
     private async Task RunLegacyImportAsync(string legacyDatabasePath)
@@ -264,6 +285,8 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        _singleInstanceLease?.Dispose();
+        _singleInstanceLease = null;
         ShutdownPerformanceTracker.Mark($"Exit 事件开始，退出码 {e.ApplicationExitCode}");
         base.OnExit(e);
         ShutdownPerformanceTracker.Mark("Exit 事件完成，准备刷新日志");
