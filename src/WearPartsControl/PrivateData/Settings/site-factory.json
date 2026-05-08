@@ -94,7 +94,8 @@
         "HDC02",
         "HDC03",
         "HDM01",
-        "HDC02A1"
+        "HDC02A1",
+        "PTO"
       ]
     },
     {
@@ -195,14 +196,6 @@
       "SiteName": "屏南基地",
       "FactoryNames": [
         "PNB01"
-      ]
-    },
-    {
-      "Site": "PTO",
-      "SiteName": "样品部",
-      "FactoryNames": [
-        "HD",
-        "HX"
       ]
     },
     {
