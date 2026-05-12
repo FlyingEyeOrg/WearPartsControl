@@ -1413,7 +1413,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         plcService.SetValue("DB1.2", 30);
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        var service = CreateValuePreviewService(dbContext, plcService);
+        var service = CreateValuePreviewService(dbContext, CreateCurrentUserAccessor(accessLevel: 4), plcService);
 
         var results = await service.GetByResourceNumberAsync("R-PREVIEW-01");
 
@@ -1424,7 +1424,47 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         Assert.Equal(30d, preview.CurrentValue);
         Assert.Equal(20d, preview.WarningValue);
         Assert.Equal(30d, preview.ShutdownValue);
+        Assert.Equal(20d, preview.ConfiguredWarningLifetimeThreshold);
+        Assert.Equal(30d, preview.ConfiguredShutdownLifetimeThreshold);
         Assert.Equal(WearPartMonitorStatus.Shutdown, preview.Status);
+        Assert.Empty(plcService.Writes);
+    }
+
+    [Fact]
+    public async Task SyncConfiguredThresholdsToDeviceAsync_ShouldWriteAllConfiguredThresholdsAfterReadCheck()
+    {
+        var seeded = await SeedAsync("R-PREVIEW-02", "M1.8");
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 30);
+        plcService.SetValue("DB1.1", 12);
+        plcService.SetValue("DB1.2", 18);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateValuePreviewService(dbContext, CreateCurrentUserAccessor(accessLevel: 4), plcService);
+
+        var results = await service.SyncConfiguredThresholdsToDeviceAsync("R-PREVIEW-02");
+
+        var preview = Assert.Single(results);
+        Assert.Contains(plcService.Writes, x => x.Address == "DB1.1" && Equals(x.Value, 20));
+        Assert.Contains(plcService.Writes, x => x.Address == "DB1.2" && Equals(x.Value, 30));
+        Assert.Equal(20d, preview.WarningValue);
+        Assert.Equal(30d, preview.ShutdownValue);
+        Assert.Equal(20d, preview.ConfiguredWarningLifetimeThreshold);
+        Assert.Equal(30d, preview.ConfiguredShutdownLifetimeThreshold);
+    }
+
+    [Fact]
+    public async Task SyncConfiguredThresholdsToDeviceAsync_WhenAnyThresholdCannotBeRead_ShouldNotWriteAnyValue()
+    {
+        await SeedAsync("R-PREVIEW-03", "M1.7");
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 15);
+        plcService.SetValue("DB1.1", 10);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateValuePreviewService(dbContext, CreateCurrentUserAccessor(accessLevel: 4), plcService);
+
+        await Assert.ThrowsAnyAsync<Exception>(() => service.SyncConfiguredThresholdsToDeviceAsync("R-PREVIEW-03"));
         Assert.Empty(plcService.Writes);
     }
 
@@ -1669,11 +1709,13 @@ public sealed class WearPartOperationalServicesTests : IDisposable
 
     private static WearPartValuePreviewService CreateValuePreviewService(
         WearPartsControlDbContext dbContext,
+        ICurrentUserAccessor currentUserAccessor,
         IPlcService plcService)
     {
         var plcOperationPipeline = new PlcOperationPipeline(plcService, Microsoft.Extensions.Logging.Abstractions.NullLogger<PlcOperationPipeline>.Instance);
 
         return new WearPartValuePreviewService(
+            currentUserAccessor,
             new ClientAppConfigurationRepository(dbContext),
             new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
             plcOperationPipeline);

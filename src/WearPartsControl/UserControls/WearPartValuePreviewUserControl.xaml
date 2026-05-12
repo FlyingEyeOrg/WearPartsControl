@@ -104,6 +104,12 @@
                         <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
                                 Command="{Binding RefreshCommand}"
                                 Content="{loc:Loc WearPartValuePreviewControl.RefreshButton}" />
+            <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                Command="{Binding EditThresholdsCommand}"
+                Content="{loc:Loc WearPartValuePreviewControl.EditThresholdsButton}" />
+            <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                Command="{Binding SyncThresholdsCommand}"
+                Content="{loc:Loc WearPartValuePreviewControl.SyncThresholdsButton}" />
                     </WrapPanel>
                 </Grid>
             </Border>
@@ -159,6 +165,7 @@
                       CanUserDeleteRows="False"
                       IsReadOnly="True"
                       ItemsSource="{Binding Items}"
+                      SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
@@ -189,6 +196,14 @@
                                         Width="*" />
                     <DataGridTextColumn Header="{loc:Loc WearPartValuePreviewControl.ShutdownValueHeader}"
                                         Binding="{Binding ShutdownValue, StringFormat={}{0:0.##}}"
+                                        IsReadOnly="True"
+                                        Width="*" />
+                    <DataGridTextColumn Header="{loc:Loc WearPartValuePreviewControl.ConfiguredWarningThresholdHeader}"
+                                        Binding="{Binding ConfiguredWarningLifetimeThreshold, StringFormat={}{0:0.##}}"
+                                        IsReadOnly="True"
+                                        Width="*" />
+                    <DataGridTextColumn Header="{loc:Loc WearPartValuePreviewControl.ConfiguredShutdownThresholdHeader}"
+                                        Binding="{Binding ConfiguredShutdownLifetimeThreshold, StringFormat={}{0:0.##}}"
                                         IsReadOnly="True"
                                         Width="*" />
                     <DataGridTemplateColumn Header="{loc:Loc WearPartValuePreviewControl.StatusHeader}"

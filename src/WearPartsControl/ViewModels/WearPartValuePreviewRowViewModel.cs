@@ -13,14 +13,19 @@ public sealed class WearPartValuePreviewRowViewModel : ObservableObject
     {
         ArgumentNullException.ThrowIfNull(item);
 
+        WearPartDefinitionId = item.WearPartDefinitionId;
         PartName = item.PartName;
         WearPartTypeName = item.WearPartTypeName;
         LifetimeType = item.LifetimeType;
         CurrentValue = item.CurrentValue;
         WarningValue = item.WarningValue;
         ShutdownValue = item.ShutdownValue;
+        ConfiguredWarningLifetimeThreshold = item.ConfiguredWarningLifetimeThreshold;
+        ConfiguredShutdownLifetimeThreshold = item.ConfiguredShutdownLifetimeThreshold;
         _status = item.Status;
     }
+
+    public Guid WearPartDefinitionId { get; }
 
     public string PartName { get; }
 
@@ -33,6 +38,10 @@ public sealed class WearPartValuePreviewRowViewModel : ObservableObject
     public double WarningValue { get; }
 
     public double ShutdownValue { get; }
+
+    public double ConfiguredWarningLifetimeThreshold { get; }
+
+    public double ConfiguredShutdownLifetimeThreshold { get; }
 
     public string StatusText => _status switch
     {

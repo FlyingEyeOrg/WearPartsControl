@@ -48,7 +48,9 @@ public sealed class UserControlXamlLoadTests
         RunWithEnglishCulture(() =>
         {
             var control = new WearPartValuePreviewUserControl(
-                CreateUninitialized<WearPartValuePreviewViewModel>());
+                CreateUninitialized<WearPartValuePreviewViewModel>(),
+                new StubServiceProvider(),
+                new StubAutoLogoutInteractionService());
 
             Assert.NotNull(control);
         });

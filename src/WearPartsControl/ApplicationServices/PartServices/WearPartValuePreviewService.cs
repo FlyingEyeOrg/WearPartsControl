@@ -1,20 +1,25 @@
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PlcService;
+using WearPartsControl.Domain.Entities;
 using WearPartsControl.Domain.Repositories;
 using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ApplicationServices.PartServices;
 
-public sealed class WearPartValuePreviewService : IWearPartValuePreviewService
+public sealed class WearPartValuePreviewService : ApplicationServiceBase, IWearPartValuePreviewService
 {
+    private const int MinimumAccessLevelForThresholdSync = 4;
+
     private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
     private readonly IWearPartRepository _wearPartRepository;
     private readonly IPlcOperationPipeline _plcOperationPipeline;
 
     public WearPartValuePreviewService(
+        ICurrentUserAccessor currentUserAccessor,
         IClientAppConfigurationRepository clientAppConfigurationRepository,
         IWearPartRepository wearPartRepository,
         IPlcOperationPipeline plcOperationPipeline)
+        : base(currentUserAccessor)
     {
         _clientAppConfigurationRepository = clientAppConfigurationRepository;
         _wearPartRepository = wearPartRepository;
@@ -23,21 +28,72 @@ public sealed class WearPartValuePreviewService : IWearPartValuePreviewService
 
     public async Task<IReadOnlyList<WearPartValuePreviewItem>> GetByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
     {
+        var context = await LoadPreviewContextAsync(resourceNumber, cancellationToken).ConfigureAwait(false);
+        if (context.Definitions.Count == 0)
+        {
+            return [];
+        }
+
+        await ConnectAsync(PlcWearPartValuePreviewOperations.Connect, context.ClientAppConfiguration, cancellationToken).ConfigureAwait(false);
+        return await BuildPreviewItemsAsync(context.ClientAppConfiguration, context.Definitions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<WearPartValuePreviewItem>> SyncConfiguredThresholdsToDeviceAsync(string resourceNumber, CancellationToken cancellationToken = default)
+    {
+        EnsureAccessLevel(MinimumAccessLevelForThresholdSync);
+
+        var context = await LoadPreviewContextAsync(resourceNumber, cancellationToken).ConfigureAwait(false);
+        if (context.Definitions.Count == 0)
+        {
+            return [];
+        }
+
+        await ConnectAsync(PlcWearPartThresholdOperations.Connect, context.ClientAppConfiguration, cancellationToken).ConfigureAwait(false);
+
+        foreach (var definition in context.Definitions)
+        {
+            ValidateThresholds(definition);
+        }
+
+        await EnsureAllThresholdValuesReadableAsync(context.Definitions, cancellationToken).ConfigureAwait(false);
+        await WriteConfiguredThresholdsAsync(context.Definitions, cancellationToken).ConfigureAwait(false);
+
+        return await BuildPreviewItemsAsync(context.ClientAppConfiguration, context.Definitions, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static string NormalizeRequired(string? value, string errorMessage)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new UserFriendlyException(errorMessage);
+        }
+
+        return value.Trim();
+    }
+
+    private async Task<(ClientAppConfigurationEntity ClientAppConfiguration, IReadOnlyList<WearPartDefinitionEntity> Definitions)> LoadPreviewContextAsync(string resourceNumber, CancellationToken cancellationToken)
+    {
         var normalizedResourceNumber = NormalizeRequired(resourceNumber, LocalizedText.Get("Services.Common.ResourceNumberRequired"));
         var clientAppConfiguration = await _clientAppConfigurationRepository.GetByResourceNumberAsync(normalizedResourceNumber, cancellationToken).ConfigureAwait(false)
             ?? throw new EntityNotFoundException(LocalizedText.Format("Services.WearPartManagement.ClientConfigurationNotFoundByResourceNumber", normalizedResourceNumber));
 
         var definitions = await _wearPartRepository.ListByClientAppConfigurationAsync(clientAppConfiguration.Id, cancellationToken).ConfigureAwait(false);
-        if (definitions.Count == 0)
-        {
-            return [];
-        }
+        return (clientAppConfiguration, definitions);
+    }
 
+    private async Task ConnectAsync(string operationName, ClientAppConfigurationEntity clientAppConfiguration, CancellationToken cancellationToken)
+    {
         await _plcOperationPipeline.ConnectAsync(
-            PlcWearPartValuePreviewOperations.Connect,
+            operationName,
             WearPartPlcAccessor.BuildConnectionOptions(clientAppConfiguration),
             cancellationToken).ConfigureAwait(false);
+    }
 
+    private async Task<IReadOnlyList<WearPartValuePreviewItem>> BuildPreviewItemsAsync(
+        ClientAppConfigurationEntity clientAppConfiguration,
+        IReadOnlyList<WearPartDefinitionEntity> definitions,
+        CancellationToken cancellationToken)
+    {
         var items = new List<WearPartValuePreviewItem>(definitions.Count);
         foreach (var definition in definitions)
         {
@@ -71,6 +127,8 @@ public sealed class WearPartValuePreviewService : IWearPartValuePreviewService
                 CurrentValue = currentValue,
                 WarningValue = warningValue,
                 ShutdownValue = shutdownValue,
+                ConfiguredWarningLifetimeThreshold = definition.WarningLifetimeThreshold,
+                ConfiguredShutdownLifetimeThreshold = definition.ShutdownLifetimeThreshold,
                 Status = WearPartLifetimeStatusResolver.Resolve(currentValue, warningValue, shutdownValue)
             });
         }
@@ -78,13 +136,61 @@ public sealed class WearPartValuePreviewService : IWearPartValuePreviewService
         return items;
     }
 
-    private static string NormalizeRequired(string? value, string errorMessage)
+    private async Task EnsureAllThresholdValuesReadableAsync(IReadOnlyList<WearPartDefinitionEntity> definitions, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        foreach (var definition in definitions)
         {
-            throw new UserFriendlyException(errorMessage);
+            await WearPartPlcAccessor.ReadAsDoubleAsync(
+                _plcOperationPipeline,
+                PlcWearPartThresholdOperations.ReadWarningThreshold,
+                definition.WarningValueAddress,
+                definition.WarningValueDataType,
+                cancellationToken).ConfigureAwait(false);
+            await WearPartPlcAccessor.ReadAsDoubleAsync(
+                _plcOperationPipeline,
+                PlcWearPartThresholdOperations.ReadShutdownThreshold,
+                definition.ShutdownValueAddress,
+                definition.ShutdownValueDataType,
+                cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private async Task WriteConfiguredThresholdsAsync(IReadOnlyList<WearPartDefinitionEntity> definitions, CancellationToken cancellationToken)
+    {
+        foreach (var definition in definitions)
+        {
+            await WearPartPlcAccessor.WriteLifetimeValueAsync(
+                _plcOperationPipeline,
+                PlcWearPartThresholdOperations.WriteWarningThreshold,
+                definition.WarningValueAddress,
+                definition.WarningValueDataType,
+                definition.WarningLifetimeThreshold,
+                cancellationToken).ConfigureAwait(false);
+            await WearPartPlcAccessor.WriteLifetimeValueAsync(
+                _plcOperationPipeline,
+                PlcWearPartThresholdOperations.WriteShutdownThreshold,
+                definition.ShutdownValueAddress,
+                definition.ShutdownValueDataType,
+                definition.ShutdownLifetimeThreshold,
+                cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static void ValidateThresholds(WearPartDefinitionEntity definition)
+    {
+        if (!double.IsFinite(definition.WarningLifetimeThreshold) || definition.WarningLifetimeThreshold <= 0d)
+        {
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartThreshold.WarningThresholdInvalid"));
         }
 
-        return value.Trim();
+        if (!double.IsFinite(definition.ShutdownLifetimeThreshold) || definition.ShutdownLifetimeThreshold <= 0d)
+        {
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartThreshold.ShutdownThresholdInvalid"));
+        }
+
+        if (definition.WarningLifetimeThreshold >= definition.ShutdownLifetimeThreshold)
+        {
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartThreshold.ThresholdOrderInvalid"));
+        }
     }
 }

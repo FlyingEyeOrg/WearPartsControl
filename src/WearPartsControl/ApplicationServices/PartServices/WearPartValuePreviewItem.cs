@@ -20,5 +20,9 @@ public sealed class WearPartValuePreviewItem
 
     public double ShutdownValue { get; set; }
 
+    public double ConfiguredWarningLifetimeThreshold { get; set; }
+
+    public double ConfiguredShutdownLifetimeThreshold { get; set; }
+
     public WearPartMonitorStatus Status { get; set; }
 }
