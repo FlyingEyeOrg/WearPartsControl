@@ -25,6 +25,8 @@ public sealed class WearPartDefinitionEntityConfiguration : IEntityTypeConfigura
         builder.Property(x => x.WarningValueDataType).HasMaxLength(64).IsRequired();
         builder.Property(x => x.ShutdownValueAddress).HasMaxLength(128).IsRequired();
         builder.Property(x => x.ShutdownValueDataType).HasMaxLength(64).IsRequired();
+        builder.Property(x => x.WarningLifetimeThreshold).IsRequired();
+        builder.Property(x => x.ShutdownLifetimeThreshold).IsRequired();
         builder.Property(x => x.IsShutdown).IsRequired();
         builder.Property(x => x.CodeMinLength).IsRequired();
         builder.Property(x => x.CodeMaxLength).IsRequired();

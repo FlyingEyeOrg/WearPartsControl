@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ViewModels;
 using WearPartsControl.Views;
@@ -37,6 +38,37 @@ public sealed class PartEditorWindowXamlLoadTests
         {
             var viewModel = new EditPartWindowViewModel(new StubWearPartManagementService(), new StubWearPartTypeService(), new UiBusyService(TimeSpan.Zero));
             var window = new EditPartWindow(viewModel);
+
+            try
+            {
+                Assert.Same(viewModel, window.DataContext);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void WearPartThresholdWindow_ShouldLoadWithoutXamlParseException()
+    {
+        RunWithEnglishCulture(() =>
+        {
+            var currentUserAccessor = new CurrentUserAccessor();
+            currentUserAccessor.SetCurrentUser(new MhrUser
+            {
+                WorkId = "WORK-TEST",
+                CardId = "CARD-TEST",
+                AccessLevel = 4
+            });
+
+            var viewModel = new WearPartThresholdWindowViewModel(
+                new StubWearPartThresholdService(),
+                currentUserAccessor,
+                new StubUiDispatcher(),
+                new UiBusyService(TimeSpan.Zero));
+            var window = new WearPartThresholdWindow(viewModel);
 
             try
             {
@@ -140,6 +172,71 @@ public sealed class PartEditorWindowXamlLoadTests
             return Task.FromResult<IReadOnlyList<WearPartTypeDefinition>>([
                 new WearPartTypeDefinition { Id = Guid.NewGuid(), Code = WearPartTypeCodes.Uncategorized, Name = "未分类" }
             ]);
+        }
+    }
+
+    private sealed class StubWearPartThresholdService : IWearPartThresholdService
+    {
+        public Task<WearPartThresholdProfile> GetProfileAsync(Guid wearPartDefinitionId, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new WearPartThresholdProfile
+            {
+                WearPartDefinitionId = wearPartDefinitionId,
+                ClientAppConfigurationId = Guid.NewGuid(),
+                ResourceNumber = "RES-01",
+                PartName = "刀具A",
+                LifetimeType = "Count",
+                WarningLifetimeThreshold = 20,
+                ShutdownLifetimeThreshold = 30
+            });
+        }
+
+        public Task<WearPartThresholdProfile> UpdateThresholdsAsync(WearPartThresholdUpdateRequest request, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new WearPartThresholdProfile
+            {
+                WearPartDefinitionId = request.WearPartDefinitionId,
+                ClientAppConfigurationId = Guid.NewGuid(),
+                ResourceNumber = "RES-01",
+                PartName = "刀具A",
+                LifetimeType = "Count",
+                WarningLifetimeThreshold = request.WarningLifetimeThreshold,
+                ShutdownLifetimeThreshold = request.ShutdownLifetimeThreshold
+            });
+        }
+
+        public Task<WearPartThresholdPlcSnapshot> ReadPlcThresholdsAsync(Guid wearPartDefinitionId, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new WearPartThresholdPlcSnapshot
+            {
+                WarningLifetimeThreshold = 20,
+                ShutdownLifetimeThreshold = 30
+            });
+        }
+
+        public Task<WearPartThresholdPlcSnapshot> OverwritePlcThresholdsAsync(Guid wearPartDefinitionId, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new WearPartThresholdPlcSnapshot
+            {
+                WarningLifetimeThreshold = 20,
+                ShutdownLifetimeThreshold = 30
+            });
+        }
+    }
+
+    private sealed class StubUiDispatcher : IUiDispatcher
+    {
+        public void Run(Action action) => action();
+
+        public Task RunAsync(Action action, System.Windows.Threading.DispatcherPriority priority = System.Windows.Threading.DispatcherPriority.Normal)
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        public Task RenderAsync()
+        {
+            return Task.CompletedTask;
         }
     }
 }

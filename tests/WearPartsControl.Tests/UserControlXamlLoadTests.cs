@@ -43,6 +43,18 @@ public sealed class UserControlXamlLoadTests
     }
 
     [Fact]
+    public void WearPartValuePreviewUserControl_ShouldLoadWithoutXamlParseException()
+    {
+        RunWithEnglishCulture(() =>
+        {
+            var control = new WearPartValuePreviewUserControl(
+                CreateUninitialized<WearPartValuePreviewViewModel>());
+
+            Assert.NotNull(control);
+        });
+    }
+
+    [Fact]
     public void PartReplacementHistoryUserControl_ShouldLoadWithoutXamlParseException()
     {
         RunWithEnglishCulture(() =>

@@ -111,7 +111,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             ResourceNumber = "RES-01"
         });
 
-        Assert.Equal(8, viewModel.Tabs.Count());
+        Assert.Equal(9, viewModel.Tabs.Count());
         Assert.True(viewModel.IsClientAppInfoConfigured);
     }
 
@@ -146,9 +146,9 @@ public sealed class MainWindowViewModelTests : IDisposable
             AccessLevel = 3
         });
 
-        Assert.Equal(6, viewModel.Tabs.Count());
+        Assert.Equal(7, viewModel.Tabs.Count());
 
-        viewModel.TabChangedCommand.Execute(3);
+        viewModel.TabChangedCommand.Execute(4);
 
         Assert.Equal(0, serviceProvider.GetResolveCount<ToolChangeManagementUserControl>());
         Assert.Equal(1, serviceProvider.GetResolveCount<PartReplacementHistoryUserControl>());
@@ -186,17 +186,46 @@ public sealed class MainWindowViewModelTests : IDisposable
             AccessLevel = 3
         });
 
-        Assert.Equal(8, viewModel.Tabs.Count());
+        Assert.Equal(9, viewModel.Tabs.Count());
 
-        viewModel.TabChangedCommand.Execute(3);
+        viewModel.TabChangedCommand.Execute(4);
 
         Assert.Equal(1, serviceProvider.GetResolveCount<ToolChangeManagementUserControl>());
         Assert.IsType<ToolChangeManagementUserControl>(viewModel.SelectedContent);
 
-        viewModel.TabChangedCommand.Execute(4);
+        viewModel.TabChangedCommand.Execute(5);
 
         Assert.Equal(1, serviceProvider.GetResolveCount<KdlRecipeManagementUserControl>());
         Assert.IsType<KdlRecipeManagementUserControl>(viewModel.SelectedContent);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WhenLoggedInAndSwitchToWearPartValuePreviewTab_ShouldShowPreviewControl()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = true,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+        var accessor = new CurrentUserAccessor();
+        var serviceProvider = new StubMainWindowContentFactory();
+        var viewModel = CreateViewModel(accessor, new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService(), serviceProvider: serviceProvider);
+
+        await viewModel.InitializeAsync();
+        accessor.SetCurrentUser(new MhrUser
+        {
+            CardId = "CARD-01",
+            WorkId = "WORK-02",
+            AccessLevel = 3
+        });
+
+        viewModel.TabChangedCommand.Execute(1);
+
+        Assert.Equal(1, serviceProvider.GetResolveCount<WearPartValuePreviewUserControl>());
+        Assert.IsType<WearPartValuePreviewUserControl>(viewModel.SelectedContent);
     }
 
     [Fact]
@@ -214,7 +243,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
 
         await viewModel.InitializeAsync();
-        viewModel.TabChangedCommand.Execute(2);
+        viewModel.TabChangedCommand.Execute(3);
 
         Assert.IsType<NeedLoginUserControl>(viewModel.SelectedContent);
     }
@@ -234,7 +263,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
 
         await viewModel.InitializeAsync();
-        viewModel.TabChangedCommand.Execute(1);
+        viewModel.TabChangedCommand.Execute(2);
 
         Assert.IsType<ClientAppInfoUserControl>(viewModel.SelectedContent);
     }
@@ -255,7 +284,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService(), serviceProvider: serviceProvider);
 
         await viewModel.InitializeAsync();
-        viewModel.TabChangedCommand.Execute(1);
+        viewModel.TabChangedCommand.Execute(2);
         var selectedContent = viewModel.SelectedContent;
         var resolveCount = serviceProvider.GetResolveCount<ClientAppInfoUserControl>();
 
@@ -287,7 +316,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         var viewModel = CreateViewModel(accessor, new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService(), serviceProvider: serviceProvider);
 
         await viewModel.InitializeAsync();
-        viewModel.TabChangedCommand.Execute(1);
+        viewModel.TabChangedCommand.Execute(2);
         var selectedContent = viewModel.SelectedContent;
         var resolveCount = serviceProvider.GetResolveCount<ClientAppInfoUserControl>();
 
@@ -318,7 +347,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         var viewModel = CreateViewModel(accessor, loginService, appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
 
         await viewModel.InitializeAsync();
-        viewModel.TabChangedCommand.Execute(5);
+        viewModel.TabChangedCommand.Execute(6);
         Assert.IsType<NeedLoginUserControl>(viewModel.SelectedContent);
 
         accessor.SetCurrentUser(new MhrUser
@@ -882,6 +911,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         private readonly HashSet<Type> _supportedTypes =
         [
             typeof(ReplacePartUserControl),
+            typeof(WearPartValuePreviewUserControl),
             typeof(ClientAppInfoUserControl),
             typeof(NeedLoginUserControl),
             typeof(PartManagementUserControl),

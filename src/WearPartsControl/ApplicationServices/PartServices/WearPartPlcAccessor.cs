@@ -75,6 +75,11 @@ internal static class WearPartPlcAccessor
 
     public static Task WriteCurrentValueAsync(IPlcOperationPipeline pipeline, string operationName, string address, string dataType, double value, CancellationToken cancellationToken = default)
     {
+        return WriteLifetimeValueAsync(pipeline, operationName, address, dataType, value, cancellationToken);
+    }
+
+    public static Task WriteLifetimeValueAsync(IPlcOperationPipeline pipeline, string operationName, string address, string dataType, double value, CancellationToken cancellationToken = default)
+    {
         if (ShouldSkip(address))
         {
             return Task.CompletedTask;

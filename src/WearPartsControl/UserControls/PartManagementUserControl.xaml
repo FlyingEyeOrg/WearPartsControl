@@ -91,6 +91,9 @@
                                 hc:IconElement.Geometry="{StaticResource DropperGeometry}"
                                 Content="{loc:Loc PartManagementControl.EditButton}" />
                         <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                            Command="{Binding EditThresholdsCommand}"
+                            Content="{loc:Loc PartManagementControl.EditThresholdsButton}" />
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
                                 Command="{Binding DeleteCommand}"
                                 hc:IconElement.Geometry="{StaticResource DeleteGeometry}"
                                 Content="{loc:Loc PartManagementControl.DeleteButton}" />
@@ -181,6 +184,14 @@
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.ShutdownValueDataTypeHeader}"
                                         Binding="{Binding Item.ShutdownValueDataType}"
+                                        IsReadOnly="True"
+                                        Width="SizeToHeader" />
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.WarningLifetimeThresholdHeader}"
+                                        Binding="{Binding Item.WarningLifetimeThreshold, StringFormat={}{0:0.##}}"
+                                        IsReadOnly="True"
+                                        Width="SizeToHeader" />
+                    <DataGridTextColumn Header="{loc:Loc PartManagementControl.ShutdownLifetimeThresholdHeader}"
+                                        Binding="{Binding Item.ShutdownLifetimeThreshold, StringFormat={}{0:0.##}}"
                                         IsReadOnly="True"
                                         Width="SizeToHeader" />
                     <DataGridTextColumn Header="{loc:Loc PartManagementControl.InputModeHeader}"

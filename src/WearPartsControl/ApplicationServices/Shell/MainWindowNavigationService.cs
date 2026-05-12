@@ -7,6 +7,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
     private static readonly MainWindowTabKey[] ToolChangeProcedureTabs =
     [
         MainWindowTabKey.ReplacePart,
+        MainWindowTabKey.WearPartValuePreview,
         MainWindowTabKey.ClientAppInfo,
         MainWindowTabKey.PartManagement,
         MainWindowTabKey.ToolChangeManagement,
@@ -19,6 +20,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
     private static readonly MainWindowTabKey[] StandardProcedureTabs =
     [
         MainWindowTabKey.ReplacePart,
+        MainWindowTabKey.WearPartValuePreview,
         MainWindowTabKey.ClientAppInfo,
         MainWindowTabKey.PartManagement,
         MainWindowTabKey.PartReplacementHistory,
@@ -30,7 +32,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
     {
         ArgumentNullException.ThrowIfNull(localizedTabHeaders);
 
-        if (localizedTabHeaders.Count < 8)
+        if (localizedTabHeaders.Count < 9)
         {
             throw new InvalidOperationException("Main window tab headers are incomplete.");
         }
@@ -72,6 +74,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
         return tab switch
         {
             MainWindowTabKey.ReplacePart => typeof(ReplacePartUserControl),
+            MainWindowTabKey.WearPartValuePreview => typeof(WearPartValuePreviewUserControl),
             MainWindowTabKey.ClientAppInfo => typeof(ClientAppInfoUserControl),
             MainWindowTabKey.PartManagement => typeof(PartManagementUserControl),
             MainWindowTabKey.ToolChangeManagement => typeof(ToolChangeManagementUserControl),

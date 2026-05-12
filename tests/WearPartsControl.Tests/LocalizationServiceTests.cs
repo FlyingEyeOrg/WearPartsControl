@@ -32,7 +32,8 @@ public sealed class LocalizationServiceTests : IDisposable
             "KDL Recipe Settings",
             "Replacement History",
             "Monitoring Log",
-            "User Settings"
+            "User Settings",
+            "Wear Part Lifetime Preview"
         }, service.Catalog.MainWindow.Tabs);
     }
 
@@ -54,7 +55,8 @@ public sealed class LocalizationServiceTests : IDisposable
             "靠刀量上下限配置",
             "易损件更换历史",
             "易损件监控日志",
-            "用户配置"
+            "用户配置",
+            "易损件寿命预览"
         }, service.Catalog.MainWindow.Tabs);
     }
 

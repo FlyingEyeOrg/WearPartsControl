@@ -61,6 +61,16 @@ public sealed class WearPartDefinition
     public string ShutdownValueDataType { get; set; } = string.Empty;
 
     /// <summary>
+    /// 软件侧预警寿命阈值。
+    /// </summary>
+    public double WarningLifetimeThreshold { get; set; }
+
+    /// <summary>
+    /// 软件侧停机寿命阈值。
+    /// </summary>
+    public double ShutdownLifetimeThreshold { get; set; }
+
+    /// <summary>
     /// 到期是否允许停机。
     /// </summary>
     public bool IsShutdown { get; set; }

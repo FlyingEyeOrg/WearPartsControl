@@ -1,0 +1,231 @@
+<views:AppDialogWindow x:Class="WearPartsControl.Views.WearPartThresholdWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
+        xmlns:views="clr-namespace:WearPartsControl.Views"
+        mc:Ignorable="d"
+        Title="{loc:Loc WearPartThresholdWindowView.Title}"
+        Width="780"
+        Background="#FFF7FAFC"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="Height"
+        ResizeMode="NoResize">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="WearPartThresholdFormLabelStyle"
+                   TargetType="TextBlock">
+                <Setter Property="VerticalAlignment"
+                        Value="Center" />
+                <Setter Property="Margin"
+                        Value="0 0 8 0" />
+                <Setter Property="TextWrapping"
+                        Value="Wrap" />
+            </Style>
+            <Style x:Key="WearPartThresholdFormRowStyle"
+                   TargetType="Grid">
+                <Setter Property="Margin"
+                        Value="0 0 0 10" />
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Border Padding="12"
+            Style="{StaticResource ShellSurfaceBorderStyle}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Padding="0"
+                    Style="{StaticResource ShellCardBorderStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              CanContentScroll="True">
+                    <StackPanel Margin="16">
+                        <Border Style="{StaticResource ShellStatusCardBorderStyle}"
+                                Padding="14 12">
+                            <TextBlock FontSize="14"
+                                       Foreground="{StaticResource InfoBrush}"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding StatusMessage, Mode=OneWay}" />
+                        </Border>
+
+                        <Grid Margin="0 12 0 0"
+                              Grid.IsSharedSizeScope="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0"
+                                    Margin="0 0 12 0"
+                                    Padding="16"
+                                    Style="{StaticResource ShellStatusCardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource ShellSectionLabelTextStyle}"
+                                               Text="{loc:Loc WearPartThresholdWindowView.SoftwareSectionTitle}" />
+
+                                    <Grid Margin="0 12 0 0"
+                                          Style="{StaticResource WearPartThresholdFormRowStyle}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"
+                                                              SharedSizeGroup="WearPartThresholdLabelColumn" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Style="{StaticResource WearPartThresholdFormLabelStyle}"
+                                                   Text="{loc:Loc WearPartThresholdWindowView.ResourceNumberLabel}" />
+                                        <TextBox Grid.Column="1"
+                                                 IsReadOnly="True"
+                                                 Text="{Binding ResourceNumber, Mode=OneWay}"
+                                                 Style="{StaticResource TextBoxExtend}" />
+                                    </Grid>
+
+                                    <Grid Style="{StaticResource WearPartThresholdFormRowStyle}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"
+                                                              SharedSizeGroup="WearPartThresholdLabelColumn" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Style="{StaticResource WearPartThresholdFormLabelStyle}"
+                                                   Text="{loc:Loc WearPartThresholdWindowView.PartNameLabel}" />
+                                        <TextBox Grid.Column="1"
+                                                 IsReadOnly="True"
+                                                 Text="{Binding PartName, Mode=OneWay}"
+                                                 Style="{StaticResource TextBoxExtend}" />
+                                    </Grid>
+
+                                    <Grid Style="{StaticResource WearPartThresholdFormRowStyle}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"
+                                                              SharedSizeGroup="WearPartThresholdLabelColumn" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Style="{StaticResource WearPartThresholdFormLabelStyle}"
+                                                   Text="{loc:Loc WearPartThresholdWindowView.LifetimeTypeLabel}" />
+                                        <TextBox Grid.Column="1"
+                                                 IsReadOnly="True"
+                                                 Text="{Binding LifetimeType, Mode=OneWay}"
+                                                 Style="{StaticResource TextBoxExtend}" />
+                                    </Grid>
+
+                                    <TextBlock Margin="0 6 0 10"
+                                               Style="{StaticResource ShellSectionLabelTextStyle}"
+                                               Text="{loc:Loc WearPartThresholdWindowView.SoftwareThresholdSectionTitle}" />
+
+                                    <Grid Style="{StaticResource WearPartThresholdFormRowStyle}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"
+                                                              SharedSizeGroup="WearPartThresholdLabelColumn" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Style="{StaticResource WearPartThresholdFormLabelStyle}"
+                                                   Text="{loc:Loc WearPartThresholdWindowView.WarningThresholdLabel}" />
+                                        <TextBox Grid.Column="1"
+                                                 Text="{Binding WarningLifetimeThreshold, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource TextBoxExtend}"
+                                                 hc:InfoElement.Placeholder="{loc:Loc WearPartThresholdWindowView.ThresholdPlaceholder}" />
+                                    </Grid>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"
+                                                              SharedSizeGroup="WearPartThresholdLabelColumn" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Style="{StaticResource WearPartThresholdFormLabelStyle}"
+                                                   Text="{loc:Loc WearPartThresholdWindowView.ShutdownThresholdLabel}" />
+                                        <TextBox Grid.Column="1"
+                                                 Text="{Binding ShutdownLifetimeThreshold, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource TextBoxExtend}"
+                                                 hc:InfoElement.Placeholder="{loc:Loc WearPartThresholdWindowView.ThresholdPlaceholder}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="1"
+                                    Margin="12 0 0 0"
+                                    Padding="16"
+                                    Style="{StaticResource ShellStatusCardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource ShellSectionLabelTextStyle}"
+                                               Text="{loc:Loc WearPartThresholdWindowView.PlcSectionTitle}" />
+                                    <TextBlock Margin="0 8 0 12"
+                                               Foreground="{StaticResource SecondaryTextBrush}"
+                                               TextWrapping="Wrap"
+                                               Text="{loc:Loc WearPartThresholdWindowView.PlcSectionDescription}" />
+
+                                    <Grid Style="{StaticResource WearPartThresholdFormRowStyle}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"
+                                                              SharedSizeGroup="WearPartThresholdLabelColumn" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Style="{StaticResource WearPartThresholdFormLabelStyle}"
+                                                   Text="{loc:Loc WearPartThresholdWindowView.PlcWarningThresholdLabel}" />
+                                        <TextBox Grid.Column="1"
+                                                 IsReadOnly="True"
+                                                 Text="{Binding PlcWarningLifetimeThreshold, Mode=OneWay}"
+                                                 Style="{StaticResource TextBoxExtend}" />
+                                    </Grid>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"
+                                                              SharedSizeGroup="WearPartThresholdLabelColumn" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Style="{StaticResource WearPartThresholdFormLabelStyle}"
+                                                   Text="{loc:Loc WearPartThresholdWindowView.PlcShutdownThresholdLabel}" />
+                                        <TextBox Grid.Column="1"
+                                                 IsReadOnly="True"
+                                                 Text="{Binding PlcShutdownLifetimeThreshold, Mode=OneWay}"
+                                                 Style="{StaticResource TextBoxExtend}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <Border Grid.Row="1"
+                    Margin="0 12 0 0"
+                    Style="{StaticResource ShellActionCardBorderStyle}">
+                <WrapPanel HorizontalAlignment="Right">
+                    <Button MinWidth="80"
+                            Margin="0 0 12 0"
+                            Command="{Binding RefreshPlcCommand}"
+                            Content="{loc:Loc WearPartThresholdWindowView.RefreshPlcButton}" />
+                    <Button MinWidth="80"
+                            Margin="0 0 12 0"
+                            Command="{Binding OverwritePlcCommand}"
+                            Content="{loc:Loc WearPartThresholdWindowView.OverwritePlcButton}" />
+                    <Button MinWidth="80"
+                            Margin="0 0 12 0"
+                            Command="{Binding CancelCommand}"
+                            Content="{loc:Loc WearPartThresholdWindowView.CancelButton}" />
+                    <Button MinWidth="80"
+                            Style="{StaticResource ButtonPrimary}"
+                            Command="{Binding SaveCommand}"
+                            Content="{loc:Loc WearPartThresholdWindowView.SaveButton}" />
+                </WrapPanel>
+            </Border>
+
+            <Border Background="#40FFFFFF"
+                    Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <hc:LoadingCircle Width="60"
+                                  Height="60"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  IsRunning="{Binding IsBusy}" />
+            </Border>
+        </Grid>
+    </Border>
+</views:AppDialogWindow>

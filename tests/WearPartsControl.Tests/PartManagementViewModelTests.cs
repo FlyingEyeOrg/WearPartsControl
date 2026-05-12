@@ -1,5 +1,6 @@
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.LegacyImport;
 using WearPartsControl.ApplicationServices.Localization;
@@ -22,6 +23,7 @@ public sealed class PartManagementViewModelTests
             new StubClientAppInfoService(),
             legacyImportService,
             new StubWearPartManagementService(),
+            CreateCurrentUserAccessor(4),
             uiDispatcher,
             new UiBusyService(TimeSpan.Zero),
             new StubAppDialogService());
@@ -45,6 +47,7 @@ public sealed class PartManagementViewModelTests
             new StubClientAppInfoService(),
             new StubLegacyDatabaseImportService(),
             new StubWearPartManagementService(),
+            CreateCurrentUserAccessor(4),
             new StubUiDispatcher(),
             new UiBusyService(TimeSpan.Zero),
             new StubAppDialogService());
@@ -64,6 +67,7 @@ public sealed class PartManagementViewModelTests
             new StubClientAppInfoService(),
             new StubLegacyDatabaseImportService(),
             new StubWearPartManagementService(),
+            CreateCurrentUserAccessor(4),
             new StubUiDispatcher(),
             new UiBusyService(TimeSpan.Zero),
             new StubAppDialogService());
@@ -86,6 +90,7 @@ public sealed class PartManagementViewModelTests
             new StubClientAppInfoService(),
             new StubLegacyDatabaseImportService(),
             managementService,
+            CreateCurrentUserAccessor(4),
             new StubUiDispatcher(),
             new UiBusyService(TimeSpan.Zero),
             new StubAppDialogService());
@@ -99,6 +104,60 @@ public sealed class PartManagementViewModelTests
         Assert.Equal(2, managementService.DeletedIds.Count);
         Assert.Equal(LocalizedText.Format("ViewModels.PartManagementVm.DeletedMultiple", 2), viewModel.StatusMessage);
         Assert.Single(viewModel.Definitions);
+    }
+
+    [Fact]
+    public async Task EditThresholdsCommand_WhenAccessLevelInsufficient_ShouldBeDisabled()
+    {
+        var definition = new WearPartDefinition { Id = Guid.NewGuid(), ResourceNumber = "RES-01", PartName = "刀具 A" };
+        var viewModel = new PartManagementViewModel(
+            new StubClientAppInfoService(),
+            new StubLegacyDatabaseImportService(),
+            new StubWearPartManagementService(definition),
+            CreateCurrentUserAccessor(3),
+            new StubUiDispatcher(),
+            new UiBusyService(TimeSpan.Zero),
+            new StubAppDialogService());
+
+        await viewModel.InitializeAsync();
+        viewModel.SelectedDefinition = viewModel.Definitions[0].Item;
+
+        Assert.False(viewModel.EditThresholdsCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task EditThresholdsCommand_WhenAccessLevelEligible_ShouldRaiseRequestedEvent()
+    {
+        var definition = new WearPartDefinition { Id = Guid.NewGuid(), ResourceNumber = "RES-01", PartName = "刀具 A" };
+        var viewModel = new PartManagementViewModel(
+            new StubClientAppInfoService(),
+            new StubLegacyDatabaseImportService(),
+            new StubWearPartManagementService(definition),
+            CreateCurrentUserAccessor(4),
+            new StubUiDispatcher(),
+            new UiBusyService(TimeSpan.Zero),
+            new StubAppDialogService());
+        WearPartDefinition? requested = null;
+        viewModel.ThresholdEditRequested += (_, item) => requested = item;
+
+        await viewModel.InitializeAsync();
+        viewModel.SelectedDefinition = viewModel.Definitions[0].Item;
+
+        viewModel.EditThresholdsCommand.Execute(null);
+
+        Assert.Same(viewModel.SelectedDefinition, requested);
+    }
+
+    private static CurrentUserAccessor CreateCurrentUserAccessor(int accessLevel)
+    {
+        var accessor = new CurrentUserAccessor();
+        accessor.SetCurrentUser(new MhrUser
+        {
+            WorkId = "WORK-TEST",
+            CardId = "CARD-TEST",
+            AccessLevel = accessLevel
+        });
+        return accessor;
     }
 
     private sealed class StubClientAppInfoService : IClientAppInfoService

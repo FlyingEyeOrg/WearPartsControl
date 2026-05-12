@@ -54,6 +54,8 @@ CREATE TABLE IF NOT EXISTS wear_part_definitions (
     WarningValueDataType TEXT NOT NULL,
     ShutdownValueAddress TEXT NOT NULL,
     ShutdownValueDataType TEXT NOT NULL,
+    WarningLifetimeThreshold REAL NOT NULL,
+    ShutdownLifetimeThreshold REAL NOT NULL,
     IsShutdown INTEGER NOT NULL,
     CodeMinLength INTEGER NOT NULL,
     CodeMaxLength INTEGER NOT NULL,

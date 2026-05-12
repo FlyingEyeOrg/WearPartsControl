@@ -76,7 +76,7 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
             var currentValue = await WearPartPlcAccessor.ReadAsDoubleAsync(_plcOperationPipeline, PlcMonitoringPipelineOperations.ReadCurrentValue, definition.CurrentValueAddress, definition.CurrentValueDataType, cancellationToken).ConfigureAwait(false);
             var warningValue = await WearPartPlcAccessor.ReadAsDoubleAsync(_plcOperationPipeline, PlcMonitoringPipelineOperations.ReadWarningValue, definition.WarningValueAddress, definition.WarningValueDataType, cancellationToken).ConfigureAwait(false);
             var shutdownValue = await WearPartPlcAccessor.ReadAsDoubleAsync(_plcOperationPipeline, PlcMonitoringPipelineOperations.ReadShutdownValue, definition.ShutdownValueAddress, definition.ShutdownValueDataType, cancellationToken).ConfigureAwait(false);
-            var status = ResolveStatus(currentValue, warningValue, shutdownValue);
+            var status = WearPartLifetimeStatusResolver.Resolve(currentValue, warningValue, shutdownValue);
 
             if (status == WearPartMonitorStatus.Shutdown)
             {
@@ -273,21 +273,6 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
             address: address,
             details: exception?.Message,
             exception: exception);
-    }
-
-    private static WearPartMonitorStatus ResolveStatus(double currentValue, double warningValue, double shutdownValue)
-    {
-        if (shutdownValue > 0d && currentValue >= shutdownValue)
-        {
-            return WearPartMonitorStatus.Shutdown;
-        }
-
-        if (warningValue > 0d && currentValue >= warningValue)
-        {
-            return WearPartMonitorStatus.Warning;
-        }
-
-        return WearPartMonitorStatus.Normal;
     }
 
     private static ExceedLimitRecord MapToRecord(ExceedLimitRecordEntity entity)

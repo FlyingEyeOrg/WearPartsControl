@@ -7,13 +7,17 @@ using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.LegacyImport;
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PartServices;
 
 namespace WearPartsControl.ViewModels;
 
 public sealed class PartManagementViewModel : LocalizedViewModelBase
 {
+    private const int MinimumAccessLevelForThresholdEdit = 4;
+
     private readonly IClientAppInfoService _clientAppInfoService;
+    private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly ILegacyDatabaseImportService _legacyDatabaseImportService;
     private readonly IWearPartManagementService _wearPartManagementService;
     private readonly IUiDispatcher _uiDispatcher;
@@ -35,11 +39,13 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
         IClientAppInfoService clientAppInfoService,
         ILegacyDatabaseImportService legacyDatabaseImportService,
         IWearPartManagementService wearPartManagementService,
+        ICurrentUserAccessor currentUserAccessor,
         IUiDispatcher uiDispatcher,
         IUiBusyService uiBusyService,
         IAppDialogService dialogService)
     {
         _clientAppInfoService = clientAppInfoService;
+        _currentUserAccessor = currentUserAccessor;
         _legacyDatabaseImportService = legacyDatabaseImportService;
         _wearPartManagementService = wearPartManagementService;
         _uiDispatcher = uiDispatcher;
@@ -51,6 +57,7 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
         ImportLegacyDefinitionsCommand = new RelayCommand(RequestImportLegacyDefinitions, CanImportLegacyDefinitions);
         AddCommand = new RelayCommand(OpenAddDialog, CanAdd);
         EditCommand = new RelayCommand(OpenEditDialog, CanEdit);
+        EditThresholdsCommand = new RelayCommand(OpenThresholdEditDialog, CanEditThresholds);
         DeleteCommand = new AsyncRelayCommand(DeleteAsync, CanDelete);
         SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.PartManagementVm.PromptLoadCurrent"));
     }
@@ -60,6 +67,8 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
     public event EventHandler? ImportLegacyDefinitionsRequested;
 
     public event EventHandler<WearPartDefinition>? EditRequested;
+
+    public event EventHandler<WearPartDefinition>? ThresholdEditRequested;
 
     public ObservableCollection<SelectableItem<WearPartDefinition>> Definitions { get; } = new();
 
@@ -72,6 +81,8 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
     public IRelayCommand AddCommand { get; }
 
     public IRelayCommand EditCommand { get; }
+
+    public IRelayCommand EditThresholdsCommand { get; }
 
     public IAsyncRelayCommand DeleteCommand { get; }
 
@@ -101,6 +112,7 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
 
             OnPropertyChanged(nameof(SelectedDefinition));
             EditCommand.NotifyCanExecuteChanged();
+            EditThresholdsCommand.NotifyCanExecuteChanged();
             DeleteCommand.NotifyCanExecuteChanged();
         }
     }
@@ -147,6 +159,7 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
                 ImportLegacyDefinitionsCommand.NotifyCanExecuteChanged();
                 AddCommand.NotifyCanExecuteChanged();
                 EditCommand.NotifyCanExecuteChanged();
+                EditThresholdsCommand.NotifyCanExecuteChanged();
                 DeleteCommand.NotifyCanExecuteChanged();
             }
         }
@@ -253,6 +266,13 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
         return !IsBusy && SelectedDefinition is not null;
     }
 
+    private bool CanEditThresholds()
+    {
+        return !IsBusy
+            && SelectedDefinition is not null
+            && _currentUserAccessor.CurrentUser?.AccessLevel >= MinimumAccessLevelForThresholdEdit;
+    }
+
     private bool CanDelete()
     {
         return !IsBusy && (SelectedDefinition is not null || Definitions.Any(x => x.IsChecked));
@@ -276,6 +296,16 @@ public sealed class PartManagementViewModel : LocalizedViewModelBase
         }
 
         EditRequested?.Invoke(this, SelectedDefinition);
+    }
+
+    private void OpenThresholdEditDialog()
+    {
+        if (SelectedDefinition is null)
+        {
+            return;
+        }
+
+        ThresholdEditRequested?.Invoke(this, SelectedDefinition);
     }
 
     private async Task DeleteAsync()

@@ -1403,6 +1403,101 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         Assert.Contains(LocalizedText.Get("ViewModels.ComNotificationTemplate.ShutdownHeading"), popupService.Notifications[0]);
     }
 
+    [Fact]
+    public async Task GetByResourceNumberAsync_ShouldReturnPreviewValuesWithoutWritingPlc()
+    {
+        var seeded = await SeedAsync("R-PREVIEW-01", "M1.9");
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 30);
+        plcService.SetValue("DB1.1", 20);
+        plcService.SetValue("DB1.2", 30);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateValuePreviewService(dbContext, plcService);
+
+        var results = await service.GetByResourceNumberAsync("R-PREVIEW-01");
+
+        var preview = Assert.Single(results);
+        Assert.Equal(seeded.BasicConfigurationId, preview.ClientAppConfigurationId);
+        Assert.Equal(seeded.DefinitionId, preview.WearPartDefinitionId);
+        Assert.Equal("刀具A", preview.PartName);
+        Assert.Equal(30d, preview.CurrentValue);
+        Assert.Equal(20d, preview.WarningValue);
+        Assert.Equal(30d, preview.ShutdownValue);
+        Assert.Equal(WearPartMonitorStatus.Shutdown, preview.Status);
+        Assert.Empty(plcService.Writes);
+    }
+
+    [Fact]
+    public async Task UpdateThresholdsAsync_WhenAccessLevelInsufficient_ShouldThrowAuthorizationException()
+    {
+        var seeded = await SeedAsync("R-THRESHOLD-01", "M2.0");
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateThresholdService(dbContext, CreateCurrentUserAccessor(accessLevel: 3), new FakePlcService());
+
+        await Assert.ThrowsAsync<AuthorizationException>(() => service.UpdateThresholdsAsync(new WearPartThresholdUpdateRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            WarningLifetimeThreshold = 25,
+            ShutdownLifetimeThreshold = 35
+        }));
+    }
+
+    [Fact]
+    public async Task UpdateThresholdsAsync_ShouldPersistSoftwareThresholds()
+    {
+        var seeded = await SeedAsync("R-THRESHOLD-02", "M2.1");
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateThresholdService(dbContext, CreateCurrentUserAccessor(accessLevel: 4), new FakePlcService());
+
+        var profile = await service.UpdateThresholdsAsync(new WearPartThresholdUpdateRequest
+        {
+            WearPartDefinitionId = seeded.DefinitionId,
+            WarningLifetimeThreshold = 26,
+            ShutdownLifetimeThreshold = 36
+        });
+
+        Assert.Equal(26d, profile.WarningLifetimeThreshold);
+        Assert.Equal(36d, profile.ShutdownLifetimeThreshold);
+
+        await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
+        var entity = await verifyContext.WearPartDefinitions.SingleAsync(x => x.Id == seeded.DefinitionId);
+        Assert.Equal(26d, entity.WarningLifetimeThreshold);
+        Assert.Equal(36d, entity.ShutdownLifetimeThreshold);
+    }
+
+    [Fact]
+    public async Task OverwritePlcThresholdsAsync_ShouldWriteConfiguredThresholdsWithoutBarcodeOrResetWrites()
+    {
+        var seeded = await SeedAsync("R-THRESHOLD-03", "M2.2");
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.1", 10);
+        plcService.SetValue("DB1.2", 15);
+
+        await using (var setupContext = await _dbContextFactory.CreateDbContextAsync())
+        {
+            var entity = await setupContext.WearPartDefinitions.SingleAsync(x => x.Id == seeded.DefinitionId);
+            entity.WarningLifetimeThreshold = 28;
+            entity.ShutdownLifetimeThreshold = 38;
+            await setupContext.SaveChangesAsync();
+        }
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateThresholdService(dbContext, CreateCurrentUserAccessor(accessLevel: 4), plcService);
+
+        var snapshot = await service.OverwritePlcThresholdsAsync(seeded.DefinitionId);
+
+        Assert.Equal(28d, snapshot.WarningLifetimeThreshold);
+        Assert.Equal(38d, snapshot.ShutdownLifetimeThreshold);
+        Assert.Contains(plcService.Writes, x => x.Address == "DB1.1" && Equals(x.Value, 28));
+        Assert.Contains(plcService.Writes, x => x.Address == "DB1.2" && Equals(x.Value, 38));
+        Assert.DoesNotContain(plcService.Writes, x => x.Address == "DB1.3");
+        Assert.DoesNotContain(plcService.Writes, x => x.Address == "DB1.4");
+        Assert.DoesNotContain(plcService.Writes, x => x.Address == "M2.2");
+    }
+
     private async Task<(Guid BasicConfigurationId, Guid DefinitionId)> SeedAsync(
         string resourceNumber,
         string shutdownPointAddress,
@@ -1458,6 +1553,8 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             WarningValueDataType = warningValueDataType,
             ShutdownValueAddress = "DB1.2",
             ShutdownValueDataType = shutdownValueDataType,
+            WarningLifetimeThreshold = 20,
+            ShutdownLifetimeThreshold = 30,
             IsShutdown = true,
             CodeMinLength = 8,
             CodeMaxLength = 32,
@@ -1568,6 +1665,32 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             notificationService,
             popupService ?? new FakeWearPartAlertPopupService(),
             new FakeUserConfigService());
+    }
+
+    private static WearPartValuePreviewService CreateValuePreviewService(
+        WearPartsControlDbContext dbContext,
+        IPlcService plcService)
+    {
+        var plcOperationPipeline = new PlcOperationPipeline(plcService, Microsoft.Extensions.Logging.Abstractions.NullLogger<PlcOperationPipeline>.Instance);
+
+        return new WearPartValuePreviewService(
+            new ClientAppConfigurationRepository(dbContext),
+            new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
+            plcOperationPipeline);
+    }
+
+    private static WearPartThresholdService CreateThresholdService(
+        WearPartsControlDbContext dbContext,
+        ICurrentUserAccessor currentUserAccessor,
+        IPlcService plcService)
+    {
+        var plcOperationPipeline = new PlcOperationPipeline(plcService, Microsoft.Extensions.Logging.Abstractions.NullLogger<PlcOperationPipeline>.Instance);
+
+        return new WearPartThresholdService(
+            currentUserAccessor,
+            new ClientAppConfigurationRepository(dbContext),
+            new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
+            plcOperationPipeline);
     }
 
     public void Dispose()

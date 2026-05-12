@@ -48,6 +48,8 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
     private string _warningValueDataType = DefaultCreateDataType;
     private string _shutdownValueAddress = string.Empty;
     private string _shutdownValueDataType = DefaultCreateDataType;
+    private double _warningLifetimeThreshold;
+    private double _shutdownLifetimeThreshold;
     private bool _isShutdown;
     private string _codeMinLength = DefaultCreateCodeMinLength;
     private string _codeMaxLength = DefaultCreateCodeMaxLength;
@@ -236,6 +238,8 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
         WarningValueDataType = DefaultCreateDataType;
         ShutdownValueAddress = string.Empty;
         ShutdownValueDataType = DefaultCreateDataType;
+        _warningLifetimeThreshold = 0d;
+        _shutdownLifetimeThreshold = 0d;
         IsShutdown = false;
         CodeMinLength = DefaultCreateCodeMinLength;
         CodeMaxLength = DefaultCreateCodeMaxLength;
@@ -266,6 +270,8 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
         WarningValueDataType = definition.WarningValueDataType;
         ShutdownValueAddress = definition.ShutdownValueAddress;
         ShutdownValueDataType = definition.ShutdownValueDataType;
+        _warningLifetimeThreshold = definition.WarningLifetimeThreshold;
+        _shutdownLifetimeThreshold = definition.ShutdownLifetimeThreshold;
         IsShutdown = definition.IsShutdown;
         CodeMinLength = definition.CodeMinLength.ToString();
         CodeMaxLength = definition.CodeMaxLength.ToString();
@@ -352,6 +358,8 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
             WarningValueDataType = WarningValueDataType,
             ShutdownValueAddress = ShutdownValueAddress,
             ShutdownValueDataType = ShutdownValueDataType,
+            WarningLifetimeThreshold = _warningLifetimeThreshold,
+            ShutdownLifetimeThreshold = _shutdownLifetimeThreshold,
             IsShutdown = IsShutdown,
             CodeMinLength = codeMinLength,
             CodeMaxLength = codeMaxLength,

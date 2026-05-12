@@ -9,5 +9,6 @@ public enum MainWindowTabKey
     KdlRecipeManagement = 4,
     PartReplacementHistory = 5,
     WearPartMonitoringLog = 6,
-    UserConfig = 7
+    UserConfig = 7,
+    WearPartValuePreview = 8
 }

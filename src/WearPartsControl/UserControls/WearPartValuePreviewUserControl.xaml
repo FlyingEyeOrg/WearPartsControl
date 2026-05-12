@@ -1,0 +1,210 @@
+<UserControl x:Class="WearPartsControl.UserControls.WearPartValuePreviewUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
+             xmlns:vm="clr-namespace:WearPartsControl.ViewModels"
+             mc:Ignorable="d"
+             d:Width="1920"
+             d:Height="1080"
+             d:DataContext="{d:DesignInstance Type=vm:WearPartValuePreviewViewModel}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="WearPartValuePreviewMetricCardStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource ShellStatusCardBorderStyle}">
+            <Setter Property="Margin"
+                Value="0 0 12 12" />
+            <Setter Property="Padding"
+                Value="14 12" />
+            </Style>
+            <Style x:Key="WearPartValuePreviewWarningMetricCardStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource WearPartValuePreviewMetricCardStyle}">
+            <Setter Property="Background"
+                Value="#FFFFF6E7" />
+            <Setter Property="BorderBrush"
+                Value="#FFE2C164" />
+            </Style>
+            <Style x:Key="WearPartValuePreviewDangerMetricCardStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource WearPartValuePreviewMetricCardStyle}">
+            <Setter Property="Background"
+                Value="#FFFCECEF" />
+            <Setter Property="BorderBrush"
+                Value="#FFE0A4AD" />
+            </Style>
+            <Style x:Key="WearPartValuePreviewMetricValueTextStyle"
+               TargetType="TextBlock">
+            <Setter Property="Margin"
+                Value="0 6 0 0" />
+            <Setter Property="FontSize"
+                Value="20" />
+            <Setter Property="FontWeight"
+                Value="SemiBold" />
+            <Setter Property="Foreground"
+                Value="#FF1F3351" />
+            </Style>
+            <Style x:Key="WearPartValuePreviewStatusBadgeStyle"
+                   TargetType="Border">
+                <Setter Property="CornerRadius"
+                        Value="10" />
+                <Setter Property="Padding"
+                        Value="10 4" />
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Background="{StaticResource ShellPanelBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <Border Margin="0"
+                    Style="{StaticResource ShellSectionHeaderBorderStyle}">
+                <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
+                           Text="{loc:Loc WearPartValuePreviewControl.Title}" />
+            </Border>
+
+            <Border Margin="0 12 0 0"
+                    Style="{StaticResource ShellStatusCardBorderStyle}">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock TextWrapping="WrapWithOverflow"
+                               Foreground="{StaticResource InfoBrush}"
+                               FontWeight="SemiBold"
+                               Text="{Binding StatusMessage, Mode=OneWay}" />
+
+                    <WrapPanel Grid.Row="1"
+                               Style="{StaticResource ShellToolbarWrapPanelStyle}">
+                        <TextBlock VerticalAlignment="Center"
+                                   FontWeight="SemiBold"
+                                   TextWrapping="Wrap">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0}{1}">
+                                    <Binding Source="{x:Static loc:LocalizationBindingSource.Instance}"
+                                             Path="[WearPartValuePreviewControl.CurrentResourceNumberLabel]"
+                                             Mode="OneWay" />
+                                    <Binding Path="ResourceNumber"
+                                             Mode="OneWay" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+
+                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                                Command="{Binding RefreshCommand}"
+                                Content="{loc:Loc WearPartValuePreviewControl.RefreshButton}" />
+                    </WrapPanel>
+                </Grid>
+            </Border>
+
+            <TextBlock Margin="0 16 0 10"
+                       Style="{StaticResource ShellSectionLabelTextStyle}"
+                       Text="{loc:Loc WearPartValuePreviewControl.SummarySectionTitle}" />
+
+            <WrapPanel>
+                <Border Style="{StaticResource WearPartValuePreviewMetricCardStyle}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource ShellSectionLabelTextStyle}"
+                                   Text="{loc:Loc WearPartValuePreviewControl.TotalCountLabel}" />
+                        <TextBlock Style="{StaticResource WearPartValuePreviewMetricValueTextStyle}"
+                                   Text="{Binding TotalCount, Mode=OneWay}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource WearPartValuePreviewMetricCardStyle}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource ShellSectionLabelTextStyle}"
+                                   Text="{loc:Loc WearPartValuePreviewControl.StatusNormal}" />
+                        <TextBlock Style="{StaticResource WearPartValuePreviewMetricValueTextStyle}"
+                                   Text="{Binding NormalCount, Mode=OneWay}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource WearPartValuePreviewWarningMetricCardStyle}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource ShellSectionLabelTextStyle}"
+                                   Text="{loc:Loc WearPartValuePreviewControl.StatusWarning}" />
+                        <TextBlock Style="{StaticResource WearPartValuePreviewMetricValueTextStyle}"
+                                   Text="{Binding WarningCount, Mode=OneWay}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource WearPartValuePreviewDangerMetricCardStyle}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource ShellSectionLabelTextStyle}"
+                                   Text="{loc:Loc WearPartValuePreviewControl.StatusShutdown}" />
+                        <TextBlock Style="{StaticResource WearPartValuePreviewMetricValueTextStyle}"
+                                   Text="{Binding ShutdownCount, Mode=OneWay}" />
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+        </StackPanel>
+
+        <Border Grid.Row="1"
+                Margin="0 12 0 0"
+                Style="{StaticResource ShellCardBorderStyle}">
+            <DataGrid AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      IsReadOnly="True"
+                      ItemsSource="{Binding Items}"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      ScrollViewer.CanContentScroll="True"
+                      EnableColumnVirtualization="True"
+                      EnableRowVirtualization="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="{loc:Loc WearPartValuePreviewControl.PartNameHeader}"
+                                        Binding="{Binding PartName}"
+                                        IsReadOnly="True"
+                                        Width="SizeToHeader" />
+                    <DataGridTextColumn Header="{loc:Loc WearPartValuePreviewControl.WearPartTypeHeader}"
+                                        Binding="{Binding WearPartTypeName}"
+                                        IsReadOnly="True"
+                                        Width="SizeToHeader" />
+                    <DataGridTextColumn Header="{loc:Loc WearPartValuePreviewControl.LifetimeTypeHeader}"
+                                        Binding="{Binding LifetimeType}"
+                                        IsReadOnly="True"
+                                        Width="SizeToHeader" />
+                    <DataGridTextColumn Header="{loc:Loc WearPartValuePreviewControl.CurrentValueHeader}"
+                                        Binding="{Binding CurrentValue, StringFormat={}{0:0.##}}"
+                                        IsReadOnly="True"
+                                        Width="*" />
+                    <DataGridTextColumn Header="{loc:Loc WearPartValuePreviewControl.WarningValueHeader}"
+                                        Binding="{Binding WarningValue, StringFormat={}{0:0.##}}"
+                                        IsReadOnly="True"
+                                        Width="*" />
+                    <DataGridTextColumn Header="{loc:Loc WearPartValuePreviewControl.ShutdownValueHeader}"
+                                        Binding="{Binding ShutdownValue, StringFormat={}{0:0.##}}"
+                                        IsReadOnly="True"
+                                        Width="*" />
+                    <DataGridTemplateColumn Header="{loc:Loc WearPartValuePreviewControl.StatusHeader}"
+                                            Width="SizeToHeader">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource WearPartValuePreviewStatusBadgeStyle}"
+                                        Background="{Binding StatusBackground, Mode=OneWay}">
+                                    <TextBlock Foreground="{Binding StatusForeground, Mode=OneWay}"
+                                               FontWeight="SemiBold"
+                                               Text="{Binding StatusText, Mode=OneWay}" />
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>

@@ -37,6 +37,10 @@ public sealed class WearPartDefinitionEntity :
 
     public string ShutdownValueDataType { get; set; } = string.Empty;
 
+    public double WarningLifetimeThreshold { get; set; }
+
+    public double ShutdownLifetimeThreshold { get; set; }
+
     public bool IsShutdown { get; set; }
 
     public int CodeMinLength { get; set; }

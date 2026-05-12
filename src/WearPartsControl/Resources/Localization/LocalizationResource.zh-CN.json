@@ -19,7 +19,8 @@
       "靠刀量上下限配置",
       "易损件更换历史",
       "易损件监控日志",
-      "用户配置"
+      "用户配置",
+      "易损件寿命预览"
     ]
   },
   "MainWindowView": {
@@ -209,6 +210,7 @@
     "RefreshButton": "刷新",
     "AddButton": "新增",
     "EditButton": "编辑",
+    "EditThresholdsButton": "阈值",
     "DeleteButton": "删除",
     "ImportLegacyDefinitionsButton": "导入旧库易损件",
     "ResourceNumberHeader": "资源号",
@@ -222,6 +224,8 @@
     "WarningValueDataTypeHeader": "预警寿命数据类型",
     "ShutdownValueAddressHeader": "停机寿命地址",
     "ShutdownValueDataTypeHeader": "停机寿命数据类型",
+    "WarningLifetimeThresholdHeader": "预警寿命阈值",
+    "ShutdownLifetimeThresholdHeader": "停机寿命阈值",
     "InputModeHeader": "输入方式",
     "CodeMinLengthHeader": "条码最小长度",
     "CodeMaxLengthHeader": "条码最大长度",
@@ -256,6 +260,43 @@
     "GoToPageSuffix": "页",
     "TotalPagesPrefix": "共 ",
     "TotalPagesSuffix": " 页"
+  },
+  "WearPartValuePreviewControl": {
+    "Title": "易损件寿命预览",
+    "CurrentResourceNumberLabel": "当前资源号：",
+    "RefreshButton": "刷新",
+    "SummarySectionTitle": "状态总览",
+    "TotalCountLabel": "总数",
+    "PartNameHeader": "易损件名称",
+    "WearPartTypeHeader": "易损件类型",
+    "LifetimeTypeHeader": "寿命类型",
+    "CurrentValueHeader": "当前值",
+    "WarningValueHeader": "预警值",
+    "ShutdownValueHeader": "停机值",
+    "StatusHeader": "状态",
+    "StatusNormal": "正常",
+    "StatusWarning": "预警",
+    "StatusShutdown": "停机"
+  },
+  "WearPartThresholdWindowView": {
+    "Title": "易损件阈值",
+    "SoftwareSectionTitle": "软件阈值",
+    "SoftwareThresholdSectionTitle": "阈值设置",
+    "PlcSectionTitle": "PLC 阈值",
+    "PlcSectionDescription": "PLC 预警值和停机值不会在更换易损件时自动写入，请按需单独刷新或覆盖写回。",
+    "ResourceNumberLabel": "资源号：",
+    "PartNameLabel": "易损件名称：",
+    "LifetimeTypeLabel": "寿命类型：",
+    "WarningThresholdLabel": "预警寿命阈值：",
+    "ShutdownThresholdLabel": "停机寿命阈值：",
+    "PlcWarningThresholdLabel": "PLC 预警值：",
+    "PlcShutdownThresholdLabel": "PLC 停机值：",
+    "ThresholdPlaceholder": "请输入阈值",
+    "RefreshPlcButton": "刷新 PLC",
+    "OverwritePlcButton": "覆盖写回 PLC",
+    "CancelButton": "取消",
+    "SaveButton": "保存",
+    "NotAvailableText": "不可用"
   },
   "MonitoringLogControl": {
     "Title": "易损件监控日志",
@@ -524,6 +565,25 @@
       "ReplaceConfirmReturningOldPartMessage": "检测到条码“{1}”为当前设备曾使用过的旧件，确认继续将易损件“{0}”更换回来吗？该操作会立即写入 PLC 并记录更换历史。",
       "ReturningOldPartWarningConfirmMessage": "旧件条码“{0}”当前寿命为 {1}，已达到预警寿命 {2}，停机寿命为 {3}。确认继续更换到当前设备吗？"
     },
+    "WearPartValuePreviewVm": {
+      "PromptLoadCurrent": "请先加载当前设备的易损件寿命预览。",
+      "Loading": "正在加载易损件寿命预览...",
+      "ResourceNumberMissing": "当前客户端未配置资源号，无法查看易损件寿命预览。",
+      "PreviewEmpty": "资源号 {0} 当前暂无易损件定义。",
+      "PreviewLoaded": "已加载资源号 {0} 的 {1} 条易损件寿命预览。"
+    },
+    "WearPartThresholdVm": {
+      "PromptLoad": "请先加载易损件阈值。",
+      "Loading": "正在加载易损件阈值...",
+      "Loaded": "已加载资源号 {0} 下易损件 {1} 的阈值。",
+      "Saving": "正在保存软件阈值...",
+      "Saved": "已保存易损件 {0} 的软件阈值。",
+      "LoadingPlc": "正在读取 PLC 阈值...",
+      "PlcLoaded": "已刷新易损件 {0} 的 PLC 阈值。",
+      "OverwritingPlc": "正在覆盖写回 PLC 阈值...",
+      "PlcOverwritten": "已将易损件 {0} 的软件阈值覆盖写回 PLC。",
+      "ThresholdValueInvalid": "请输入有效的阈值数字。"
+    },
     "ToolChangeManagementVm": {
       "PromptLoadCurrent": "请先加载换刀类型主数据。",
       "Loading": "正在加载换刀类型...",
@@ -752,6 +812,14 @@
       "CodeMinLengthRangeInvalid": "条码最小长度不能小于 0。",
       "CodeMaxLengthRangeInvalid": "条码最大长度必须大于 0。",
       "CodeLengthRangeInverted": "条码最小长度不能大于最大长度。"
+    },
+    "WearPartThreshold": {
+      "DefinitionIdRequired": "易损件定义 ID 不能为空。",
+      "DefinitionNotFoundById": "未找到主键为 {0} 的易损件定义。",
+      "ClientConfigurationNotFoundById": "未找到主键为 {0} 的客户端配置。",
+      "WarningThresholdInvalid": "预警寿命阈值必须是大于 0 的有效数字。",
+      "ShutdownThresholdInvalid": "停机寿命阈值必须是大于 0 的有效数字。",
+      "ThresholdOrderInvalid": "预警寿命阈值必须小于停机寿命阈值。"
     },
     "ToolChangeManagement": {
       "NameRequired": "换刀类型名称不能为空。",

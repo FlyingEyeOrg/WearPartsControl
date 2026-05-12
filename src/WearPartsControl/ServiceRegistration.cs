@@ -118,6 +118,8 @@ public static class ServiceRegistration
         builder.RegisterType<LegacyDatabaseImportService>().As<ILegacyDatabaseImportService>().SingleInstance();
         builder.RegisterType<LegacyConfigurationImportService>().As<ILegacyConfigurationImportService>().SingleInstance();
         builder.RegisterType<WearPartManagementService>().As<IWearPartManagementService>().InstancePerDependency();
+        builder.RegisterType<WearPartThresholdService>().As<IWearPartThresholdService>().InstancePerDependency();
+        builder.RegisterType<WearPartValuePreviewService>().As<IWearPartValuePreviewService>().InstancePerDependency();
         builder.RegisterType<WearPartTypeService>().As<IWearPartTypeService>().InstancePerDependency();
         builder.RegisterType<ToolChangeManagementService>().As<IToolChangeManagementService>().InstancePerDependency();
         builder.RegisterType<KdlRecipeManagementService>().As<IKdlRecipeManagementService>().SingleInstance();
@@ -150,8 +152,10 @@ public static class ServiceRegistration
         builder.RegisterType<PartManagementViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<AddPartWindowViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<EditPartWindowViewModel>().AsSelf().InstancePerDependency();
+        builder.RegisterType<WearPartThresholdWindowViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<ClientAppInfoViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<ReplacePartViewModel>().AsSelf().InstancePerDependency();
+        builder.RegisterType<WearPartValuePreviewViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<ToolChangeManagementViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<KdlRecipeManagementViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<PartReplacementHistoryViewModel>().AsSelf().InstancePerDependency();
@@ -164,11 +168,13 @@ public static class ServiceRegistration
     {
         builder.RegisterType<AddPartWindow>().AsSelf().InstancePerDependency();
         builder.RegisterType<EditPartWindow>().AsSelf().InstancePerDependency();
+        builder.RegisterType<WearPartThresholdWindow>().AsSelf().InstancePerDependency();
     }
 
     private static void RegisterUserControls(ContainerBuilder builder)
     {
         builder.RegisterType<ReplacePartUserControl>().AsSelf();
+        builder.RegisterType<WearPartValuePreviewUserControl>().AsSelf();
         builder.RegisterType<ClientAppInfoUserControl>().AsSelf();
         builder.RegisterType<PartInfoUserControl>().AsSelf();
         builder.RegisterType<NeedLoginUserControl>().AsSelf();

@@ -246,6 +246,8 @@ public sealed class WearPartManagementService : ApplicationServiceBase, IWearPar
             WarningValueDataType = sourceDefinition.WarningValueDataType,
             ShutdownValueAddress = sourceDefinition.ShutdownValueAddress,
             ShutdownValueDataType = sourceDefinition.ShutdownValueDataType,
+            WarningLifetimeThreshold = sourceDefinition.WarningLifetimeThreshold,
+            ShutdownLifetimeThreshold = sourceDefinition.ShutdownLifetimeThreshold,
             IsShutdown = sourceDefinition.IsShutdown,
             CodeMinLength = sourceDefinition.CodeMinLength,
             CodeMaxLength = sourceDefinition.CodeMaxLength,
@@ -269,6 +271,8 @@ public sealed class WearPartManagementService : ApplicationServiceBase, IWearPar
         entity.WarningValueDataType = definition.WarningValueDataType.Trim();
         entity.ShutdownValueAddress = definition.ShutdownValueAddress.Trim();
         entity.ShutdownValueDataType = definition.ShutdownValueDataType.Trim();
+        entity.WarningLifetimeThreshold = definition.WarningLifetimeThreshold;
+        entity.ShutdownLifetimeThreshold = definition.ShutdownLifetimeThreshold;
         entity.IsShutdown = definition.IsShutdown;
         entity.CodeMinLength = definition.CodeMinLength;
         entity.CodeMaxLength = definition.CodeMaxLength;
@@ -294,6 +298,8 @@ public sealed class WearPartManagementService : ApplicationServiceBase, IWearPar
             WarningValueDataType = entity.WarningValueDataType,
             ShutdownValueAddress = entity.ShutdownValueAddress,
             ShutdownValueDataType = entity.ShutdownValueDataType,
+            WarningLifetimeThreshold = entity.WarningLifetimeThreshold,
+            ShutdownLifetimeThreshold = entity.ShutdownLifetimeThreshold,
             IsShutdown = entity.IsShutdown,
             CodeMinLength = entity.CodeMinLength,
             CodeMaxLength = entity.CodeMaxLength,

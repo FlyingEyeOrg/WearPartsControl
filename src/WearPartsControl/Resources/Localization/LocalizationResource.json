@@ -19,7 +19,8 @@
       "KDL Recipe Settings",
       "Replacement History",
       "Monitoring Log",
-      "User Settings"
+      "User Settings",
+      "Wear Part Lifetime Preview"
     ]
   },
   "MainWindowView": {
@@ -209,6 +210,7 @@
     "RefreshButton": "Refresh",
     "AddButton": "Add",
     "EditButton": "Edit",
+    "EditThresholdsButton": "Thresholds",
     "DeleteButton": "Delete",
     "ImportLegacyDefinitionsButton": "Import Legacy Wear Parts",
     "ResourceNumberHeader": "Resource number",
@@ -222,6 +224,8 @@
     "WarningValueDataTypeHeader": "Warning value data type",
     "ShutdownValueAddressHeader": "Shutdown value address",
     "ShutdownValueDataTypeHeader": "Shutdown value data type",
+    "WarningLifetimeThresholdHeader": "Warning lifetime threshold",
+    "ShutdownLifetimeThresholdHeader": "Shutdown lifetime threshold",
     "InputModeHeader": "Input mode",
     "CodeMinLengthHeader": "Min barcode length",
     "CodeMaxLengthHeader": "Max barcode length",
@@ -256,6 +260,43 @@
     "GoToPageSuffix": "",
     "TotalPagesPrefix": "Total ",
     "TotalPagesSuffix": " pages"
+  },
+  "WearPartValuePreviewControl": {
+    "Title": "Wear Part Lifetime Preview",
+    "CurrentResourceNumberLabel": "Current resource number: ",
+    "RefreshButton": "Refresh",
+    "SummarySectionTitle": "Status overview",
+    "TotalCountLabel": "Total",
+    "PartNameHeader": "Wear part name",
+    "WearPartTypeHeader": "Wear part type",
+    "LifetimeTypeHeader": "Lifetime type",
+    "CurrentValueHeader": "Current value",
+    "WarningValueHeader": "Warning value",
+    "ShutdownValueHeader": "Shutdown value",
+    "StatusHeader": "Status",
+    "StatusNormal": "Normal",
+    "StatusWarning": "Warning",
+    "StatusShutdown": "Shutdown"
+  },
+  "WearPartThresholdWindowView": {
+    "Title": "Wear Part Thresholds",
+    "SoftwareSectionTitle": "Software thresholds",
+    "SoftwareThresholdSectionTitle": "Threshold settings",
+    "PlcSectionTitle": "PLC thresholds",
+    "PlcSectionDescription": "PLC warning and shutdown values are not written during wear part replacement. Refresh or overwrite them separately when needed.",
+    "ResourceNumberLabel": "Resource number:",
+    "PartNameLabel": "Wear part name:",
+    "LifetimeTypeLabel": "Lifetime type:",
+    "WarningThresholdLabel": "Warning lifetime threshold:",
+    "ShutdownThresholdLabel": "Shutdown lifetime threshold:",
+    "PlcWarningThresholdLabel": "PLC warning threshold:",
+    "PlcShutdownThresholdLabel": "PLC shutdown threshold:",
+    "ThresholdPlaceholder": "Enter threshold value",
+    "RefreshPlcButton": "Refresh PLC",
+    "OverwritePlcButton": "Overwrite PLC",
+    "CancelButton": "Cancel",
+    "SaveButton": "Save",
+    "NotAvailableText": "Not available"
   },
   "MonitoringLogControl": {
     "Title": "Wear Part Monitoring Log",
@@ -524,6 +565,25 @@
       "ReplaceConfirmReturningOldPartMessage": "Barcode \"{1}\" was previously used on the current equipment. Confirm replacing wear part \"{0}\" back with this old part? This operation will immediately write to the PLC and record the replacement history.",
       "ReturningOldPartWarningConfirmMessage": "The old part barcode \"{0}\" currently has lifetime {1}, which has reached the warning lifetime {2}. The shutdown lifetime is {3}. Confirm continuing the replacement on the current equipment?"
     },
+    "WearPartValuePreviewVm": {
+      "PromptLoadCurrent": "Please load the wear part lifetime preview for the current device first.",
+      "Loading": "Loading wear part lifetime preview...",
+      "ResourceNumberMissing": "The current client has no resource number configured, so the wear part lifetime preview cannot be viewed.",
+      "PreviewEmpty": "No wear part definitions found for resource number {0}.",
+      "PreviewLoaded": "Loaded {1} wear part lifetime preview item(s) for resource number {0}."
+    },
+    "WearPartThresholdVm": {
+      "PromptLoad": "Please load the wear part thresholds first.",
+      "Loading": "Loading wear part thresholds...",
+      "Loaded": "Loaded thresholds for wear part {1} under resource number {0}.",
+      "Saving": "Saving software thresholds...",
+      "Saved": "Saved software thresholds for wear part {0}.",
+      "LoadingPlc": "Loading PLC thresholds...",
+      "PlcLoaded": "PLC thresholds for wear part {0} were refreshed.",
+      "OverwritingPlc": "Overwriting PLC thresholds...",
+      "PlcOverwritten": "Software thresholds for wear part {0} were written to the PLC.",
+      "ThresholdValueInvalid": "Please enter a valid numeric threshold value."
+    },
     "ToolChangeManagementVm": {
       "PromptLoadCurrent": "Please load tool change master data first.",
       "Loading": "Loading tool change types...",
@@ -752,6 +812,14 @@
       "CodeMinLengthRangeInvalid": "Minimum barcode length cannot be less than 0.",
       "CodeMaxLengthRangeInvalid": "Maximum barcode length must be greater than 0.",
       "CodeLengthRangeInverted": "Minimum barcode length cannot be greater than maximum barcode length."
+    },
+    "WearPartThreshold": {
+      "DefinitionIdRequired": "Wear part definition ID cannot be empty.",
+      "DefinitionNotFoundById": "No wear part definition found with ID {0}.",
+      "ClientConfigurationNotFoundById": "No client configuration found with ID {0}.",
+      "WarningThresholdInvalid": "Warning lifetime threshold must be a valid number greater than 0.",
+      "ShutdownThresholdInvalid": "Shutdown lifetime threshold must be a valid number greater than 0.",
+      "ThresholdOrderInvalid": "Warning lifetime threshold must be less than shutdown lifetime threshold."
     },
     "ToolChangeManagement": {
       "NameRequired": "Tool change type name cannot be empty.",

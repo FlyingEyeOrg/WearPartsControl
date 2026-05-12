@@ -36,6 +36,7 @@ public partial class PartManagementUserControl : UserControl
         _viewModel.AddRequested += OnAddRequested;
         _viewModel.ImportLegacyDefinitionsRequested += OnImportLegacyDefinitionsRequested;
         _viewModel.EditRequested += OnEditRequested;
+        _viewModel.ThresholdEditRequested += OnThresholdEditRequested;
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -50,6 +51,7 @@ public partial class PartManagementUserControl : UserControl
         _viewModel.AddRequested -= OnAddRequested;
         _viewModel.ImportLegacyDefinitionsRequested -= OnImportLegacyDefinitionsRequested;
         _viewModel.EditRequested -= OnEditRequested;
+        _viewModel.ThresholdEditRequested -= OnThresholdEditRequested;
     }
 
     private async void OnAddRequested(object? sender, EventArgs e)
@@ -69,6 +71,19 @@ public partial class PartManagementUserControl : UserControl
     {
         var dialog = _serviceProvider.GetRequiredService<EditPartWindow>();
         await dialog.ViewModel.InitializeForEditAsync(definition);
+
+        var dialogResult = _dialogService.ShowDialog(dialog, Window.GetWindow(this));
+
+        if (dialogResult)
+        {
+            await _viewModel.RefreshAsync();
+        }
+    }
+
+    private async void OnThresholdEditRequested(object? sender, WearPartDefinition definition)
+    {
+        var dialog = _serviceProvider.GetRequiredService<WearPartThresholdWindow>();
+        await dialog.ViewModel.InitializeAsync(definition.Id);
 
         var dialogResult = _dialogService.ShowDialog(dialog, Window.GetWindow(this));
 
