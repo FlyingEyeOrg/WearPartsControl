@@ -77,10 +77,48 @@
                              Margin="0 14 0 0"
                              Padding="10 0"
                              VerticalContentAlignment="Center"
+                             Visibility="Visible"
                              PasswordChanged="PasswordInputBox_OnPasswordChanged"
                              PreviewKeyDown="PasswordInputBox_OnPreviewKeyDown"
                              PreviewTextInput="PasswordInputBox_OnPreviewTextInput"
-                             DataObject.Pasting="PasswordInputBox_OnPasting" />
+                             DataObject.Pasting="PasswordInputBox_OnPasting">
+                    <PasswordBox.Style>
+                        <Style TargetType="PasswordBox">
+                            <Setter Property="Visibility"
+                                    Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding UseWorkNumberLogin, Mode=OneWay}"
+                                             Value="True">
+                                    <Setter Property="Visibility"
+                                            Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </PasswordBox.Style>
+                </PasswordBox>
+
+                <TextBox x:Name="WorkNumberInputBox"
+                         Height="36"
+                         Margin="0 14 0 0"
+                         Padding="10 0"
+                         VerticalContentAlignment="Center"
+                         PreviewKeyDown="WorkNumberInputBox_OnPreviewKeyDown"
+                         Text="{Binding AuthId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox"
+                               BasedOn="{StaticResource TextBoxExtend}">
+                            <Setter Property="Visibility"
+                                    Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding UseWorkNumberLogin, Mode=OneWay}"
+                                             Value="True">
+                                    <Setter Property="Visibility"
+                                            Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
 
                 <TextBlock
                            Margin="0 10 0 0"

@@ -28,8 +28,7 @@ namespace WearPartsControl.Views
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
             await _viewModel.InitializeAsync();
-            PasswordInputBox.Focus();
-            Keyboard.Focus(PasswordInputBox);
+            FocusActiveInputControl();
         }
 
         private void OnClosed(object? sender, EventArgs e)
@@ -50,8 +49,7 @@ namespace WearPartsControl.Views
         {
             PasswordInputBox.Clear();
             _lastInputAt = null;
-            PasswordInputBox.Focus();
-            Keyboard.Focus(PasswordInputBox);
+            FocusActiveInputControl();
         }
 
         private void PasswordInputBox_OnPasswordChanged(object sender, RoutedEventArgs e)
@@ -108,6 +106,34 @@ namespace WearPartsControl.Views
             PasswordInputBox.Clear();
             _lastInputAt = null;
             _viewModel.RejectManualInput();
+        }
+
+        private async void WorkNumberInputBox_OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter)
+            {
+                return;
+            }
+
+            e.Handled = true;
+            if (_viewModel.LoginCommand.CanExecute(null))
+            {
+                await _viewModel.LoginCommand.ExecuteAsync(null);
+            }
+        }
+
+        private void FocusActiveInputControl()
+        {
+            if (_viewModel.UseWorkNumberLogin)
+            {
+                WorkNumberInputBox.Focus();
+                Keyboard.Focus(WorkNumberInputBox);
+                WorkNumberInputBox.SelectAll();
+                return;
+            }
+
+            PasswordInputBox.Focus();
+            Keyboard.Focus(PasswordInputBox);
         }
     }
 }

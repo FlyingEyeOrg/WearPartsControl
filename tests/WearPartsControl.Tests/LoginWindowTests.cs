@@ -52,6 +52,40 @@ public sealed class LoginWindowTests
         }, ensureApplicationResources: true);
     }
 
+    [Fact]
+    public void Show_ShouldLoadWithoutXamlParseException_WhenWorkNumberLoginEnabled()
+    {
+        using var cultureScope = new TestCultureScope("en-US");
+
+        WpfTestHost.Run(() =>
+        {
+            var viewModel = new LoginWindowViewModel(
+                new StubLoginService(),
+                new StubClientAppConfigurationRepository(),
+                new StubAppSettingsService { UseWorkNumberLogin = true },
+                new StubUiDispatcher());
+            viewModel.InitializeAsync().GetAwaiter().GetResult();
+
+            var window = new LoginWindow(viewModel);
+
+            try
+            {
+                window.Show();
+                WpfTestHost.DrainDispatcher();
+                window.UpdateLayout();
+                WpfTestHost.DrainDispatcher();
+
+                Assert.Same(viewModel, window.DataContext);
+                Assert.True(viewModel.UseWorkNumberLogin);
+            }
+            finally
+            {
+                window.Close();
+                WpfTestHost.DrainDispatcher();
+            }
+        }, ensureApplicationResources: true);
+    }
+
     private sealed class StubLoginService : ILoginService
     {
         public Task<MhrUser?> LoginAsync(string authId, string factory, string resourceId, bool isIdCard, CancellationToken cancellationToken = default)
@@ -73,13 +107,15 @@ public sealed class LoginWindowTests
     {
         public event EventHandler<AppSettings>? SettingsSaved;
 
+        public bool UseWorkNumberLogin { get; set; }
+
         public ValueTask<AppSettings> GetAsync(CancellationToken cancellationToken = default)
         {
             return ValueTask.FromResult(new AppSettings
             {
                 ResourceNumber = "RES-001",
                 LoginInputMaxIntervalMilliseconds = 88,
-                UseWorkNumberLogin = false
+                UseWorkNumberLogin = UseWorkNumberLogin
             });
         }
 

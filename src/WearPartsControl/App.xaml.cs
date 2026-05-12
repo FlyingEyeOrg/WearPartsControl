@@ -102,6 +102,7 @@ public partial class App : Application
             await _localizationService.InitializeAsync().ConfigureAwait(true);
             StartupPerformanceTracker.Mark("本地化初始化完成");
             _appStartupCoordinator = _host.Services.GetRequiredService<IAppStartupCoordinator>();
+            _startupCancellationTokenSource = new CancellationTokenSource();
 
             var legacyDatabasePath = LegacyImportCommandLine.GetLegacyDatabasePathOrDefault(e.Args);
             if (!string.IsNullOrWhiteSpace(legacyDatabasePath))
@@ -110,9 +111,11 @@ public partial class App : Application
                 return;
             }
 
+            await _appStartupCoordinator.EnsureInitializedAsync(cancellationToken: _startupCancellationTokenSource.Token).ConfigureAwait(true);
+            StartupPerformanceTracker.Mark("数据库初始化完成");
+
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             StartupPerformanceTracker.Mark("主窗口解析完成");
-            _startupCancellationTokenSource = new CancellationTokenSource();
             MainWindow = mainWindow;
             mainWindow.Show();
             ActivateMainWindowIfPending();
@@ -219,12 +222,6 @@ public partial class App : Application
     {
         try
         {
-            if (_appStartupCoordinator is not null)
-            {
-                await _appStartupCoordinator.EnsureInitializedAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-                StartupPerformanceTracker.Mark("数据库初始化完成");
-            }
-
             await host.StartAsync(cancellationToken).ConfigureAwait(false);
             StartupPerformanceTracker.Mark("宿主后台启动完成");
         }
