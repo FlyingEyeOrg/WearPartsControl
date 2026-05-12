@@ -155,12 +155,6 @@ public sealed class ComNotificationService : IComNotificationService
         return new List<string>();
     }
 
-    private static string ResolveAccessToken(UserConfigModel userConfig)
-        => userConfig.ComAccessToken;
-
-    private static string ResolveSecret(UserConfigModel userConfig)
-        => userConfig.ComSecret;
-
     private void ValidateBaseSettings(UserConfigModel userConfig)
     {
         if (string.IsNullOrWhiteSpace(userConfig.ComPushUrl))
@@ -270,6 +264,12 @@ public sealed class ComNotificationService : IComNotificationService
             throw new UserFriendlyException(string.Format(L("ComNotification.Unhandled"), scene, ex.Message));
         }
     }
+
+    private static string ResolveAccessToken(UserConfigModel userConfig)
+        => userConfig.ComAccessToken;
+
+    private static string ResolveSecret(UserConfigModel userConfig)
+        => userConfig.ComSecret;
 
     private string L(string key) => _localizationService[key];
 

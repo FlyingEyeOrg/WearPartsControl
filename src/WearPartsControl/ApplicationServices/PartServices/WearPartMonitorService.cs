@@ -189,13 +189,22 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
 
         await _exceedLimitRecordRepository.AddAsync(entity, cancellationToken).ConfigureAwait(false);
 
-        if (severity == ShutdownSeverity)
+        try
         {
             await _notificationService.NotifyWorkAsync(message.Title, message.Markdown, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        else
+        catch (Exception ex)
+        {
+            PublishServiceLog(WearPartMonitoringLogLevel.Error, LocalizedText.Format("Services.WearPartMonitoringLog.ComFailed", LocalizedText.Get("ComNotification.WorkMessageScene"), ex.Message), clientAppConfiguration.ResourceNumber, exception: ex);
+        }
+
+        try
         {
             await _notificationService.NotifyGroupAsync(message.Title, message.Markdown, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            PublishServiceLog(WearPartMonitoringLogLevel.Error, LocalizedText.Format("Services.WearPartMonitoringLog.ComFailed", LocalizedText.Get("ComNotification.GroupMessageScene"), ex.Message), clientAppConfiguration.ResourceNumber, exception: ex);
         }
 
         await _wearPartAlertPopupService.ShowIfNeededAsync(message.Title, message.Markdown, occurredAt, cancellationToken).ConfigureAwait(false);
