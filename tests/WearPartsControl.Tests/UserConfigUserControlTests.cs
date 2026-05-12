@@ -13,6 +13,7 @@ using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.Localization.Generated;
+using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.UserControls;
 using WearPartsControl.ViewModels;
@@ -81,6 +82,7 @@ public sealed class UserConfigUserControlTests
             new StubAutoStartService(),
             new StubComNotificationService(),
             new MutableLocalizationService("zh-CN"),
+            new StubCurrentUserAccessor(),
             new StubUiDispatcher(),
             new UiBusyService(TimeSpan.Zero));
     }
@@ -316,6 +318,25 @@ public sealed class UserConfigUserControlTests
         for (var index = 0; index < childCount; index++)
         {
             CollectDescendants(VisualTreeHelper.GetChild(root, index), results);
+        }
+    }
+
+    private sealed class StubCurrentUserAccessor : ICurrentUserAccessor
+    {
+        public MhrUser? CurrentUser => new() { CardId = "ADMIN", WorkId = "ADMIN", AccessLevel = 999 };
+
+        public string? UserId => "ADMIN";
+
+        public event EventHandler? CurrentUserChanged;
+
+        public void SetCurrentUser(MhrUser? user)
+        {
+            CurrentUserChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void Clear()
+        {
+            CurrentUserChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

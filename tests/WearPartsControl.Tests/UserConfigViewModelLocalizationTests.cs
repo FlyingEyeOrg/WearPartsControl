@@ -5,6 +5,7 @@ using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.Localization.Generated;
+using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.ViewModels;
 using Xunit;
@@ -41,7 +42,7 @@ public sealed class UserConfigViewModelLocalizationTests
         using var cultureScope = new TestCultureScope("zh-CN");
 
         var localizationService = new MutableLocalizationService("zh-CN");
-        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubAppSettingsService(), new StubAutoStartService(), new StubComNotificationService(), localizationService, new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubAppSettingsService(), new StubAutoStartService(), new StubComNotificationService(), localizationService, new StubCurrentUserAccessor(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
 
         viewModel.SelectedLanguage = "en-US";
         var selectedOption = viewModel.SelectedLanguageOption;
@@ -93,7 +94,7 @@ public sealed class UserConfigViewModelLocalizationTests
 
     private static UserConfigViewModel CreateViewModel(string cultureName)
     {
-        return new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubAppSettingsService(), new StubAutoStartService(), new StubComNotificationService(), new MutableLocalizationService(cultureName), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
+        return new UserConfigViewModel(new StubClientAppInfoService(), new StubUserConfigService(), new StubAppSettingsService(), new StubAutoStartService(), new StubComNotificationService(), new MutableLocalizationService(cultureName), new StubCurrentUserAccessor(), new StubUiDispatcher(), new UiBusyService(TimeSpan.Zero));
     }
 
     private sealed class MutableLocalizationService : ILocalizationService
@@ -208,5 +209,24 @@ public sealed class UserConfigViewModelLocalizationTests
         }
 
         public Task RenderAsync() => Task.CompletedTask;
+    }
+
+    private sealed class StubCurrentUserAccessor : ICurrentUserAccessor
+    {
+        public MhrUser? CurrentUser => new() { CardId = "ADMIN", WorkId = "ADMIN", AccessLevel = 999 };
+
+        public string? UserId => "ADMIN";
+
+        public event EventHandler? CurrentUserChanged;
+
+        public void SetCurrentUser(MhrUser? user)
+        {
+            CurrentUserChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void Clear()
+        {
+            CurrentUserChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 }

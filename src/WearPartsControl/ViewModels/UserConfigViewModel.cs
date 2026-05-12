@@ -8,13 +8,16 @@ using WearPartsControl.ApplicationServices.AutoStart;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.UserConfig;
+using WearPartsControl.Exceptions;
 
 namespace WearPartsControl.ViewModels;
 
 public sealed class UserConfigViewModel : LocalizedViewModelBase
 {
     private static readonly string[] SupportedLanguageCodes = ["zh-CN", "en-US"];
+    private const int MinimumAccessLevelForCutterMesValidationChange = 4;
     private const string CutterMesWsdlPathSuffix = "/atlmeswebservice/GetParametricValueServiceService?wsdl";
 
     private readonly IClientAppInfoService _clientAppInfoService;
@@ -23,6 +26,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
     private readonly IAutoStartService _autoStartService;
     private readonly IComNotificationService _comNotificationService;
     private readonly ILocalizationService _localizationService;
+    private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly IUiBusyService _uiBusyService;
     private UserConfigSnapshot _originalSnapshot = UserConfigSnapshot.Empty;
@@ -66,7 +70,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
     private string _statusMessage = LocalizedText.Get("ViewModels.UserConfigVm.PromptMaintain");
     private Func<string>? _statusMessageFactory;
 
-    public UserConfigViewModel(IClientAppInfoService clientAppInfoService, IUserConfigService userConfigService, IAppSettingsService appSettingsService, IAutoStartService autoStartService, IComNotificationService comNotificationService, ILocalizationService localizationService, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService)
+    public UserConfigViewModel(IClientAppInfoService clientAppInfoService, IUserConfigService userConfigService, IAppSettingsService appSettingsService, IAutoStartService autoStartService, IComNotificationService comNotificationService, ILocalizationService localizationService, ICurrentUserAccessor currentUserAccessor, IUiDispatcher uiDispatcher, IUiBusyService uiBusyService)
     {
         _clientAppInfoService = clientAppInfoService;
         _userConfigService = userConfigService;
@@ -74,6 +78,7 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
         _autoStartService = autoStartService;
         _comNotificationService = comNotificationService;
         _localizationService = localizationService;
+        _currentUserAccessor = currentUserAccessor;
         _uiDispatcher = uiDispatcher;
         _uiBusyService = uiBusyService;
         SaveCommand = new AsyncRelayCommand(SaveAsync, CanSave);
@@ -541,6 +546,15 @@ public sealed class UserConfigViewModel : LocalizedViewModelBase
 
     private async Task SaveAsync()
     {
+        if (_originalSnapshot.EnableCutterMesValidation != EnableCutterMesValidation)
+        {
+            var user = _currentUserAccessor.CurrentUser;
+            if (user is null || user.AccessLevel < MinimumAccessLevelForCutterMesValidationChange)
+            {
+                throw new AuthorizationException(LocalizedText.Format("Services.Authorization.AccessLevelDenied", MinimumAccessLevelForCutterMesValidationChange));
+            }
+        }
+
         await ExecuteBusyAsync(async () =>
         {
             var config = BuildConfig();
