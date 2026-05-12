@@ -8,6 +8,8 @@ namespace WearPartsControl.Infrastructure.EntityFrameworkCore;
 
 public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
 {
+    private sealed record AdditiveColumnMigration(string ColumnName, string ColumnDefinition);
+
     private static readonly IReadOnlyDictionary<string, string[]> ExpectedTables = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
     {
         ["basic_configurations"] =
@@ -43,6 +45,15 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
         ]
     };
 
+    private static readonly IReadOnlyDictionary<string, AdditiveColumnMigration[]> AdditiveColumnMigrations = new Dictionary<string, AdditiveColumnMigration[]>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["wear_part_definitions"] =
+        [
+            new("WarningLifetimeThreshold", "REAL NOT NULL DEFAULT 0"),
+            new("ShutdownLifetimeThreshold", "REAL NOT NULL DEFAULT 0")
+        ]
+    };
+
     private readonly IDbContextFactory<WearPartsControlDbContext> _dbContextFactory;
 
     public SqliteDatabaseInitializer(IDbContextFactory<WearPartsControlDbContext> dbContextFactory)
@@ -52,6 +63,8 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
+        await ApplyCompatibleSchemaUpgradesAsync(cancellationToken).ConfigureAwait(false);
+
         if (await RequiresDatabaseResetAsync(cancellationToken).ConfigureAwait(false))
         {
             await ResetDatabaseAsync(cancellationToken).ConfigureAwait(false);
@@ -70,6 +83,53 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
         }
 
         await EnsureWearPartTypesSeededAsync(dbContext, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task ApplyCompatibleSchemaUpgradesAsync(CancellationToken cancellationToken)
+    {
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var connection = (SqliteConnection)dbContext.Database.GetDbConnection();
+        var shouldClose = connection.State != System.Data.ConnectionState.Open;
+        if (shouldClose)
+        {
+            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        try
+        {
+            var existingTables = await GetUserTableNamesAsync(connection, cancellationToken).ConfigureAwait(false);
+            if (existingTables.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var tableMigration in AdditiveColumnMigrations)
+            {
+                if (!existingTables.Contains(tableMigration.Key))
+                {
+                    continue;
+                }
+
+                var actualColumns = await GetColumnsAsync(connection, tableMigration.Key, cancellationToken).ConfigureAwait(false);
+                foreach (var columnMigration in tableMigration.Value)
+                {
+                    if (actualColumns.Contains(columnMigration.ColumnName))
+                    {
+                        continue;
+                    }
+
+                    await AddColumnAsync(connection, tableMigration.Key, columnMigration, cancellationToken).ConfigureAwait(false);
+                    actualColumns.Add(columnMigration.ColumnName);
+                }
+            }
+        }
+        finally
+        {
+            if (shouldClose)
+            {
+                await connection.CloseAsync().ConfigureAwait(false);
+            }
+        }
     }
 
     private static async Task EnsureWearPartTypesSeededAsync(WearPartsControlDbContext dbContext, CancellationToken cancellationToken)
@@ -148,6 +208,13 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await dbContext.Database.EnsureDeletedAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task AddColumnAsync(SqliteConnection connection, string tableName, AdditiveColumnMigration columnMigration, CancellationToken cancellationToken)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"ALTER TABLE {tableName} ADD COLUMN {columnMigration.ColumnName} {columnMigration.ColumnDefinition};";
+        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task<HashSet<string>> GetUserTableNamesAsync(SqliteConnection connection, CancellationToken cancellationToken)
