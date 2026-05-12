@@ -102,7 +102,7 @@ public sealed class MainWindowViewModelTests : IDisposable
 
         await viewModel.InitializeAsync();
 
-        Assert.Single(viewModel.Tabs);
+        Assert.Equal(2, viewModel.Tabs.Count());
         Assert.False(viewModel.IsClientAppInfoConfigured);
 
         await appSettingsService.SaveAsync(new AppSettings
@@ -111,8 +111,33 @@ public sealed class MainWindowViewModelTests : IDisposable
             ResourceNumber = "RES-01"
         });
 
-        Assert.Equal(9, viewModel.Tabs.Count());
+        Assert.Equal(10, viewModel.Tabs.Count());
         Assert.True(viewModel.IsClientAppInfoConfigured);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WhenClientInfoNotConfigured_ShouldExposeConfigurationTransferTab()
+    {
+        var appSettingsService = new StubAppSettingsService
+        {
+            Current = new AppSettings
+            {
+                IsSetClientAppInfo = false,
+                AutoLogoutCountdownSeconds = 360
+            }
+        };
+        var serviceProvider = new StubMainWindowContentFactory();
+        var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService(), serviceProvider: serviceProvider);
+
+        await viewModel.InitializeAsync();
+
+        Assert.Equal(new[] { "设备基础信息", "配置导入导出" }, viewModel.Tabs);
+        Assert.IsType<ClientAppInfoUserControl>(viewModel.SelectedContent);
+
+        viewModel.TabChangedCommand.Execute(1);
+
+        Assert.IsType<ConfigurationTransferUserControl>(viewModel.SelectedContent);
+        Assert.Equal(1, serviceProvider.GetResolveCount<ConfigurationTransferUserControl>());
     }
 
     [Fact]
@@ -146,7 +171,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             AccessLevel = 3
         });
 
-        Assert.Equal(7, viewModel.Tabs.Count());
+        Assert.Equal(8, viewModel.Tabs.Count());
 
         viewModel.TabChangedCommand.Execute(4);
 
@@ -186,7 +211,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             AccessLevel = 3
         });
 
-        Assert.Equal(9, viewModel.Tabs.Count());
+        Assert.Equal(10, viewModel.Tabs.Count());
 
         viewModel.TabChangedCommand.Execute(4);
 
@@ -222,7 +247,7 @@ public sealed class MainWindowViewModelTests : IDisposable
             AccessLevel = 3
         });
 
-        viewModel.TabChangedCommand.Execute(1);
+        viewModel.TabChangedCommand.Execute(2);
 
         Assert.Equal(1, serviceProvider.GetResolveCount<WearPartValuePreviewUserControl>());
         Assert.IsType<WearPartValuePreviewUserControl>(viewModel.SelectedContent);
@@ -263,7 +288,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService());
 
         await viewModel.InitializeAsync();
-        viewModel.TabChangedCommand.Execute(2);
+        viewModel.TabChangedCommand.Execute(1);
 
         Assert.IsType<ClientAppInfoUserControl>(viewModel.SelectedContent);
     }
@@ -284,7 +309,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         var viewModel = CreateViewModel(new CurrentUserAccessor(), new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService(), serviceProvider: serviceProvider);
 
         await viewModel.InitializeAsync();
-        viewModel.TabChangedCommand.Execute(2);
+        viewModel.TabChangedCommand.Execute(1);
         var selectedContent = viewModel.SelectedContent;
         var resolveCount = serviceProvider.GetResolveCount<ClientAppInfoUserControl>();
 
@@ -316,7 +341,7 @@ public sealed class MainWindowViewModelTests : IDisposable
         var viewModel = CreateViewModel(accessor, new StubLoginService(), appSettingsService, new UiBusyService(), new StubPlcStartupConnectionService(), serviceProvider: serviceProvider);
 
         await viewModel.InitializeAsync();
-        viewModel.TabChangedCommand.Execute(2);
+        viewModel.TabChangedCommand.Execute(1);
         var selectedContent = viewModel.SelectedContent;
         var resolveCount = serviceProvider.GetResolveCount<ClientAppInfoUserControl>();
 
@@ -919,7 +944,8 @@ public sealed class MainWindowViewModelTests : IDisposable
             typeof(KdlRecipeManagementUserControl),
             typeof(PartReplacementHistoryUserControl),
             typeof(WearPartMonitoringLogUserControl),
-            typeof(UserConfigUserControl)
+            typeof(UserConfigUserControl),
+            typeof(ConfigurationTransferUserControl)
         ];
 
         public object Create(Type contentType)

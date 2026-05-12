@@ -10,6 +10,10 @@
   <String Id="InstallOptionsDlgTitle" Value="User environment options" />
   <String Id="InstallOptionsDlgDescription" Value="Choose user environment options after installation." />
   <String Id="InstallOptionsDlgBody" Value="These options can be changed later on the User Environment Settings page." />
+  <String Id="UpgradeReadyDlgTitle" Value="Update Wear Parts Control" />
+  <String Id="UpgradeReadyDlgDescription" Value="An installed version was detected and will be updated." />
+  <String Id="UpgradeReadyDlgBody" Value="Setup will update the Wear Parts Control program files for the current user and continue using the recorded installation folder." />
+  <String Id="UpgradeReadyDlgDataHint" Value="Settings and the local database in PrivateData are preserved during the update." />
   <String Id="CreateDesktopShortcutCheckBox" Value="Create desktop shortcut" />
   <String Id="StartOnLoginCheckBox" Value="Start with Windows" />
   <String Id="StartOnLoginHint" Value="After installation, the app reads this state and synchronizes it to user settings." />

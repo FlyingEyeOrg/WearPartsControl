@@ -1,0 +1,100 @@
+<UserControl x:Class="WearPartsControl.UserControls.ConfigurationTransferUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:WearPartsControl.ApplicationServices.Localization"
+             xmlns:vm="clr-namespace:WearPartsControl.ViewModels"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance Type=vm:ConfigurationTransferViewModel}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WearPartsControl;component/Resources/ShellContentStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Background="{StaticResource ShellPanelBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Style="{StaticResource ShellSectionHeaderBorderStyle}">
+            <TextBlock Style="{StaticResource ShellSectionTitleTextStyle}"
+                       Text="{loc:Loc ConfigurationTransferControl.Title}" />
+        </Border>
+
+        <Border Grid.Row="1"
+                Margin="0 12 0 0"
+                Style="{StaticResource ShellStatusCardBorderStyle}">
+            <StackPanel>
+                <TextBlock FontWeight="SemiBold"
+                           Foreground="{StaticResource InfoBrush}"
+                           Text="{loc:Loc ConfigurationTransferControl.StatusBannerTitle}" />
+                <TextBlock Margin="0 6 0 0"
+                           TextWrapping="Wrap"
+                           Text="{Binding StatusMessage, Mode=OneWay}" />
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Row="2"
+                      Margin="0 12 0 0"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel Style="{StaticResource ShellPageContentStackPanelStyle}">
+                <Border Style="{StaticResource ShellFormSectionCardBorderStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
+                                       Text="{loc:Loc ConfigurationTransferControl.ExportSection}" />
+                            <TextBlock TextWrapping="Wrap"
+                                       Foreground="{StaticResource ShellMutedForegroundBrush}"
+                                       Text="{loc:Loc ConfigurationTransferControl.ExportSummary}" />
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                MinWidth="80"
+                                Margin="16 0 0 0"
+                                VerticalAlignment="Center"
+                                Command="{Binding ExportCommand}"
+                                Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                                Content="{loc:Loc ConfigurationTransferControl.ExportButton}" />
+                    </Grid>
+                </Border>
+
+                <Border Margin="0 12 0 0"
+                        Style="{StaticResource ShellFormSectionCardBorderStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource ShellFormSectionTitleTextStyle}"
+                                       Text="{loc:Loc ConfigurationTransferControl.ImportSection}" />
+                            <TextBlock TextWrapping="Wrap"
+                                       Foreground="{StaticResource ShellMutedForegroundBrush}"
+                                       Text="{Binding ImportAvailabilityMessage, Mode=OneWay}" />
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                MinWidth="80"
+                                Margin="16 0 0 0"
+                                VerticalAlignment="Center"
+                                Command="{Binding ImportCommand}"
+                                Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
+                                Content="{loc:Loc ConfigurationTransferControl.ImportButton}" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -196,7 +196,7 @@ foreach ($runtimeIdentifier in $RuntimeIdentifiers) {
     $createdZipPackages += $zipPath
 
     $publishDirForWix = if ($publishDir.EndsWith([IO.Path]::DirectorySeparatorChar)) { $publishDir } else { "$publishDir$([IO.Path]::DirectorySeparatorChar)" }
-    $programFilesFolderId = if ($installerPlatform -eq "x64") { "ProgramFiles64Folder" } else { "ProgramFilesFolder" }
+    $programFilesFolderId = "LocalAppDataFolder"
     foreach ($installerCulture in $InstallerCultures) {
         $wixIntermediateOutputPath = Join-Path $artifactsRoot "obj/installer/$installerPlatform/$installerCulture/"
 

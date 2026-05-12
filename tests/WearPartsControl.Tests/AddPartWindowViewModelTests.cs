@@ -88,6 +88,8 @@ public sealed class AddPartWindowViewModelTests
         viewModel.CurrentValueAddress = "DB1.0";
         viewModel.WarningValueAddress = "DB1.1";
         viewModel.ShutdownValueAddress = "DB1.2";
+        viewModel.WarningLifetimeThreshold = "100";
+        viewModel.ShutdownLifetimeThreshold = "120";
         viewModel.CodeMinLength = "1";
         viewModel.CodeMaxLength = "12";
         viewModel.PlcZeroClearAddress = string.Empty;

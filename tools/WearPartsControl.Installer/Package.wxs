@@ -1,12 +1,11 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
-     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
-     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+  xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package Id="CATL.WearPartsControl"
            Name="!(loc.ProductName)"
            Manufacturer="CATL"
            Version="$(PackageVersion)"
            UpgradeCode="{6B42E167-7D64-4EE6-9F99-44CE9410A14C}"
-           Scope="perMachine">
+     Scope="perUser">
     <SummaryInformation Description="!(loc.PackageDescription)" Manufacturer="CATL" />
     <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeErrorMessage)" Schedule="afterInstallInitialize" />
     <MediaTemplate EmbedCab="yes" />
@@ -14,19 +13,24 @@
     <Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
     <Property Id="CREATE_DESKTOP_SHORTCUT" Value="1" />
     <Property Id="START_ON_LOGIN" Secure="yes" />
+    <Property Id="INSTALLFOLDER">
+      <RegistrySearch Root="HKCU"
+                      Key="Software\CATL\WearPartsControl"
+                      Name="InstallFolder"
+                      Type="raw" />
+    </Property>
     <ui:WixUI Id="WearPartsControl_InstallDirOptions" InstallDirectory="INSTALLFOLDER" />
-    <CustomAction Id="RemoveInstallFolderTree"
-                  Directory="SystemFolder"
-                  Execute="deferred"
-                  Impersonate="no"
-                  ExeCommand='cmd.exe /C if exist &quot;[INSTALLFOLDER]&quot; rmdir /S /Q &quot;[INSTALLFOLDER]&quot;'
-                  Return="check" />
-    <InstallExecuteSequence>
-      <Custom Action="RemoveInstallFolderTree" After="RemoveFolders" Condition='REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE' />
-    </InstallExecuteSequence>
 
     <StandardDirectory Id="$(ProgramFilesFolderId)">
       <Directory Id="INSTALLFOLDER" Name="Wear Parts Control">
+        <Component Id="InstallLocationRegistryComponent" Guid="{2CF0109F-567A-4F80-9C9B-D901FE18E513}">
+          <RegistryValue Root="HKCU"
+                         Key="Software\CATL\WearPartsControl"
+                         Name="InstallFolder"
+                         Type="string"
+                         Value="[INSTALLFOLDER]"
+                         KeyPath="yes" />
+        </Component>
         <Component Id="AutoStartRegistryComponent" Guid="{ACFC6F48-B4B5-469D-8D89-E5E8C1F03B19}" Condition="START_ON_LOGIN = &quot;1&quot;">
           <RegistryValue Root="HKCU"
                          Key="Software\Microsoft\Windows\CurrentVersion\Run"
@@ -74,33 +78,20 @@
       <ComponentRef Id="InstallationOptionsComponent" />
       <ComponentRef Id="MhrInfoConfigComponent" />
       <ComponentRef Id="SiteFactoryConfigComponent" />
+      <ComponentRef Id="InstallLocationRegistryComponent" />
       <ComponentRef Id="DesktopShortcutComponent" />
       <ComponentRef Id="AutoStartRegistryComponent" />
     </Feature>
 
     <DirectoryRef Id="PrivateDataFolder">
       <Component Id="PrivateDataPermissionsComponent" Guid="{A96DE6F8-2B8E-4F3A-B032-543A5C44B807}" Permanent="yes" KeyPath="yes">
-        <CreateFolder>
-          <util:PermissionEx User="Users"
-                             GenericRead="yes"
-                             GenericWrite="yes"
-                             GenericExecute="yes"
-                             Delete="yes"
-                             DeleteChild="yes" />
-        </CreateFolder>
+        <CreateFolder />
       </Component>
     </DirectoryRef>
 
     <DirectoryRef Id="LocalDatabaseFolder">
       <Component Id="LocalDatabaseFolderComponent" Guid="{51F38548-DC7B-4E45-81E4-B0355E8E3B64}" Permanent="yes" KeyPath="yes">
-        <CreateFolder>
-          <util:PermissionEx User="Users"
-                             GenericRead="yes"
-                             GenericWrite="yes"
-                             GenericExecute="yes"
-                             Delete="yes"
-                             DeleteChild="yes" />
-        </CreateFolder>
+        <CreateFolder />
       </Component>
     </DirectoryRef>
 
@@ -132,6 +123,21 @@
 
   <Fragment>
     <UI>
+      <Dialog Id="UpgradeReadyDlg" Width="370" Height="270" Title="!(loc.UpgradeReadyDlgTitle)">
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="WixUI_Bmp_Banner" />
+        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="373" Height="0" />
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="373" Height="0" />
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="300" Height="15" Transparent="yes" NoPrefix="yes" Text="!(loc.UpgradeReadyDlgTitle)" />
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="320" Height="15" Transparent="yes" NoPrefix="yes" Text="!(loc.UpgradeReadyDlgDescription)" />
+        <Control Id="Body" Type="Text" X="25" Y="72" Width="320" Height="80" Text="!(loc.UpgradeReadyDlgBody)" />
+        <Control Id="DataHint" Type="Text" X="25" Y="160" Width="320" Height="40" Text="!(loc.UpgradeReadyDlgDataHint)" />
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="!(loc.WixUIBack)" />
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="!(loc.WixUINext)" />
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="!(loc.WixUICancel)">
+          <Publish Event="SpawnDialog" Value="CancelDlg" />
+        </Control>
+      </Dialog>
+
       <Dialog Id="InstallOptionsDlg" Width="370" Height="270" Title="!(loc.InstallOptionsDlgTitle)">
         <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="WixUI_Bmp_Banner" />
         <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="373" Height="0" />
@@ -178,6 +184,7 @@
       <DialogRef Id="FatalError" />
       <DialogRef Id="FilesInUse" />
       <DialogRef Id="InstallOptionsDlg" />
+      <DialogRef Id="UpgradeReadyDlg" />
       <DialogRef Id="MsiRMFilesInUse" />
       <DialogRef Id="PrepareDlg" />
       <DialogRef Id="ProgressDlg" />
@@ -186,11 +193,15 @@
 
       <Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Order="999" />
 
-      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="LicenseAgreementDlg" Condition="NOT Installed" />
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="UpgradeReadyDlg" Order="1" Condition="WIX_UPGRADE_DETECTED" />
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="LicenseAgreementDlg" Order="2" Condition="NOT Installed AND NOT WIX_UPGRADE_DETECTED" />
       <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg" Condition="Installed AND PATCH" />
 
       <Publish Dialog="LicenseAgreementDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" />
       <Publish Dialog="LicenseAgreementDlg" Control="Next" Event="NewDialog" Value="InstallDirDlg" Condition="LicenseAccepted = &quot;1&quot;" />
+
+      <Publish Dialog="UpgradeReadyDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" />
+      <Publish Dialog="UpgradeReadyDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg" />
 
       <Publish Dialog="InstallDirDlg" Control="Back" Event="NewDialog" Value="LicenseAgreementDlg" />
       <Publish Dialog="InstallDirDlg" Control="Next" Event="SetTargetPath" Value="[WIXUI_INSTALLDIR]" Order="3" />
@@ -203,7 +214,8 @@
       <Publish Dialog="InstallOptionsDlg" Control="Back" Event="NewDialog" Value="InstallDirDlg" />
       <Publish Dialog="InstallOptionsDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg" />
 
-      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="InstallOptionsDlg" Order="1" Condition="NOT Installed" />
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="UpgradeReadyDlg" Order="1" Condition="WIX_UPGRADE_DETECTED" />
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="InstallOptionsDlg" Order="2" Condition="NOT Installed AND NOT WIX_UPGRADE_DETECTED" />
       <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="MaintenanceTypeDlg" Order="2" Condition="Installed AND NOT PATCH" />
       <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="2" Condition="Installed AND PATCH" />
 

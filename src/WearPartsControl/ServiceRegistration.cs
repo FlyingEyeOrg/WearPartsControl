@@ -11,6 +11,7 @@ using WearPartsControl.ApplicationServices.HttpService;
 using WearPartsControl.ApplicationServices.LegacyImport;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.ComNotification;
+using WearPartsControl.ApplicationServices.ConfigurationTransfer;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.ApplicationServices.SpacerManagement;
 using WearPartsControl.ApplicationServices.PartServices;
@@ -97,6 +98,7 @@ public static class ServiceRegistration
         builder.RegisterType<UserConfigService>().As<IUserConfigService>().SingleInstance();
         builder.RegisterType<WindowsAutoStartService>().As<IAutoStartService>().SingleInstance();
         builder.RegisterType<ComNotificationService>().As<IComNotificationService>().SingleInstance();
+        builder.RegisterType<ConfigurationTransferService>().As<IConfigurationTransferService>().SingleInstance();
         builder.RegisterType<SpacerManagementService>().As<ISpacerManagementService>().SingleInstance();
         builder.RegisterType<AppSettingsService>().As<IAppSettingsService>().SingleInstance();
         builder.RegisterType<WearPartMonitoringLogPipeline>().As<IWearPartMonitoringLogPipeline>().SingleInstance();
@@ -161,6 +163,7 @@ public static class ServiceRegistration
         builder.RegisterType<PartReplacementHistoryViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<NeedLoginViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<UserConfigViewModel>().AsSelf().InstancePerDependency();
+        builder.RegisterType<ConfigurationTransferViewModel>().AsSelf().InstancePerDependency();
         builder.RegisterType<WearPartMonitoringLogViewModel>().AsSelf().InstancePerDependency();
     }
 
@@ -179,6 +182,7 @@ public static class ServiceRegistration
         builder.RegisterType<PartInfoUserControl>().AsSelf();
         builder.RegisterType<NeedLoginUserControl>().AsSelf();
         builder.RegisterType<UserConfigUserControl>().AsSelf();
+        builder.RegisterType<ConfigurationTransferUserControl>().AsSelf();
         builder.RegisterType<PartManagementUserControl>().AsSelf();
         builder.RegisterType<ToolChangeManagementUserControl>().AsSelf();
         builder.RegisterType<KdlRecipeManagementUserControl>().AsSelf();

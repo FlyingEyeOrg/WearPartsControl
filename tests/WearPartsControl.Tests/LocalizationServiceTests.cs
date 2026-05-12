@@ -33,7 +33,8 @@ public sealed class LocalizationServiceTests : IDisposable
             "Replacement History",
             "Monitoring Log",
             "User Settings",
-            "Wear Part Lifetime Preview"
+            "Wear Part Lifetime Preview",
+            "Configuration Import/Export"
         }, service.Catalog.MainWindow.Tabs);
     }
 
@@ -56,7 +57,8 @@ public sealed class LocalizationServiceTests : IDisposable
             "易损件更换历史",
             "易损件监控日志",
             "用户配置",
-            "易损件寿命预览"
+            "易损件寿命预览",
+            "配置导入导出"
         }, service.Catalog.MainWindow.Tabs);
     }
 

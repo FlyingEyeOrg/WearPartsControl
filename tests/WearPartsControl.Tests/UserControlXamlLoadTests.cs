@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.Dialogs;
+using WearPartsControl.ApplicationServices.ConfigurationTransfer;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.MonitoringLogs;
 using WearPartsControl.ApplicationServices.PartServices;
@@ -185,6 +186,23 @@ public sealed class UserControlXamlLoadTests
         });
     }
 
+    [Fact]
+    public void ConfigurationTransferUserControl_ShouldLoadWithoutXamlParseException()
+    {
+        RunWithEnglishCulture(() =>
+        {
+            var control = new ConfigurationTransferUserControl(
+                new ConfigurationTransferViewModel(
+                    new StubConfigurationTransferService(),
+                    new StubAppSettingsService(),
+                    new UiBusyService(TimeSpan.Zero)),
+                new StubFileDialogService(),
+                new StubAppDialogService());
+
+            Assert.NotNull(control);
+        });
+    }
+
     private static void RunWithEnglishCulture(Action action)
     {
         using var cultureScope = new TestCultureScope("en-US");
@@ -231,6 +249,19 @@ public sealed class UserControlXamlLoadTests
         public string? ShowSaveFileDialog(SaveFileDialogRequest request, System.Windows.Window? owner = null)
         {
             return null;
+        }
+    }
+
+    private sealed class StubConfigurationTransferService : IConfigurationTransferService
+    {
+        public Task<ConfigurationTransferSummary> ExportAsync(string packagePath, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new ConfigurationTransferSummary(packagePath, 0));
+        }
+
+        public Task<ConfigurationTransferSummary> ImportAsync(string packagePath, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new ConfigurationTransferSummary(packagePath, 0));
         }
     }
 

@@ -3,7 +3,8 @@
   "UnexpectedError": "发生了未处理的异常。",
   "Dialogs": {
     "SQLiteDatabaseFilter": "SQLite 数据库|*.db;*.sqlite;*.sqlite3|所有文件|*.*",
-    "CsvFileFilter": "CSV 文件|*.csv|所有文件|*.*"
+    "CsvFileFilter": "CSV 文件|*.csv|所有文件|*.*",
+    "ConfigPackageFilter": "配置包|*.cfg|所有文件|*.*"
   },
   "App": {
     "LegacyImportCompletedTitle": "旧库导入完成"
@@ -20,7 +21,8 @@
       "易损件更换历史",
       "易损件监控日志",
       "用户配置",
-      "易损件寿命预览"
+      "易损件寿命预览",
+      "配置导入导出"
     ]
   },
   "MainWindowView": {
@@ -285,6 +287,20 @@
     "StatusNormal": "正常",
     "StatusWarning": "预警",
     "StatusShutdown": "停机"
+  },
+  "ConfigurationTransferControl": {
+    "Title": "配置导入导出",
+    "StatusBannerTitle": "状态信息通知",
+    "ExportSection": "导出配置包",
+    "ExportSummary": "导出当前 Settings 和 LocalDB 配置。",
+    "ExportButton": "导出",
+    "ImportSection": "导入配置包",
+    "ImportButton": "导入",
+    "ImportDialogTitle": "选择配置包",
+    "ImportConfirmTitle": "导入确认",
+    "ImportConfirmMessage": "确认导入该配置包吗？导入后会覆盖当前配置目录中的 Settings 和 LocalDB。",
+    "ImportCompletedTitle": "导入完成",
+    "ImportCompletedMessage": "配置包已导入完成。"
   },
   "WearPartThresholdWindowView": {
     "Title": "易损件阈值",
@@ -696,6 +712,19 @@
       "TestSucceeded": "COM 通知测试发送成功。",
       "TestFailedPrefix": "COM 通知测试失败："
     },
+    "ConfigurationTransferVm": {
+      "PromptExportOrImport": "请选择导出或导入配置包。",
+      "ImportAvailabilityChecking": "正在检查导入条件...",
+      "ImportAvailable": "当前未配置设备基础信息，可以导入配置包。",
+      "ImportUnavailableConfigured": "当前已配置设备基础信息，无法导入配置包。",
+      "Exporting": "正在导出配置包...",
+      "Importing": "正在导入配置包...",
+      "ExportSucceeded": "配置包已导出到：{0}，包含 {1} 个文件。",
+      "ImportSucceeded": "配置包已导入：{0}，包含 {1} 个文件。",
+      "ExportCanceled": "已取消导出配置包。",
+      "ImportCanceled": "已取消导入配置包。",
+      "TransferFailed": "配置导入导出失败：{0}"
+    },
     "ComNotificationTemplate": {
       "WarningHeading": "易损件预警通知",
       "ShutdownHeading": "易损件停机通知",
@@ -754,6 +783,18 @@
     },
     "Common": {
       "ResourceNumberRequired": "资源号不能为空。"
+    },
+    "ConfigurationTransfer": {
+      "PackagePathRequired": "配置包路径不能为空。",
+      "PackageExtensionInvalid": "配置包文件必须使用 .cfg 后缀。",
+      "PackageNotFound": "未找到配置包：{0}",
+      "ImportRequiresUnconfiguredClient": "只有在软件未配置设备基础信息时才能导入配置包。",
+      "ManifestMissing": "配置包缺少当前版本清单。",
+      "ManifestInvalid": "配置包清单无效。",
+      "UnsupportedFormatVersion": "配置包格式版本 {0} 不受当前软件支持。",
+      "ProductMismatch": "配置包不是 WearPartsControl 配置包。",
+      "PackagePathInvalid": "配置包中包含无效路径。",
+      "PackageRootInvalid": "配置包中包含不允许的配置目录：{0}。"
     },
     "WearPartMonitoringLog": {
       "MonitorSkippedClientAppMissing": "跳过易损件监控：当前未设置客户端基础信息。",

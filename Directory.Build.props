@@ -5,6 +5,7 @@
         <AnalysisLevel>latest</AnalysisLevel>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <NuGetAudit Condition="'$(NuGetAudit)'==''">false</NuGetAudit>
     </PropertyGroup>
 
     <ItemGroup>

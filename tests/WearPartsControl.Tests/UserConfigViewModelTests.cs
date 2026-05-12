@@ -102,7 +102,7 @@ public sealed class UserConfigViewModelTests
         var dispatcher = new StubUiDispatcher();
         var localizationService = new StubLocalizationService();
         var autoStartService = new StubAutoStartService();
-var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), service, appSettingsService, autoStartService, new StubComNotificationService(), localizationService, new StubCurrentUserAccessor(), dispatcher, new UiBusyService(TimeSpan.Zero));
+        var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), service, appSettingsService, autoStartService, new StubComNotificationService(), localizationService, new StubCurrentUserAccessor(), dispatcher, new UiBusyService(TimeSpan.Zero));
         await viewModel.InitializeAsync();
 
         viewModel.MeResponsibleWorkId = "ME002";
@@ -112,6 +112,15 @@ var viewModel = new UserConfigViewModel(new StubClientAppInfoService(), service,
         viewModel.ReplacementOperatorName = "周八";
         viewModel.ComAccessToken = "token-2";
         viewModel.ComSecret = "secret-2";
+        viewModel.SelectedLanguage = "en-US";
+        viewModel.AutoStartEnabled = true;
+        viewModel.UseWorkNumberLogin = true;
+        viewModel.ComNotificationEnabled = false;
+        viewModel.SpacerValidationEnabled = false;
+        viewModel.SpacerValidationTimeoutMilliseconds = "7200";
+        viewModel.SpacerValidationIgnoreServerCertificateErrors = false;
+        viewModel.SpacerValidationCodeSeparator = "-";
+        viewModel.SpacerValidationExpectedSegmentCount = "10";
 
         viewModel.EnableCutterMesValidation = true;
         viewModel.CutterMesSite = "MES-S02";

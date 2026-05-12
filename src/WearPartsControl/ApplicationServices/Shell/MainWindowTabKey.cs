@@ -10,5 +10,6 @@ public enum MainWindowTabKey
     PartReplacementHistory = 5,
     WearPartMonitoringLog = 6,
     UserConfig = 7,
-    WearPartValuePreview = 8
+    WearPartValuePreview = 8,
+    ConfigurationTransfer = 9
 }

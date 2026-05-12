@@ -7,39 +7,49 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
     private static readonly MainWindowTabKey[] ToolChangeProcedureTabs =
     [
         MainWindowTabKey.ReplacePart,
-        MainWindowTabKey.WearPartValuePreview,
         MainWindowTabKey.ClientAppInfo,
+        MainWindowTabKey.WearPartValuePreview,
         MainWindowTabKey.PartManagement,
         MainWindowTabKey.ToolChangeManagement,
         MainWindowTabKey.KdlRecipeManagement,
         MainWindowTabKey.PartReplacementHistory,
         MainWindowTabKey.WearPartMonitoringLog,
-        MainWindowTabKey.UserConfig
+        MainWindowTabKey.UserConfig,
+        MainWindowTabKey.ConfigurationTransfer
     ];
 
     private static readonly MainWindowTabKey[] StandardProcedureTabs =
     [
         MainWindowTabKey.ReplacePart,
-        MainWindowTabKey.WearPartValuePreview,
         MainWindowTabKey.ClientAppInfo,
+        MainWindowTabKey.WearPartValuePreview,
         MainWindowTabKey.PartManagement,
         MainWindowTabKey.PartReplacementHistory,
         MainWindowTabKey.WearPartMonitoringLog,
-        MainWindowTabKey.UserConfig
+        MainWindowTabKey.UserConfig,
+        MainWindowTabKey.ConfigurationTransfer
+    ];
+
+    private static readonly MainWindowTabKey[] UnconfiguredTabs =
+    [
+        MainWindowTabKey.ClientAppInfo,
+        MainWindowTabKey.ConfigurationTransfer
     ];
 
     public IReadOnlyList<MainWindowTabItem> BuildVisibleTabs(IReadOnlyList<string> localizedTabHeaders, bool isClientAppInfoConfigured, string procedureCode)
     {
         ArgumentNullException.ThrowIfNull(localizedTabHeaders);
 
-        if (localizedTabHeaders.Count < 9)
+        if (localizedTabHeaders.Count < 10)
         {
             throw new InvalidOperationException("Main window tab headers are incomplete.");
         }
 
         if (!isClientAppInfoConfigured)
         {
-            return [CreateItem(MainWindowTabKey.ClientAppInfo, localizedTabHeaders)];
+            return UnconfiguredTabs
+                .Select(key => CreateItem(key, localizedTabHeaders))
+                .ToArray();
         }
 
         var visibleKeys = string.Equals(procedureCode, "模切分条", StringComparison.Ordinal)
@@ -55,7 +65,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
     {
         ArgumentNullException.ThrowIfNull(visibleTabs);
 
-        if (!isClientAppInfoConfigured || visibleTabs.Count == 0)
+        if (visibleTabs.Count == 0)
         {
             return typeof(ClientAppInfoUserControl);
         }
@@ -66,6 +76,13 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
         }
 
         var tab = visibleTabs[index].Key;
+        if (!isClientAppInfoConfigured)
+        {
+            return tab == MainWindowTabKey.ConfigurationTransfer
+                ? typeof(ConfigurationTransferUserControl)
+                : typeof(ClientAppInfoUserControl);
+        }
+
         if (!isLoggedIn && tab != MainWindowTabKey.ClientAppInfo)
         {
             return typeof(NeedLoginUserControl);
@@ -82,6 +99,7 @@ public sealed class MainWindowNavigationService : IMainWindowNavigationService
             MainWindowTabKey.PartReplacementHistory => typeof(PartReplacementHistoryUserControl),
             MainWindowTabKey.WearPartMonitoringLog => typeof(WearPartMonitoringLogUserControl),
             MainWindowTabKey.UserConfig => typeof(UserConfigUserControl),
+            MainWindowTabKey.ConfigurationTransfer => typeof(ConfigurationTransferUserControl),
             _ => typeof(ReplacePartUserControl)
         };
     }
