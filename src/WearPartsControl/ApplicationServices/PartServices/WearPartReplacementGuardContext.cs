@@ -39,7 +39,5 @@ public sealed class WearPartReplacementGuardContext
 
     public WearPartReplacementRecordEntity? LatestRemovalRecord { get; set; }
 
-    public CutterMesValidationSnapshot? CutterMesValidationSnapshot { get; set; }
-
-    public double PlcWriteValue { get; set; }
+    public required double PlcWriteValue { get; set; }
 }

@@ -126,8 +126,7 @@ public static class ServiceRegistration
         builder.RegisterType<ToolChangeSelectionService>().As<IToolChangeSelectionService>().SingleInstance();
         builder.RegisterType<BarcodeLengthReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<CutterRollValidationReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
-        builder.RegisterType<CutterMesConsistencyReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
-        builder.RegisterType<CutterKdlRangeReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
+        builder.RegisterType<CutterMesDataValidationGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<ToolCodeReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<CoatingSpacerReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();
         builder.RegisterType<BarcodeReuseReplacementGuard>().As<IWearPartReplacementGuard>().InstancePerDependency();

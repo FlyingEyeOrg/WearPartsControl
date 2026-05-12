@@ -1,3 +1,4 @@
+using System.Globalization;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.UserConfig;
 using WearPartsControl.Exceptions;
@@ -5,14 +6,19 @@ using UserConfigModel = WearPartsControl.ApplicationServices.UserConfig.UserConf
 
 namespace WearPartsControl.ApplicationServices.PartServices;
 
-public sealed class CutterMesConsistencyReplacementGuard : IWearPartReplacementGuard
+public sealed class CutterMesDataValidationGuard : IWearPartReplacementGuard
 {
     private readonly ICutterMesValidationService _cutterMesValidationService;
+    private readonly IKdlRecipeManagementService _kdlRecipeManagementService;
     private readonly IUserConfigService _userConfigService;
 
-    public CutterMesConsistencyReplacementGuard(ICutterMesValidationService cutterMesValidationService, IUserConfigService userConfigService)
+    public CutterMesDataValidationGuard(
+        ICutterMesValidationService cutterMesValidationService,
+        IKdlRecipeManagementService kdlRecipeManagementService,
+        IUserConfigService userConfigService)
     {
         _cutterMesValidationService = cutterMesValidationService;
+        _kdlRecipeManagementService = kdlRecipeManagementService;
         _userConfigService = userConfigService;
     }
 
@@ -53,10 +59,10 @@ public sealed class CutterMesConsistencyReplacementGuard : IWearPartReplacementG
             throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.CutterMesPositionUnresolved"), code: "WearPartReplacement:CutterMesPositionUnresolved");
         }
 
-        var snapshot = context.CutterMesValidationSnapshot;
-        if (snapshot is null)
-        {
-            snapshot = await _cutterMesValidationService.GetValidationSnapshotAsync(new CutterMesValidationRequest
+        var currentRecipe = await _kdlRecipeManagementService.GetCurrentRecipeAsync(cancellationToken).ConfigureAwait(false)
+            ?? throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.CutterKdlRecipeNotConfigured"), code: "WearPartReplacement:CutterKdlRecipeNotConfigured");
+
+        var snapshot = await _cutterMesValidationService.GetValidationSnapshotAsync(new CutterMesValidationRequest
             {
                 Wsdl = wsdl,
                 UserName = userName,
@@ -65,12 +71,35 @@ public sealed class CutterMesConsistencyReplacementGuard : IWearPartReplacementG
                 RollNumber = context.Request.RollNumber,
                 Parameter = parameter
             }, cancellationToken).ConfigureAwait(false);
-            context.CutterMesValidationSnapshot = snapshot;
-        }
 
         if (!string.Equals(snapshot.ExpectedCutterCode, context.NormalizedBarcode, StringComparison.OrdinalIgnoreCase))
         {
             throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.CutterMesCodeMismatch"), code: "WearPartReplacement:CutterMesCodeMismatch");
+        }
+
+        if (string.IsNullOrWhiteSpace(snapshot.KdlText))
+        {
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartReplacement.CutterMesKdlMissing"), code: "WearPartReplacement:CutterMesKdlMissing");
+        }
+
+        if (!snapshot.KdlValue.HasValue)
+        {
+            throw new UserFriendlyException(
+                LocalizedText.Format("Services.WearPartReplacement.CutterMesKdlInvalid", snapshot.KdlText),
+                code: "WearPartReplacement:CutterMesKdlInvalid");
+        }
+
+        var kdlValue = snapshot.KdlValue.Value;
+        if (kdlValue < currentRecipe.LowerLimit || kdlValue > currentRecipe.UpperLimit)
+        {
+            throw new UserFriendlyException(
+                LocalizedText.Format(
+                    "Services.WearPartReplacement.CutterKdlOutOfRange",
+                    snapshot.KdlText,
+                    currentRecipe.LowerLimit.ToString(CultureInfo.InvariantCulture),
+                    currentRecipe.UpperLimit.ToString(CultureInfo.InvariantCulture),
+                    currentRecipe.Name),
+                code: "WearPartReplacement:CutterKdlOutOfRange");
         }
     }
 

@@ -1025,14 +1025,22 @@ public sealed class WearPartOperationalServicesTests : IDisposable
                 dbContext,
                 currentUserAccessor,
                 plcService,
-                new FakeCutterMesValidationService(),
+                new FakeCutterMesValidationService
+                {
+                    Snapshot = new CutterMesValidationSnapshot
+                    {
+                        ExpectedCutterCode = "BARCODE-TL-01-0008E",
+                        KdlText = "0.10",
+                        KdlValue = 0.10
+                    }
+                },
                 new TypeJsonSaveInfoStore(settingsDirectory));
 
             var exception = await Assert.ThrowsAsync<UserFriendlyException>(() => service.ReplaceByScanAsync(new WearPartReplacementRequest
             {
                 WearPartDefinitionId = seeded.DefinitionId,
                 NewBarcode = "BARCODE-TL-01-0008E",
-                ToolCode = "TL-01",
+                ToolCode = "TL-UP-01",
                 RollNumber = "1234567890123456",
                 BurrResult = "OK",
                 ReplacementReason = WearPartReplacementReason.Normal
@@ -1514,6 +1522,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         spacerManagementService ??= new FakeSpacerManagementService();
         var userConfigService = new FakeUserConfigService
         {
+            EnableCutterMesValidation = true,
             CutterMesWsdl = "https://mes.example.com/service?wsdl",
             CutterMesUser = "mes-user",
             CutterMesPassword = "mes-pass",
@@ -1532,7 +1541,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
                 new BarcodeLengthReplacementGuard(),
                 new CutterRollValidationReplacementGuard(),
                 new ToolCodeReplacementGuard(),
-                new CutterKdlRangeReplacementGuard(cutterMesValidationService, kdlRecipeManagementService, userConfigService),
+                new CutterMesDataValidationGuard(cutterMesValidationService, kdlRecipeManagementService, userConfigService),
                 new BarcodeReuseReplacementGuard(new WearPartReplacementRecordRepository(dbContext)),
                 new LifetimeReachedReplacementGuard(),
                 new ChangePositionReplacementGuard(),
@@ -1651,6 +1660,8 @@ public sealed class WearPartOperationalServicesTests : IDisposable
 
     private sealed class FakeUserConfigService : IUserConfigService
     {
+        public bool EnableCutterMesValidation { get; set; }
+
         public string CutterMesWsdl { get; set; } = string.Empty;
 
         public string CutterMesUser { get; set; } = string.Empty;
@@ -1663,6 +1674,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         {
             return ValueTask.FromResult(new UserConfig
             {
+                EnableCutterMesValidation = EnableCutterMesValidation,
                 MeResponsibleName = "ME负责人甲",
                 MeResponsibleWorkId = "ME1001",
                 PrdResponsibleName = "PRD负责人乙",
