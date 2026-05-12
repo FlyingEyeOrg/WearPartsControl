@@ -9,7 +9,7 @@ public sealed class ToolCodeReplacementGuard : IWearPartReplacementGuard
 
     public Task ValidateAsync(WearPartReplacementGuardContext context, CancellationToken cancellationToken = default)
     {
-        if (!RequiresToolCodeValidation(context.ClientAppConfiguration.ProcedureCode))
+        if (!RequiresToolCodeValidation(context.ClientAppConfiguration.ProcedureCode, context.Definition.WearPartType?.Code))
         {
             return Task.CompletedTask;
         }
@@ -28,10 +28,12 @@ public sealed class ToolCodeReplacementGuard : IWearPartReplacementGuard
         return Task.CompletedTask;
     }
 
-    public static bool RequiresToolCodeValidation(string? procedureCode)
+    public static bool RequiresToolCodeValidation(string? procedureCode, string? wearPartTypeCode)
     {
-        var normalized = procedureCode?.Trim() ?? string.Empty;
-        return string.Equals(normalized, "模切分条", StringComparison.Ordinal)
-            || string.Equals(normalized, "DieCutSlitting", StringComparison.OrdinalIgnoreCase);
+        var normalizedProcedure = procedureCode?.Trim() ?? string.Empty;
+        var normalizedWearPartType = wearPartTypeCode?.Trim() ?? string.Empty;
+        return (string.Equals(normalizedProcedure, "模切分条", StringComparison.Ordinal)
+                || string.Equals(normalizedProcedure, "DieCutSlitting", StringComparison.OrdinalIgnoreCase))
+            && string.Equals(normalizedWearPartType, WearPartTypeCodes.Cutter, StringComparison.OrdinalIgnoreCase);
     }
 }

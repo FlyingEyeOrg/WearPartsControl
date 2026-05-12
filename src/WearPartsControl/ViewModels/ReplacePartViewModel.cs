@@ -161,6 +161,7 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
             if (SetProperty(ref _selectedDefinition, value))
             {
                 ApplySelectedDefinition(value);
+                OnPropertyChanged(nameof(IsToolValidationEnabled));
                 OnPropertyChanged(nameof(IsCutterRollValidationRequired));
                 OnPropertyChanged(nameof(IsCutterValidationRequired));
                 OnPropertyChanged(nameof(IsCutterMesValidationEnabled));
@@ -255,7 +256,7 @@ public sealed class ReplacePartViewModel : LocalizedViewModelBase
         }
     }
 
-    public bool IsToolValidationEnabled => ToolCodeReplacementGuard.RequiresToolCodeValidation(_procedureCode);
+    public bool IsToolValidationEnabled => ToolCodeReplacementGuard.RequiresToolCodeValidation(_procedureCode, SelectedDefinition?.WearPartTypeCode);
 
     public bool IsCutterRollValidationRequired => CutterReplacementValidationPolicy.RequiresRollValidation(_procedureCode, SelectedDefinition?.WearPartTypeCode);
 

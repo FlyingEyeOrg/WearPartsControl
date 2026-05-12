@@ -695,7 +695,8 @@ public sealed class ReplacePartViewModelTests
             WarningValueDataType = "FLOAT",
             WarningValueAddress = "DB1.2",
             ShutdownValueDataType = "FLOAT",
-            ShutdownValueAddress = "DB1.4"
+            ShutdownValueAddress = "DB1.4",
+            WearPartTypeCode = WearPartTypeCodes.Cutter
         };
         var toolSelectionService = new StubToolChangeSelectionService();
         toolSelectionService.Selections[definition.Id] = "TL-01";
@@ -744,6 +745,7 @@ public sealed class ReplacePartViewModelTests
             WarningValueAddress = "DB1.2",
             ShutdownValueDataType = "FLOAT",
             ShutdownValueAddress = "DB1.4",
+            WearPartTypeCode = WearPartTypeCodes.Cutter,
             ToolChangeId = toolChangeId
         };
         var toolSelectionService = new StubToolChangeSelectionService();
@@ -791,7 +793,8 @@ public sealed class ReplacePartViewModelTests
             WarningValueDataType = "FLOAT",
             WarningValueAddress = "DB1.2",
             ShutdownValueDataType = "FLOAT",
-            ShutdownValueAddress = "DB1.4"
+            ShutdownValueAddress = "DB1.4",
+            WearPartTypeCode = WearPartTypeCodes.Cutter
         };
         var toolChangeManagementService = new StubToolChangeManagementService();
         toolChangeManagementService.Definitions.Add(new ToolChangeDefinition { Name = "刀型一", Code = "TL-01" });

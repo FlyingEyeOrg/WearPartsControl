@@ -878,7 +878,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
     [Fact]
     public async Task ReplaceByScanAsync_WhenDieCutSlittingAndToolCodeMissing_ShouldThrowUserFriendlyException()
     {
-        var seeded = await SeedAsync("R-OPS-08", "M0.8", procedureCode: "模切分条");
+        var seeded = await SeedAsync("R-OPS-08", "M0.8", procedureCode: "模切分条", wearPartTypeCode: WearPartTypeCodes.Cutter);
         var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
         var plcService = new FakePlcService();
         plcService.SetValue("DB1.0", 30);
@@ -892,6 +892,8 @@ public sealed class WearPartOperationalServicesTests : IDisposable
         {
             WearPartDefinitionId = seeded.DefinitionId,
             NewBarcode = "BARCODE-0008",
+            RollNumber = "1234567890123456",
+            BurrResult = "OK",
             ReplacementReason = WearPartReplacementReason.Normal
         }));
 
@@ -901,7 +903,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
     [Fact]
     public async Task ReplaceByScanAsync_WhenDieCutSlittingAndToolCodeMismatch_ShouldThrowUserFriendlyException()
     {
-        var seeded = await SeedAsync("R-OPS-08A", "M0.8A", procedureCode: "模切分条");
+        var seeded = await SeedAsync("R-OPS-08A", "M0.8A", procedureCode: "模切分条", wearPartTypeCode: WearPartTypeCodes.Cutter);
         var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
         var plcService = new FakePlcService();
         plcService.SetValue("DB1.0", 30);
@@ -916,6 +918,8 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             WearPartDefinitionId = seeded.DefinitionId,
             NewBarcode = "BARCODE-0008A",
             ToolCode = "TL-99",
+            RollNumber = "1234567890123456",
+            BurrResult = "OK",
             ReplacementReason = WearPartReplacementReason.Normal
         }));
 
@@ -925,7 +929,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
     [Fact]
     public async Task ReplaceByScanAsync_WhenDieCutSlittingAndToolCodeMatches_ShouldAllowReplacement()
     {
-        var seeded = await SeedAsync("R-OPS-08B", "M0.8B", procedureCode: "模切分条");
+        var seeded = await SeedAsync("R-OPS-08B", "M0.8B", procedureCode: "模切分条", wearPartTypeCode: WearPartTypeCodes.Cutter);
         var currentUserAccessor = CreateCurrentUserAccessor(accessLevel: 1);
         var plcService = new FakePlcService();
         plcService.SetValue("DB1.0", 30);
@@ -940,6 +944,8 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             WearPartDefinitionId = seeded.DefinitionId,
             NewBarcode = "BARCODE-TL-01-0008B",
             ToolCode = "TL-01",
+            RollNumber = "1234567890123456",
+            BurrResult = "OK",
             ReplacementReason = WearPartReplacementReason.Normal
         });
 
