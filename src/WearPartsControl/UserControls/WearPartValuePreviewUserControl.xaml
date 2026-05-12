@@ -105,10 +105,7 @@
                                 Command="{Binding RefreshCommand}"
                                 Content="{loc:Loc WearPartValuePreviewControl.RefreshButton}" />
             <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
-                Command="{Binding EditThresholdsCommand}"
-                Content="{loc:Loc WearPartValuePreviewControl.EditThresholdsButton}" />
-            <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
-                Command="{Binding SyncThresholdsCommand}"
+                            Command="{Binding SyncThresholdsCommand}"
                 Content="{loc:Loc WearPartValuePreviewControl.SyncThresholdsButton}" />
                     </WrapPanel>
                 </Grid>
@@ -165,7 +162,6 @@
                       CanUserDeleteRows="False"
                       IsReadOnly="True"
                       ItemsSource="{Binding Items}"
-                      SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
                       ScrollViewer.HorizontalScrollBarVisibility="Auto"

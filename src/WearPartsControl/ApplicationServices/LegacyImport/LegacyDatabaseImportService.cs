@@ -21,6 +21,20 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
         AllowTrailingCommas = true
     };
 
+    private static readonly string[] LegacyWarningLifetimeThresholdColumnNames =
+    [
+        "WarningLifetimeThreshold",
+        "WarnLifetimeThreshold",
+        "WarningThreshold",
+        "WarnThreshold"
+    ];
+
+    private static readonly string[] LegacyShutdownLifetimeThresholdColumnNames =
+    [
+        "ShutdownLifetimeThreshold",
+        "ShutdownThreshold"
+    ];
+
     private const string ShutdownSeverity = "Shutdown";
     private const int MaxRecentToolCodes = 20;
 
@@ -439,6 +453,17 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
         target.WarningValueDataType = LegacyImportValueConverter.NormalizeWearPartDataType(source.WarningValueDataType);
         target.ShutdownValueAddress = NormalizeOrEmpty(source.ShutdownValueAddress, "######");
         target.ShutdownValueDataType = LegacyImportValueConverter.NormalizeWearPartDataType(source.ShutdownValueDataType);
+
+        if (source.WarningLifetimeThreshold.HasValue)
+        {
+            target.WarningLifetimeThreshold = source.WarningLifetimeThreshold.Value;
+        }
+
+        if (source.ShutdownLifetimeThreshold.HasValue)
+        {
+            target.ShutdownLifetimeThreshold = source.ShutdownLifetimeThreshold.Value;
+        }
+
         target.IsShutdown = source.IsShutdown;
         target.CodeMinLength = source.CodeMinLength > 0 ? source.CodeMinLength : 1;
         target.CodeMaxLength = source.CodeMaxLength >= target.CodeMinLength ? source.CodeMaxLength : Math.Max(target.CodeMinLength, 128);
@@ -544,7 +569,7 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
 
     private static async Task<List<LegacyWearPartDefinition>> ReadWearPartDefinitionsAsync(SqliteConnection connection, CancellationToken cancellationToken)
     {
-        const string sql = "SELECT Id, BasicModelId, Name, Input, CurrentValuePoint, CurrentValueDataType, WarnValuePoint, WarnValueDataType, ShutdownValuePoint, ShutdownValueDataType, IsShutdown, CodeMinLength, CodeMaxLength, LifeType, PlcZeroClear, CodeWritePlcPoint FROM v_VulnerableParts";
+        const string sql = "SELECT * FROM v_VulnerableParts";
         return await ExecuteReaderAsync(connection, sql, reader => new LegacyWearPartDefinition
         {
             Id = GetString(reader, "Id"),
@@ -557,6 +582,8 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
             WarningValueDataType = GetString(reader, "WarnValueDataType"),
             ShutdownValueAddress = GetString(reader, "ShutdownValuePoint"),
             ShutdownValueDataType = GetString(reader, "ShutdownValueDataType"),
+            WarningLifetimeThreshold = GetOptionalDouble(reader, LegacyWarningLifetimeThresholdColumnNames),
+            ShutdownLifetimeThreshold = GetOptionalDouble(reader, LegacyShutdownLifetimeThresholdColumnNames),
             IsShutdown = GetBoolean(reader, "IsShutdown"),
             CodeMinLength = GetInt32(reader, "CodeMinLength"),
             CodeMaxLength = GetInt32(reader, "CodeMaxLength"),
@@ -637,12 +664,50 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
             : 0d;
     }
 
+    private static double? GetOptionalDouble(SqliteDataReader reader, params string[] columnNames)
+    {
+        foreach (var columnName in columnNames)
+        {
+            if (!TryGetOrdinal(reader, columnName, out var ordinal))
+            {
+                continue;
+            }
+
+            if (reader.IsDBNull(ordinal))
+            {
+                return 0d;
+            }
+
+            var raw = Convert.ToString(reader.GetValue(ordinal), System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+            return double.TryParse(raw, System.Globalization.NumberStyles.Float | System.Globalization.NumberStyles.AllowThousands, System.Globalization.CultureInfo.InvariantCulture, out var value)
+                ? value
+                : 0d;
+        }
+
+        return null;
+    }
+
     private static bool GetBoolean(SqliteDataReader reader, string columnName)
     {
         var raw = GetString(reader, columnName);
         return bool.TryParse(raw, out var boolValue)
             ? boolValue
             : raw == "1";
+    }
+
+    private static bool TryGetOrdinal(SqliteDataReader reader, string columnName, out int ordinal)
+    {
+        for (var index = 0; index < reader.FieldCount; index++)
+        {
+            if (string.Equals(reader.GetName(index), columnName, StringComparison.OrdinalIgnoreCase))
+            {
+                ordinal = index;
+                return true;
+            }
+        }
+
+        ordinal = -1;
+        return false;
     }
 
     private static DateTime GetDateTime(SqliteDataReader reader, string columnName)
@@ -695,6 +760,8 @@ public sealed class LegacyDatabaseImportService : ILegacyDatabaseImportService
         public string WarningValueDataType { get; set; } = string.Empty;
         public string ShutdownValueAddress { get; set; } = string.Empty;
         public string ShutdownValueDataType { get; set; } = string.Empty;
+        public double? WarningLifetimeThreshold { get; set; }
+        public double? ShutdownLifetimeThreshold { get; set; }
         public bool IsShutdown { get; set; }
         public int CodeMinLength { get; set; }
         public int CodeMaxLength { get; set; }

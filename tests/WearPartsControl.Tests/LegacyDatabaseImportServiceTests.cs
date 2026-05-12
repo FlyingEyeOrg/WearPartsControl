@@ -33,7 +33,7 @@ public sealed class LegacyDatabaseImportServiceTests : IDisposable
         dbContext.Database.EnsureDeleted();
         dbContext.Database.EnsureCreated();
 
-        CreateLegacyDatabase();
+        RecreateLegacyDatabase();
     }
 
     [Fact]
@@ -65,6 +65,8 @@ public sealed class LegacyDatabaseImportServiceTests : IDisposable
         Assert.Equal("DOUBLE", definition.CurrentValueDataType);
         Assert.Equal("FLOAT", definition.WarningValueDataType);
         Assert.Equal("INT32", definition.ShutdownValueDataType);
+        Assert.Equal(0d, definition.WarningLifetimeThreshold);
+        Assert.Equal(0d, definition.ShutdownLifetimeThreshold);
         Assert.Equal("记米", definition.LifetimeType);
         Assert.Null(definition.ToolChangeId);
         Assert.Equal("BARCODE-OLD", replacement.CurrentBarcode);
@@ -121,7 +123,85 @@ public sealed class LegacyDatabaseImportServiceTests : IDisposable
         Assert.Equal("DOUBLE", definition.CurrentValueDataType);
         Assert.Equal("FLOAT", definition.WarningValueDataType);
         Assert.Equal("INT32", definition.ShutdownValueDataType);
+        Assert.Equal(0d, definition.WarningLifetimeThreshold);
+        Assert.Equal(0d, definition.ShutdownLifetimeThreshold);
         Assert.Equal("记米", definition.LifetimeType);
+    }
+
+    [Fact]
+    public async Task ImportAsync_WhenLegacyThresholdColumnsExist_ShouldImportThresholds()
+    {
+        RecreateLegacyDatabase(includeThresholdColumns: true, warningLifetimeThreshold: 26d, shutdownLifetimeThreshold: 36d);
+
+        var service = new LegacyDatabaseImportService(_dbContextFactory, _saveInfoStore);
+
+        var result = await service.ImportAsync(_legacyDbPath);
+
+        Assert.Equal(1, result.ImportedWearPartDefinitions);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var definition = await dbContext.WearPartDefinitions.SingleAsync();
+        Assert.Equal(26d, definition.WarningLifetimeThreshold);
+        Assert.Equal(36d, definition.ShutdownLifetimeThreshold);
+    }
+
+    [Fact]
+    public async Task ImportWearPartDefinitionsAsync_WhenLegacyThresholdColumnsAreMissing_ShouldPreserveExistingThresholds()
+    {
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var configuration = new Domain.Entities.ClientAppConfigurationEntity
+        {
+            Id = Guid.NewGuid(),
+            ResourceNumber = "RES-TARGET-02",
+            SiteCode = "S01",
+            FactoryCode = "F01",
+            AreaCode = "A01",
+            ProcedureCode = "P01",
+            EquipmentCode = "E01",
+            PlcProtocolType = "S7",
+            PlcIpAddress = "127.0.0.1",
+            PlcPort = 102,
+            ShutdownPointAddress = "!M0.0",
+            SiemensRack = 0,
+            SiemensSlot = 0,
+            IsStringReverse = false
+        };
+
+        dbContext.ClientAppConfigurations.Add(configuration);
+        dbContext.WearPartDefinitions.Add(new Domain.Entities.WearPartDefinitionEntity
+        {
+            ClientAppConfigurationId = configuration.Id,
+            ResourceNumber = configuration.ResourceNumber,
+            PartName = "刀具A",
+            InputMode = "Manual",
+            CurrentValueAddress = "DB2.0",
+            CurrentValueDataType = "INT32",
+            WarningValueAddress = "DB2.1",
+            WarningValueDataType = "INT32",
+            ShutdownValueAddress = "DB2.2",
+            ShutdownValueDataType = "INT32",
+            WarningLifetimeThreshold = 21d,
+            ShutdownLifetimeThreshold = 31d,
+            IsShutdown = true,
+            CodeMinLength = 8,
+            CodeMaxLength = 32,
+            LifetimeType = "Count",
+            PlcZeroClearAddress = "DB2.3",
+            BarcodeWriteAddress = "DB2.4"
+        });
+        await dbContext.SaveChangesAsync();
+
+        var service = new LegacyDatabaseImportService(_dbContextFactory, _saveInfoStore);
+
+        var result = await service.ImportWearPartDefinitionsAsync(_legacyDbPath, configuration.Id, configuration.ResourceNumber);
+
+        Assert.Equal(0, result.ImportedWearPartDefinitions);
+        Assert.Equal(1, result.UpdatedWearPartDefinitions);
+
+        await using var verifyContext = await _dbContextFactory.CreateDbContextAsync();
+        var definition = await verifyContext.WearPartDefinitions.SingleAsync(x => x.ClientAppConfigurationId == configuration.Id);
+        Assert.Equal(21d, definition.WarningLifetimeThreshold);
+        Assert.Equal(31d, definition.ShutdownLifetimeThreshold);
     }
 
     public void Dispose()
@@ -131,13 +211,20 @@ public sealed class LegacyDatabaseImportServiceTests : IDisposable
         TryDelete(_targetDbPath);
     }
 
-    private void CreateLegacyDatabase()
+    private void RecreateLegacyDatabase(bool includeThresholdColumns = false, double warningLifetimeThreshold = 0d, double shutdownLifetimeThreshold = 0d)
     {
+        TryDelete(_legacyDbPath);
+
         using var connection = new SqliteConnection($"Data Source={_legacyDbPath}");
         connection.Open();
 
         using var command = connection.CreateCommand();
         command.CommandText = """
+DROP TABLE IF EXISTS v_exceedlimitinfo;
+DROP TABLE IF EXISTS v_ReplaceRecord;
+DROP TABLE IF EXISTS v_VulnerableParts;
+DROP TABLE IF EXISTS v_Basic;
+
 CREATE TABLE v_Basic (
     Id TEXT PRIMARY KEY,
     Site TEXT,
@@ -201,6 +288,21 @@ INSERT INTO v_ReplaceRecord VALUES ('basic-01', 'S01', '刀具A', 'BARCODE-OLD',
 INSERT INTO v_exceedlimitinfo VALUES ('basic-01', '刀具A', 30, 30, '2025-01-02 08:00:00');
 """;
         command.ExecuteNonQuery();
+
+        if (!includeThresholdColumns)
+        {
+            return;
+        }
+
+        using var thresholdCommand = connection.CreateCommand();
+        thresholdCommand.CommandText = $"""
+ALTER TABLE v_VulnerableParts ADD COLUMN WarningLifetimeThreshold REAL;
+ALTER TABLE v_VulnerableParts ADD COLUMN ShutdownLifetimeThreshold REAL;
+UPDATE v_VulnerableParts
+SET WarningLifetimeThreshold = {warningLifetimeThreshold.ToString(System.Globalization.CultureInfo.InvariantCulture)},
+    ShutdownLifetimeThreshold = {shutdownLifetimeThreshold.ToString(System.Globalization.CultureInfo.InvariantCulture)};
+""";
+        thresholdCommand.ExecuteNonQuery();
     }
 
     private static void TryDelete(string path)

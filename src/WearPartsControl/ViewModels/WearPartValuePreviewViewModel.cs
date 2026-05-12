@@ -1,8 +1,10 @@
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
+using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.LoginService;
 using WearPartsControl.ApplicationServices.PartServices;
@@ -14,6 +16,7 @@ public sealed class WearPartValuePreviewViewModel : LocalizedViewModelBase
     private const int MinimumAccessLevelForThresholdSync = 4;
 
     private readonly IClientAppInfoService _clientAppInfoService;
+    private readonly IAppDialogService _dialogService;
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly IWearPartValuePreviewService _wearPartValuePreviewService;
     private readonly IUiDispatcher _uiDispatcher;
@@ -23,7 +26,6 @@ public sealed class WearPartValuePreviewViewModel : LocalizedViewModelBase
     private bool _isInitialized;
     private int _normalCount;
     private string _resourceNumber = string.Empty;
-    private WearPartValuePreviewRowViewModel? _selectedItem;
     private int _shutdownCount;
     private string _statusMessage = LocalizedText.Get("ViewModels.WearPartValuePreviewVm.PromptLoadCurrent");
     private Func<string>? _statusMessageFactory;
@@ -32,43 +34,28 @@ public sealed class WearPartValuePreviewViewModel : LocalizedViewModelBase
 
     public WearPartValuePreviewViewModel(
         IClientAppInfoService clientAppInfoService,
+        IAppDialogService dialogService,
         ICurrentUserAccessor currentUserAccessor,
         IWearPartValuePreviewService wearPartValuePreviewService,
         IUiDispatcher uiDispatcher,
         IUiBusyService uiBusyService)
     {
         _clientAppInfoService = clientAppInfoService;
+        _dialogService = dialogService;
         _currentUserAccessor = currentUserAccessor;
         _wearPartValuePreviewService = wearPartValuePreviewService;
         _uiDispatcher = uiDispatcher;
         _uiBusyService = uiBusyService;
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync(CancellationToken.None), CanRefresh);
-        EditThresholdsCommand = new RelayCommand(RequestThresholdEdit, CanEditThresholds);
         SyncThresholdsCommand = new AsyncRelayCommand(SyncThresholdsAsync, CanSyncThresholds);
         SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.WearPartValuePreviewVm.PromptLoadCurrent"));
     }
-
-    public event EventHandler<WearPartValuePreviewRowViewModel>? ThresholdEditRequested;
 
     public ObservableCollection<WearPartValuePreviewRowViewModel> Items { get; } = new();
 
     public IAsyncRelayCommand RefreshCommand { get; }
 
-    public IRelayCommand EditThresholdsCommand { get; }
-
     public IAsyncRelayCommand SyncThresholdsCommand { get; }
-
-    public WearPartValuePreviewRowViewModel? SelectedItem
-    {
-        get => _selectedItem;
-        set
-        {
-            if (SetProperty(ref _selectedItem, value))
-            {
-                EditThresholdsCommand.NotifyCanExecuteChanged();
-            }
-        }
-    }
 
     public string ResourceNumber
     {
@@ -109,7 +96,6 @@ public sealed class WearPartValuePreviewViewModel : LocalizedViewModelBase
             {
                 OnPropertyChanged(nameof(IsNotBusy));
                 RefreshCommand.NotifyCanExecuteChanged();
-                EditThresholdsCommand.NotifyCanExecuteChanged();
                 SyncThresholdsCommand.NotifyCanExecuteChanged();
             }
         }
@@ -185,6 +171,17 @@ public sealed class WearPartValuePreviewViewModel : LocalizedViewModelBase
             return;
         }
 
+        var confirmationResult = _dialogService.ShowMessage(
+            LocalizedText.Format("ViewModels.WearPartValuePreviewVm.SyncConfirmationMessage", ResourceNumber),
+            LocalizedText.Get("ViewModels.WearPartValuePreviewVm.SyncConfirmationTitle"),
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning,
+            defaultResult: MessageBoxResult.No);
+        if (confirmationResult != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
         IsBusy = true;
         SetLocalizedStatusMessage(() => LocalizedText.Get("ViewModels.WearPartValuePreviewVm.SyncingConfiguredThresholds"));
         using var _ = _uiBusyService.Enter(LocalizedText.Get("ViewModels.WearPartValuePreviewVm.SyncingConfiguredThresholds"));
@@ -225,28 +222,11 @@ public sealed class WearPartValuePreviewViewModel : LocalizedViewModelBase
 
     private bool CanRefresh() => !IsBusy;
 
-    private bool CanEditThresholds()
-    {
-        return !IsBusy
-            && SelectedItem is not null
-            && _currentUserAccessor.CurrentUser?.AccessLevel >= MinimumAccessLevelForThresholdSync;
-    }
-
     private bool CanSyncThresholds()
     {
         return !IsBusy
             && _canSyncConfiguredThresholds
             && _currentUserAccessor.CurrentUser?.AccessLevel >= MinimumAccessLevelForThresholdSync;
-    }
-
-    private void RequestThresholdEdit()
-    {
-        if (SelectedItem is null)
-        {
-            return;
-        }
-
-        ThresholdEditRequested?.Invoke(this, SelectedItem);
     }
 
     private void ResetSummary()
@@ -260,7 +240,6 @@ public sealed class WearPartValuePreviewViewModel : LocalizedViewModelBase
     private void ApplyPreviews(IReadOnlyCollection<WearPartValuePreviewItem> previews)
     {
         Items.Clear();
-        SelectedItem = null;
         ResetSummary();
 
         foreach (var preview in previews)

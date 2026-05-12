@@ -91,9 +91,6 @@
                                 hc:IconElement.Geometry="{StaticResource DropperGeometry}"
                                 Content="{loc:Loc PartManagementControl.EditButton}" />
                         <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
-                            Command="{Binding EditThresholdsCommand}"
-                            Content="{loc:Loc PartManagementControl.EditThresholdsButton}" />
-                        <Button Style="{StaticResource ShellToolbarPrimaryButtonStyle}"
                                 Command="{Binding DeleteCommand}"
                                 hc:IconElement.Geometry="{StaticResource DeleteGeometry}"
                                 Content="{loc:Loc PartManagementControl.DeleteButton}" />

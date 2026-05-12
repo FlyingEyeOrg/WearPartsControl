@@ -235,6 +235,32 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                   Text="{loc:Loc PartInfoControl.WarningLifetimeThresholdLabel}" />
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding WarningLifetimeThreshold, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource TextBoxExtend}"
+                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.WarningLifetimeThresholdPlaceholder}" />
+                    </Grid>
+                    <Grid Style="{StaticResource FormRowGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
+                                   Text="{loc:Loc PartInfoControl.ShutdownLifetimeThresholdLabel}" />
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding ShutdownLifetimeThreshold, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource TextBoxExtend}"
+                                 hc:InfoElement.Placeholder="{loc:Loc PartInfoControl.ShutdownLifetimeThresholdPlaceholder}" />
+                    </Grid>
+                    <Grid Style="{StaticResource FormRowGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"
+                                              SharedSizeGroup="PartInfoLabelColumn" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource FormLabelTextBlockStyle}"
                                    Text="{loc:Loc PartInfoControl.InputModeLabel}" />
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding InputModes}"

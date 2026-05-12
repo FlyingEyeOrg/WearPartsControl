@@ -51,6 +51,36 @@ public sealed class PartEditorWindowXamlLoadTests
     }
 
     [Fact]
+    public async Task EditPartWindowViewModel_InitializeForEditAsync_ShouldExposeThresholdFields()
+    {
+        var viewModel = new EditPartWindowViewModel(new StubWearPartManagementService(), new StubWearPartTypeService(), new UiBusyService(TimeSpan.Zero));
+
+        await viewModel.InitializeForEditAsync(new WearPartDefinition
+        {
+            Id = Guid.NewGuid(),
+            ClientAppConfigurationId = Guid.NewGuid(),
+            ResourceNumber = "RES-01",
+            PartName = "刀具A",
+            InputMode = "Manual",
+            CurrentValueAddress = "DB1.0",
+            CurrentValueDataType = "FLOAT",
+            WarningValueAddress = "DB1.1",
+            WarningValueDataType = "FLOAT",
+            ShutdownValueAddress = "DB1.2",
+            ShutdownValueDataType = "FLOAT",
+            WarningLifetimeThreshold = 20,
+            ShutdownLifetimeThreshold = 30,
+            LifetimeType = "Count",
+            CodeMinLength = 1,
+            CodeMaxLength = 32,
+            WearPartTypeId = Guid.NewGuid()
+        });
+
+        Assert.Equal("20", viewModel.WarningLifetimeThreshold);
+        Assert.Equal("30", viewModel.ShutdownLifetimeThreshold);
+    }
+
+    [Fact]
     public void WearPartThresholdWindow_ShouldLoadWithoutXamlParseException()
     {
         RunWithEnglishCulture(() =>

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -48,8 +49,8 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
     private string _warningValueDataType = DefaultCreateDataType;
     private string _shutdownValueAddress = string.Empty;
     private string _shutdownValueDataType = DefaultCreateDataType;
-    private double _warningLifetimeThreshold;
-    private double _shutdownLifetimeThreshold;
+    private string _warningLifetimeThreshold = string.Empty;
+    private string _shutdownLifetimeThreshold = string.Empty;
     private bool _isShutdown;
     private string _codeMinLength = DefaultCreateCodeMinLength;
     private string _codeMaxLength = DefaultCreateCodeMaxLength;
@@ -182,6 +183,18 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
         set => SetEditorProperty(ref _shutdownValueDataType, value);
     }
 
+    public string WarningLifetimeThreshold
+    {
+        get => _warningLifetimeThreshold;
+        set => SetEditorProperty(ref _warningLifetimeThreshold, value);
+    }
+
+    public string ShutdownLifetimeThreshold
+    {
+        get => _shutdownLifetimeThreshold;
+        set => SetEditorProperty(ref _shutdownLifetimeThreshold, value);
+    }
+
     public bool IsShutdown
     {
         get => _isShutdown;
@@ -238,8 +251,8 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
         WarningValueDataType = DefaultCreateDataType;
         ShutdownValueAddress = string.Empty;
         ShutdownValueDataType = DefaultCreateDataType;
-        _warningLifetimeThreshold = 0d;
-        _shutdownLifetimeThreshold = 0d;
+        WarningLifetimeThreshold = string.Empty;
+        ShutdownLifetimeThreshold = string.Empty;
         IsShutdown = false;
         CodeMinLength = DefaultCreateCodeMinLength;
         CodeMaxLength = DefaultCreateCodeMaxLength;
@@ -270,8 +283,8 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
         WarningValueDataType = definition.WarningValueDataType;
         ShutdownValueAddress = definition.ShutdownValueAddress;
         ShutdownValueDataType = definition.ShutdownValueDataType;
-        _warningLifetimeThreshold = definition.WarningLifetimeThreshold;
-        _shutdownLifetimeThreshold = definition.ShutdownLifetimeThreshold;
+        WarningLifetimeThreshold = FormatThreshold(definition.WarningLifetimeThreshold);
+        ShutdownLifetimeThreshold = FormatThreshold(definition.ShutdownLifetimeThreshold);
         IsShutdown = definition.IsShutdown;
         CodeMinLength = definition.CodeMinLength.ToString();
         CodeMaxLength = definition.CodeMaxLength.ToString();
@@ -300,6 +313,8 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
             && !string.IsNullOrWhiteSpace(WarningValueDataType)
             && !string.IsNullOrWhiteSpace(ShutdownValueAddress)
             && !string.IsNullOrWhiteSpace(ShutdownValueDataType)
+            && !string.IsNullOrWhiteSpace(WarningLifetimeThreshold)
+            && !string.IsNullOrWhiteSpace(ShutdownLifetimeThreshold)
             && !string.IsNullOrWhiteSpace(LifetimeType)
             && SelectedWearPartTypeId.HasValue
             && int.TryParse(CodeMinLength?.Trim(), out _)
@@ -345,6 +360,18 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
             throw new UserFriendlyException(LocalizedText.Get("ViewModels.WearPartEditorVm.CodeMaxInvalid"));
         }
 
+        var warningLifetimeThreshold = ParseThreshold(
+            WarningLifetimeThreshold,
+            LocalizedText.Get("Services.WearPartThreshold.WarningThresholdInvalid"));
+        var shutdownLifetimeThreshold = ParseThreshold(
+            ShutdownLifetimeThreshold,
+            LocalizedText.Get("Services.WearPartThreshold.ShutdownThresholdInvalid"));
+
+        if (warningLifetimeThreshold >= shutdownLifetimeThreshold)
+        {
+            throw new UserFriendlyException(LocalizedText.Get("Services.WearPartThreshold.ThresholdOrderInvalid"));
+        }
+
         return new WearPartDefinition
         {
             Id = _id,
@@ -358,8 +385,8 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
             WarningValueDataType = WarningValueDataType,
             ShutdownValueAddress = ShutdownValueAddress,
             ShutdownValueDataType = ShutdownValueDataType,
-            WarningLifetimeThreshold = _warningLifetimeThreshold,
-            ShutdownLifetimeThreshold = _shutdownLifetimeThreshold,
+            WarningLifetimeThreshold = warningLifetimeThreshold,
+            ShutdownLifetimeThreshold = shutdownLifetimeThreshold,
             IsShutdown = IsShutdown,
             CodeMinLength = codeMinLength,
             CodeMaxLength = codeMaxLength,
@@ -394,6 +421,36 @@ public abstract class WearPartEditorViewModelBase : LocalizedViewModelBase
     private void Cancel()
     {
         RequestClose?.Invoke(this, false);
+    }
+
+    private static double ParseThreshold(string? text, string invalidMessage)
+    {
+        var normalized = text?.Trim();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            throw new UserFriendlyException(invalidMessage);
+        }
+
+        if (double.TryParse(normalized, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var invariantValue)
+            && double.IsFinite(invariantValue)
+            && invariantValue > 0d)
+        {
+            return invariantValue;
+        }
+
+        if (double.TryParse(normalized, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.CurrentCulture, out var currentCultureValue)
+            && double.IsFinite(currentCultureValue)
+            && currentCultureValue > 0d)
+        {
+            return currentCultureValue;
+        }
+
+        throw new UserFriendlyException(invalidMessage);
+    }
+
+    private static string FormatThreshold(double value)
+    {
+        return value.ToString("0.##", CultureInfo.InvariantCulture);
     }
 
     private async Task EnsureMinimumBusyDurationAsync(DateTimeOffset busyEnteredAt, CancellationToken cancellationToken = default)
