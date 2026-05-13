@@ -1,4 +1,6 @@
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.LoginService;
+using WearPartsControl.ApplicationServices.MonitoringLogs;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.Domain.Entities;
 using WearPartsControl.Domain.Repositories;
@@ -13,17 +15,20 @@ public sealed class WearPartValuePreviewService : ApplicationServiceBase, IWearP
     private readonly IClientAppConfigurationRepository _clientAppConfigurationRepository;
     private readonly IWearPartRepository _wearPartRepository;
     private readonly IPlcOperationPipeline _plcOperationPipeline;
+    private readonly IWearPartMonitoringLogPipeline? _monitoringLogPipeline;
 
     public WearPartValuePreviewService(
         ICurrentUserAccessor currentUserAccessor,
         IClientAppConfigurationRepository clientAppConfigurationRepository,
         IWearPartRepository wearPartRepository,
-        IPlcOperationPipeline plcOperationPipeline)
+        IPlcOperationPipeline plcOperationPipeline,
+        IWearPartMonitoringLogPipeline? monitoringLogPipeline = null)
         : base(currentUserAccessor)
     {
         _clientAppConfigurationRepository = clientAppConfigurationRepository;
         _wearPartRepository = wearPartRepository;
         _plcOperationPipeline = plcOperationPipeline;
+        _monitoringLogPipeline = monitoringLogPipeline;
     }
 
     public async Task<IReadOnlyList<WearPartValuePreviewItem>> GetByResourceNumberAsync(string resourceNumber, CancellationToken cancellationToken = default)
@@ -40,7 +45,7 @@ public sealed class WearPartValuePreviewService : ApplicationServiceBase, IWearP
 
     public async Task<IReadOnlyList<WearPartValuePreviewItem>> SyncConfiguredThresholdsToDeviceAsync(string resourceNumber, CancellationToken cancellationToken = default)
     {
-        EnsureAccessLevel(MinimumAccessLevelForThresholdSync);
+        var currentUser = EnsureAccessLevel(MinimumAccessLevelForThresholdSync);
 
         var context = await LoadPreviewContextAsync(resourceNumber, cancellationToken).ConfigureAwait(false);
         if (context.Definitions.Count == 0)
@@ -48,17 +53,65 @@ public sealed class WearPartValuePreviewService : ApplicationServiceBase, IWearP
             return [];
         }
 
-        await ConnectAsync(PlcWearPartThresholdOperations.Connect, context.ClientAppConfiguration, cancellationToken).ConfigureAwait(false);
-
-        foreach (var definition in context.Definitions)
+        try
         {
-            ValidateThresholds(definition);
+            await ConnectAsync(PlcWearPartThresholdOperations.Connect, context.ClientAppConfiguration, cancellationToken).ConfigureAwait(false);
+
+            foreach (var definition in context.Definitions)
+            {
+                ValidateThresholds(definition);
+            }
+
+            await EnsureAllThresholdValuesReadableAsync(context.Definitions, cancellationToken).ConfigureAwait(false);
+            await WriteConfiguredThresholdsAsync(context.Definitions, cancellationToken).ConfigureAwait(false);
+
+            var previews = await BuildPreviewItemsAsync(context.ClientAppConfiguration, context.Definitions, cancellationToken).ConfigureAwait(false);
+            PublishThresholdSyncLog(
+                WearPartMonitoringLogLevel.Information,
+                LocalizedText.Format(
+                    "Services.WearPartMonitoringLog.ThresholdSyncSucceeded",
+                    context.ClientAppConfiguration.ResourceNumber,
+                    context.Definitions.Count,
+                    GetOperatorWorkId(currentUser)),
+                context.ClientAppConfiguration.ResourceNumber);
+            return previews;
         }
+        catch (Exception ex)
+        {
+            PublishThresholdSyncLog(
+                WearPartMonitoringLogLevel.Error,
+                LocalizedText.Format(
+                    "Services.WearPartMonitoringLog.ThresholdSyncFailed",
+                    context.ClientAppConfiguration.ResourceNumber,
+                    GetOperatorWorkId(currentUser),
+                    ex.Message),
+                context.ClientAppConfiguration.ResourceNumber,
+                ex);
+            throw;
+        }
+    }
 
-        await EnsureAllThresholdValuesReadableAsync(context.Definitions, cancellationToken).ConfigureAwait(false);
-        await WriteConfiguredThresholdsAsync(context.Definitions, cancellationToken).ConfigureAwait(false);
+    private void PublishThresholdSyncLog(
+        WearPartMonitoringLogLevel level,
+        string message,
+        string resourceNumber,
+        Exception? exception = null)
+    {
+        _monitoringLogPipeline?.Publish(
+            level,
+            WearPartMonitoringLogCategory.Service,
+            message,
+            operationName: nameof(SyncConfiguredThresholdsToDeviceAsync),
+            resourceNumber: resourceNumber,
+            details: exception?.Message,
+            exception: exception);
+    }
 
-        return await BuildPreviewItemsAsync(context.ClientAppConfiguration, context.Definitions, cancellationToken).ConfigureAwait(false);
+    private static string GetOperatorWorkId(MhrUser currentUser)
+    {
+        return string.IsNullOrWhiteSpace(currentUser.WorkId)
+            ? string.Empty
+            : currentUser.WorkId.Trim();
     }
 
     private static string NormalizeRequired(string? value, string errorMessage)

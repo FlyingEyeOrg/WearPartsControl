@@ -819,6 +819,8 @@
       "MonitorEnableFailed": "Failed to enable wear part monitoring: {0}",
       "MonitorEnabled": "Wear part monitoring enabled.",
       "MonitorDisabled": "Wear part monitoring disabled.",
+      "ThresholdSyncSucceeded": "Synchronized {1} wear part threshold value(s) to device for resource {0}. Operator work ID: {2}.",
+      "ThresholdSyncFailed": "Failed to synchronize wear part threshold values to device for resource {0}. Operator work ID: {1}. Reason: {2}",
       "PlcOperationSucceeded": "PLC operation succeeded: {0}, elapsed {1:0.##} ms.",
       "PlcOperationSlow": "PLC operation was slow: {0}, elapsed {1:0.##} ms.",
       "PlcOperationFailed": "PLC operation failed: {0}, elapsed {1:0.##} ms, reason: {2}",

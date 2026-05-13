@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using WearPartsControl.ApplicationServices;
 using WearPartsControl.ApplicationServices.ComNotification;
 using WearPartsControl.ApplicationServices.Localization;
+using WearPartsControl.ApplicationServices.MonitoringLogs;
 using WearPartsControl.ApplicationServices.PartServices;
 using WearPartsControl.ApplicationServices.PlcService;
 using WearPartsControl.ApplicationServices.SaveInfoService;
@@ -1454,6 +1455,33 @@ public sealed class WearPartOperationalServicesTests : IDisposable
     }
 
     [Fact]
+    public async Task SyncConfiguredThresholdsToDeviceAsync_ShouldPublishMonitoringLogWithOperatorWorkNumber()
+    {
+        await SeedAsync("R-PREVIEW-LOG", "M1.81");
+        var plcService = new FakePlcService();
+        plcService.SetValue("DB1.0", 30);
+        plcService.SetValue("DB1.1", 12);
+        plcService.SetValue("DB1.2", 18);
+        var monitoringLogPipeline = new WearPartMonitoringLogPipeline();
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var service = CreateValuePreviewService(
+            dbContext,
+            CreateCurrentUserAccessor(accessLevel: 4, workId: "WORK-SYNC"),
+            plcService,
+            monitoringLogPipeline);
+
+        await service.SyncConfiguredThresholdsToDeviceAsync("R-PREVIEW-LOG");
+
+        var entry = Assert.Single(monitoringLogPipeline.Snapshot());
+        Assert.Equal(WearPartMonitoringLogLevel.Information, entry.Level);
+        Assert.Equal(WearPartMonitoringLogCategory.Service, entry.Category);
+        Assert.Equal(nameof(WearPartValuePreviewService.SyncConfiguredThresholdsToDeviceAsync), entry.OperationName);
+        Assert.Equal("R-PREVIEW-LOG", entry.ResourceNumber);
+        Assert.Contains("WORK-SYNC", entry.Message);
+    }
+
+    [Fact]
     public async Task SyncConfiguredThresholdsToDeviceAsync_WhenAnyThresholdCannotBeRead_ShouldNotWriteAnyValue()
     {
         await SeedAsync("R-PREVIEW-03", "M1.7");
@@ -1710,7 +1738,8 @@ public sealed class WearPartOperationalServicesTests : IDisposable
     private static WearPartValuePreviewService CreateValuePreviewService(
         WearPartsControlDbContext dbContext,
         ICurrentUserAccessor currentUserAccessor,
-        IPlcService plcService)
+        IPlcService plcService,
+        IWearPartMonitoringLogPipeline? monitoringLogPipeline = null)
     {
         var plcOperationPipeline = new PlcOperationPipeline(plcService, Microsoft.Extensions.Logging.Abstractions.NullLogger<PlcOperationPipeline>.Instance);
 
@@ -1718,7 +1747,8 @@ public sealed class WearPartOperationalServicesTests : IDisposable
             currentUserAccessor,
             new ClientAppConfigurationRepository(dbContext),
             new WearPartRepository(dbContext, new WearPartDefinitionDomainService()),
-            plcOperationPipeline);
+            plcOperationPipeline,
+            monitoringLogPipeline);
     }
 
     private static WearPartThresholdService CreateThresholdService(

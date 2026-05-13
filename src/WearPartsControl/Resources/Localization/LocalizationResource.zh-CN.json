@@ -819,6 +819,8 @@
       "MonitorEnableFailed": "开启易损件监控失败：{0}",
       "MonitorEnabled": "易损件监控已开启。",
       "MonitorDisabled": "易损件监控已关闭。",
+      "ThresholdSyncSucceeded": "已将资源号 {0} 的 {1} 条易损件阈值同步到设备，操作人工号 {2}。",
+      "ThresholdSyncFailed": "同步资源号 {0} 的易损件阈值到设备失败，操作人工号 {1}，原因：{2}",
       "PlcOperationSucceeded": "PLC 操作成功：{0}，耗时 {1:0.##} ms。",
       "PlcOperationSlow": "PLC 操作耗时偏长：{0}，耗时 {1:0.##} ms。",
       "PlcOperationFailed": "PLC 操作失败：{0}，耗时 {1:0.##} ms，原因：{2}",
