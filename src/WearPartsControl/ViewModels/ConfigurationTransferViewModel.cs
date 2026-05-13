@@ -12,6 +12,7 @@ public sealed class ConfigurationTransferViewModel : LocalizedViewModelBase
 {
     private readonly IConfigurationTransferService _configurationTransferService;
     private readonly IAppSettingsService _appSettingsService;
+    private readonly IUiDispatcher _uiDispatcher;
     private readonly IUiBusyService _uiBusyService;
     private bool _isBusy;
     private bool _canImport;
@@ -23,10 +24,12 @@ public sealed class ConfigurationTransferViewModel : LocalizedViewModelBase
     public ConfigurationTransferViewModel(
         IConfigurationTransferService configurationTransferService,
         IAppSettingsService appSettingsService,
+        IUiDispatcher uiDispatcher,
         IUiBusyService uiBusyService)
     {
         _configurationTransferService = configurationTransferService;
         _appSettingsService = appSettingsService;
+        _uiDispatcher = uiDispatcher;
         _uiBusyService = uiBusyService;
         ExportCommand = new RelayCommand(RequestExport, CanTransfer);
         ImportCommand = new RelayCommand(RequestImport, CanImportConfiguration);
@@ -101,11 +104,6 @@ public sealed class ConfigurationTransferViewModel : LocalizedViewModelBase
     public async Task ImportAsync(string packagePath, CancellationToken cancellationToken = default)
     {
         await RefreshImportAvailabilityAsync(cancellationToken).ConfigureAwait(true);
-        if (!CanImport)
-        {
-            throw new UserFriendlyException(LocalizedText.Get("Services.ConfigurationTransfer.ImportRequiresUnconfiguredClient"));
-        }
-
         await RunTransferAsync(
             () => LocalizedText.Get("ViewModels.ConfigurationTransferVm.Importing"),
             async () =>
@@ -147,11 +145,11 @@ public sealed class ConfigurationTransferViewModel : LocalizedViewModelBase
     private async Task RefreshImportAvailabilityAsync(CancellationToken cancellationToken)
     {
         var settings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(true);
-        var canImport = !settings.IsSetClientAppInfo && string.IsNullOrWhiteSpace(settings.ResourceNumber);
-        CanImport = canImport;
-        SetLocalizedImportAvailabilityMessage(() => canImport
-            ? LocalizedText.Get("ViewModels.ConfigurationTransferVm.ImportAvailable")
-            : LocalizedText.Get("ViewModels.ConfigurationTransferVm.ImportUnavailableConfigured"));
+        var hasConfiguredClientAppInfo = settings.IsSetClientAppInfo && !string.IsNullOrWhiteSpace(settings.ResourceNumber);
+        CanImport = true;
+        SetLocalizedImportAvailabilityMessage(() => hasConfiguredClientAppInfo
+            ? LocalizedText.Get("ViewModels.ConfigurationTransferVm.ImportUnavailableConfigured")
+            : LocalizedText.Get("ViewModels.ConfigurationTransferVm.ImportAvailable"));
     }
 
     private async Task RunTransferAsync(Func<string> busyMessageFactory, Func<Task> operation)
@@ -159,6 +157,7 @@ public sealed class ConfigurationTransferViewModel : LocalizedViewModelBase
         IsBusy = true;
         SetLocalizedStatusMessage(busyMessageFactory);
         using var busyScope = _uiBusyService.Enter(busyMessageFactory());
+        await _uiDispatcher.RenderAsync().ConfigureAwait(true);
 
         try
         {
