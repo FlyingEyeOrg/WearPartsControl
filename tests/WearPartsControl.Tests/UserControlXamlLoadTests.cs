@@ -195,6 +195,7 @@ public sealed class UserControlXamlLoadTests
                 new ConfigurationTransferViewModel(
                     new StubConfigurationTransferService(),
                     new StubAppSettingsService(),
+                    new StubUiDispatcher(),
                     new UiBusyService(TimeSpan.Zero)),
                 new StubFileDialogService(),
                 new StubAppDialogService());
