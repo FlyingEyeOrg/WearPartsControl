@@ -6,5 +6,6 @@
     "SlowExecutionThresholdMilliseconds": 500
   },
   "IsSetClientAppInfo": false,
-  "IsWearPartMonitoringEnabled": false
+  "IsWearPartMonitoringEnabled": false,
+  "IsThresholdSyncToDeviceEnabled": false
 }

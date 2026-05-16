@@ -88,7 +88,8 @@ public sealed class AppSettingsService : IAppSettingsService
                     : plcPipeline.SlowExecutionThresholdMilliseconds
             },
             IsSetClientAppInfo = settings.IsSetClientAppInfo,
-            IsWearPartMonitoringEnabled = settings.IsWearPartMonitoringEnabled
+            IsWearPartMonitoringEnabled = settings.IsWearPartMonitoringEnabled,
+            IsThresholdSyncToDeviceEnabled = settings.IsThresholdSyncToDeviceEnabled
         };
     }
 
@@ -112,7 +113,8 @@ public sealed class AppSettingsService : IAppSettingsService
                 SlowExecutionThresholdMilliseconds = settings.PlcPipeline.SlowExecutionThresholdMilliseconds
             },
             IsSetClientAppInfo = settings.IsSetClientAppInfo,
-            IsWearPartMonitoringEnabled = settings.IsWearPartMonitoringEnabled
+            IsWearPartMonitoringEnabled = settings.IsWearPartMonitoringEnabled,
+            IsThresholdSyncToDeviceEnabled = settings.IsThresholdSyncToDeviceEnabled
         };
     }
 }

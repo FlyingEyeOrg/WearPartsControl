@@ -42,4 +42,9 @@ public sealed class AppSettings
     /// 是否启用易损件后台监控。
     /// </summary>
     public bool IsWearPartMonitoringEnabled { get; set; }
+
+    /// <summary>
+    /// 是否允许将寿命阈值同步写入设备。
+    /// </summary>
+    public bool IsThresholdSyncToDeviceEnabled { get; set; }
 }

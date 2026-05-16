@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.Dialogs;
 using WearPartsControl.ApplicationServices.Localization;
@@ -15,6 +16,7 @@ public sealed class WearPartValuePreviewViewModel : LocalizedViewModelBase
 {
     private const int MinimumAccessLevelForThresholdSync = 4;
 
+    private readonly IAppSettingsService _appSettingsService;
     private readonly IClientAppInfoService _clientAppInfoService;
     private readonly IAppDialogService _dialogService;
     private readonly ICurrentUserAccessor _currentUserAccessor;
@@ -24,6 +26,7 @@ public sealed class WearPartValuePreviewViewModel : LocalizedViewModelBase
     private bool _canSyncConfiguredThresholds;
     private bool _isBusy;
     private bool _isInitialized;
+    private bool _isThresholdSyncToDeviceEnabled;
     private int _normalCount;
     private string _resourceNumber = string.Empty;
     private int _shutdownCount;
@@ -33,6 +36,7 @@ public sealed class WearPartValuePreviewViewModel : LocalizedViewModelBase
     private int _warningCount;
 
     public WearPartValuePreviewViewModel(
+        IAppSettingsService appSettingsService,
         IClientAppInfoService clientAppInfoService,
         IAppDialogService dialogService,
         ICurrentUserAccessor currentUserAccessor,
@@ -40,6 +44,7 @@ public sealed class WearPartValuePreviewViewModel : LocalizedViewModelBase
         IUiDispatcher uiDispatcher,
         IUiBusyService uiBusyService)
     {
+        _appSettingsService = appSettingsService;
         _clientAppInfoService = clientAppInfoService;
         _dialogService = dialogService;
         _currentUserAccessor = currentUserAccessor;
@@ -134,6 +139,8 @@ public sealed class WearPartValuePreviewViewModel : LocalizedViewModelBase
 
         try
         {
+            var settings = await _appSettingsService.GetAsync(cancellationToken).ConfigureAwait(true);
+            _isThresholdSyncToDeviceEnabled = settings.IsThresholdSyncToDeviceEnabled;
             var clientInfo = await _clientAppInfoService.GetAsync(cancellationToken).ConfigureAwait(true);
             ResourceNumber = clientInfo.ResourceNumber?.Trim() ?? string.Empty;
             ApplyPreviews([]);
@@ -225,6 +232,7 @@ public sealed class WearPartValuePreviewViewModel : LocalizedViewModelBase
     private bool CanSyncThresholds()
     {
         return !IsBusy
+            && _isThresholdSyncToDeviceEnabled
             && _canSyncConfiguredThresholds
             && _currentUserAccessor.CurrentUser?.AccessLevel >= MinimumAccessLevelForThresholdSync;
     }
