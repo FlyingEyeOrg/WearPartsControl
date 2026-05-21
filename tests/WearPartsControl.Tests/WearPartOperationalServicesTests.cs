@@ -1892,7 +1892,7 @@ public sealed class WearPartOperationalServicesTests : IDisposable
     {
         public List<string> Notifications { get; } = new();
 
-        public ValueTask ShowIfNeededAsync(string title, string markdown, DateTime occurredAt, CancellationToken cancellationToken = default)
+        public ValueTask ShowIfNeededAsync(Guid wearPartId, string title, string markdown, DateTime occurredAt, CancellationToken cancellationToken = default)
         {
             Notifications.Add($"{title}:{markdown}");
             return ValueTask.CompletedTask;

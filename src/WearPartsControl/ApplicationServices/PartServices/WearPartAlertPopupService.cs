@@ -24,7 +24,7 @@ public sealed class WearPartAlertPopupService : IWearPartAlertPopupService
         _logger = logger ?? NullLogger<WearPartAlertPopupService>.Instance;
     }
 
-    public async ValueTask ShowIfNeededAsync(string title, string markdown, DateTime occurredAt, CancellationToken cancellationToken = default)
+    public async ValueTask ShowIfNeededAsync(Guid wearPartId, string title, string markdown, DateTime occurredAt, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(markdown))
         {
@@ -33,14 +33,14 @@ public sealed class WearPartAlertPopupService : IWearPartAlertPopupService
 
         var state = await _saveInfoStore.ReadAsync<WearPartAlertPopupSaveInfo>(cancellationToken).ConfigureAwait(false);
         var localDate = occurredAt.ToLocalTime().Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        if (string.Equals(state.LastShownLocalDate, localDate, StringComparison.Ordinal))
+        if (state.PartDailyStates.TryGetValue(wearPartId, out var lastDate) && string.Equals(lastDate, localDate, StringComparison.Ordinal))
         {
             return;
         }
 
         QueuePopup(title, markdown);
 
-        state.LastShownLocalDate = localDate;
+        state.PartDailyStates[wearPartId] = localDate;
         await _saveInfoStore.WriteAsync(state, cancellationToken).ConfigureAwait(false);
     }
 

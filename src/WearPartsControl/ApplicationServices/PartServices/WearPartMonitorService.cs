@@ -207,7 +207,7 @@ public sealed class WearPartMonitorService : ApplicationServiceBase, IWearPartMo
             PublishServiceLog(WearPartMonitoringLogLevel.Error, LocalizedText.Format("Services.WearPartMonitoringLog.ComFailed", LocalizedText.Get("ComNotification.GroupMessageScene"), ex.Message), clientAppConfiguration.ResourceNumber, exception: ex);
         }
 
-        await _wearPartAlertPopupService.ShowIfNeededAsync(message.Title, message.Markdown, occurredAt, cancellationToken).ConfigureAwait(false);
+        await _wearPartAlertPopupService.ShowIfNeededAsync(definition.Id, message.Title, message.Markdown, occurredAt, cancellationToken).ConfigureAwait(false);
 
         PublishServiceLog(WearPartMonitoringLogLevel.Warning, LocalizedText.Format("Services.WearPartMonitoringLog.MonitorNotificationTriggered", definition.PartName, severity), clientAppConfiguration.ResourceNumber);
 

@@ -11,19 +11,21 @@ public sealed class WearPartAlertPopupServiceTests : IDisposable
     private readonly string _settingsDirectory = Path.Combine(Path.GetTempPath(), $"wear-part-alert-popup-{Guid.NewGuid():N}");
 
     [Fact]
-    public async Task ShowIfNeededAsync_WhenSameDayRepeated_ShouldOnlyShowOnce()
+    public async Task ShowIfNeededAsync_WhenSamePartSameDayRepeated_ShouldOnlyShowOnce()
     {
         var store = new TypeJsonSaveInfoStore(_settingsDirectory);
         var presenter = new FakeWearPartAlertPresenter();
         var service = new WearPartAlertPopupService(store, new ImmediateUiDispatcher(), presenter);
+        var partId = Guid.NewGuid();
 
-        await service.ShowIfNeededAsync("预警通知", "# 通知\n\n- **易损件**：刀具A", new DateTime(2026, 4, 27, 8, 0, 0, DateTimeKind.Local));
-        await service.ShowIfNeededAsync("停机通知", "# 通知\n\n- **易损件**：刀具A", new DateTime(2026, 4, 27, 12, 0, 0, DateTimeKind.Local));
+        await service.ShowIfNeededAsync(partId, "预警通知", "# 通知\n\n- **易损件**：刀具A", new DateTime(2026, 4, 27, 8, 0, 0, DateTimeKind.Local));
+        await service.ShowIfNeededAsync(partId, "停机通知", "# 通知\n\n- **易损件**：刀具A", new DateTime(2026, 4, 27, 12, 0, 0, DateTimeKind.Local));
 
         Assert.Equal(1, presenter.ShowCount);
 
         var state = await store.ReadAsync<WearPartAlertPopupSaveInfo>();
-        Assert.Equal("2026-04-27", state.LastShownLocalDate);
+        Assert.True(state.PartDailyStates.TryGetValue(partId, out var lastDate));
+        Assert.Equal("2026-04-27", lastDate);
     }
 
     [Fact]
@@ -32,11 +34,32 @@ public sealed class WearPartAlertPopupServiceTests : IDisposable
         var store = new TypeJsonSaveInfoStore(_settingsDirectory);
         var presenter = new FakeWearPartAlertPresenter();
         var service = new WearPartAlertPopupService(store, new ImmediateUiDispatcher(), presenter);
+        var partId = Guid.NewGuid();
 
-        await service.ShowIfNeededAsync("预警通知", "# 通知\n\n- **易损件**：刀具A", new DateTime(2026, 4, 27, 8, 0, 0, DateTimeKind.Local));
-        await service.ShowIfNeededAsync("预警通知", "# 通知\n\n- **易损件**：刀具A", new DateTime(2026, 4, 28, 8, 0, 0, DateTimeKind.Local));
+        await service.ShowIfNeededAsync(partId, "预警通知", "# 通知\n\n- **易损件**：刀具A", new DateTime(2026, 4, 27, 8, 0, 0, DateTimeKind.Local));
+        await service.ShowIfNeededAsync(partId, "预警通知", "# 通知\n\n- **易损件**：刀具A", new DateTime(2026, 4, 28, 8, 0, 0, DateTimeKind.Local));
 
         Assert.Equal(2, presenter.ShowCount);
+    }
+
+    [Fact]
+    public async Task ShowIfNeededAsync_WhenDifferentPartsSameDay_ShouldBothShow()
+    {
+        var store = new TypeJsonSaveInfoStore(_settingsDirectory);
+        var presenter = new FakeWearPartAlertPresenter();
+        var service = new WearPartAlertPopupService(store, new ImmediateUiDispatcher(), presenter);
+        var partA = Guid.NewGuid();
+        var partB = Guid.NewGuid();
+        var date = new DateTime(2026, 4, 27, 8, 0, 0, DateTimeKind.Local);
+
+        await service.ShowIfNeededAsync(partA, "预警通知A", "# 通知\n\n- **易损件**：刀具A", date);
+        await service.ShowIfNeededAsync(partB, "预警通知B", "# 通知\n\n- **易损件**：刀具B", date);
+
+        Assert.Equal(2, presenter.ShowCount);
+
+        var state = await store.ReadAsync<WearPartAlertPopupSaveInfo>();
+        Assert.True(state.PartDailyStates.TryGetValue(partA, out _));
+        Assert.True(state.PartDailyStates.TryGetValue(partB, out _));
     }
 
     [Fact]
@@ -46,8 +69,9 @@ public sealed class WearPartAlertPopupServiceTests : IDisposable
         var presenter = new FakeWearPartAlertPresenter();
         var dispatcher = new NonCompletingUiDispatcher();
         var service = new WearPartAlertPopupService(store, dispatcher, presenter);
+        var partId = Guid.NewGuid();
 
-        var showTask = service.ShowIfNeededAsync("预警通知", "# 通知\n\n- **易损件**：刀具A", new DateTime(2026, 4, 27, 8, 0, 0, DateTimeKind.Local)).AsTask();
+        var showTask = service.ShowIfNeededAsync(partId, "预警通知", "# 通知\n\n- **易损件**：刀具A", new DateTime(2026, 4, 27, 8, 0, 0, DateTimeKind.Local)).AsTask();
         var completedTask = await Task.WhenAny(showTask, Task.Delay(TimeSpan.FromSeconds(1)));
 
         Assert.Same(showTask, completedTask);
