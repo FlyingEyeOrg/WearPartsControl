@@ -118,7 +118,8 @@ public sealed class ConfigurationTransferServiceTests
                     string.Empty,
                     0,
                     1,
-                    false),
+                    false,
+                    string.Empty),
                 new TestWearPartDefinition("wear-part-1", "source-config", "SRC-01", "WP-01"));
 
             var packagePath = Path.Combine(workspace, "config.cfg");
@@ -161,7 +162,8 @@ public sealed class ConfigurationTransferServiceTests
                     "target-site",
                     2,
                     3,
-                    true));
+                    true,
+                    string.Empty));
 
             var service = new ConfigurationTransferService(targetAppSettingsService, targetRoot);
 
@@ -440,7 +442,8 @@ CREATE TABLE IF NOT EXISTS basic_configurations (
     CutterMesSite TEXT NOT NULL,
     SiemensRack INTEGER NOT NULL,
     SiemensSlot INTEGER NOT NULL,
-    IsStringReverse INTEGER NOT NULL
+    IsStringReverse INTEGER NOT NULL,
+    HostIpAddress TEXT NOT NULL DEFAULT ''
 );
 """;
             await createConfigurationsCommand.ExecuteNonQueryAsync();
@@ -501,12 +504,12 @@ INSERT INTO basic_configurations (
     Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, SiteCode, FactoryCode, AreaCode, ProcedureCode,
     EquipmentCode, ResourceNumber, PlcProtocolType, PlcIpAddress, PlcPort, ShutdownPointAddress,
     EnableCutterMesValidation, CutterMesWsdl, CutterMesUser, CutterMesPassword, CutterMesSite,
-    SiemensRack, SiemensSlot, IsStringReverse)
+    SiemensRack, SiemensSlot, IsStringReverse, HostIpAddress)
 VALUES (
     $id, $createdAt, $updatedAt, $createdBy, $updatedBy, $siteCode, $factoryCode, $areaCode, $procedureCode,
     $equipmentCode, $resourceNumber, $plcProtocolType, $plcIpAddress, $plcPort, $shutdownPointAddress,
     $enableCutterMesValidation, $cutterMesWsdl, $cutterMesUser, $cutterMesPassword, $cutterMesSite,
-    $siemensRack, $siemensSlot, $isStringReverse);
+    $siemensRack, $siemensSlot, $isStringReverse, $hostIpAddress);
 """;
         command.Parameters.AddWithValue("$id", configuration.Id);
         command.Parameters.AddWithValue("$createdAt", "2026-05-13T00:00:00+08:00");
@@ -531,6 +534,7 @@ VALUES (
         command.Parameters.AddWithValue("$siemensRack", configuration.SiemensRack);
         command.Parameters.AddWithValue("$siemensSlot", configuration.SiemensSlot);
         command.Parameters.AddWithValue("$isStringReverse", configuration.IsStringReverse ? 1 : 0);
+        command.Parameters.AddWithValue("$hostIpAddress", configuration.HostIpAddress);
         await command.ExecuteNonQueryAsync();
     }
 
@@ -557,7 +561,7 @@ VALUES ($id, $clientAppConfigurationId, $resourceNumber, $partCode);
         command.CommandText = """
 SELECT Id, SiteCode, FactoryCode, AreaCode, ProcedureCode, EquipmentCode, ResourceNumber, PlcProtocolType,
        PlcIpAddress, PlcPort, ShutdownPointAddress, EnableCutterMesValidation, CutterMesWsdl, CutterMesUser,
-       CutterMesPassword, CutterMesSite, SiemensRack, SiemensSlot, IsStringReverse
+       CutterMesPassword, CutterMesSite, SiemensRack, SiemensSlot, IsStringReverse, HostIpAddress
 FROM basic_configurations
 WHERE ResourceNumber = $resourceNumber
 LIMIT 1;
@@ -589,7 +593,8 @@ LIMIT 1;
             reader.GetString(15),
             reader.GetInt32(16),
             reader.GetInt32(17),
-            reader.GetInt64(18) != 0);
+            reader.GetInt64(18) != 0,
+            reader.GetString(19));
     }
 
     private static async Task<TestWearPartDefinition?> ReadWearPartDefinitionAsync(string databasePath, string partCode)
@@ -643,7 +648,8 @@ LIMIT 1;
         string CutterMesSite,
         int SiemensRack,
         int SiemensSlot,
-        bool IsStringReverse);
+        bool IsStringReverse,
+        string HostIpAddress);
 
     private sealed record TestWearPartDefinition(
         string Id,

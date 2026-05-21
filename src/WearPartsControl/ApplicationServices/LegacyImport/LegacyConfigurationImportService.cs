@@ -68,7 +68,8 @@ public sealed class LegacyConfigurationImportService : ILegacyConfigurationImpor
             ShutdownPointAddress = Normalize(legacyClientConfiguration.ShutdownPoint, "######"),
             SiemensRack = 0,
             SiemensSlot = legacyClientConfiguration.SiemensSlot >= 0 ? legacyClientConfiguration.SiemensSlot : 0,
-            IsStringReverse = legacyClientConfiguration.IsStringReverse
+            IsStringReverse = legacyClientConfiguration.IsStringReverse,
+            HostIpAddress = Normalize(legacyAppConfig?.HostIPAddress)
         };
 
         var importedClientAppInfo = await _clientAppInfoService.SaveAsync(request, cancellationToken).ConfigureAwait(false);

@@ -121,6 +121,7 @@ public sealed class ClientAppInfoService : IClientAppInfoService
         entity.SiemensRack = request.SiemensRack;
         entity.SiemensSlot = request.SiemensSlot;
         entity.IsStringReverse = request.IsStringReverse;
+        entity.HostIpAddress = NormalizeOptional(request.HostIpAddress);
         entity.EnsureValid();
     }
 
@@ -146,7 +147,8 @@ public sealed class ClientAppInfoService : IClientAppInfoService
             CutterMesSite = entity.CutterMesSite,
             SiemensRack = entity.SiemensRack,
             SiemensSlot = entity.SiemensSlot,
-            IsStringReverse = entity.IsStringReverse
+            IsStringReverse = entity.IsStringReverse,
+            HostIpAddress = entity.HostIpAddress
         };
     }
 

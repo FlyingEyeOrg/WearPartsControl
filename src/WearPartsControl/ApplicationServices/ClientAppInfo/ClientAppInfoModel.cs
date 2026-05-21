@@ -39,4 +39,6 @@ public sealed class ClientAppInfoModel
     public int SiemensSlot { get; set; }
 
     public bool IsStringReverse { get; set; } = true;
+
+    public string HostIpAddress { get; set; } = string.Empty;
 }

@@ -30,7 +30,8 @@ public static class PlcConnectionOptionsFactory
             configuration.PlcPort,
             configuration.SiemensRack,
             configuration.SiemensSlot,
-            configuration.IsStringReverse);
+            configuration.IsStringReverse,
+            configuration.HostIpAddress);
     }
 
     private static PlcConnectionOptions Create(
@@ -39,17 +40,34 @@ public static class PlcConnectionOptionsFactory
         int port,
         int siemensRack,
         int siemensSlot,
-        bool isStringReverse)
+        bool isStringReverse,
+        string? hostIpAddress = null)
     {
+        var plcType = ResolveProtocolType(protocolType);
+
         return new PlcConnectionOptions
         {
-            PlcType = ResolveProtocolType(protocolType),
+            PlcType = plcType,
             IpAddress = ipAddress,
             Port = port,
             SiemensRack = siemensRack,
             SiemensSlot = siemensSlot,
-            IsStringReverse = isStringReverse
+            IsStringReverse = isStringReverse,
+            BeckhoffAmsNetId = plcType == PlcProtocolType.Beckhoff && IsAmsNetId(ipAddress) ? ipAddress : null,
+            BeckhoffAmsPort = 851,
+            HostIpAddress = plcType == PlcProtocolType.InovanceEip && !string.IsNullOrWhiteSpace(hostIpAddress) ? hostIpAddress : null
         };
+    }
+
+    private static bool IsAmsNetId(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var parts = value.Trim().Split('.');
+        return parts.Length == 6 && parts.All(p => byte.TryParse(p, out _));
     }
 
     private static PlcProtocolType ResolveProtocolType(string value)

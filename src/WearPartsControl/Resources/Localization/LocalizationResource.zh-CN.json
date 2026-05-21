@@ -201,6 +201,8 @@
     "PlcPortLabel": "端口：",
     "PlcPortPlaceholder": "请输入 PLC 端口",
     "IsStringReverseLabel": "字符串反转：",
+    "HostIpAddressLabel": "本机 IP 地址：",
+    "HostIpAddressPlaceholder": "输入本机网卡 IP（用于 InovanceEIP）",
     "ImportLegacyConfigurationButton": "导入旧项目配置",
     "SaveButton": "保存信息",
     "WearPartMonitoringStatusLabel": "易损件监控状态：",

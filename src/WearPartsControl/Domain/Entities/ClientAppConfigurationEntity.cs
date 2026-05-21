@@ -55,6 +55,8 @@ public sealed class ClientAppConfigurationEntity :
 
     public bool IsStringReverse { get; set; } = true;
 
+    public string HostIpAddress { get; set; } = string.Empty;
+
     public ICollection<WearPartDefinitionEntity> WearPartDefinitions { get; set; } = new List<WearPartDefinitionEntity>();
 
     public ICollection<WearPartReplacementRecordEntity> WearPartReplacementRecords { get; set; } = new List<WearPartReplacementRecordEntity>();

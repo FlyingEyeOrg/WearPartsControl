@@ -146,6 +146,21 @@
                                              ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.PlcIpAddressPlaceholder}" />
                                 </Grid>
                                 <Grid Margin="0 8 0 0"
+                                      Visibility="{Binding IsHostIpAddressVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"
+                                                          SharedSizeGroup="ClientAppInfoLabelColumn2" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Style="{StaticResource ShellFormLabelTextStyle}"
+                                               Text="{loc:Loc ClientAppInfoControl.HostIpAddressLabel}" />
+                                    <TextBox Grid.Column="1"
+                                             Style="{StaticResource TextBoxExtend}"
+                                             IsEnabled="{Binding IsPlcParametersEditable}"
+                                             Text="{Binding HostIpAddress, UpdateSourceTrigger=PropertyChanged}"
+                                             ui:InfoElement.Placeholder="{loc:Loc ClientAppInfoControl.HostIpAddressPlaceholder}" />
+                                </Grid>
+                                <Grid Margin="0 8 0 0"
                                       Visibility="{Binding IsSiemensRackVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"

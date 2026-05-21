@@ -314,7 +314,7 @@ public sealed class ConfigurationTransferService : IConfigurationTransferService
 SELECT Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, SiteCode, FactoryCode, AreaCode, ProcedureCode,
        EquipmentCode, ResourceNumber, PlcProtocolType, PlcIpAddress, PlcPort, ShutdownPointAddress,
        EnableCutterMesValidation, CutterMesWsdl, CutterMesUser, CutterMesPassword, CutterMesSite,
-       SiemensRack, SiemensSlot, IsStringReverse
+       SiemensRack, SiemensSlot, IsStringReverse, HostIpAddress
 FROM basic_configurations
 WHERE ResourceNumber = $resourceNumber
 LIMIT 1;
@@ -350,7 +350,8 @@ LIMIT 1;
             GetString(reader, 19),
             reader.GetInt32(20),
             reader.GetInt32(21),
-            reader.GetInt64(22) != 0);
+            reader.GetInt64(22) != 0,
+            GetString(reader, 23));
     }
 
     private static async Task ImportRootAsync(string rootName, string sourceRoot, string destinationRoot, ImportContext importContext, CancellationToken cancellationToken)
@@ -508,7 +509,8 @@ SET CreatedAt = $createdAt,
     CutterMesSite = $cutterMesSite,
     SiemensRack = $siemensRack,
     SiemensSlot = $siemensSlot,
-    IsStringReverse = $isStringReverse
+    IsStringReverse = $isStringReverse,
+    HostIpAddress = $hostIpAddress
 WHERE Id = $configurationId;
 """;
         AddClientAppConfigurationParameters(command, snapshot);
@@ -529,12 +531,12 @@ INSERT INTO basic_configurations (
     Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, SiteCode, FactoryCode, AreaCode, ProcedureCode,
     EquipmentCode, ResourceNumber, PlcProtocolType, PlcIpAddress, PlcPort, ShutdownPointAddress,
     EnableCutterMesValidation, CutterMesWsdl, CutterMesUser, CutterMesPassword, CutterMesSite,
-    SiemensRack, SiemensSlot, IsStringReverse)
+    SiemensRack, SiemensSlot, IsStringReverse, HostIpAddress)
 VALUES (
     $id, $createdAt, $updatedAt, $createdBy, $updatedBy, $siteCode, $factoryCode, $areaCode, $procedureCode,
     $equipmentCode, $resourceNumber, $plcProtocolType, $plcIpAddress, $plcPort, $shutdownPointAddress,
     $enableCutterMesValidation, $cutterMesWsdl, $cutterMesUser, $cutterMesPassword, $cutterMesSite,
-    $siemensRack, $siemensSlot, $isStringReverse);
+    $siemensRack, $siemensSlot, $isStringReverse, $hostIpAddress);
 """;
         AddClientAppConfigurationParameters(command, snapshot);
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
@@ -565,6 +567,7 @@ VALUES (
         command.Parameters.AddWithValue("$siemensRack", snapshot.SiemensRack);
         command.Parameters.AddWithValue("$siemensSlot", snapshot.SiemensSlot);
         command.Parameters.AddWithValue("$isStringReverse", snapshot.IsStringReverse ? 1 : 0);
+        command.Parameters.AddWithValue("$hostIpAddress", snapshot.HostIpAddress);
     }
 
     private static async Task UpdateWearPartDefinitionResourceNumberAsync(
@@ -709,7 +712,8 @@ VALUES (
         string CutterMesSite,
         int SiemensRack,
         int SiemensSlot,
-        bool IsStringReverse);
+        bool IsStringReverse,
+        string HostIpAddress);
 
     private sealed record ConfigurationPackageManifest(
         int FormatVersion,

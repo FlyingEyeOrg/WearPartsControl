@@ -16,7 +16,7 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
         [
             "Id", "CreatedAt", "UpdatedAt", "CreatedBy", "UpdatedBy", "SiteCode", "FactoryCode", "AreaCode", "ProcedureCode",
             "EquipmentCode", "ResourceNumber", "PlcProtocolType", "PlcIpAddress", "PlcPort", "ShutdownPointAddress", "EnableCutterMesValidation",
-            "CutterMesWsdl", "CutterMesUser", "CutterMesPassword", "CutterMesSite", "SiemensRack", "SiemensSlot", "IsStringReverse"
+            "CutterMesWsdl", "CutterMesUser", "CutterMesPassword", "CutterMesSite", "SiemensRack", "SiemensSlot", "IsStringReverse", "HostIpAddress"
         ],
         ["wear_part_definitions"] =
         [
@@ -47,6 +47,10 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
 
     private static readonly IReadOnlyDictionary<string, AdditiveColumnMigration[]> AdditiveColumnMigrations = new Dictionary<string, AdditiveColumnMigration[]>(StringComparer.OrdinalIgnoreCase)
     {
+        ["basic_configurations"] =
+        [
+            new("HostIpAddress", "TEXT NOT NULL DEFAULT ''")
+        ],
         ["wear_part_definitions"] =
         [
             new("WarningLifetimeThreshold", "REAL NOT NULL DEFAULT 0"),

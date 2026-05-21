@@ -34,6 +34,7 @@ public sealed class ClientAppConfigurationEntityConfiguration : IEntityTypeConfi
         builder.Property(x => x.SiemensRack).IsRequired();
         builder.Property(x => x.SiemensSlot).IsRequired();
         builder.Property(x => x.IsStringReverse).IsRequired();
+        builder.Property(x => x.HostIpAddress).HasMaxLength(64);
 
         builder.HasIndex(x => x.ResourceNumber).IsUnique();
     }

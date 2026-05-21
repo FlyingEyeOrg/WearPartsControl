@@ -201,6 +201,8 @@
     "PlcPortLabel": "Port:",
     "PlcPortPlaceholder": "Enter PLC port",
     "IsStringReverseLabel": "Reverse string:",
+    "HostIpAddressLabel": "Host IP address:",
+    "HostIpAddressPlaceholder": "Enter the host NIC IP (for InovanceEIP)",
     "ImportLegacyConfigurationButton": "Import Legacy Config",
     "SaveButton": "Save",
     "WearPartMonitoringStatusLabel": "Wear part monitoring status:",

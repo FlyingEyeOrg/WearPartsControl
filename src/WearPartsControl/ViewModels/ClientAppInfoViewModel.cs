@@ -6,6 +6,7 @@ using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WearPartsControl.ApplicationServices;
+using WearPartsControl.ApplicationServices.AppSettings;
 using WearPartsControl.ApplicationServices.ClientAppInfo;
 using WearPartsControl.ApplicationServices.Localization;
 using WearPartsControl.ApplicationServices.PartServices;
@@ -52,6 +53,7 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
     private string _statusMessage = LocalizedText.Get("ViewModels.ClientAppInfoVm.PromptComplete");
     private bool _isStringReverse = true;
     private bool _isWearPartMonitoringEnabled;
+    private string _hostIpAddress = string.Empty;
     private Func<string>? _statusMessageFactory;
 
     public ClientAppInfoViewModel(
@@ -139,6 +141,8 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
     public bool IsSiemensSlotVisible => IsSiemensPlc(PlcProtocolType);
 
     public bool IsStringReverseVisible => SupportsStringReverse(PlcProtocolType);
+
+    public bool IsHostIpAddressVisible => IsInovanceEipPlc(PlcProtocolType);
 
     public bool IsWearPartMonitoringEnabled
     {
@@ -275,6 +279,7 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
                 OnPropertyChanged(nameof(IsSiemensRackVisible));
                 OnPropertyChanged(nameof(IsSiemensSlotVisible));
                 OnPropertyChanged(nameof(IsStringReverseVisible));
+                OnPropertyChanged(nameof(IsHostIpAddressVisible));
                 UpdateDirtyState();
             }
         }
@@ -406,6 +411,18 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
         set
         {
             if (SetProperty(ref _isStringReverse, value))
+            {
+                UpdateDirtyState();
+            }
+        }
+    }
+
+    public string HostIpAddress
+    {
+        get => _hostIpAddress;
+        set
+        {
+            if (SetProperty(ref _hostIpAddress, value))
             {
                 UpdateDirtyState();
             }
@@ -598,7 +615,8 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
             CutterMesSite = request.CutterMesSite,
             SiemensRack = request.SiemensRack,
             SiemensSlot = request.SiemensSlot,
-            IsStringReverse = request.IsStringReverse
+            IsStringReverse = request.IsStringReverse,
+            HostIpAddress = HostIpAddress
         };
     }
 
@@ -641,7 +659,8 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
             CutterMesSite = CutterMesSite,
             SiemensRack = siemensRack,
             SiemensSlot = siemensSlot,
-            IsStringReverse = IsStringReverseVisible && IsStringReverse
+            IsStringReverse = IsStringReverseVisible && IsStringReverse,
+            HostIpAddress = IsHostIpAddressVisible ? HostIpAddress : string.Empty
         };
     }
 
@@ -677,6 +696,7 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
             SiemensRack = model.SiemensRack.ToString();
             SiemensSlot = model.SiemensSlot.ToString();
             IsStringReverse = model.IsStringReverse;
+            HostIpAddress = model.HostIpAddress;
             _originalSnapshot = CaptureSnapshot();
             IsDirty = false;
         }
@@ -706,7 +726,8 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
             Normalize(CutterMesSite),
             Normalize(SiemensRack),
             Normalize(SiemensSlot),
-            IsStringReverse);
+            IsStringReverse,
+            Normalize(HostIpAddress));
     }
 
     private void UpdateDirtyState()
@@ -832,6 +853,11 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
 
         return string.Equals(plcProtocolType.Trim(), nameof(WearPartsControl.ApplicationServices.PlcService.PlcProtocolType.ModbusTcp), StringComparison.Ordinal)
             || plcProtocolType.StartsWith("Inovance", StringComparison.Ordinal);
+    }
+
+    private static bool IsInovanceEipPlc(string? plcProtocolType)
+    {
+        return string.Equals(plcProtocolType?.Trim(), nameof(WearPartsControl.ApplicationServices.PlcService.PlcProtocolType.InovanceEip), StringComparison.Ordinal);
     }
 
     private static void EnsureOption(ICollection<string> options, string? value)
@@ -1017,9 +1043,10 @@ public sealed class ClientAppInfoViewModel : LocalizedViewModelBase
         string CutterMesSite,
         string SiemensRack,
         string SiemensSlot,
-        bool IsStringReverse)
+        bool IsStringReverse,
+        string HostIpAddress)
     {
-        public static ClientAppInfoSnapshot Empty { get; } = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true);
+        public static ClientAppInfoSnapshot Empty { get; } = new(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, false, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, true, string.Empty);
     }
 
     private sealed class SiteFactoryDocument
